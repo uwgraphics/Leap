@@ -1,0 +1,167 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 11.10.2012 17:38:40
+
+newmtl EyeWhite
+	Ns 99.9978
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.1506 0.1329 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeEyesDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeEyesDiff.jpg
+
+newmtl EyeIris
+	Ns 99.7831
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.4000 0.3106 0.1239
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeEyesDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeEyesDiff.jpg
+
+newmtl EyePupil
+	Ns 98.9042
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeEyesDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeEyesDiff.jpg
+
+newmtl Eyelight
+	Ns 70.0000
+	Ni 1.5000
+	d 0.0000
+	Tr 1.0000
+	Tf 0.0000 0.0000 0.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.9412 0.9412 0.9412
+	Ke 0.0000 0.0000 0.0000
+	map_refl C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\General\3duEyelights.jpg
+
+newmtl InnerEyes
+	Ns 98.9042
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.4706 0.4706 0.4706
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+	bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+
+newmtl Skin01
+	Ns 98.9042
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.4706 0.4706 0.4706
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+	bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+
+newmtl Skin02
+	Ns 98.9042
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.4706 0.4706 0.4706
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+	bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+
+newmtl Nostrils
+	Ns 98.9042
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.4706 0.4706 0.4706
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+	bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+
+newmtl InnerMouth
+	Ns 98.9042
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.4706 0.4706 0.4706
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+	bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDisp.jpg
+
+newmtl Teeth
+	Ns 70.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.9686 0.9686 0.9686
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+
+newmtl Tongue
+	Ns 98.9042
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.4706 0.4706 0.4706
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_Kd C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	map_bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg
+	bump C:\Local Users\tpejsa\Media\DAZ 3D\Studio\My Library\Runtime\Textures\3DUniverse\Toons\3duToonSnakeBodyDiff.jpg

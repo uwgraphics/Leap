@@ -1,0 +1,8 @@
+<behaviors>
+	<channel type="gaze">
+		<action endTime="259.0" startTime="0" target="StoryHorse"/>
+		<action endTime="837.0" startTime="259.0" target="MainCamera"/>
+		<action endTime="1592.0" startTime="837.0" target="unknown"/>
+	</channel>
+	<channel type="speech">Story24</channel>
+</behaviors>

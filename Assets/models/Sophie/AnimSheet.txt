@@ -1,0 +1,17 @@
+InitialPose 0-3
+NeutralPose	4-7
+Blink	10-18
+RaiseBrow	30-60
+Nod	70-86
+SophieNeutral1	100-289
+SophieNeutral2	300-440
+SophieNeutral3	500-630
+SophieNeutral4	700-893
+SophieNeutral5	900-1038
+SophieNeutral6	1100-1251
+SophieSmiling1	1300-1472
+SophieSmiling2	1500-1621
+SophieSmiling3	1700-1814
+SophieSmiling4	1900-2079
+SophieSmiling5	2100-2221
+SophieSmiling6	2300-2412

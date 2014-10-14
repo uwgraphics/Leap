@@ -1,0 +1,7 @@
+jasmin_hmo
+jasmin_claim
+jasmin_drug
+jasmin_deductible
+jasmin_copay
+jasmin_network
+jasmin_history

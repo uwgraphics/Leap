@@ -1,0 +1,100 @@
+// Copyright 2010 Omek Interactive. All rights reserved.
+
+// Redistribution and use in source and binary forms, with or without modification, are
+// permitted provided that the following conditions are met:
+
+// 1. Redistributions of source code must retain the above copyright notice, this list of
+// 		conditions and the following disclaimer.
+
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list
+// 		of conditions and the following disclaimer in the documentation and/or other materials
+// 		provided with the distribution.
+
+// THIS SOFTWARE IS PROVIDED BY OMEK INTERACTIVE ``AS IS'' AND ANY EXPRESS OR IMPLIED
+// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+// FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+// ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// The views and conclusions contained in the software and documentation are those of the
+// authors and should not be interpreted as representing official policies, either expressed
+// or implied, of Omek Interactive.
+
+
+global proc createMorphTargetMeshes()
+{
+	string $curSelArray[] = `ls -sl`;
+	for ($curSel in $curSelArray)
+	{
+		string $blendshape_object_array[] = `ls -type blendShape ($curSel + "_BlendShaper")`;
+		
+		//Turn off all blend shapes
+		for($blendshape in $blendshape_object_array)
+		{
+			string $blendshape_target_array[] = `listAttr -m ($blendshape + ".w")`;
+			for($blendshape_target in $blendshape_target_array)
+			{
+				setAttr ($blendshape + "." + $blendshape_target) 0;
+			}
+		}
+		
+		//Iterate over each blend shape, set it on and create a matching duplicate
+		for($blendshape in $blendshape_object_array)
+		{
+			string $blendshape_target_array[] = `listAttr -m ($blendshape + ".w")`;
+			for($blendshape_target in $blendshape_target_array)
+			{ 
+				print ( "Extracting morph target mesh " + $blendshape_target + " - " + $blendshape +"\n");
+				setAttr ($blendshape + "." + $blendshape_target) 1;
+				duplicate -rr -name ($blendshape_target);
+				bakePartialHistory;
+				setAttr ($blendshape + "." + $blendshape_target) 0;
+				select $curSel;
+			}
+		} 
+	}
+}
+
+global proc createMorphTargetLocationAnimations()
+{
+    string $curSelArray[] = `ls -sl`;
+    for ($curSel in $curSelArray)
+	{
+        string $blendshape_object_array[] = `ls -type blendShape ($curSel + "_BlendShaper")`;
+    
+        //Create locators for each blend shape target and attach the Y translation to the blend target's weight
+    	for($blendshape in $blendshape_object_array)
+    	{
+    		string $blendshape_target_array[] = `listAttr -m ($blendshape + ".w")`;
+    		for($blendshape_target in $blendshape_target_array)
+    		{
+    			string $locatorName = ("MC_" + $blendshape_target);
+    			string $locatorRes[] = `spaceLocator -name $locatorName`;
+    			$locatorName = $locatorRes[0];
+    			print( "Creating morph channel node " + $locatorName + "\n" );
+    			connectAttr -f ($blendshape + "." + $blendshape_target) ($locatorName + ".translateY");
+    		}
+    	}
+    }
+    
+    //Do we want to use playback start/end (min-max) or animation start end? (ast-aet)
+    float $animStart = `playbackOptions -query -min`;
+    float $animEnd = `playbackOptions -query -max`;
+    	
+    //Bake the weights into the locator animations
+    bakeResults -simulation true -sampleBy 1 -t ($animStart+":"+$animEnd) -disableImplicitControl true -preserveOutsideKeys true -sparseAnimCurveBake false -removeBakedAttributeFromLayer false -bakeOnOverrideLayer false -at "ty" "MC_*";
+}
+
+global proc renameDAZMorphChannels()
+{
+    string $locators[] = `ls "MC_*"`;
+    
+    for( $locator in $locators )
+    {
+        // TODO: rename locators from their DAZ names to LEAP names
+    }
+}

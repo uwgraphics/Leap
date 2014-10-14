@@ -1,0 +1,172 @@
+fileFormatVersion: 2
+guid: 5beb7af1c72875a43a9f7a8ad982cabe
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: room_floor
+    100006: room_table
+    100008: Polyline
+    100010: Rectangle04
+    100012: Cylinder010
+    100014: //RootNode
+    100016: Box06
+    100018: Box07
+    100020: chair_sithook
+    100026: room_confchair
+    100028: Cylinder07
+    100030: Cylinder011
+    100032: Box08
+    100042: Box011
+    100044: Polyline 3
+    100046: Cylinder015
+    100048: Polyline 1
+    100050: room
+    100052: Cylinder013
+    100054: Polyline 2
+    100056: Cylinder014
+    100058: Cylinder09
+    100060: Cylinder012
+    100062: Cylinder08
+    400000: room_floor
+    400006: room_table
+    400008: Polyline
+    400010: Rectangle04
+    400012: Cylinder010
+    400014: //RootNode
+    400016: Box06
+    400018: Box07
+    400020: chair_sithook
+    400026: room_confchair
+    400028: Cylinder07
+    400030: Cylinder011
+    400032: Box08
+    400042: Box011
+    400044: Polyline 3
+    400046: Cylinder015
+    400048: Polyline 1
+    400050: room
+    400052: Cylinder013
+    400054: Polyline 2
+    400056: Cylinder014
+    400058: Cylinder09
+    400060: Cylinder012
+    400062: Cylinder08
+    2300000: room_floor
+    2300002: room_table
+    2300004: Polyline
+    2300006: Rectangle04
+    2300008: Cylinder010
+    2300010: Box06
+    2300012: Box07
+    2300014: room_confchair
+    2300016: Cylinder07
+    2300018: Cylinder011
+    2300020: Box08
+    2300024: Box011
+    2300026: Polyline 3
+    2300028: Cylinder015
+    2300030: Polyline 1
+    2300032: room
+    2300034: Cylinder013
+    2300036: Polyline 2
+    2300038: Cylinder014
+    2300040: Cylinder09
+    2300042: Cylinder012
+    2300044: Cylinder08
+    3300000: room_floor
+    3300002: room_table
+    3300004: Polyline
+    3300006: Rectangle04
+    3300008: Cylinder010
+    3300010: Box06
+    3300012: Box07
+    3300014: room_confchair
+    3300016: Cylinder07
+    3300018: Cylinder011
+    3300020: Box08
+    3300024: Box011
+    3300026: Polyline 3
+    3300028: Cylinder015
+    3300030: Polyline 1
+    3300032: room
+    3300034: Cylinder013
+    3300036: Polyline 2
+    3300038: Cylinder014
+    3300040: Cylinder09
+    3300042: Cylinder012
+    3300044: Cylinder08
+    4300000: room
+    4300002: room_table
+    4300004: room_confchair
+    4300006: Box011
+    4300008: Box10
+    4300010: Cylinder015
+    4300012: Cylinder014
+    4300014: Cylinder013
+    4300016: Cylinder012
+    4300018: Cylinder011
+    4300020: Cylinder010
+    4300022: Cylinder09
+    4300024: Cylinder08
+    4300026: Cylinder07
+    4300028: Polyline
+    4300030: Polyline
+    4300032: Polyline
+    4300034: Polyline
+    4300036: Polyline
+    4300038: Box08
+    4300040: Rectangle04
+    4300042: Box07
+    4300044: Box06
+    4300046: room_floor
+    11100000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 3
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    handles: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  additionalBone: 1
+  animationType: 1
+  userData: 

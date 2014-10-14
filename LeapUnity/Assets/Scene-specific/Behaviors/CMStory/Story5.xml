@@ -1,0 +1,7 @@
+<behaviors>
+	<channel type="gaze">
+		<action endTime="2147.78411908" startTime="0" target="unknown"/>
+		<action endTime="2345.0" startTime="2147.78411908" target="MainCamera"/>
+	</channel>
+	<channel type="speech">Story5</channel>
+</behaviors>

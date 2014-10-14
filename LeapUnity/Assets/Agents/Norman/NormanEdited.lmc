@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LMC xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <animSettings>
+    <linkAnimations>true</linkAnimations>
+    <animTrackPrefix>MC_</animTrackPrefix>
+  </animSettings>
+  <morphChannels>
+    <LMCMorphChannel>
+      <name>ModifierBlinkLeft</name>
+      <submeshes>
+        <LMCSubmeshMapping>
+          <name>srfBind_Cn_Head</name>
+          <mtName>MT&amp;srfBind_Cn_Head&amp;srfBind_Cn_Head4</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+		<LMCSubmeshMapping>
+          <name>srfBind_Cn_Head</name>
+          <mtName>MT&amp;srfBind_Cn_Head&amp;srfBind_Cn_Head3</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+      </submeshes>
+    </LMCMorphChannel>
+    <LMCMorphChannel>
+      <name>ModifierBlinkRight</name>
+      <submeshes>
+        <LMCSubmeshMapping>
+          <name>srfBind_Cn_Head</name>
+          <mtName>MT&amp;srfBind_Cn_Head&amp;srfBind_Cn_Head2</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+		<LMCSubmeshMapping>
+          <name>srfBind_Cn_Head</name>
+          <mtName>MT&amp;srfBind_Cn_Head&amp;srfBind_Cn_Head1</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+      </submeshes>
+    </LMCMorphChannel>
+  </morphChannels>
+</LMC>

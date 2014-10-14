@@ -1,0 +1,125 @@
+fileFormatVersion: 2
+guid: 8f54ca64de2365040832cf30b2f2b181
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: Book01
+    100002: Book02
+    100004: Book03
+    100006: //RootNode
+    100008: lamp_prof_path
+    100010: lamp_profile
+    100012: Specs_leg path
+    100014: Specs_leg prof01
+    100016: Specs_leg prof02
+    100018: Specs_leg prof03
+    100020: Specs_leg prof04
+    100022: Specs_leg prof05
+    100024: Specs_leg prof06
+    100026: Specs_leg profiles
+    100028: Specs_nosepiece holder path
+    100030: Specs_nosepiece holder prof
+    100032: window_fr_prof
+    400000: Book01
+    400002: Book02
+    400004: Book03
+    400006: //RootNode
+    400008: lamp_prof_path
+    400010: lamp_profile
+    400012: Specs_leg path
+    400014: Specs_leg prof01
+    400016: Specs_leg prof02
+    400018: Specs_leg prof03
+    400020: Specs_leg prof04
+    400022: Specs_leg prof05
+    400024: Specs_leg prof06
+    400026: Specs_leg profiles
+    400028: Specs_nosepiece holder path
+    400030: Specs_nosepiece holder prof
+    400032: window_fr_prof
+    2300000: Book01
+    2300002: Book02
+    2300004: Book03
+    2300006: lamp_profile
+    2300008: Specs_leg prof01
+    2300010: Specs_leg prof02
+    2300012: Specs_leg prof03
+    2300014: Specs_leg prof04
+    2300016: Specs_leg prof06
+    2300018: Specs_nosepiece holder prof
+    2300020: window_fr_prof
+    3300000: Book01
+    3300002: Book02
+    3300004: Book03
+    3300006: lamp_profile
+    3300008: Specs_leg prof01
+    3300010: Specs_leg prof02
+    3300012: Specs_leg prof03
+    3300014: Specs_leg prof04
+    3300016: Specs_leg prof06
+    3300018: Specs_nosepiece holder prof
+    3300020: window_fr_prof
+    4300000: lamp_profile
+    4300002: Book01
+    4300004: Book03
+    4300006: Book02
+    4300008: Specs_nosepiece holder prof
+    4300010: Specs_leg prof02
+    4300012: Specs_leg prof03
+    4300014: Specs_leg prof01
+    4300016: Specs_leg prof06
+    4300018: Specs_leg prof04
+    4300020: window_fr_prof
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    handles: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  additionalBone: 1
+  animationType: 2
+  userData: 

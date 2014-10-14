@@ -1,0 +1,124 @@
+fileFormatVersion: 2
+guid: c909c893ee296074596a7435250d8d4b
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: finBot
+    100004: lForeArm
+    100006: rForeArm
+    100008: finTop
+    100010: RbotEyelid
+    100012: RtopEyelid
+    100014: botEyelid.Shape
+    100016: botEyelid
+    100018: topEyelid.Shape
+    100020: topEyelid
+    100022: Reyeball.Shape
+    100024: rEye
+    100026: eyeball.Shape
+    100028: lEye
+    100030: head
+    100032: abdomen
+    100034: tail
+    100036: hip
+    100038: fish
+    100040: RbotEyelid.Shape
+    100042: RtopEyelid.Shape
+    400000: //RootNode
+    400002: finBot
+    400004: lForeArm
+    400006: rForeArm
+    400008: finTop
+    400010: RbotEyelid
+    400012: RtopEyelid
+    400014: botEyelid.Shape
+    400016: botEyelid
+    400018: topEyelid.Shape
+    400020: topEyelid
+    400022: Reyeball.Shape
+    400024: rEye
+    400026: eyeball.Shape
+    400028: lEye
+    400030: head
+    400032: abdomen
+    400034: tail
+    400036: hip
+    400038: fish
+    400040: RbotEyelid.Shape
+    400042: RtopEyelid.Shape
+    2300000: botEyelid.Shape
+    2300002: topEyelid.Shape
+    2300004: Reyeball.Shape
+    2300006: eyeball.Shape
+    2300008: RbotEyelid.Shape
+    2300010: RtopEyelid.Shape
+    3300000: botEyelid.Shape
+    3300002: topEyelid.Shape
+    3300004: Reyeball.Shape
+    3300006: eyeball.Shape
+    3300008: RbotEyelid.Shape
+    3300010: RtopEyelid.Shape
+    4300000: fish
+    4300002: eyeball.Shape
+    4300004: Reyeball.Shape
+    4300006: topEyelid.Shape
+    4300008: botEyelid.Shape
+    4300010: RtopEyelid.Shape
+    4300012: RbotEyelid.Shape
+    7400000: Take 001
+    11100000: //RootNode
+    11400000: //RootNode
+    11400002: //RootNode
+    11400004: //RootNode
+    13700000: fish
+  materials:
+    importMaterials: 1
+    materialName: 3
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    handles: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  additionalBone: 1
+  animationType: 1
+  userData: 

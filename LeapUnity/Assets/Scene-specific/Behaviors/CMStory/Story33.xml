@@ -1,0 +1,8 @@
+<behaviors>
+	<channel type="gaze">
+		<action endTime="2392.65418462" startTime="0" target="unknown"/>
+		<action endTime="3276.0" startTime="2392.65418462" target="StoryGoat"/>
+		<action endTime="3787.0" startTime="3276.0" target="MainCamera"/>
+	</channel>
+	<channel type="speech">Story33</channel>
+</behaviors>

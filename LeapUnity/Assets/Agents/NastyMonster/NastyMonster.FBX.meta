@@ -1,0 +1,129 @@
+fileFormatVersion: 2
+guid: f79c5c080167dad40ae8423d846d1817
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: lToe
+    100002: rThigh
+    100004: lFoot
+    100006: rShin
+    100008: hip
+    100010: head
+    100012: rShldr
+    100014: rFoot
+    100016: eyeball.Shape
+    100018: lShldr
+    100020: rEye
+    100022: uEyelid
+    100024: rMid2
+    100026: lForeArm
+    100028: //RootNode
+    100030: chest
+    100032: eyelid.Shape
+    100034: lThumb
+    100036: rForeArm
+    100038: lEyelid
+    100040: eyelidB.Shape
+    100042: rThumb
+    100044: lShin
+    100046: lMid2
+    100048: rToe
+    100050: lThigh
+    100052: rMid1
+    100054: lMid1
+    100056: nastymonster
+    400000: lToe
+    400002: rThigh
+    400004: lFoot
+    400006: rShin
+    400008: hip
+    400010: head
+    400012: rShldr
+    400014: rFoot
+    400016: eyeball.Shape
+    400018: lShldr
+    400020: rEye
+    400022: uEyelid
+    400024: rMid2
+    400026: lForeArm
+    400028: //RootNode
+    400030: chest
+    400032: eyelid.Shape
+    400034: lThumb
+    400036: rForeArm
+    400038: lEyelid
+    400040: eyelidB.Shape
+    400042: rThumb
+    400044: lShin
+    400046: lMid2
+    400048: rToe
+    400050: lThigh
+    400052: rMid1
+    400054: lMid1
+    400056: nastymonster
+    2300000: eyeball.Shape
+    2300002: eyelid.Shape
+    2300004: eyelidB.Shape
+    3300000: eyeball.Shape
+    3300002: eyelid.Shape
+    3300004: eyelidB.Shape
+    4300000: nastymonster
+    4300002: eyeball.Shape
+    4300004: eyelid.Shape
+    4300006: eyelidB.Shape
+    11100000: //RootNode
+    11400000: //RootNode
+    11400002: //RootNode
+    11400004: //RootNode
+    13700000: hip
+    13700002: nastymonster
+  materials:
+    importMaterials: 1
+    materialName: 3
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    handles: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  additionalBone: 1
+  animationType: 1
+  userData: 

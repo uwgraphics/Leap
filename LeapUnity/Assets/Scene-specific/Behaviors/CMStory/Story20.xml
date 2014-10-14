@@ -1,0 +1,6 @@
+<behaviors>
+	<channel type="gaze">
+		<action endTime="7163.0" startTime="0" target="unknown"/>
+	</channel>
+	<channel type="speech">Story20</channel>
+</behaviors>

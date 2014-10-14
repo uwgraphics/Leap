@@ -1,0 +1,4275 @@
+fileFormatVersion: 2
+guid: ff74c79b6d043f345a34221cd477d7f0
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: crvGuide_Lf_Eye_Pupil
+    100002: crvGuide_Rt_Eye_Pupil
+    100004: crvIK_Cn_Tongue_Twist
+    100006: crvTemplate_Cn_TongeVisualization
+    100008: ctrl_Lf_Eye_Converge
+    100010: ctrl_Root
+    100012: ctrl_Rt_Eye_Converge
+    100014: ctrlBB_Lf_ArmA
+    100016: ctrlBB_Lf_ArmB
+    100018: ctrlBB_Lf_LegA
+    100020: ctrlBB_Lf_LegB
+    100022: ctrlBB_Rt_ArmA
+    100024: ctrlBB_Rt_ArmB
+    100026: ctrlBB_Rt_LegA
+    100028: ctrlBB_Rt_LegB
+    100030: ctrlDriv_Lf_FingerA
+    100032: ctrlDriv_Lf_FingerB
+    100034: ctrlDriv_Lf_FingerC
+    100036: ctrlDriv_Lf_FingerD
+    100038: ctrlDriv_Lf_FingerE
+    100040: ctrlDriv_Lf_Hand
+    100042: ctrlDriv_Rt_FingerA
+    100044: ctrlDriv_Rt_FingerB
+    100046: ctrlDriv_Rt_FingerC
+    100048: ctrlDriv_Rt_FingerD
+    100050: ctrlDriv_Rt_FingerE
+    100052: ctrlDriv_Rt_Hand
+    100054: ctrlFace_Cn_Jaw
+    100056: ctrlFace_Cn_Lips
+    100058: ctrlFace_Cn_Nose
+    100060: ctrlFace_Cn_TeethLower
+    100062: ctrlFace_Cn_TeethUpper
+    100064: ctrlFace_Lf_Brow
+    100066: ctrlFace_Lf_Ear
+    100068: ctrlFace_Lf_Lips
+    100070: ctrlFace_Rt_Brow
+    100072: ctrlFace_Rt_Ear
+    100074: ctrlFace_Rt_Lips
+    100076: ctrlFaceFK_All_TongueA
+    100078: ctrlFaceFK_Cn_TongueB
+    100080: ctrlFaceIK_Cn_TongueB
+    100082: ctrlFaceIK_Cn_TongueC
+    100084: ctrlFK_Cn_HipA
+    100086: ctrlFK_Cn_SpineA
+    100088: ctrlFK_Cn_SpineB
+    100090: ctrlFK_Cn_SpineC
+    100092: ctrlFK_Cn_SpineD
+    100094: ctrlFK_Cn_SpineE
+    100096: ctrlFK_Cn_SpineF
+    100098: ctrlFK_Lf_ArmA
+    100100: ctrlFK_Lf_ArmB
+    100102: ctrlFK_Lf_ArmC
+    100104: ctrlFK_Lf_Clavicle
+    100106: ctrlFK_Lf_Eye
+    100108: ctrlFK_Lf_FingerAa
+    100110: ctrlFK_Lf_FingerAb
+    100112: ctrlFK_Lf_FingerAc
+    100114: ctrlFK_Lf_FingerBa
+    100116: ctrlFK_Lf_FingerBb
+    100118: ctrlFK_Lf_FingerBc
+    100120: ctrlFK_Lf_FingerCa
+    100122: ctrlFK_Lf_FingerCb
+    100124: ctrlFK_Lf_FingerCc
+    100126: ctrlFK_Lf_FingerDa
+    100128: ctrlFK_Lf_FingerDb
+    100130: ctrlFK_Lf_FingerDc
+    100132: ctrlFK_Lf_FingerEa
+    100134: ctrlFK_Lf_FingerEb
+    100136: ctrlFK_Lf_FingerEc
+    100138: ctrlFK_Lf_FootB
+    100140: ctrlFK_Lf_LegA
+    100142: ctrlFK_Lf_LegB
+    100144: ctrlFK_Lf_LegC
+    100146: ctrlFK_Rt_ArmA
+    100148: ctrlFK_Rt_ArmB
+    100150: ctrlFK_Rt_ArmC
+    100152: ctrlFK_Rt_Clavicle
+    100154: ctrlFK_Rt_Eye
+    100156: ctrlFK_Rt_FingerAa
+    100158: ctrlFK_Rt_FingerAb
+    100160: ctrlFK_Rt_FingerAc
+    100162: ctrlFK_Rt_FingerBa
+    100164: ctrlFK_Rt_FingerBb
+    100166: ctrlFK_Rt_FingerBc
+    100168: ctrlFK_Rt_FingerCa
+    100170: ctrlFK_Rt_FingerCb
+    100172: ctrlFK_Rt_FingerCc
+    100174: ctrlFK_Rt_FingerDa
+    100176: ctrlFK_Rt_FingerDb
+    100178: ctrlFK_Rt_FingerDc
+    100180: ctrlFK_Rt_FingerEa
+    100182: ctrlFK_Rt_FingerEb
+    100184: ctrlFK_Rt_FingerEc
+    100186: ctrlFK_Rt_FootB
+    100188: ctrlFK_Rt_LegA
+    100190: ctrlFK_Rt_LegB
+    100192: ctrlFK_Rt_LegC
+    100194: ctrlGim_Lf_ArmA
+    100196: ctrlGim_Lf_LegA
+    100198: ctrlGim_Lf_Wrist
+    100200: ctrlGim_RootA
+    100202: ctrlGim_RootB
+    100204: ctrlGim_Rt_ArmA
+    100206: ctrlGim_Rt_LegA
+    100208: ctrlGim_Rt_Wrist
+    100210: ctrlIK_Cn_Eye
+    100212: ctrlIK_Lf_ArmIK
+    100214: ctrlIK_Lf_ArmPV
+    100216: ctrlIK_Lf_Ball
+    100218: ctrlIK_Lf_Heel
+    100220: ctrlIK_Lf_LegIK
+    100222: ctrlIK_Lf_LegPV
+    100224: ctrlIK_Lf_Toe
+    100226: ctrlIK_Lf_ToeTip
+    100228: ctrlIK_Rt_ArmIK
+    100230: ctrlIK_Rt_ArmPV
+    100232: ctrlIK_Rt_Ball
+    100234: ctrlIK_Rt_Heel
+    100236: ctrlIK_Rt_LegIK
+    100238: ctrlIK_Rt_LegPV
+    100240: ctrlIK_Rt_Toe
+    100242: ctrlIK_Rt_ToeTip
+    100244: ctrlX_Lf_ArmExtra
+    100246: ctrlX_Lf_LegExtra
+    100248: ctrlX_Rt_ArmExtra
+    100250: ctrlX_Rt_LegExtra
+    100252: dClus_Cn_TongueSplineA
+    100254: dClus_Cn_TongueSplineB
+    100256: dClus_Cn_TongueSplineC
+    100258: dClus_Lf_EyelidLowerHandle
+    100260: dClus_Lf_EyelidUpperHandle
+    100262: dClus_Rt_EyelidLowerHandle
+    100264: dClus_Rt_EyelidUpperHandle
+    100266: gr_All_BendBos
+    100268: gr_All_BrowCtrl
+    100270: Gr_All_Chest
+    100272: gr_All_Extra
+    100274: gr_All_Eyelid
+    100276: gr_All_EyelidClusters
+    100278: gr_All_Eyes
+    100280: Gr_All_Face
+    100282: gr_All_IK
+    100284: gr_All_MouthCtrl
+    100286: gr_All_TeethLower
+    100288: gr_All_TeethUpper
+    100290: gr_Cn_InsideMouth_Rig
+    100292: gr_Lf_SDKHandControls
+    100294: gr_Rt_SDKHandControls
+    100296: grA12_LocalGeo
+    100298: grA1_LocalGeo
+    100300: grA1_WorldGeo
+    100302: grAll_BaseControls
+    100304: grAll_Ctrl
+    100306: grCon_Lf_ArmA_PrntConstraint
+    100308: grCon_Lf_ArmB_PrntConstraint
+    100310: grCon_Lf_ArmExtra
+    100312: grCon_Lf_ArmIK
+    100314: grCon_Lf_ArmPV_SpaceSwitch
+    100316: grCon_Lf_FootIK
+    100318: grCon_Lf_Leg_toFoot
+    100320: grCon_Lf_LegA_PrntConstraint
+    100322: grCon_Lf_LegB_PrntConstraint
+    100324: grCon_Lf_LegExtra
+    100326: grCon_Lf_LegPV_SpaceSwitch
+    100328: grCon_Rt_ArmA_PrntConstraint
+    100330: grCon_Rt_ArmB_PrntConstraint
+    100332: grCon_Rt_ArmExtra
+    100334: grCon_Rt_ArmIK
+    100336: grCon_Rt_ArmPV_SpaceSwitch
+    100338: grCon_Rt_FootIK
+    100340: grCon_Rt_Leg_toFoot
+    100342: grCon_Rt_LegA_PrntConstraint
+    100344: grCon_Rt_LegB_PrntConstraint
+    100346: grCon_Rt_LegExtra
+    100348: grCon_Rt_LegPV_SpaceSwitch
+    100350: grDriv_Cn_TeethLower
+    100352: grDriv_Cn_TeethUpper
+    100354: grDriv_Cn_TongueA_FK
+    100356: grDriv_Cn_TongueB_FK
+    100358: grDriv_Cn_TongueB_IK
+    100360: grDriv_Cn_TongueC_IK
+    100362: grDriv_Lf_Eye_Converge
+    100364: grDriv_Rt_Eye_Converge
+    100366: grIK_Lf_LegIKTarget
+    100368: grIK_Rt_LegIKTarget
+    100370: grLocal_All_Rig
+    100372: grLocal_Geometry
+    100374: grLocal_Utilities
+    100376: grOri_Lf_Eyelid
+    100378: grOri_Rt_Eyelid
+    100380: grPiv_Lf_FootBall
+    100382: grPiv_Lf_FootBallTwist
+    100384: grPiv_Lf_FootHeel
+    100386: grPiv_Lf_FootInner
+    100388: grPiv_Lf_FootOuter
+    100390: grPiv_Lf_FootToeTip
+    100392: grPiv_Rt_FootBall
+    100394: grPiv_Rt_FootBallTwist
+    100396: grPiv_Rt_FootHeel
+    100398: grPiv_Rt_FootInner
+    100400: grPiv_Rt_FootOuter
+    100402: grPiv_Rt_FootToeTip
+    100404: grTargetTo_Cn_SpineF
+    100406: grViz_A12Local_Cn_Head
+    100408: grViz_A12Local_Cn_Trunk
+    100410: grViz_A12Local_Cn_Waist
+    100412: grViz_A12Local_Lf_Arm
+    100414: grViz_A12Local_Lf_Leg
+    100416: grViz_A12Local_Rt_Arm
+    100418: grViz_A12Local_Rt_Leg
+    100420: grViz_A1Local_Cn_Head
+    100422: grViz_A1Local_Cn_Trunk
+    100424: grViz_A1Local_Cn_Waist
+    100426: grViz_A1Local_Lf_Arm
+    100428: grViz_A1Local_Lf_Leg
+    100430: grViz_A1Local_Rt_Arm
+    100432: grViz_A1Local_Rt_Leg
+    100434: grViz_A1World_Cn_Head
+    100436: grViz_A1World_Cn_Trunk
+    100438: grViz_A1World_Cn_Waist
+    100440: grViz_A1World_Lf_Arm
+    100442: grViz_A1World_Lf_Leg
+    100444: grViz_A1World_Rt_Arm
+    100446: grViz_A1World_Rt_Leg
+    100448: grWorld_Geometry
+    100450: grWorld_Utilities
+    100452: grZ_Cn_TeethLower_Rig
+    100454: grZ_Cn_TeethUpper_Rig
+    100456: ikHandle_Lf_Ball
+    100458: ikHandle_Lf_Toe
+    100460: ikHandle_Rt_Ball
+    100462: ikHandle_Rt_Toe
+    100464: ikHCn_Tongue_StretchySpline
+    100466: ikRP_Lf_ArmA
+    100468: ikRP_Lf_LegA
+    100470: ikRP_Rt_ArmA
+    100472: ikRP_Rt_LegA
+    100474: jntBind_Cn_TongueA
+    100476: jntBind_Cn_TongueB
+    100478: jntBind_Cn_TongueC
+    100480: jntBind_Cn_TongueD
+    100482: jntBind_Cn_TongueE
+    100484: jntBind_Cn_TongueF
+    100486: jntBind_Cn_TongueG
+    100488: jntBind_Lf_EyeArea
+    100490: jntBind_Rt_EyeArea
+    100492: jntCon_Cn_SpineE
+    100494: jntCon_Cn_SpineF
+    100496: jntCon_Lf_ArmA
+    100498: jntCon_Lf_Eye
+    100500: jntCon_Lf_FootA
+    100502: jntCon_Lf_Hand
+    100504: jntCon_Lf_LegA
+    100506: jntCon_Rt_ArmA
+    100508: jntCon_Rt_Eye
+    100510: jntCon_Rt_FootA
+    100512: jntCon_Rt_Hand
+    100514: jntCon_Rt_LegA
+    100516: jntDriv_Lf_FingerAa
+    100518: jntDriv_Lf_FingerAb
+    100520: jntDriv_Lf_FingerAc
+    100522: jntDriv_Lf_FingerBa
+    100524: jntDriv_Lf_FingerBb
+    100526: jntDriv_Lf_FingerBc
+    100528: jntDriv_Lf_FingerCa
+    100530: jntDriv_Lf_FingerCb
+    100532: jntDriv_Lf_FingerCc
+    100534: jntDriv_Lf_FingerDa
+    100536: jntDriv_Lf_FingerDb
+    100538: jntDriv_Lf_FingerDc
+    100540: jntDriv_Lf_FingerEa
+    100542: jntDriv_Lf_FingerEb
+    100544: jntDriv_Lf_FingerEc
+    100546: jntDriv_Lf_Palm
+    100548: jntDriv_Lf_PalmCupA
+    100550: jntDriv_Lf_PalmCupB
+    100552: jntDriv_Rt_FingerAa
+    100554: jntDriv_Rt_FingerAb
+    100556: jntDriv_Rt_FingerAc
+    100558: jntDriv_Rt_FingerBa
+    100560: jntDriv_Rt_FingerBb
+    100562: jntDriv_Rt_FingerBc
+    100564: jntDriv_Rt_FingerCa
+    100566: jntDriv_Rt_FingerCb
+    100568: jntDriv_Rt_FingerCc
+    100570: jntDriv_Rt_FingerDa
+    100572: jntDriv_Rt_FingerDb
+    100574: jntDriv_Rt_FingerDc
+    100576: jntDriv_Rt_FingerEa
+    100578: jntDriv_Rt_FingerEb
+    100580: jntDriv_Rt_FingerEc
+    100582: jntDriv_Rt_Palm
+    100584: jntDriv_Rt_PalmCupA
+    100586: jntDriv_Rt_PalmCupB
+    100588: jntEnd_Cn_HipB
+    100590: jntEnd_Cn_SpineG
+    100592: jntEnd_Lf_FingerAd
+    100594: jntEnd_Lf_FingerBd
+    100596: jntEnd_Lf_FingerCd
+    100598: jntEnd_Lf_FingerDd
+    100600: jntEnd_Lf_FingerEd
+    100602: jntEnd_Lf_FootC
+    100604: jntEnd_Rt_FingerAd
+    100606: jntEnd_Rt_FingerBd
+    100608: jntEnd_Rt_FingerCd
+    100610: jntEnd_Rt_FingerDd
+    100612: jntEnd_Rt_FingerEd
+    100614: jntEnd_Rt_FootC
+    100616: jntFK_Lf_FootA
+    100618: jntFK_Rt_FootA
+    100620: jntIK_Lf_ArmA
+    100622: jntIK_Lf_ArmB
+    100624: jntIK_Lf_ArmC
+    100626: jntIK_Lf_Eye
+    100628: jntIK_Lf_FootA
+    100630: jntIK_Lf_FootB
+    100632: jntIK_Lf_FootC
+    100634: jntIK_Lf_LegA
+    100636: jntIK_Lf_LegB
+    100638: jntIK_Lf_LegC
+    100640: jntIK_Rt_ArmA
+    100642: jntIK_Rt_ArmB
+    100644: jntIK_Rt_ArmC
+    100646: jntIK_Rt_Eye
+    100648: jntIK_Rt_FootA
+    100650: jntIK_Rt_FootB
+    100652: jntIK_Rt_FootC
+    100654: jntIK_Rt_LegA
+    100656: jntIK_Rt_LegB
+    100658: jntIK_Rt_LegC
+    100660: jntRig_Cn_TeethLower
+    100662: jntRig_Cn_TeethUpper
+    100664: jntRig_Lf_ArmA
+    100666: jntRig_Lf_ArmAa
+    100668: jntRig_Lf_ArmAb
+    100670: jntRig_Lf_ArmB
+    100672: jntRig_Lf_ArmBa
+    100674: jntRig_Lf_ArmBb
+    100676: jntRig_Lf_ArmC
+    100678: jntRig_Lf_Eye
+    100680: jntRig_Lf_FootA
+    100682: jntRig_Lf_FootB
+    100684: jntRig_Lf_FootC
+    100686: jntRig_Lf_LegA
+    100688: jntRig_Lf_LegAa
+    100690: jntRig_Lf_LegAb
+    100692: jntRig_Lf_LegB
+    100694: jntRig_Lf_LegBa
+    100696: jntRig_Lf_LegBb
+    100698: jntRig_Lf_LegC
+    100700: jntRig_Root
+    100702: jntRig_Rt_ArmA
+    100704: jntRig_Rt_ArmAa
+    100706: jntRig_Rt_ArmAb
+    100708: jntRig_Rt_ArmB
+    100710: jntRig_Rt_ArmBa
+    100712: jntRig_Rt_ArmBb
+    100714: jntRig_Rt_ArmC
+    100716: jntRig_Rt_Eye
+    100718: jntRig_Rt_FootA
+    100720: jntRig_Rt_FootB
+    100722: jntRig_Rt_FootC
+    100724: jntRig_Rt_LegA
+    100726: jntRig_Rt_LegAa
+    100728: jntRig_Rt_LegAb
+    100730: jntRig_Rt_LegB
+    100732: jntRig_Rt_LegBa
+    100734: jntRig_Rt_LegBb
+    100736: jntRig_Rt_LegC
+    100738: jntStretch_Lf_ArmA
+    100740: jntStretch_Lf_ArmB
+    100742: jntStretch_Lf_ArmC
+    100744: jntStretch_Lf_LegA
+    100746: jntStretch_Lf_LegB
+    100748: jntStretch_Lf_LegC
+    100750: jntStretch_Rt_ArmA
+    100752: jntStretch_Rt_ArmB
+    100754: jntStretch_Rt_ArmC
+    100756: jntStretch_Rt_LegA
+    100758: jntStretch_Rt_LegB
+    100760: jntStretch_Rt_LegC
+    100762: jntStrIK_Lf_ArmA
+    100764: jntStrIK_Lf_ArmB
+    100766: jntStrIK_Lf_ArmC
+    100768: jntStrIK_Lf_LegA
+    100770: jntStrIK_Lf_LegB
+    100772: jntStrIK_Lf_LegC
+    100774: jntStrIK_Rt_ArmA
+    100776: jntStrIK_Rt_ArmB
+    100778: jntStrIK_Rt_ArmC
+    100780: jntStrIK_Rt_LegA
+    100782: jntStrIK_Rt_LegB
+    100784: jntStrIK_Rt_LegC
+    100786: jntTarg_Lf_Shoulder
+    100788: jntTarg_Rt_Shoulder
+    100790: loc_All_Face
+    100792: LocalSpace
+    100794: locDriv_Lf_EyelidLower
+    100796: locDriv_Lf_EyelidUpper
+    100798: locDriv_Rt_EyelidLower
+    100800: locDriv_Rt_EyelidUpper
+    100802: locTarg_Cn_EyeCtrlOrient
+    100804: locTarg_Cn_TongueA_TwistOrient
+    100806: locTarg_Cn_TongueC_TwistOrient
+    100808: locTarg_Lf_ArmA_HeirarchyConstraint
+    100810: locTarg_Lf_Eye_Aim
+    100812: locTarg_Lf_EyelidLower
+    100814: locTarg_Lf_EyelidUpper
+    100816: locTarg_Lf_FootA
+    100818: locTarg_Lf_Hand
+    100820: locTarg_Lf_LegA_HeirarchyConstraint
+    100822: locTarg_Lf_LegIKTarget
+    100824: locTarg_Rt_ArmA_HeirarchyConstraint
+    100826: locTarg_Rt_Eye_Aim
+    100828: locTarg_Rt_EyelidLower
+    100830: locTarg_Rt_EyelidUpper
+    100832: locTarg_Rt_FootA
+    100834: locTarg_Rt_Hand
+    100836: locTarg_Rt_LegA_HeirarchyConstraint
+    100838: locTarg_Rt_LegIKTarget
+    100840: locTarget_Cn_SpineE_orientParent
+    100842: locTarget_Cn_SpineE_orientRoot
+    100844: locTarget_Cn_SpineE_orientWorld
+    100846: locTarget_Cn_SpineF_orientChest
+    100848: locTarget_Cn_SpineF_orientParent
+    100850: locTarget_Cn_SpineF_orientRoot
+    100852: locTarget_Cn_SpineF_orientWorld
+    100854: locTarget_Lf_ArmA_BBAim
+    100856: locTarget_Lf_ArmA_orientChest
+    100858: locTarget_Lf_ArmA_orientParent
+    100860: locTarget_Lf_ArmA_orientRoot
+    100862: locTarget_Lf_ArmA_orientWorld
+    100864: locTarget_Lf_ArmB_BBAim
+    100866: locTarget_Lf_ArmC_wristOrient
+    100868: locTarget_Lf_ArmIK_parentChest
+    100870: locTarget_Lf_ArmIK_parentHead
+    100872: locTarget_Lf_ArmIK_parentHips
+    100874: locTarget_Lf_ArmIK_parentPin
+    100876: locTarget_Lf_ArmIK_parentRoot
+    100878: locTarget_Lf_ArmIK_parentWorld
+    100880: locTarget_Lf_ArmPV
+    100882: locTarget_Lf_ArmPV_parentLocal
+    100884: locTarget_Lf_ArmPV_parentWorld
+    100886: locTarget_Lf_FootIK_parentHips
+    100888: locTarget_Lf_FootIK_parentPin
+    100890: locTarget_Lf_FootIK_parentRoot
+    100892: locTarget_Lf_FootIK_parentWorld
+    100894: locTarget_Lf_LegA_BBAim
+    100896: locTarget_Lf_LegA_orientParent
+    100898: locTarget_Lf_LegA_orientRoot
+    100900: locTarget_Lf_LegA_orientWorld
+    100902: locTarget_Lf_LegB_BBAim
+    100904: locTarget_Lf_LegC_wristOrient
+    100906: locTarget_Lf_LegPV
+    100908: locTarget_Lf_LegPV_parentLocal
+    100910: locTarget_Lf_LegPV_parentWorld
+    100912: locTarget_Root
+    100914: locTarget_Rt_ArmA_BBAim
+    100916: locTarget_Rt_ArmA_orientChest
+    100918: locTarget_Rt_ArmA_orientParent
+    100920: locTarget_Rt_ArmA_orientRoot
+    100922: locTarget_Rt_ArmA_orientWorld
+    100924: locTarget_Rt_ArmB_BBAim
+    100926: locTarget_Rt_ArmC_wristOrient
+    100928: locTarget_Rt_ArmIK_parentChest
+    100930: locTarget_Rt_ArmIK_parentHead
+    100932: locTarget_Rt_ArmIK_parentHips
+    100934: locTarget_Rt_ArmIK_parentPin
+    100936: locTarget_Rt_ArmIK_parentRoot
+    100938: locTarget_Rt_ArmIK_parentWorld
+    100940: locTarget_Rt_ArmPV
+    100942: locTarget_Rt_ArmPV_parentLocal
+    100944: locTarget_Rt_ArmPV_parentWorld
+    100946: locTarget_Rt_FootIK_parentHips
+    100948: locTarget_Rt_FootIK_parentPin
+    100950: locTarget_Rt_FootIK_parentRoot
+    100952: locTarget_Rt_FootIK_parentWorld
+    100954: locTarget_Rt_LegA_BBAim
+    100956: locTarget_Rt_LegA_orientParent
+    100958: locTarget_Rt_LegA_orientRoot
+    100960: locTarget_Rt_LegA_orientWorld
+    100962: locTarget_Rt_LegB_BBAim
+    100964: locTarget_Rt_LegC_wristOrient
+    100966: locTarget_Rt_LegPV
+    100968: locTarget_Rt_LegPV_parentLocal
+    100970: locTarget_Rt_LegPV_parentWorld
+    100972: locUtl_Lf_ArmA_DistanceTarget
+    100974: locUtl_Lf_ArmC_DistanceTarget
+    100976: locUtl_Lf_LegA_DistanceTarget
+    100978: locUtl_Lf_LegC_DistanceTarget
+    100980: locUtl_Rt_ArmA_DistanceTarget
+    100982: locUtl_Rt_ArmC_DistanceTarget
+    100984: locUtl_Rt_LegA_DistanceTarget
+    100986: locUtl_Rt_LegC_DistanceTarget
+    100988: masterCtrl_Norman
+    100990: //RootNode
+    100992: Norman_Curves
+    100994: srfAll_BocaBurger
+    100996: srfAll_mlTeethLower
+    100998: srfAll_mlTeethUpper
+    101000: srfBind_Cn_Head
+    101002: srfBind_Cn_Neck
+    101004: srfBind_Cn_Nose
+    101006: srfBind_Cn_Pelvis
+    101008: srfBind_Cn_SpineA
+    101010: srfBind_Cn_SpineB
+    101012: srfBind_Cn_SpineC
+    101014: srfBind_Lf_ArmA
+    101016: srfBind_Lf_ArmB
+    101018: srfBind_Lf_ArmC
+    101020: srfBind_Lf_ArmD
+    101022: srfBind_Lf_Ear
+    101024: srfBind_Lf_Eye
+    101026: srfBind_Lf_FootA
+    101028: srfBind_Lf_FootB
+    101030: srfBind_Lf_Hand
+    101032: srfBind_Lf_LegA
+    101034: srfBind_Lf_LegB
+    101036: srfBind_Lf_LegC
+    101038: srfBind_Lf_LegD
+    101040: srfBind_Rt_ArmA
+    101042: srfBind_Rt_ArmB
+    101044: srfBind_Rt_ArmC
+    101046: srfBind_Rt_ArmD
+    101048: srfBind_Rt_Ear
+    101050: srfBind_Rt_Eye
+    101052: srfBind_Rt_FootA
+    101054: srfBind_Rt_FootB
+    101056: srfBind_Rt_Hand
+    101058: srfBind_Rt_LegA
+    101060: srfBind_Rt_LegB
+    101062: srfBind_Rt_LegC
+    101064: srfBind_Rt_LegD
+    101066: srfML_Cn_Tongue
+    101068: vizCtrl
+    101070: vizGeo
+    101072: WorldSpace
+    101074: ZGr_All_Head
+    101076: ZGr_Cn_Jaw
+    101078: ZGr_Cn_Nose
+    101080: ZGr_Cn_TeethLower
+    101082: ZGr_Cn_TeethUpper
+    101084: ZGr_Cn_TongueA
+    101086: ZGr_Cn_TongueA_Bind
+    101088: ZGr_Cn_TongueA_Driv
+    101090: ZGr_Cn_TongueB
+    101092: ZGr_Cn_TongueB_Driv
+    101094: ZGr_Cn_TongueSplineA
+    101096: ZGr_Cn_TongueSplineB
+    101098: ZGr_Cn_TongueSplineC
+    101100: ZGr_Lf_ArmA
+    101102: ZGr_Lf_Clavicle_FK
+    101104: ZGr_Lf_Ear
+    101106: ZGr_Lf_FootA
+    101108: ZGr_Lf_FootBall
+    101110: ZGr_Lf_FootInner
+    101112: ZGr_Lf_FootOuter
+    101114: ZGr_Lf_Hand
+    101116: ZGr_Lf_LegA
+    101118: ZGr_Lf_Toe
+    101120: ZGr_Root_Rig
+    101122: ZGr_Rt_ArmA
+    101124: ZGr_Rt_Clavicle_FK
+    101126: ZGr_Rt_Ear
+    101128: ZGr_Rt_FootA
+    101130: ZGr_Rt_FootBall
+    101132: ZGr_Rt_FootInner
+    101134: ZGr_Rt_FootOuter
+    101136: ZGr_Rt_Hand
+    101138: ZGr_Rt_LegA
+    101140: ZGr_Rt_Toe
+    400000: crvGuide_Lf_Eye_Pupil
+    400002: crvGuide_Rt_Eye_Pupil
+    400004: crvIK_Cn_Tongue_Twist
+    400006: crvTemplate_Cn_TongeVisualization
+    400008: ctrl_Lf_Eye_Converge
+    400010: ctrl_Root
+    400012: ctrl_Rt_Eye_Converge
+    400014: ctrlBB_Lf_ArmA
+    400016: ctrlBB_Lf_ArmB
+    400018: ctrlBB_Lf_LegA
+    400020: ctrlBB_Lf_LegB
+    400022: ctrlBB_Rt_ArmA
+    400024: ctrlBB_Rt_ArmB
+    400026: ctrlBB_Rt_LegA
+    400028: ctrlBB_Rt_LegB
+    400030: ctrlDriv_Lf_FingerA
+    400032: ctrlDriv_Lf_FingerB
+    400034: ctrlDriv_Lf_FingerC
+    400036: ctrlDriv_Lf_FingerD
+    400038: ctrlDriv_Lf_FingerE
+    400040: ctrlDriv_Lf_Hand
+    400042: ctrlDriv_Rt_FingerA
+    400044: ctrlDriv_Rt_FingerB
+    400046: ctrlDriv_Rt_FingerC
+    400048: ctrlDriv_Rt_FingerD
+    400050: ctrlDriv_Rt_FingerE
+    400052: ctrlDriv_Rt_Hand
+    400054: ctrlFace_Cn_Jaw
+    400056: ctrlFace_Cn_Lips
+    400058: ctrlFace_Cn_Nose
+    400060: ctrlFace_Cn_TeethLower
+    400062: ctrlFace_Cn_TeethUpper
+    400064: ctrlFace_Lf_Brow
+    400066: ctrlFace_Lf_Ear
+    400068: ctrlFace_Lf_Lips
+    400070: ctrlFace_Rt_Brow
+    400072: ctrlFace_Rt_Ear
+    400074: ctrlFace_Rt_Lips
+    400076: ctrlFaceFK_All_TongueA
+    400078: ctrlFaceFK_Cn_TongueB
+    400080: ctrlFaceIK_Cn_TongueB
+    400082: ctrlFaceIK_Cn_TongueC
+    400084: ctrlFK_Cn_HipA
+    400086: ctrlFK_Cn_SpineA
+    400088: ctrlFK_Cn_SpineB
+    400090: ctrlFK_Cn_SpineC
+    400092: ctrlFK_Cn_SpineD
+    400094: ctrlFK_Cn_SpineE
+    400096: ctrlFK_Cn_SpineF
+    400098: ctrlFK_Lf_ArmA
+    400100: ctrlFK_Lf_ArmB
+    400102: ctrlFK_Lf_ArmC
+    400104: ctrlFK_Lf_Clavicle
+    400106: ctrlFK_Lf_Eye
+    400108: ctrlFK_Lf_FingerAa
+    400110: ctrlFK_Lf_FingerAb
+    400112: ctrlFK_Lf_FingerAc
+    400114: ctrlFK_Lf_FingerBa
+    400116: ctrlFK_Lf_FingerBb
+    400118: ctrlFK_Lf_FingerBc
+    400120: ctrlFK_Lf_FingerCa
+    400122: ctrlFK_Lf_FingerCb
+    400124: ctrlFK_Lf_FingerCc
+    400126: ctrlFK_Lf_FingerDa
+    400128: ctrlFK_Lf_FingerDb
+    400130: ctrlFK_Lf_FingerDc
+    400132: ctrlFK_Lf_FingerEa
+    400134: ctrlFK_Lf_FingerEb
+    400136: ctrlFK_Lf_FingerEc
+    400138: ctrlFK_Lf_FootB
+    400140: ctrlFK_Lf_LegA
+    400142: ctrlFK_Lf_LegB
+    400144: ctrlFK_Lf_LegC
+    400146: ctrlFK_Rt_ArmA
+    400148: ctrlFK_Rt_ArmB
+    400150: ctrlFK_Rt_ArmC
+    400152: ctrlFK_Rt_Clavicle
+    400154: ctrlFK_Rt_Eye
+    400156: ctrlFK_Rt_FingerAa
+    400158: ctrlFK_Rt_FingerAb
+    400160: ctrlFK_Rt_FingerAc
+    400162: ctrlFK_Rt_FingerBa
+    400164: ctrlFK_Rt_FingerBb
+    400166: ctrlFK_Rt_FingerBc
+    400168: ctrlFK_Rt_FingerCa
+    400170: ctrlFK_Rt_FingerCb
+    400172: ctrlFK_Rt_FingerCc
+    400174: ctrlFK_Rt_FingerDa
+    400176: ctrlFK_Rt_FingerDb
+    400178: ctrlFK_Rt_FingerDc
+    400180: ctrlFK_Rt_FingerEa
+    400182: ctrlFK_Rt_FingerEb
+    400184: ctrlFK_Rt_FingerEc
+    400186: ctrlFK_Rt_FootB
+    400188: ctrlFK_Rt_LegA
+    400190: ctrlFK_Rt_LegB
+    400192: ctrlFK_Rt_LegC
+    400194: ctrlGim_Lf_ArmA
+    400196: ctrlGim_Lf_LegA
+    400198: ctrlGim_Lf_Wrist
+    400200: ctrlGim_RootA
+    400202: ctrlGim_RootB
+    400204: ctrlGim_Rt_ArmA
+    400206: ctrlGim_Rt_LegA
+    400208: ctrlGim_Rt_Wrist
+    400210: ctrlIK_Cn_Eye
+    400212: ctrlIK_Lf_ArmIK
+    400214: ctrlIK_Lf_ArmPV
+    400216: ctrlIK_Lf_Ball
+    400218: ctrlIK_Lf_Heel
+    400220: ctrlIK_Lf_LegIK
+    400222: ctrlIK_Lf_LegPV
+    400224: ctrlIK_Lf_Toe
+    400226: ctrlIK_Lf_ToeTip
+    400228: ctrlIK_Rt_ArmIK
+    400230: ctrlIK_Rt_ArmPV
+    400232: ctrlIK_Rt_Ball
+    400234: ctrlIK_Rt_Heel
+    400236: ctrlIK_Rt_LegIK
+    400238: ctrlIK_Rt_LegPV
+    400240: ctrlIK_Rt_Toe
+    400242: ctrlIK_Rt_ToeTip
+    400244: ctrlX_Lf_ArmExtra
+    400246: ctrlX_Lf_LegExtra
+    400248: ctrlX_Rt_ArmExtra
+    400250: ctrlX_Rt_LegExtra
+    400252: dClus_Cn_TongueSplineA
+    400254: dClus_Cn_TongueSplineB
+    400256: dClus_Cn_TongueSplineC
+    400258: dClus_Lf_EyelidLowerHandle
+    400260: dClus_Lf_EyelidUpperHandle
+    400262: dClus_Rt_EyelidLowerHandle
+    400264: dClus_Rt_EyelidUpperHandle
+    400266: gr_All_BendBos
+    400268: gr_All_BrowCtrl
+    400270: Gr_All_Chest
+    400272: gr_All_Extra
+    400274: gr_All_Eyelid
+    400276: gr_All_EyelidClusters
+    400278: gr_All_Eyes
+    400280: Gr_All_Face
+    400282: gr_All_IK
+    400284: gr_All_MouthCtrl
+    400286: gr_All_TeethLower
+    400288: gr_All_TeethUpper
+    400290: gr_Cn_InsideMouth_Rig
+    400292: gr_Lf_SDKHandControls
+    400294: gr_Rt_SDKHandControls
+    400296: grA12_LocalGeo
+    400298: grA1_LocalGeo
+    400300: grA1_WorldGeo
+    400302: grAll_BaseControls
+    400304: grAll_Ctrl
+    400306: grCon_Lf_ArmA_PrntConstraint
+    400308: grCon_Lf_ArmB_PrntConstraint
+    400310: grCon_Lf_ArmExtra
+    400312: grCon_Lf_ArmIK
+    400314: grCon_Lf_ArmPV_SpaceSwitch
+    400316: grCon_Lf_FootIK
+    400318: grCon_Lf_Leg_toFoot
+    400320: grCon_Lf_LegA_PrntConstraint
+    400322: grCon_Lf_LegB_PrntConstraint
+    400324: grCon_Lf_LegExtra
+    400326: grCon_Lf_LegPV_SpaceSwitch
+    400328: grCon_Rt_ArmA_PrntConstraint
+    400330: grCon_Rt_ArmB_PrntConstraint
+    400332: grCon_Rt_ArmExtra
+    400334: grCon_Rt_ArmIK
+    400336: grCon_Rt_ArmPV_SpaceSwitch
+    400338: grCon_Rt_FootIK
+    400340: grCon_Rt_Leg_toFoot
+    400342: grCon_Rt_LegA_PrntConstraint
+    400344: grCon_Rt_LegB_PrntConstraint
+    400346: grCon_Rt_LegExtra
+    400348: grCon_Rt_LegPV_SpaceSwitch
+    400350: grDriv_Cn_TeethLower
+    400352: grDriv_Cn_TeethUpper
+    400354: grDriv_Cn_TongueA_FK
+    400356: grDriv_Cn_TongueB_FK
+    400358: grDriv_Cn_TongueB_IK
+    400360: grDriv_Cn_TongueC_IK
+    400362: grDriv_Lf_Eye_Converge
+    400364: grDriv_Rt_Eye_Converge
+    400366: grIK_Lf_LegIKTarget
+    400368: grIK_Rt_LegIKTarget
+    400370: grLocal_All_Rig
+    400372: grLocal_Geometry
+    400374: grLocal_Utilities
+    400376: grOri_Lf_Eyelid
+    400378: grOri_Rt_Eyelid
+    400380: grPiv_Lf_FootBall
+    400382: grPiv_Lf_FootBallTwist
+    400384: grPiv_Lf_FootHeel
+    400386: grPiv_Lf_FootInner
+    400388: grPiv_Lf_FootOuter
+    400390: grPiv_Lf_FootToeTip
+    400392: grPiv_Rt_FootBall
+    400394: grPiv_Rt_FootBallTwist
+    400396: grPiv_Rt_FootHeel
+    400398: grPiv_Rt_FootInner
+    400400: grPiv_Rt_FootOuter
+    400402: grPiv_Rt_FootToeTip
+    400404: grTargetTo_Cn_SpineF
+    400406: grViz_A12Local_Cn_Head
+    400408: grViz_A12Local_Cn_Trunk
+    400410: grViz_A12Local_Cn_Waist
+    400412: grViz_A12Local_Lf_Arm
+    400414: grViz_A12Local_Lf_Leg
+    400416: grViz_A12Local_Rt_Arm
+    400418: grViz_A12Local_Rt_Leg
+    400420: grViz_A1Local_Cn_Head
+    400422: grViz_A1Local_Cn_Trunk
+    400424: grViz_A1Local_Cn_Waist
+    400426: grViz_A1Local_Lf_Arm
+    400428: grViz_A1Local_Lf_Leg
+    400430: grViz_A1Local_Rt_Arm
+    400432: grViz_A1Local_Rt_Leg
+    400434: grViz_A1World_Cn_Head
+    400436: grViz_A1World_Cn_Trunk
+    400438: grViz_A1World_Cn_Waist
+    400440: grViz_A1World_Lf_Arm
+    400442: grViz_A1World_Lf_Leg
+    400444: grViz_A1World_Rt_Arm
+    400446: grViz_A1World_Rt_Leg
+    400448: grWorld_Geometry
+    400450: grWorld_Utilities
+    400452: grZ_Cn_TeethLower_Rig
+    400454: grZ_Cn_TeethUpper_Rig
+    400456: ikHandle_Lf_Ball
+    400458: ikHandle_Lf_Toe
+    400460: ikHandle_Rt_Ball
+    400462: ikHandle_Rt_Toe
+    400464: ikHCn_Tongue_StretchySpline
+    400466: ikRP_Lf_ArmA
+    400468: ikRP_Lf_LegA
+    400470: ikRP_Rt_ArmA
+    400472: ikRP_Rt_LegA
+    400474: jntBind_Cn_TongueA
+    400476: jntBind_Cn_TongueB
+    400478: jntBind_Cn_TongueC
+    400480: jntBind_Cn_TongueD
+    400482: jntBind_Cn_TongueE
+    400484: jntBind_Cn_TongueF
+    400486: jntBind_Cn_TongueG
+    400488: jntBind_Lf_EyeArea
+    400490: jntBind_Rt_EyeArea
+    400492: jntCon_Cn_SpineE
+    400494: jntCon_Cn_SpineF
+    400496: jntCon_Lf_ArmA
+    400498: jntCon_Lf_Eye
+    400500: jntCon_Lf_FootA
+    400502: jntCon_Lf_Hand
+    400504: jntCon_Lf_LegA
+    400506: jntCon_Rt_ArmA
+    400508: jntCon_Rt_Eye
+    400510: jntCon_Rt_FootA
+    400512: jntCon_Rt_Hand
+    400514: jntCon_Rt_LegA
+    400516: jntDriv_Lf_FingerAa
+    400518: jntDriv_Lf_FingerAb
+    400520: jntDriv_Lf_FingerAc
+    400522: jntDriv_Lf_FingerBa
+    400524: jntDriv_Lf_FingerBb
+    400526: jntDriv_Lf_FingerBc
+    400528: jntDriv_Lf_FingerCa
+    400530: jntDriv_Lf_FingerCb
+    400532: jntDriv_Lf_FingerCc
+    400534: jntDriv_Lf_FingerDa
+    400536: jntDriv_Lf_FingerDb
+    400538: jntDriv_Lf_FingerDc
+    400540: jntDriv_Lf_FingerEa
+    400542: jntDriv_Lf_FingerEb
+    400544: jntDriv_Lf_FingerEc
+    400546: jntDriv_Lf_Palm
+    400548: jntDriv_Lf_PalmCupA
+    400550: jntDriv_Lf_PalmCupB
+    400552: jntDriv_Rt_FingerAa
+    400554: jntDriv_Rt_FingerAb
+    400556: jntDriv_Rt_FingerAc
+    400558: jntDriv_Rt_FingerBa
+    400560: jntDriv_Rt_FingerBb
+    400562: jntDriv_Rt_FingerBc
+    400564: jntDriv_Rt_FingerCa
+    400566: jntDriv_Rt_FingerCb
+    400568: jntDriv_Rt_FingerCc
+    400570: jntDriv_Rt_FingerDa
+    400572: jntDriv_Rt_FingerDb
+    400574: jntDriv_Rt_FingerDc
+    400576: jntDriv_Rt_FingerEa
+    400578: jntDriv_Rt_FingerEb
+    400580: jntDriv_Rt_FingerEc
+    400582: jntDriv_Rt_Palm
+    400584: jntDriv_Rt_PalmCupA
+    400586: jntDriv_Rt_PalmCupB
+    400588: jntEnd_Cn_HipB
+    400590: jntEnd_Cn_SpineG
+    400592: jntEnd_Lf_FingerAd
+    400594: jntEnd_Lf_FingerBd
+    400596: jntEnd_Lf_FingerCd
+    400598: jntEnd_Lf_FingerDd
+    400600: jntEnd_Lf_FingerEd
+    400602: jntEnd_Lf_FootC
+    400604: jntEnd_Rt_FingerAd
+    400606: jntEnd_Rt_FingerBd
+    400608: jntEnd_Rt_FingerCd
+    400610: jntEnd_Rt_FingerDd
+    400612: jntEnd_Rt_FingerEd
+    400614: jntEnd_Rt_FootC
+    400616: jntFK_Lf_FootA
+    400618: jntFK_Rt_FootA
+    400620: jntIK_Lf_ArmA
+    400622: jntIK_Lf_ArmB
+    400624: jntIK_Lf_ArmC
+    400626: jntIK_Lf_Eye
+    400628: jntIK_Lf_FootA
+    400630: jntIK_Lf_FootB
+    400632: jntIK_Lf_FootC
+    400634: jntIK_Lf_LegA
+    400636: jntIK_Lf_LegB
+    400638: jntIK_Lf_LegC
+    400640: jntIK_Rt_ArmA
+    400642: jntIK_Rt_ArmB
+    400644: jntIK_Rt_ArmC
+    400646: jntIK_Rt_Eye
+    400648: jntIK_Rt_FootA
+    400650: jntIK_Rt_FootB
+    400652: jntIK_Rt_FootC
+    400654: jntIK_Rt_LegA
+    400656: jntIK_Rt_LegB
+    400658: jntIK_Rt_LegC
+    400660: jntRig_Cn_TeethLower
+    400662: jntRig_Cn_TeethUpper
+    400664: jntRig_Lf_ArmA
+    400666: jntRig_Lf_ArmAa
+    400668: jntRig_Lf_ArmAb
+    400670: jntRig_Lf_ArmB
+    400672: jntRig_Lf_ArmBa
+    400674: jntRig_Lf_ArmBb
+    400676: jntRig_Lf_ArmC
+    400678: jntRig_Lf_Eye
+    400680: jntRig_Lf_FootA
+    400682: jntRig_Lf_FootB
+    400684: jntRig_Lf_FootC
+    400686: jntRig_Lf_LegA
+    400688: jntRig_Lf_LegAa
+    400690: jntRig_Lf_LegAb
+    400692: jntRig_Lf_LegB
+    400694: jntRig_Lf_LegBa
+    400696: jntRig_Lf_LegBb
+    400698: jntRig_Lf_LegC
+    400700: jntRig_Root
+    400702: jntRig_Rt_ArmA
+    400704: jntRig_Rt_ArmAa
+    400706: jntRig_Rt_ArmAb
+    400708: jntRig_Rt_ArmB
+    400710: jntRig_Rt_ArmBa
+    400712: jntRig_Rt_ArmBb
+    400714: jntRig_Rt_ArmC
+    400716: jntRig_Rt_Eye
+    400718: jntRig_Rt_FootA
+    400720: jntRig_Rt_FootB
+    400722: jntRig_Rt_FootC
+    400724: jntRig_Rt_LegA
+    400726: jntRig_Rt_LegAa
+    400728: jntRig_Rt_LegAb
+    400730: jntRig_Rt_LegB
+    400732: jntRig_Rt_LegBa
+    400734: jntRig_Rt_LegBb
+    400736: jntRig_Rt_LegC
+    400738: jntStretch_Lf_ArmA
+    400740: jntStretch_Lf_ArmB
+    400742: jntStretch_Lf_ArmC
+    400744: jntStretch_Lf_LegA
+    400746: jntStretch_Lf_LegB
+    400748: jntStretch_Lf_LegC
+    400750: jntStretch_Rt_ArmA
+    400752: jntStretch_Rt_ArmB
+    400754: jntStretch_Rt_ArmC
+    400756: jntStretch_Rt_LegA
+    400758: jntStretch_Rt_LegB
+    400760: jntStretch_Rt_LegC
+    400762: jntStrIK_Lf_ArmA
+    400764: jntStrIK_Lf_ArmB
+    400766: jntStrIK_Lf_ArmC
+    400768: jntStrIK_Lf_LegA
+    400770: jntStrIK_Lf_LegB
+    400772: jntStrIK_Lf_LegC
+    400774: jntStrIK_Rt_ArmA
+    400776: jntStrIK_Rt_ArmB
+    400778: jntStrIK_Rt_ArmC
+    400780: jntStrIK_Rt_LegA
+    400782: jntStrIK_Rt_LegB
+    400784: jntStrIK_Rt_LegC
+    400786: jntTarg_Lf_Shoulder
+    400788: jntTarg_Rt_Shoulder
+    400790: loc_All_Face
+    400792: LocalSpace
+    400794: locDriv_Lf_EyelidLower
+    400796: locDriv_Lf_EyelidUpper
+    400798: locDriv_Rt_EyelidLower
+    400800: locDriv_Rt_EyelidUpper
+    400802: locTarg_Cn_EyeCtrlOrient
+    400804: locTarg_Cn_TongueA_TwistOrient
+    400806: locTarg_Cn_TongueC_TwistOrient
+    400808: locTarg_Lf_ArmA_HeirarchyConstraint
+    400810: locTarg_Lf_Eye_Aim
+    400812: locTarg_Lf_EyelidLower
+    400814: locTarg_Lf_EyelidUpper
+    400816: locTarg_Lf_FootA
+    400818: locTarg_Lf_Hand
+    400820: locTarg_Lf_LegA_HeirarchyConstraint
+    400822: locTarg_Lf_LegIKTarget
+    400824: locTarg_Rt_ArmA_HeirarchyConstraint
+    400826: locTarg_Rt_Eye_Aim
+    400828: locTarg_Rt_EyelidLower
+    400830: locTarg_Rt_EyelidUpper
+    400832: locTarg_Rt_FootA
+    400834: locTarg_Rt_Hand
+    400836: locTarg_Rt_LegA_HeirarchyConstraint
+    400838: locTarg_Rt_LegIKTarget
+    400840: locTarget_Cn_SpineE_orientParent
+    400842: locTarget_Cn_SpineE_orientRoot
+    400844: locTarget_Cn_SpineE_orientWorld
+    400846: locTarget_Cn_SpineF_orientChest
+    400848: locTarget_Cn_SpineF_orientParent
+    400850: locTarget_Cn_SpineF_orientRoot
+    400852: locTarget_Cn_SpineF_orientWorld
+    400854: locTarget_Lf_ArmA_BBAim
+    400856: locTarget_Lf_ArmA_orientChest
+    400858: locTarget_Lf_ArmA_orientParent
+    400860: locTarget_Lf_ArmA_orientRoot
+    400862: locTarget_Lf_ArmA_orientWorld
+    400864: locTarget_Lf_ArmB_BBAim
+    400866: locTarget_Lf_ArmC_wristOrient
+    400868: locTarget_Lf_ArmIK_parentChest
+    400870: locTarget_Lf_ArmIK_parentHead
+    400872: locTarget_Lf_ArmIK_parentHips
+    400874: locTarget_Lf_ArmIK_parentPin
+    400876: locTarget_Lf_ArmIK_parentRoot
+    400878: locTarget_Lf_ArmIK_parentWorld
+    400880: locTarget_Lf_ArmPV
+    400882: locTarget_Lf_ArmPV_parentLocal
+    400884: locTarget_Lf_ArmPV_parentWorld
+    400886: locTarget_Lf_FootIK_parentHips
+    400888: locTarget_Lf_FootIK_parentPin
+    400890: locTarget_Lf_FootIK_parentRoot
+    400892: locTarget_Lf_FootIK_parentWorld
+    400894: locTarget_Lf_LegA_BBAim
+    400896: locTarget_Lf_LegA_orientParent
+    400898: locTarget_Lf_LegA_orientRoot
+    400900: locTarget_Lf_LegA_orientWorld
+    400902: locTarget_Lf_LegB_BBAim
+    400904: locTarget_Lf_LegC_wristOrient
+    400906: locTarget_Lf_LegPV
+    400908: locTarget_Lf_LegPV_parentLocal
+    400910: locTarget_Lf_LegPV_parentWorld
+    400912: locTarget_Root
+    400914: locTarget_Rt_ArmA_BBAim
+    400916: locTarget_Rt_ArmA_orientChest
+    400918: locTarget_Rt_ArmA_orientParent
+    400920: locTarget_Rt_ArmA_orientRoot
+    400922: locTarget_Rt_ArmA_orientWorld
+    400924: locTarget_Rt_ArmB_BBAim
+    400926: locTarget_Rt_ArmC_wristOrient
+    400928: locTarget_Rt_ArmIK_parentChest
+    400930: locTarget_Rt_ArmIK_parentHead
+    400932: locTarget_Rt_ArmIK_parentHips
+    400934: locTarget_Rt_ArmIK_parentPin
+    400936: locTarget_Rt_ArmIK_parentRoot
+    400938: locTarget_Rt_ArmIK_parentWorld
+    400940: locTarget_Rt_ArmPV
+    400942: locTarget_Rt_ArmPV_parentLocal
+    400944: locTarget_Rt_ArmPV_parentWorld
+    400946: locTarget_Rt_FootIK_parentHips
+    400948: locTarget_Rt_FootIK_parentPin
+    400950: locTarget_Rt_FootIK_parentRoot
+    400952: locTarget_Rt_FootIK_parentWorld
+    400954: locTarget_Rt_LegA_BBAim
+    400956: locTarget_Rt_LegA_orientParent
+    400958: locTarget_Rt_LegA_orientRoot
+    400960: locTarget_Rt_LegA_orientWorld
+    400962: locTarget_Rt_LegB_BBAim
+    400964: locTarget_Rt_LegC_wristOrient
+    400966: locTarget_Rt_LegPV
+    400968: locTarget_Rt_LegPV_parentLocal
+    400970: locTarget_Rt_LegPV_parentWorld
+    400972: locUtl_Lf_ArmA_DistanceTarget
+    400974: locUtl_Lf_ArmC_DistanceTarget
+    400976: locUtl_Lf_LegA_DistanceTarget
+    400978: locUtl_Lf_LegC_DistanceTarget
+    400980: locUtl_Rt_ArmA_DistanceTarget
+    400982: locUtl_Rt_ArmC_DistanceTarget
+    400984: locUtl_Rt_LegA_DistanceTarget
+    400986: locUtl_Rt_LegC_DistanceTarget
+    400988: masterCtrl_Norman
+    400990: //RootNode
+    400992: Norman_Curves
+    400994: srfAll_BocaBurger
+    400996: srfAll_mlTeethLower
+    400998: srfAll_mlTeethUpper
+    401000: srfBind_Cn_Head
+    401002: srfBind_Cn_Neck
+    401004: srfBind_Cn_Nose
+    401006: srfBind_Cn_Pelvis
+    401008: srfBind_Cn_SpineA
+    401010: srfBind_Cn_SpineB
+    401012: srfBind_Cn_SpineC
+    401014: srfBind_Lf_ArmA
+    401016: srfBind_Lf_ArmB
+    401018: srfBind_Lf_ArmC
+    401020: srfBind_Lf_ArmD
+    401022: srfBind_Lf_Ear
+    401024: srfBind_Lf_Eye
+    401026: srfBind_Lf_FootA
+    401028: srfBind_Lf_FootB
+    401030: srfBind_Lf_Hand
+    401032: srfBind_Lf_LegA
+    401034: srfBind_Lf_LegB
+    401036: srfBind_Lf_LegC
+    401038: srfBind_Lf_LegD
+    401040: srfBind_Rt_ArmA
+    401042: srfBind_Rt_ArmB
+    401044: srfBind_Rt_ArmC
+    401046: srfBind_Rt_ArmD
+    401048: srfBind_Rt_Ear
+    401050: srfBind_Rt_Eye
+    401052: srfBind_Rt_FootA
+    401054: srfBind_Rt_FootB
+    401056: srfBind_Rt_Hand
+    401058: srfBind_Rt_LegA
+    401060: srfBind_Rt_LegB
+    401062: srfBind_Rt_LegC
+    401064: srfBind_Rt_LegD
+    401066: srfML_Cn_Tongue
+    401068: vizCtrl
+    401070: vizGeo
+    401072: WorldSpace
+    401074: ZGr_All_Head
+    401076: ZGr_Cn_Jaw
+    401078: ZGr_Cn_Nose
+    401080: ZGr_Cn_TeethLower
+    401082: ZGr_Cn_TeethUpper
+    401084: ZGr_Cn_TongueA
+    401086: ZGr_Cn_TongueA_Bind
+    401088: ZGr_Cn_TongueA_Driv
+    401090: ZGr_Cn_TongueB
+    401092: ZGr_Cn_TongueB_Driv
+    401094: ZGr_Cn_TongueSplineA
+    401096: ZGr_Cn_TongueSplineB
+    401098: ZGr_Cn_TongueSplineC
+    401100: ZGr_Lf_ArmA
+    401102: ZGr_Lf_Clavicle_FK
+    401104: ZGr_Lf_Ear
+    401106: ZGr_Lf_FootA
+    401108: ZGr_Lf_FootBall
+    401110: ZGr_Lf_FootInner
+    401112: ZGr_Lf_FootOuter
+    401114: ZGr_Lf_Hand
+    401116: ZGr_Lf_LegA
+    401118: ZGr_Lf_Toe
+    401120: ZGr_Root_Rig
+    401122: ZGr_Rt_ArmA
+    401124: ZGr_Rt_Clavicle_FK
+    401126: ZGr_Rt_Ear
+    401128: ZGr_Rt_FootA
+    401130: ZGr_Rt_FootBall
+    401132: ZGr_Rt_FootInner
+    401134: ZGr_Rt_FootOuter
+    401136: ZGr_Rt_Hand
+    401138: ZGr_Rt_LegA
+    401140: ZGr_Rt_Toe
+    4300000: srfBind_Cn_Neck
+    4300002: srfBind_Cn_Nose
+    4300004: srfBind_Lf_Ear
+    4300006: srfBind_Rt_Ear
+    4300008: srfBind_Cn_Head
+    4300010: srfAll_mlTeethLower
+    4300012: srfAll_mlTeethUpper
+    4300014: srfAll_BocaBurger
+    4300016: srfBind_Lf_Eye
+    4300018: srfBind_Rt_Eye
+    4300020: srfBind_Cn_SpineA
+    4300022: srfBind_Cn_SpineB
+    4300024: srfBind_Cn_SpineC
+    4300026: srfBind_Cn_Pelvis
+    4300028: srfBind_Lf_ArmD
+    4300030: srfBind_Lf_ArmC
+    4300032: srfBind_Lf_ArmB
+    4300034: srfBind_Lf_ArmA
+    4300036: srfBind_Lf_Hand
+    4300038: srfBind_Rt_ArmD
+    4300040: srfBind_Rt_ArmC
+    4300042: srfBind_Rt_ArmB
+    4300044: srfBind_Rt_ArmA
+    4300046: srfBind_Rt_Hand
+    4300048: srfBind_Lf_FootB
+    4300050: srfBind_Lf_FootA
+    4300052: srfBind_Lf_LegD
+    4300054: srfBind_Lf_LegC
+    4300056: srfBind_Lf_LegB
+    4300058: srfBind_Lf_LegA
+    4300060: srfBind_Rt_FootB
+    4300062: srfBind_Rt_FootA
+    4300064: srfBind_Rt_LegD
+    4300066: srfBind_Rt_LegC
+    4300068: srfBind_Rt_LegB
+    4300070: srfBind_Rt_LegA
+    9500000: //RootNode
+    11100000: //RootNode
+    11400000: //RootNode
+    11400002: //RootNode
+    11400004: //RootNode
+    13700000: srfAll_BocaBurger
+    13700002: srfAll_mlTeethLower
+    13700004: srfAll_mlTeethUpper
+    13700006: srfBind_Cn_Head
+    13700008: srfBind_Cn_Neck
+    13700010: srfBind_Cn_Nose
+    13700012: srfBind_Cn_Pelvis
+    13700014: srfBind_Cn_SpineA
+    13700016: srfBind_Cn_SpineB
+    13700018: srfBind_Cn_SpineC
+    13700020: srfBind_Lf_ArmA
+    13700022: srfBind_Lf_ArmB
+    13700024: srfBind_Lf_ArmC
+    13700026: srfBind_Lf_ArmD
+    13700028: srfBind_Lf_Ear
+    13700030: srfBind_Lf_Eye
+    13700032: srfBind_Lf_FootA
+    13700034: srfBind_Lf_FootB
+    13700036: srfBind_Lf_Hand
+    13700038: srfBind_Lf_LegA
+    13700040: srfBind_Lf_LegB
+    13700042: srfBind_Lf_LegC
+    13700044: srfBind_Lf_LegD
+    13700046: srfBind_Rt_ArmA
+    13700048: srfBind_Rt_ArmB
+    13700050: srfBind_Rt_ArmC
+    13700052: srfBind_Rt_ArmD
+    13700054: srfBind_Rt_Ear
+    13700056: srfBind_Rt_Eye
+    13700058: srfBind_Rt_FootA
+    13700060: srfBind_Rt_FootB
+    13700062: srfBind_Rt_Hand
+    13700064: srfBind_Rt_LegA
+    13700066: srfBind_Rt_LegB
+    13700068: srfBind_Rt_LegC
+    13700070: srfBind_Rt_LegD
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human:
+    - boneName: grAll_Ctrl
+      humanName: Hips
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlGim_Lf_Wrist
+      humanName: RightUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: jntDriv_Lf_Palm
+      humanName: RightLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Lf_FingerDb
+      humanName: RightFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlGim_Rt_Wrist
+      humanName: Spine
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: jntDriv_Rt_Palm
+      humanName: Chest
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Rt_FingerDa
+      humanName: Neck
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Rt_FingerDb
+      humanName: Head
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: jntDriv_Rt_PalmCupA
+      humanName: LeftUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: jntDriv_Rt_PalmCupB
+      humanName: RightUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Rt_FingerBa
+      humanName: LeftLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Rt_FingerEa
+      humanName: RightLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Rt_FingerBc
+      humanName: LeftHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Lf_FingerDc
+      humanName: RightToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Rt_FingerDc
+      humanName: LeftEye
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Rt_FingerBb
+      humanName: Left Little Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: jntDriv_Rt_FingerBc
+      humanName: Left Little Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: ctrlFK_Rt_FingerBc
+      humanName: Left Little Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    skeleton:
+    - name: Norman(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: LocalSpace
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: masterCtrl_Norman
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grLocal_All_Rig
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grAll_BaseControls
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: vizCtrl
+      position: {x: 5.97008562, y: 0, z: 3.2146616}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: vizGeo
+      position: {x: 5.97008562, y: 0, z: -3.2146616}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grAll_Ctrl
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrl_Root
+      position: {x: -0, y: 15.6141567, z: -.0548741519}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlGim_RootA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlGim_RootB
+      position: {x: -0, y: 0, z: -6.9388939e-18}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Cn_SpineE_orientRoot
+      position: {x: 1.17025013e-15, y: 7.24049139, z: -.00885145646}
+      rotation: {x: .520586014, y: -.478529274, z: -.520586014, w: .478529274}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Cn_SpineF_orientRoot
+      position: {x: 1.85693508e-15, y: 9.44450378, z: .177029133}
+      rotation: {x: .5, y: -.5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmA_orientRoot
+      position: {x: -2.70959783, y: 6.30173206, z: -.12147148}
+      rotation: {x: .70699966, y: -.0123296436, z: .0123296147, w: .706998885}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmIK_parentRoot
+      position: {x: -11.3064547, y: 6.30173254, z: -.174178675}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_FootIK_parentRoot
+      position: {x: -1.36614645, y: -15.5628691, z: .802779138}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegA_orientRoot
+      position: {x: -1.42890513, y: -1.16745293, z: .0472660959}
+      rotation: {x: .5, y: .5, z: -.5, w: -.5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Root
+      position: {x: -0, y: 0, z: 6.9388939e-18}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmA_orientRoot
+      position: {x: 2.70959997, y: 6.30174398, z: -.121471845}
+      rotation: {x: -.706998885, y: .0123296147, z: .0123296436, w: .70699966}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmIK_parentRoot
+      position: {x: 11.3064547, y: 6.30173254, z: -.174178675}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_FootIK_parentRoot
+      position: {x: 1.36614645, y: -15.5628691, z: .802779138}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegA_orientRoot
+      position: {x: 1.42891002, y: -1.16745627, z: .0472660922}
+      rotation: {x: .5, y: -.5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_BendBos
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_ArmA_PrntConstraint
+      position: {x: -4.78341532, y: 21.9158878, z: -.248699829}
+      rotation: {x: .70699966, y: -.0123296436, z: .0123296147, w: .706998885}
+      scale: {x: 2.07507944, y: 2.07507944, z: 2.07507944}
+      transformModified: 1
+    - name: ctrlBB_Lf_ArmA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmA_BBAim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_ArmB_PrntConstraint
+      position: {x: -9.08184433, y: 21.9158878, z: -.275053412}
+      rotation: {x: .707069397, y: .00730961561, z: -.00730962353, w: .707068622}
+      scale: {x: 2.22508645, y: 2.22508645, z: 2.22508645}
+      transformModified: 1
+    - name: ctrlBB_Lf_ArmB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmB_BBAim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_LegA_PrntConstraint
+      position: {x: -1.42890513, y: 11.113924, z: -.00760805607}
+      rotation: {x: .5, y: .5, z: -.5, w: -.5}
+      scale: {x: 3.33277941, y: 3.33277941, z: 3.33277941}
+      transformModified: 1
+    - name: ctrlBB_Lf_LegA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegA_BBAim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_LegB_PrntConstraint
+      position: {x: -1.42890513, y: 4.41568184, z: -.0576863997}
+      rotation: {x: -.496266454, y: -.503705859, z: .496266454, w: .503705859}
+      scale: {x: 3.36583519, y: 3.36583519, z: 3.36583519}
+      transformModified: 1
+    - name: ctrlBB_Lf_LegB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegB_BBAim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_ArmA_PrntConstraint
+      position: {x: 4.7834177, y: 21.9158993, z: -.248700097}
+      rotation: {x: -.706998885, y: .0123296147, z: .0123296436, w: .70699966}
+      scale: {x: -2.07507944, y: -2.07507944, z: -2.07507944}
+      transformModified: 1
+    - name: ctrlBB_Rt_ArmA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmA_BBAim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_ArmB_PrntConstraint
+      position: {x: 9.08184624, y: 21.9158993, z: -.275054187}
+      rotation: {x: -.707068622, y: -.00730962353, z: -.00730961561, w: .707069397}
+      scale: {x: -2.22508645, y: -2.22508645, z: -2.22508645}
+      transformModified: 1
+    - name: ctrlBB_Rt_ArmB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmB_BBAim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_LegA_PrntConstraint
+      position: {x: 1.42891002, y: 11.1139202, z: -.00760805979}
+      rotation: {x: .5, y: -.5, z: -.5, w: .5}
+      scale: {x: -3.33277941, y: -3.33277941, z: -3.33277941}
+      transformModified: 1
+    - name: ctrlBB_Rt_LegA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegA_BBAim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_LegB_PrntConstraint
+      position: {x: 1.42891002, y: 4.4156785, z: -.0576865673}
+      rotation: {x: -.503705859, y: .496266454, z: .503705859, w: -.496266454}
+      scale: {x: -3.36583519, y: -3.36583519, z: -3.36583519}
+      transformModified: 1
+    - name: ctrlBB_Rt_LegB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegB_BBAim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_Extra
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_ArmExtra
+      position: {x: -6.85723305, y: 21.9158878, z: -.321054012}
+      rotation: {x: .707069397, y: .00730961561, z: -.00730962353, w: .707068622}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlX_Lf_ArmExtra
+      position: {x: -2.40984392, y: -1.95032287, z: 2.03572426e-06}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_LegExtra
+      position: {x: -1.42890513, y: 7.78114462, z: -.00760805607}
+      rotation: {x: -.496266454, y: -.503705859, z: .496266454, w: .503705859}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlX_Lf_LegExtra
+      position: {x: -4.73167038, y: 1.73565951e-09, z: 1.99588335}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_ArmExtra
+      position: {x: 6.85723543, y: 21.9158993, z: -.32105419}
+      rotation: {x: -.707068622, y: -.00730962353, z: -.00730961561, w: .707069397}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlX_Rt_ArmExtra
+      position: {x: 2.40984178, y: 1.95032263, z: -1.32900577e-05}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_LegExtra
+      position: {x: 1.42891002, y: 7.78114128, z: -.00760805979}
+      rotation: {x: -.503705859, y: .496266454, z: .503705859, w: -.496266454}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlX_Rt_LegExtra
+      position: {x: 4.73166704, y: -4.78574478e-08, z: -1.99587846}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_IK
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Cn_Eye
+      position: {x: -0, y: 25.8253899, z: 7}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grDriv_Lf_Eye_Converge
+      position: {x: -.531346858, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrl_Lf_Eye_Converge
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: crvGuide_Lf_Eye_Pupil
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Lf_Eye_Aim
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grDriv_Rt_Eye_Converge
+      position: {x: .531346977, y: 1.0614488e-05, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrl_Rt_Eye_Converge
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: crvGuide_Rt_Eye_Pupil
+      position: {x: -1.11022302e-16, y: -3.55271368e-15, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Rt_Eye_Aim
+      position: {x: 1.11022302e-16, y: 3.55271368e-15, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_ArmIK
+      position: {x: -11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Lf_ArmIK
+      position: {x: -0, y: 0, z: -8.8817842e-16}
+      rotation: {x: 3.65200378e-07, y: -.699759424, z: -3.72830073e-07, w: .714378655}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikRP_Lf_ArmA
+      position: {x: -3.55271368e-15, y: -7.10542736e-15, z: -5.10702591e-15}
+      rotation: {x: -3.65200378e-07, y: .699759424, z: 3.72830073e-07, w: .714378655}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmC_wristOrient
+      position: {x: -3.55271368e-15, y: -7.10542736e-15, z: -5.10702591e-15}
+      rotation: {x: .5, y: .5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_ArmPV_SpaceSwitch
+      position: {x: -2.70959783, y: 21.9158878, z: -.176345631}
+      rotation: {x: -.707103431, y: .707103491, z: -.00216723094, w: .00216796878}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Lf_ArmPV
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmPV
+      position: {x: -0, y: 0, z: 1}
+      rotation: {x: -.707103431, y: .707103491, z: -.00216723094, w: -.00216796878}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_FootIK
+      position: {x: -1.36614645, y: .0512876064, z: .747904956}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Lf_LegIK
+      position: {x: -.0627587885, y: .998931646, z: -.855669737}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Lf_FootBallTwist
+      position: {x: 2.46469511e-14, y: -.61634326, z: 1.76107168}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Lf_FootHeel
+      position: {x: -4.4408921e-16, y: -.433875978, z: -2.88076544}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Lf_Heel
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Lf_FootToeTip
+      position: {x: -0, y: 0, z: 4.57851982}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Lf_ToeTip
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_FootInner
+      position: {x: 1.00523496, y: 0, z: -2.22543335}
+      rotation: {x: 0, y: -.0820954368, z: -0, w: .99662447}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Lf_FootInner
+      position: {x: -0, y: 0, z: 9.71445147e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_FootOuter
+      position: {x: -1.97585535, y: 0, z: .327740043}
+      rotation: {x: 0, y: .160217941, z: -0, w: .987081707}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Lf_FootOuter
+      position: {x: -2.77555756e-17, y: 0, z: 0}
+      rotation: {x: 0, y: -2.77555756e-17, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_FootBall
+      position: {x: .902539015, y: .433875978, z: .677576005}
+      rotation: {x: 0, y: -.0786422119, z: -0, w: .996902943}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Lf_FootBall
+      position: {x: -4.58884864e-17, y: 0, z: -2.61704699e-16}
+      rotation: {x: 0, y: -1.38777878e-17, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Lf_Ball
+      position: {x: 6.61544971e-15, y: 0, z: 1.82384524e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikHandle_Lf_Ball
+      position: {x: -9.17769727e-17, y: 0, z: -3.01364767e-16}
+      rotation: {x: -.69711256, y: -.118465528, z: .69711256, w: .118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Lf_LegIKTarget
+      position: {x: -2.46439594e-14, y: .61634326, z: -1.76107168}
+      rotation: {x: 0, y: -1.38777878e-17, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_Toe
+      position: {x: .902539015, y: .433875978, z: .677576005}
+      rotation: {x: 0, y: -.0786422119, z: -0, w: .996902943}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Lf_Toe
+      position: {x: -2.67933091e-16, y: 0, z: -7.05793909e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikHandle_Lf_Toe
+      position: {x: -1.35700839e-09, y: 2.22044605e-16, z: 1.14434886}
+      rotation: {x: 0, y: -2.77555756e-17, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_ArmIK
+      position: {x: 11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Rt_ArmIK
+      position: {x: -0, y: 0, z: -5.21804822e-15}
+      rotation: {x: -2.18172886e-06, y: .699759603, z: 2.41288378e-19, w: .714378417}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikRP_Rt_ArmA
+      position: {x: 1.1078937e-06, y: 1.12541957e-05, z: 4.52447566e-05}
+      rotation: {x: 2.18172886e-06, y: -.699759603, z: -3.04288645e-17, w: .714378417}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmC_wristOrient
+      position: {x: 1.1078937e-06, y: 1.12541957e-05, z: 4.52447566e-05}
+      rotation: {x: -.499998987, y: -.500001013, z: -.499998987, w: .500001013}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_ArmPV_SpaceSwitch
+      position: {x: 2.70959997, y: 21.9158993, z: -.176346004}
+      rotation: {x: .707103491, y: .707103491, z: -.00216758088, w: -.00216758088}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Rt_ArmPV
+      position: {x: -1.50415264e-15, y: 0, z: -1.38777878e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmPV
+      position: {x: 1.14948471e-05, y: 2.15011005e-06, z: 1.00000036}
+      rotation: {x: .707103491, y: .707103491, z: -.00216758111, w: .00216758111}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_FootIK
+      position: {x: 1.36614645, y: .0512876064, z: .747904956}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Rt_LegIK
+      position: {x: .062763609, y: .998932421, z: -.855669975}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Rt_FootBallTwist
+      position: {x: -2.42028619e-14, y: -.616343975, z: 1.76107502}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Rt_FootHeel
+      position: {x: -4.82053701e-06, y: -.433876008, z: -2.88076854}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Rt_Heel
+      position: {x: -0, y: 0, z: 2.22044605e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Rt_FootToeTip
+      position: {x: -0, y: 0, z: 4.57851982}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Rt_ToeTip
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_FootInner
+      position: {x: -1.00523496, y: 0, z: -2.22543335}
+      rotation: {x: 5.5998751e-17, y: .99662447, z: -5.5998751e-17, w: -.0820954368}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Rt_FootInner
+      position: {x: 2.77555756e-17, y: 0, z: -4.16333634e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_FootOuter
+      position: {x: -1.97585535, y: 0, z: -.327740043}
+      rotation: {x: 0, y: -.160217941, z: -0, w: .987081707}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Rt_FootOuter
+      position: {x: 6.9388939e-16, y: 0, z: -1.66533454e-16}
+      rotation: {x: 0, y: 2.77555756e-17, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_FootBall
+      position: {x: .90253377, y: .433876008, z: -.67757827}
+      rotation: {x: .0786422119, y: 6.58561367e-17, z: .996902943, w: -6.58579896e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grPiv_Rt_FootBall
+      position: {x: -4.58885691e-17, y: -6.28734648e-18, z: -3.966022e-17}
+      rotation: {x: 8.39230784e-34, y: 1.38777878e-17, z: -6.04729511e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Rt_Ball
+      position: {x: -7.37336082e-15, y: -1.17309643e-16, z: -9.2783862e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikHandle_Rt_Ball
+      position: {x: -1.83554276e-16, y: -8.4517725e-18, z: 6.34037248e-17}
+      rotation: {x: -.69711256, y: -.118465528, z: .69711256, w: .118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Rt_LegIKTarget
+      position: {x: 2.37617644e-14, y: -.616343975, z: 1.76107502}
+      rotation: {x: 1, y: -6.04729511e-17, z: -1.38777878e-17, w: 6.12323426e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_Toe
+      position: {x: .90253377, y: .433876008, z: -.67757827}
+      rotation: {x: .0786422119, y: -5.62252397e-17, z: .996902943, w: -5.62274168e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Rt_Toe
+      position: {x: 1.76156039e-16, y: -6.28734648e-18, z: 1.82384392e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikHandle_Rt_Toe
+      position: {x: -1.35701039e-09, y: -8.4517725e-18, z: -1.14435005}
+      rotation: {x: -5.05319528e-16, y: 5.55111512e-17, z: -6.12303177e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmIK_parentPin
+      position: {x: -11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_FootIK_parentPin
+      position: {x: -1.36614645, y: .0512876064, z: .747904956}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmIK_parentPin
+      position: {x: 11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_FootIK_parentPin
+      position: {x: 1.36614645, y: .0512876064, z: .747904956}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_Leg_toFoot
+      position: {x: -1.42890513, y: 1.0502193, z: -.107764751}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grIK_Lf_LegIKTarget
+      position: {x: 2.55351296e-14, y: 3.28215455e-10, z: -3.14637205e-13}
+      rotation: {x: .503705859, y: .503705859, z: -.496266454, w: .496266454}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikRP_Lf_LegA
+      position: {x: -2.22044605e-16, y: 8.8817842e-16, z: 1.72084569e-15}
+      rotation: {x: .503705859, y: .503705859, z: -.496266454, w: -.496266454}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegC_wristOrient
+      position: {x: -2.22044605e-16, y: 8.8817842e-16, z: 1.72084569e-15}
+      rotation: {x: .5, y: .5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Lf_LegPV_SpaceSwitch
+      position: {x: -1.42890513, y: 14.446703, z: -.00760805607}
+      rotation: {x: 6.10030217e-17, y: -.00373809249, z: .999993026, w: 6.14608033e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Lf_LegPV
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegPV
+      position: {x: -0, y: 0, z: 1}
+      rotation: {x: -2.28870639e-19, y: -.00373809249, z: .999993026, w: -6.12336264e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_Leg_toFoot
+      position: {x: 1.42891002, y: 1.05022001, z: -.107764997}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grIK_Rt_LegIKTarget
+      position: {x: -4.82053701e-06, y: -7.5694237e-07, z: 2.50976029e-07}
+      rotation: {x: -.496266454, y: -.496266454, z: -.503705859, w: .503705859}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikRP_Rt_LegA
+      position: {x: -2.62210449e-07, y: 4.82053701e-06, z: 7.53124482e-07}
+      rotation: {x: .496266454, y: .496266454, z: .503705859, w: .503705859}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegC_wristOrient
+      position: {x: -2.62210449e-07, y: 4.82053701e-06, z: 7.53124482e-07}
+      rotation: {x: .5, y: .5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grCon_Rt_LegPV_SpaceSwitch
+      position: {x: 1.42891002, y: 14.4467001, z: -.00760805979}
+      rotation: {x: 6.10030217e-17, y: -.00373810297, z: .999993026, w: 6.14608033e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlIK_Rt_LegPV
+      position: {x: 4.82053701e-06, y: -3.35355276e-06, z: -2.12970477e-08}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegPV
+      position: {x: -4.82053701e-06, y: 3.35355276e-06, z: 1}
+      rotation: {x: -2.2887126e-19, y: -.00373810297, z: .999993026, w: -6.12336264e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_All_Head
+      position: {x: 1.85693508e-15, y: 25.0586605, z: .122154981}
+      rotation: {x: .5, y: -.5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grTargetTo_Cn_SpineF
+      position: {x: 4.06299748e-31, y: 1.64780986e-30, z: -3.94430453e-31}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Gr_All_Face
+      position: {x: -0, y: -1.88737914e-15, z: 2.23193266e-15}
+      rotation: {x: -.5, y: .5, z: .5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_BrowCtrl
+      position: {x: -1.85693508e-15, y: -25.0586605, z: -.122154981}
+      rotation: {x: -1.04083409e-16, y: -1.11022302e-16, z: 2.77555756e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Lf_Brow
+      position: {x: -.677929401, y: 26.533062, z: 2.25223351}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Rt_Brow
+      position: {x: .677929401, y: 26.533062, z: 2.25223351}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_Eyes
+      position: {x: -1.85693508e-15, y: -25.0586605, z: -.122154981}
+      rotation: {x: -9.71445147e-17, y: -1.11022302e-16, z: 2.77555756e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_Eyelid
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grOri_Lf_Eyelid
+      position: {x: -.531346858, y: 25.8253899, z: 1.48406363}
+      rotation: {x: 0, y: -.126769021, z: -0, w: .991932273}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locDriv_Lf_EyelidLower
+      position: {x: -5.55111512e-17, y: -7.10542736e-15, z: 1.11022302e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Lf_EyelidLower
+      position: {x: -5.55111512e-17, y: -7.10542736e-15, z: 1.11022302e-16}
+      rotation: {x: 0, y: .126769021, z: -0, w: .991932273}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locDriv_Lf_EyelidUpper
+      position: {x: -5.55111512e-17, y: -7.10542736e-15, z: 1.11022302e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Lf_EyelidUpper
+      position: {x: -5.55111512e-17, y: -7.10542736e-15, z: 1.11022302e-16}
+      rotation: {x: 0, y: .126769021, z: -0, w: .991932273}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grOri_Rt_Eyelid
+      position: {x: .531346858, y: 25.8253899, z: 1.48406363}
+      rotation: {x: .991932273, y: 2.35443445e-17, z: -.126769021, w: 6.27552748e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locDriv_Rt_EyelidLower
+      position: {x: -0, y: 3.56907793e-15, z: 1.38777878e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Rt_EyelidLower
+      position: {x: 1.05057325e-06, y: -1.0614488e-05, z: 3.51591189e-06}
+      rotation: {x: .991932273, y: 8.01961613e-18, z: -.126769021, w: -5.87213929e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locDriv_Rt_EyelidUpper
+      position: {x: -0, y: 3.56907793e-15, z: 1.38777878e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Rt_EyelidUpper
+      position: {x: 1.05057325e-06, y: -1.0614488e-05, z: 3.51591189e-06}
+      rotation: {x: .991932273, y: 8.01961613e-18, z: -.126769021, w: -5.87213929e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_EyelidClusters
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: dClus_Lf_EyelidLowerHandle
+      position: {x: -.531346858, y: 25.8253899, z: 1.48406363}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: dClus_Lf_EyelidUpperHandle
+      position: {x: -.531346858, y: 25.8253899, z: 1.48406363}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: dClus_Rt_EyelidLowerHandle
+      position: {x: .531346977, y: 25.8253994, z: 1.48406005}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: dClus_Rt_EyelidUpperHandle
+      position: {x: .531346977, y: 25.8253994, z: 1.48406005}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Lf_Eye
+      position: {x: -.531346858, y: 25.8253899, z: 1.48406363}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Lf_EyeArea
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 1.04083409e-16, y: 1.11022302e-16, z: -2.77555756e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_Eye
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_Eye
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_Eye
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 1.11022302e-16, y: 1.11022302e-16, z: -1.23259516e-32, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Rt_Eye
+      position: {x: .531346977, y: 25.8253994, z: 1.48406005}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Rt_EyeArea
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 1.04083409e-16, y: 1.11022302e-16, z: -2.77555756e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_Eye
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_Eye
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_Eye
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 1.11022302e-16, y: 1.11022302e-16, z: -1.23259516e-32, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Cn_EyeCtrlOrient
+      position: {x: -0, y: 25.8253899, z: 1.48406363}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_MouthCtrl
+      position: {x: -1.85693508e-15, y: -25.0586605, z: -.122154981}
+      rotation: {x: -1.04083409e-16, y: -1.11022302e-16, z: 2.77555756e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Cn_Lips
+      position: {x: .00146001438, y: 24.267683, z: 2.27809811}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Lf_Lips
+      position: {x: -.619810402, y: 24.267683, z: 2.27809811}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Rt_Lips
+      position: {x: .619810402, y: 24.267683, z: 2.27809811}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_TeethUpper
+      position: {x: -1.85693508e-15, y: -25.0586605, z: -.122154981}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grZ_Cn_TeethUpper_Rig
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grDriv_Cn_TeethUpper
+      position: {x: -0, y: 24.9530926, z: .711526394}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Cn_TeethUpper
+      position: {x: 2.23193266e-15, y: -1.90734863e-06, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TeethUpper
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Cn_TeethUpper
+      position: {x: -1.68864334, y: 24.9530926, z: .711526394}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_Jaw
+      position: {x: -1.85693508e-15, y: -.105568543, z: .589371443}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Cn_Jaw
+      position: {x: 2.09309719e-15, y: 6.10947609e-07, z: 0}
+      rotation: {x: 1.04083409e-16, y: 1.11022302e-16, z: -2.77555756e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_Cn_InsideMouth_Rig
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_All_TeethLower
+      position: {x: 7.88860905e-31, y: -24.9530926, z: -.711526394}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grZ_Cn_TeethLower_Rig
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grDriv_Cn_TeethLower
+      position: {x: -0, y: 24.9530926, z: .711526394}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Cn_TeethLower
+      position: {x: 2.23193266e-15, y: -1.90734863e-06, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TeethLower
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Cn_TeethLower
+      position: {x: -1.68864334, y: 24.9530926, z: .711526394}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TongueA
+      position: {x: -1.68864334, y: -.970740199, z: -.226519048}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFaceFK_All_TongueA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: crvTemplate_Cn_TongeVisualization
+      position: {x: -4.4408921e-16, y: .0909708589, z: .513537824}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TongueB
+      position: {x: -0, y: .111505099, z: .642488122}
+      rotation: {x: .0487537906, y: .70542407, z: .0487537906, w: .70542407}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFaceFK_Cn_TongueB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFaceIK_Cn_TongueB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFaceIK_Cn_TongueC
+      position: {x: -.417517304, y: -.000455054018, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TongueA_Bind
+      position: {x: 7.88860905e-31, y: -.970740199, z: -.226519048}
+      rotation: {x: .999442756, y: -.0333794616, z: -3.16908212e-17, w: 9.48881671e-16}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Cn_TongueA
+      position: {x: -3.67232405e-16, y: -5.13947001e-18, z: -8.79403966e-17}
+      rotation: {x: .698399782, y: .110624604, z: .689462423, w: .156976536}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Cn_TongueB
+      position: {x: -.268892705, y: -7.10542736e-15, z: 6.02231624e-17}
+      rotation: {x: 1.42041166e-14, y: 6.2018824e-14, z: .179347634, w: .983785808}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Cn_TongueC
+      position: {x: -.192869127, y: 7.10542736e-15, z: 6.69211416e-17}
+      rotation: {x: 4.04473267e-15, y: 4.06706563e-14, z: .044978831, w: .998987973}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Cn_TongueD
+      position: {x: -.21068418, y: 3.55271368e-15, z: 8.01631783e-17}
+      rotation: {x: -1.68796577e-17, y: 1.65087992e-14, z: .00215014582, w: .999997675}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Cn_TongueE
+      position: {x: -.19442068, y: 3.55271368e-15, z: 7.39198705e-17}
+      rotation: {x: 1.49091861e-17, y: 4.85138713e-15, z: .0124236112, w: .999922812}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Cn_TongueF
+      position: {x: -.151298985, y: -3.55271368e-15, z: 5.76043218e-17}
+      rotation: {x: -3.68763644e-20, y: 2.34344079e-16, z: .0218093712, w: .999762177}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntBind_Cn_TongueG
+      position: {x: -.140002668, y: -3.55271368e-15, z: 5.27755723e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TongueA_Driv
+      position: {x: 7.88860905e-31, y: -.970740199, z: -.226519048}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grDriv_Cn_TongueA_FK
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Cn_TongueA_TwistOrient
+      position: {x: -0, y: 2.27018404e-12, z: 4.11892742e-14}
+      rotation: {x: -.152495757, y: .690467298, z: -.152495757, w: .690467298}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TongueB_Driv
+      position: {x: -0, y: .111505099, z: .642488122}
+      rotation: {x: .0487537906, y: .70542407, z: .0487537906, w: .70542407}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grDriv_Cn_TongueB_FK
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grDriv_Cn_TongueB_IK
+      position: {x: .000932295108, y: -.00671252469, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TongueSplineB
+      position: {x: -2.19870925, y: 24.0265999, z: 5.90215878e-14}
+      rotation: {x: .70542407, y: .0487537906, z: -.70542407, w: .0487537906}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: dClus_Cn_TongueSplineB
+      position: {x: -9.86705392e-19, y: 24.1456718, z: 1.00836039}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grDriv_Cn_TongueC_IK
+      position: {x: -.417517304, y: -.000455054018, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Cn_TongueC_TwistOrient
+      position: {x: -.080082491, y: .00336459093, z: 1.01275526e-15}
+      rotation: {x: -3.93821881e-16, y: -9.98676462e-17, z: -.0030502486, w: .999995351}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TongueSplineC
+      position: {x: -1.78025973, y: 24.0203419, z: 5.90215878e-14}
+      rotation: {x: .70542407, y: .0487537906, z: -.70542407, w: .0487537906}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: dClus_Cn_TongueSplineC
+      position: {x: -8.34877826e-17, y: 24.0389385, z: 1.52178121}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_TongueSplineA
+      position: {x: -0, y: -23.9823513, z: -.485007346}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: dClus_Cn_TongueSplineA
+      position: {x: -1.27592859e-33, y: 24.0464725, z: .575242221}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Cn_Nose
+      position: {x: -1.85693508e-15, y: -.0297639184, z: 1.87689245}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Cn_Nose
+      position: {x: 2.28859959e-15, y: -2.57045031e-07, z: 0}
+      rotation: {x: 1.04083409e-16, y: 1.11022302e-16, z: -2.77555756e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_Ear
+      position: {x: -1.3766185, y: .307498813, z: .215679422}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Lf_Ear
+      position: {x: 3.57627869e-07, y: -1.78813934e-06, z: -1.49011612e-08}
+      rotation: {x: 1.11583078e-16, y: 1.03482042e-16, z: .0698399693, w: .997558236}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_Ear
+      position: {x: 1.37662005, y: .307539672, z: .21567902}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFace_Rt_Ear
+      position: {x: 3.57627869e-07, y: 6.94394112e-06, z: 8.94069672e-08}
+      rotation: {x: .997558236, y: -.0698399693, z: -1.19861793e-16, w: -6.97738692e-17}
+      scale: {x: .99999994, y: .99999994, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_ArmA
+      position: {x: -2.70959783, y: 21.9158878, z: -.176345631}
+      rotation: {x: 2.021766e-16, y: -9.66240976e-16, z: 4.16333634e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Lf_ArmA
+      position: {x: -4.4408921e-16, y: 3.55271368e-15, z: -4.21884749e-15}
+      rotation: {x: .70699966, y: -.0123296436, z: .0123296147, w: .706998885}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlGim_Lf_ArmA
+      position: {x: 1.06685494e-16, y: 0, z: 2.1021346e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_ArmA
+      position: {x: 1.06685494e-16, y: 0, z: 2.1021346e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_ArmB
+      position: {x: -4.15015888, y: 2.22044605e-16, z: -8.14025937e-15}
+      rotation: {x: 0, y: 0, z: -.0277715884, w: .999614298}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_ArmC
+      position: {x: -4.4501729, y: -5.55111512e-16, z: -2.70794273e-15}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_ArmA
+      position: {x: 1.06685494e-16, y: 0, z: 2.1021346e-17}
+      rotation: {x: -2.32925501e-08, y: 6.69712896e-10, z: -2.94039982e-23, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_ArmB
+      position: {x: -4.15015888, y: 2.22044605e-16, z: -8.14025937e-15}
+      rotation: {x: 1.98188235e-30, y: 3.75545656e-29, z: -.0277715884, w: .999614298}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_ArmC
+      position: {x: -4.4501729, y: -5.55111512e-16, z: -2.70794273e-15}
+      rotation: {x: 2.32566215e-08, y: 1.2932424e-09, z: 1.11022302e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_ArmA
+      position: {x: 1.06685494e-16, y: 0, z: 2.1021346e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_ArmAa
+      position: {x: 3.77551807e-16, y: 4.20080146e-15, z: 3.51066654e-15}
+      rotation: {x: -8.42808845e-08, y: 1.46980494e-09, z: -2.63377586e-09, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_ArmAb
+      position: {x: -4.10865736, y: 1.0655306e-08, z: 2.45040553e-07}
+      rotation: {x: -8.42808845e-08, y: 1.46980494e-09, z: -2.63377586e-09, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_ArmB
+      position: {x: -4.15015888, y: 2.22044605e-16, z: -8.14025937e-15}
+      rotation: {x: 0, y: 0, z: -.0277715884, w: .999614298}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_ArmBa
+      position: {x: -9.46298542e-07, y: -1.59135325e-07, z: -5.4745301e-06}
+      rotation: {x: -1.2642019e-07, y: -2.62408006e-09, z: 4.35688596e-10, w: 1}
+      scale: {x: .999999762, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: jntRig_Lf_ArmBb
+      position: {x: -4.40567398, y: -1.3149824e-07, z: -5.4735151e-06}
+      rotation: {x: -1.2642019e-07, y: -2.62408006e-09, z: 4.35688596e-10, w: 1}
+      scale: {x: .999999762, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: jntRig_Lf_ArmC
+      position: {x: -4.4501729, y: -5.55111512e-16, z: -2.70794273e-15}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Lf_Hand
+      position: {x: 1.67637822e-07, y: 1.26343636e-09, z: 1.28140361e-08}
+      rotation: {x: -.707069397, y: -.00730961468, z: .00730962446, w: .707068622}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Lf_ArmA
+      position: {x: 1.06685494e-16, y: 0, z: 2.1021346e-17}
+      rotation: {x: -2.32925501e-08, y: 6.69712896e-10, z: -2.94039982e-23, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Lf_ArmB
+      position: {x: -4.14684629, y: .119231105, z: 5.55438362e-09}
+      rotation: {x: 1.98188235e-30, y: 3.75545656e-29, z: -.0277715884, w: .999614298}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Lf_ArmC
+      position: {x: -4.44686031, y: -.119231105, z: 5.95591132e-09}
+      rotation: {x: 2.32566215e-08, y: 1.2932424e-09, z: 1.11022302e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Lf_ArmA
+      position: {x: 1.06685494e-16, y: 0, z: 2.1021346e-17}
+      rotation: {x: -2.32925501e-08, y: 6.69712896e-10, z: -2.94039982e-23, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Lf_ArmB
+      position: {x: -4.15015888, y: 2.22044605e-16, z: -8.14025937e-15}
+      rotation: {x: 1.98188235e-30, y: 3.75545656e-29, z: -.0277715884, w: .999614298}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Lf_ArmC
+      position: {x: -4.4501729, y: -5.55111512e-16, z: -2.70794273e-15}
+      rotation: {x: 2.32566215e-08, y: 1.2932424e-09, z: 1.11022302e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_FootA
+      position: {x: -1.42890513, y: 1.0502193, z: -.107764751}
+      rotation: {x: -.69711256, y: -.118465528, z: .69711256, w: .118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Lf_FootA
+      position: {x: -2.09351647e-09, y: -7.15170145e-10, z: 5.09610842e-09}
+      rotation: {x: 8.42183551e-17, y: -1.61380456e-08, z: 3.3570462e-08, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntFK_Lf_FootA
+      position: {x: -1.38777878e-17, y: -9.88518882e-17, z: 0}
+      rotation: {x: 1.52455321e-15, y: -1.09261058e-14, z: -5.55111512e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FootB
+      position: {x: -1.86581147, y: 1.16272266e-16, z: 5.99520433e-14}
+      rotation: {x: .69711256, y: .118465528, z: -.69711256, w: .118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Lf_FootC
+      position: {x: -7.2446091e-14, y: -4.63761689e-17, z: 1.14434886}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_FootA
+      position: {x: -1.38777878e-17, y: -9.88518882e-17, z: 0}
+      rotation: {x: -1.79489545e-09, y: 1.47723789e-08, z: -3.37621131e-08, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_FootB
+      position: {x: -1.86581147, y: 1.16272266e-16, z: 5.99520433e-14}
+      rotation: {x: .69711256, y: .118465528, z: -.69711256, w: .118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_FootC
+      position: {x: -7.2446091e-14, y: -4.63761689e-17, z: 1.14434886}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_FootA
+      position: {x: -5.83825042e-08, y: 1.05848919e-07, z: -5.0961062e-09}
+      rotation: {x: -4.15511465e-08, y: -7.06109438e-09, z: 0, w: 1}
+      scale: {x: 1, y: .99999994, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_FootB
+      position: {x: -1.86581123, y: 1.2339882e-07, z: 6.72416345e-09}
+      rotation: {x: .69711256, y: .11846552, z: -.69711256, w: .11846552}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_FootC
+      position: {x: -7.2446091e-14, y: -4.63761689e-17, z: 1.14434886}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_Hand
+      position: {x: -11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Lf_Hand
+      position: {x: -1.0658141e-14, y: -1.28140414e-08, z: -1.7791324e-14}
+      rotation: {x: 2.97633584e-11, y: -1.41466699e-15, z: 1.43941581e-09, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlGim_Lf_Wrist
+      position: {x: 1.06950302e-14, y: 1.28140414e-08, z: 1.77905616e-14}
+      rotation: {x: -.0160225406, y: -.000801127055, z: .671108246, w: .741185784}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_Lf_SDKHandControls
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Lf_FingerA
+      position: {x: -.888715923, y: 1.77969444, z: .550745606}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Lf_FingerB
+      position: {x: -.888715923, y: 2.45462847, z: .407048494}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Lf_FingerC
+      position: {x: -.888715923, y: 2.45462847, z: .104218736}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Lf_FingerD
+      position: {x: -.888715923, y: 2.45462847, z: -.188320652}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Lf_FingerE
+      position: {x: -.888715923, y: 2.45462847, z: -.455134153}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Lf_Hand
+      position: {x: -.888715923, y: 1.27969658, z: -.024042828}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerAa
+      position: {x: -.329665124, y: -.156359583, z: .541271389}
+      rotation: {x: -.699642539, y: -.0205973312, z: .370489001, w: .610584915}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerAa
+      position: {x: -4.10136138e-08, y: -2.60034511e-07, z: 5.52099345e-06}
+      rotation: {x: -7.90744323e-08, y: 1.19417258e-08, z: 7.62038344e-09, w: 1}
+      scale: {x: 1.00000024, y: 1.00000048, z: 1.00000024}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerAb
+      position: {x: -.859193861, y: 8.8817842e-16, z: 8.8817842e-16}
+      rotation: {x: 0, y: 0, z: -.0958826616, w: .99539268}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerAb
+      position: {x: -1.83452897e-07, y: 3.18890841e-07, z: -6.63802439e-06}
+      rotation: {x: 9.59156239e-08, y: 2.02793942e-08, z: 1.25059536e-08, w: 1}
+      scale: {x: .999999762, y: .999999106, z: .999999523}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerAc
+      position: {x: -.66246599, y: -8.8817842e-16, z: 8.8817842e-16}
+      rotation: {x: 0, y: 0, z: .0630685687, w: .998009205}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerAc
+      position: {x: 7.43985822e-07, y: 1.81207326e-07, z: -1.95222447e-06}
+      rotation: {x: -2.21728449e-08, y: -1.62813372e-08, z: -6.01893433e-08, w: 1}
+      scale: {x: 1, y: .999999881, z: 1}
+      transformModified: 1
+    - name: jntEnd_Lf_FingerAd
+      position: {x: -.876859605, y: 0, z: 8.8817842e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_Palm
+      position: {x: -1.05958724, y: .0322559103, z: -.0252588801}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerCa
+      position: {x: -.892654836, y: .176116198, z: .159073904}
+      rotation: {x: .999985397, y: -.0054032458, z: -3.30853401e-19, w: 6.12314493e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerCa
+      position: {x: 1.78803489e-07, y: -1.93232319e-09, z: -2.36641336e-25}
+      rotation: {x: 1.68460611e-28, y: -8.28752492e-26, z: 9.31308974e-10, w: 1}
+      scale: {x: 1, y: .999999762, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerCb
+      position: {x: -.68171376, y: 4.74620343e-15, z: -2.31853663e-17}
+      rotation: {x: 0, y: 0, z: -.00580013031, w: .999983191}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerCb
+      position: {x: -2.88406113e-06, y: -3.16899695e-06, z: 2.31849825e-17}
+      rotation: {x: -4.12267867e-21, y: 2.35000354e-23, z: -1.01863395e-09, w: 1}
+      scale: {x: 1, y: 1.00000024, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerCc
+      position: {x: -.5, y: 8.27810043e-15, z: 4.68652477e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerCc
+      position: {x: -5.96046448e-08, y: -1.61448511e-07, z: -4.61549907e-17}
+      rotation: {x: -5.98933398e-29, y: 5.34631142e-27, z: -8.73114844e-11, w: 1}
+      scale: {x: 1, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: jntEnd_Lf_FingerCd
+      position: {x: -.699303389, y: 2.90809044e-14, z: -1.04864995e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerDa
+      position: {x: -.892654836, y: .136226103, z: -.316004336}
+      rotation: {x: 1, y: 0, z: -0, w: 6.12323426e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerDa
+      position: {x: 1.78813934e-07, y: -1.71363354e-06, z: -2.98023224e-08}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerDb
+      position: {x: -.60790211, y: 3.55271368e-15, z: 0}
+      rotation: {x: 0, y: 0, z: -.00580013031, w: .999983191}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerDb
+      position: {x: -1.37081463e-06, y: -1.59026126e-08, z: 0}
+      rotation: {x: .437942892, y: -.459528923, z: .513337255, w: .577515423}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerDc
+      position: {x: -.512301922, y: 5.77315973e-15, z: 1.11022302e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerDc
+      position: {x: -5.96046448e-07, y: -1.35260859e-06, z: -1.11022329e-16}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Lf_FingerDd
+      position: {x: -.571188748, y: -9.2148511e-15, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_PalmCupA
+      position: {x: -2.38418579e-07, y: 1.16974115e-06, z: .0499999933}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerBa
+      position: {x: -.892654836, y: .164890796, z: .572183967}
+      rotation: {x: .999999046, y: -.00138445292, z: -8.47732949e-20, w: 6.12322831e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerBa
+      position: {x: 4.13352495e-07, y: -1.40185909e-06, z: -1.71678221e-22}
+      rotation: {x: -6.61743859e-24, y: 9.16154089e-27, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerBb
+      position: {x: -.598922014, y: 6.30051566e-15, z: 4.69886358e-18}
+      rotation: {x: 0, y: 0, z: -.00580013031, w: .999983191}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerBb
+      position: {x: -2.07406811e-06, y: -1.05464585e-06, z: -5.96046448e-08}
+      rotation: {x: -4.12281196e-21, y: 2.35213946e-23, z: -9.31313415e-10, w: 1}
+      scale: {x: 1, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerBc
+      position: {x: -.440159172, y: -2.83106871e-15, z: 4.84810764e-18}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerBc
+      position: {x: 4.47034836e-07, y: 1.90749779e-06, z: -4.84812832e-18}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Lf_FingerBd
+      position: {x: -.575188935, y: -1.1379786e-15, z: -1.61490312e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_PalmCupB
+      position: {x: -2.38418579e-07, y: 1.16974115e-06, z: -.0500000156}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerEa
+      position: {x: -.892654836, y: .0317779519, z: -.661294818}
+      rotation: {x: .999758244, y: -.00336776744, z: -.0189493783, w: -.0106328018}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerEa
+      position: {x: -1.51861661e-06, y: -6.08855862e-06, z: 4.25137017e-07}
+      rotation: {x: -9.33648492e-10, y: 1.86038007e-09, z: -4.67705874e-10, w: 1}
+      scale: {x: 1, y: .999999762, z: 1}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerEb
+      position: {x: -.381370038, y: -1.52655666e-15, z: 3.33066907e-16}
+      rotation: {x: 0, y: 0, z: -.00872653536, w: .999961913}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerEb
+      position: {x: 6.71574026e-06, y: 1.31342222e-05, z: -1.00170257e-06}
+      rotation: {x: 1.88093696e-09, y: -1.84717275e-09, z: 4.50535248e-10, w: 1}
+      scale: {x: .999999881, y: 1.00000048, z: .999999523}
+      transformModified: 1
+    - name: jntDriv_Lf_FingerEc
+      position: {x: -.375314236, y: 4.3298698e-15, z: 1.44328993e-15}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_FingerEc
+      position: {x: 2.86102295e-06, y: 4.33695459e-06, z: -5.20430604e-07}
+      rotation: {x: 8.78044859e-12, y: 5.02809946e-12, z: 4.65544658e-10, w: 1}
+      scale: {x: .999999821, y: 1.00000024, z: .999999762}
+      transformModified: 1
+    - name: jntEnd_Lf_FingerEd
+      position: {x: -.486225009, y: 2.62567745e-14, z: -2.49800181e-14}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_LegA
+      position: {x: -1.42890513, y: 14.446703, z: -.00760805607}
+      rotation: {x: 1.22679644e-14, y: 0, z: 5.55111512e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Lf_LegA
+      position: {x: -0, y: 0, z: 1.38777878e-17}
+      rotation: {x: -.5, y: -.5, z: .5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlGim_Lf_LegA
+      position: {x: -1.5695101e-16, y: 3.82620742e-19, z: 2.22044605e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_LegA
+      position: {x: -1.5695101e-16, y: 3.82620742e-19, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_LegB
+      position: {x: -6.66555882, y: 3.33966271e-16, z: 6.66133815e-16}
+      rotation: {x: 0, y: 0, z: -.00743942102, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_LegC
+      position: {x: -6.73167038, y: 1.61308711e-15, z: 4.4408921e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_LegA
+      position: {x: -1.5695101e-16, y: 3.82620742e-19, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_LegB
+      position: {x: -6.66555882, y: 3.33966271e-16, z: 6.66133815e-16}
+      rotation: {x: -4.30089315e-32, y: -1.16365684e-30, z: -.00743942102, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Lf_LegC
+      position: {x: -6.73167038, y: 1.61308711e-15, z: 4.4408921e-16}
+      rotation: {x: 2.96984659e-15, y: 2.22044605e-16, z: 3.33066907e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_LegA
+      position: {x: -1.5695101e-16, y: 3.82620742e-19, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_LegAa
+      position: {x: 3.13902019e-16, y: 1.31125465e-17, z: -2.22044605e-16}
+      rotation: {x: 0, y: 0, z: 0, w: -1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_LegAb
+      position: {x: -6.5989027, y: -1.61897093e-13, z: 5.10580767e-16}
+      rotation: {x: 0, y: 0, z: 0, w: -1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_LegB
+      position: {x: -6.66555882, y: 3.33966271e-16, z: 6.66133815e-16}
+      rotation: {x: 0, y: 0, z: -.00743942102, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Lf_LegBa
+      position: {x: 1.43024226e-06, y: 2.8733357e-08, z: 1.1920929e-07}
+      rotation: {x: -2.95797857e-08, y: -3.00232088e-08, z: 4.43423076e-10, w: 1}
+      scale: {x: 1.00000048, y: 1.00000012, z: 1.00000024}
+      transformModified: 1
+    - name: jntRig_Lf_LegBb
+      position: {x: -6.66435289, y: 2.4584887e-08, z: 1.1920929e-07}
+      rotation: {x: -2.95797857e-08, y: -3.00232088e-08, z: 4.43423076e-10, w: 1}
+      scale: {x: 1.00000048, y: 1.00000012, z: 1.00000024}
+      transformModified: 1
+    - name: jntRig_Lf_LegC
+      position: {x: -6.7316699, y: 7.55090657e-09, z: 5.99130015e-16}
+      rotation: {x: -2.95797857e-08, y: -3.00232088e-08, z: 4.43423076e-10, w: 1}
+      scale: {x: 1.00000024, y: 1.00000012, z: 1.00000012}
+      transformModified: 1
+    - name: locTarg_Lf_FootA
+      position: {x: -4.46836097e-08, y: -4.76535644e-10, z: 5.0961102e-09}
+      rotation: {x: 1.60733666e-08, y: -8.30812397e-09, z: .584698498, w: .811250687}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Lf_LegA
+      position: {x: -1.5695101e-16, y: 3.82620742e-19, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Lf_LegB
+      position: {x: -6.66518784, y: .0498312227, z: 6.66133815e-16}
+      rotation: {x: -4.30089315e-32, y: -1.16365684e-30, z: -.00743942102, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Lf_LegC
+      position: {x: -6.73129988, y: -.0498312227, z: 1.11022302e-15}
+      rotation: {x: 2.96984659e-15, y: 2.22044605e-16, z: 3.33066907e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Lf_LegA
+      position: {x: -1.5695101e-16, y: 3.82620742e-19, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Lf_LegB
+      position: {x: -6.66555882, y: 3.33966271e-16, z: 6.66133815e-16}
+      rotation: {x: -4.30089315e-32, y: -1.16365684e-30, z: -.00743942102, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Lf_LegC
+      position: {x: -6.73167038, y: 1.61308711e-15, z: 4.4408921e-16}
+      rotation: {x: 2.96984659e-15, y: 2.22044605e-16, z: 3.33066907e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Root_Rig
+      position: {x: -0, y: 15.6141567, z: -.0548741519}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Root
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Cn_HipA
+      position: {x: -3.18170638e-23, y: 0, z: -1.49011612e-08}
+      rotation: {x: -.461568087, y: -.535681725, z: .461568087, w: .535681725}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Cn_HipB
+      position: {x: -2.56346774, y: 2.22044605e-16, z: -5.69204182e-16}
+      rotation: {x: 0, y: 0, z: -.50039047, w: .865799844}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Lf_LegA_HeirarchyConstraint
+      position: {x: -1.14764082, y: -.219319269, z: 1.42890513}
+      rotation: {x: -1.21235089e-14, y: -8.96881048e-16, z: .0741136372, w: .997249842}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Rt_LegA_HeirarchyConstraint
+      position: {x: -1.14764416, y: -.219319761, z: -1.42891002}
+      rotation: {x: 8.37408377e-16, y: -1.19615477e-14, z: .997249842, w: -.0741136372}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmIK_parentHips
+      position: {x: 6.20675659, y: 1.1037848, z: 11.3064547}
+      rotation: {x: .461568087, y: .535681725, z: -.461568087, w: .535681725}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_FootIK_parentHips
+      position: {x: -15.2732334, y: -3.09445715, z: 1.36614645}
+      rotation: {x: .461568087, y: .535681725, z: -.461568087, w: .535681725}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegA_orientParent
+      position: {x: -1.14764082, y: -.219319269, z: 1.42890513}
+      rotation: {x: -1.21235089e-14, y: -8.96881048e-16, z: .0741136372, w: .997249842}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegPV_parentLocal
+      position: {x: -1.14764082, y: -.219319269, z: 1.42890513}
+      rotation: {x: .533952594, y: -.463567287, z: .533952594, w: .463567287}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmIK_parentHips
+      position: {x: 6.20675659, y: 1.1037848, z: -11.3064547}
+      rotation: {x: .461568087, y: .535681725, z: -.461568087, w: .535681725}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_FootIK_parentHips
+      position: {x: -15.2732334, y: -3.09445715, z: -1.36614645}
+      rotation: {x: .461568087, y: .535681725, z: -.461568087, w: .535681725}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegA_orientParent
+      position: {x: -1.14764416, y: -.219319761, z: -1.42891002}
+      rotation: {x: 8.37408377e-16, y: -1.19615477e-14, z: .997249842, w: -.0741136372}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegPV_parentLocal
+      position: {x: -1.14764416, y: -.219319761, z: -1.42891002}
+      rotation: {x: .533952594, y: -.463567287, z: .533952594, w: .463567287}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Cn_SpineA
+      position: {x: -1.34679635e-23, y: -9.53674316e-07, z: -7.82310963e-08}
+      rotation: {x: .515286565, y: -.484231114, z: -.515286565, w: .484231114}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Cn_SpineB
+      position: {x: -1.85353088, y: -4.82169433e-08, z: -3.4293226e-09}
+      rotation: {x: 3.07134727e-08, y: -2.88624236e-08, z: .0639034957, w: .997956097}
+      scale: {x: .999999881, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Cn_SpineC
+      position: {x: -1.48139572, y: 5.27052677e-08, z: -5.27590749e-10}
+      rotation: {x: -2.88062871e-08, y: 3.0766131e-08, z: .0213739555, w: .999771595}
+      scale: {x: .99999994, y: .99999994, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Cn_SpineD
+      position: {x: -1.83062613, y: 3.95785349e-07, z: -1.26199311e-07}
+      rotation: {x: 3.09971604e-08, y: -2.85575368e-08, z: -.0950600058, w: .995471537}
+      scale: {x: 1, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: Gr_All_Chest
+      position: {x: 20.673336, y: 1.9328301, z: 5.75084592e-15}
+      rotation: {x: .520046055, y: -.479115963, z: -.520046055, w: -.479115963}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Cn_SpineE_orientParent
+      position: {x: 1.40645914e-15, y: 22.8546486, z: -.0637256056}
+      rotation: {x: .520586014, y: -.478529274, z: -.520586014, w: .478529274}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Cn_SpineF_orientChest
+      position: {x: 1.85693508e-15, y: 25.0586605, z: .122154981}
+      rotation: {x: .5, y: -.5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmA_orientChest
+      position: {x: -2.70959783, y: 21.9158878, z: -.176345631}
+      rotation: {x: .70699966, y: -.0123296436, z: .0123296147, w: .706998885}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmIK_parentChest
+      position: {x: -11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 1.31838984e-16, y: -1.20102999e-16, z: 2.73835908e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmA_orientChest
+      position: {x: 2.70959997, y: 21.9158993, z: -.176346004}
+      rotation: {x: -.706998885, y: .0123296147, z: .0123296436, w: .70699966}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmIK_parentChest
+      position: {x: 11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 1.31838984e-16, y: -1.20102999e-16, z: 2.73835908e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Lf_Clavicle_FK
+      position: {x: -.531556189, y: 21.9158878, z: .343648493}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Lf_Clavicle
+      position: {x: 5.36441803e-07, y: 3.81469727e-06, z: 8.94069672e-08}
+      rotation: {x: -.702257693, y: .0826682299, z: -.0826682076, w: -.702257991}
+      scale: {x: 1, y: .999999762, z: .999999881}
+      transformModified: 1
+    - name: jntTarg_Lf_Shoulder
+      position: {x: -2.23925424, y: 3.33066907e-16, z: 6.00283515e-16}
+      rotation: {x: 0, y: 0, z: -.0995755717, w: .995030046}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Lf_ArmA_HeirarchyConstraint
+      position: {x: -2.23925424, y: 3.33066907e-16, z: 6.89945181e-16}
+      rotation: {x: 6.61114029e-07, y: -6.61596147e-08, z: -.0995755717, w: .995030046}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmA_orientParent
+      position: {x: -2.23925424, y: 3.33066907e-16, z: 6.89945181e-16}
+      rotation: {x: 6.61114029e-07, y: -6.61596147e-08, z: -.0995755717, w: .995030046}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmPV_parentLocal
+      position: {x: -2.23925424, y: 3.33066907e-16, z: 6.89945181e-16}
+      rotation: {x: .439815342, y: -.553680897, z: .439815342, w: .553680897}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_Clavicle_FK
+      position: {x: .53155601, y: 21.9158993, z: .343649}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_Clavicle
+      position: {x: 8.34465027e-07, y: 3.81469727e-06, z: 5.96046448e-08}
+      rotation: {x: .702257991, y: -.082668215, z: -.0826682299, w: -.702257693}
+      scale: {x: 1, y: .999999762, z: .999999881}
+      transformModified: 1
+    - name: jntTarg_Rt_Shoulder
+      position: {x: 2.23925662, y: 3.0606742e-07, z: 9.0920232e-14}
+      rotation: {x: 0, y: 0, z: -.0995755717, w: .995030046}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Rt_ArmA_HeirarchyConstraint
+      position: {x: 2.23925662, y: 3.0606742e-07, z: 8.3112743e-14}
+      rotation: {x: 6.61114029e-07, y: -6.61596147e-08, z: -.0995755717, w: .995030046}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmA_orientParent
+      position: {x: 2.23925662, y: 3.0606742e-07, z: 8.3112743e-14}
+      rotation: {x: 6.61114029e-07, y: -6.61596147e-08, z: -.0995755717, w: .995030046}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmPV_parentLocal
+      position: {x: 2.23925662, y: 3.0606742e-07, z: 8.3112743e-14}
+      rotation: {x: .553680897, y: .439815342, z: .553680897, w: -.439815342}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Cn_SpineE
+      position: {x: -2.09952402, y: 6.66133815e-16, z: -7.30364376e-16}
+      rotation: {x: -2.77555789e-17, y: 5.55111578e-17, z: -.00112758833, w: .999999404}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Cn_SpineE
+      position: {x: -1.90676144e-06, y: -2.62540482e-07, z: -2.63792849e-10}
+      rotation: {x: -2.85225639e-08, y: -3.10293409e-08, z: 5.95519047e-08, w: 1}
+      scale: {x: 1, y: .99999994, z: 1}
+      transformModified: 1
+    - name: jntCon_Cn_SpineF
+      position: {x: -2.21183705, y: -8.8817842e-16, z: -1.1695832e-15}
+      rotation: {x: 0, y: 0, z: .0420567133, w: .999115229}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Cn_SpineF
+      position: {x: 7.44054887e-06, y: 2.76678946e-07, z: 1.42802946e-07}
+      rotation: {x: 4.470348e-08, y: 4.470348e-08, z: -4.470348e-08, w: 1}
+      scale: {x: 1.00000012, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Cn_SpineG
+      position: {x: -3.01834655, y: -1.61408301e-15, z: -3.05461193e-15}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: loc_All_Face
+      position: {x: 3.06141023e-31, y: -8.14075642e-19, z: -7.88860905e-31}
+      rotation: {x: -.5, y: .5, z: .5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmIK_parentHead
+      position: {x: 3.14277148, y: -.351207793, z: 11.3064547}
+      rotation: {x: -.5, y: .5, z: .5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmIK_parentHead
+      position: {x: 3.14277148, y: -.351207793, z: -11.3064547}
+      rotation: {x: -.5, y: .5, z: .5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Cn_SpineF_orientParent
+      position: {x: -2.21183705, y: -8.8817842e-16, z: -1.1695832e-15}
+      rotation: {x: -3.45693667e-17, y: -6.41468018e-18, z: .0420567133, w: .999115229}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_ArmA
+      position: {x: 2.70959997, y: 21.9158993, z: -.176346004}
+      rotation: {x: 6.66513286e-17, y: 1.04083409e-17, z: -1.73472348e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Rt_ArmA
+      position: {x: -4.4408921e-16, y: 3.55271368e-15, z: -5.16253706e-15}
+      rotation: {x: -.706998885, y: .0123296147, z: .0123296436, w: .70699966}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlGim_Rt_ArmA
+      position: {x: -0, y: 0, z: -3.07913841e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_ArmA
+      position: {x: -0, y: 0, z: -3.07913841e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_ArmB
+      position: {x: 4.15015888, y: -2.03290014e-07, z: -2.40513486e-07}
+      rotation: {x: -3.55891331e-19, y: 9.88748131e-21, z: -.0277715884, w: .999614298}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_ArmC
+      position: {x: 4.4501729, y: 1.18750529e-06, z: -1.2350997e-12}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_ArmA
+      position: {x: -0, y: 0, z: -3.07913841e-16}
+      rotation: {x: 5.74865135e-06, y: -1.6421204e-07, z: -.000186821679, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_ArmB
+      position: {x: 4.15015888, y: -2.03290014e-07, z: -2.40513486e-07}
+      rotation: {x: 1.03249718e-11, y: 3.7653311e-10, z: -.0274108499, w: .999624252}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_ArmC
+      position: {x: 4.4501729, y: 1.18750529e-06, z: -1.2350997e-12}
+      rotation: {x: -5.74894148e-06, y: -1.53141826e-07, z: -.000174055065, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_ArmA
+      position: {x: -0, y: 0, z: -3.07913841e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_ArmAa
+      position: {x: 7.16899478e-07, y: 3.46352458e-08, z: 5.7220459e-06}
+      rotation: {x: .000186821126, y: 1, z: -8.36204919e-08, w: -3.95573032e-08}
+      scale: {x: 1, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_ArmAb
+      position: {x: 4.10865784, y: -.00153507583, z: 5.46912543e-06}
+      rotation: {x: .000186821126, y: 1, z: -8.49525037e-08, w: 3.68222466e-08}
+      scale: {x: 1, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_ArmB
+      position: {x: 4.15015888, y: -2.03290014e-07, z: -2.40513486e-07}
+      rotation: {x: -3.55891331e-19, y: 9.88748131e-21, z: -.0277715884, w: .999614298}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_ArmBa
+      position: {x: 8.51411314e-05, y: -.00154828466, z: -1.49615005e-08}
+      rotation: {x: -.000174054745, y: 1, z: -8.56541718e-08, w: -1.31255121e-07}
+      scale: {x: .99999994, y: 1, z: .999999881}
+      transformModified: 1
+    - name: jntRig_Rt_ArmBb
+      position: {x: 4.40575695, y: -1.46118246e-05, z: 1.89574632e-06}
+      rotation: {x: -.000174054745, y: 1, z: -8.28698603e-08, w: 1.38075194e-07}
+      scale: {x: .99999994, y: 1, z: .999999881}
+      transformModified: 1
+    - name: jntRig_Rt_ArmC
+      position: {x: 4.4501729, y: 1.18750529e-06, z: -1.2350997e-12}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarg_Rt_Hand
+      position: {x: 2.47848175e-06, y: -3.53003138e-08, z: 1.1242284e-05}
+      rotation: {x: -.707069278, y: -.00730961375, z: .00730962539, w: .707068741}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Rt_ArmA
+      position: {x: -0, y: 0, z: -3.07913841e-16}
+      rotation: {x: 5.74865135e-06, y: -1.6421204e-07, z: -.000186821679, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Rt_ArmB
+      position: {x: 4.14688969, y: -.117681801, z: -5.54693088e-06}
+      rotation: {x: 1.03249718e-11, y: 3.7653311e-10, z: -.0274108499, w: .999624252}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Rt_ArmC
+      position: {x: 4.44690037, y: .117682889, z: -5.94791709e-06}
+      rotation: {x: -5.74894148e-06, y: -1.53141826e-07, z: -.000174055065, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Rt_ArmA
+      position: {x: -0, y: 0, z: -3.07913841e-16}
+      rotation: {x: 5.74865135e-06, y: -1.6421204e-07, z: -.000186821679, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Rt_ArmB
+      position: {x: 4.15015888, y: -2.03290014e-07, z: -2.40513486e-07}
+      rotation: {x: 1.03249718e-11, y: 3.7653311e-10, z: -.0274108499, w: .999624252}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Rt_ArmC
+      position: {x: 4.4501729, y: 1.18750529e-06, z: -1.2350997e-12}
+      rotation: {x: -5.74894148e-06, y: -1.53141826e-07, z: -.000174055065, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_FootA
+      position: {x: 1.42891002, y: 1.05021989, z: -.107765049}
+      rotation: {x: -.69711256, y: -.118465528, z: .69711256, w: .118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Rt_FootA
+      position: {x: 3.65699933e-08, y: 1.13432527e-07, z: -8.0688114e-09}
+      rotation: {x: -1.53119817e-17, y: -2.97590038e-17, z: 1, w: 3.36435158e-10}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntFK_Rt_FootA
+      position: {x: -4.82708898e-19, y: -1.83980255e-17, z: -2.22044605e-16}
+      rotation: {x: 1.52455321e-15, y: -1.09261058e-14, z: 6.10622664e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FootB
+      position: {x: 1.86581481, y: 3.94643621e-07, z: -6.03961325e-14}
+      rotation: {x: .69711256, y: .118465528, z: -.69711256, w: .118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Rt_FootC
+      position: {x: 7.3052675e-14, y: 1.28562258e-15, z: -1.14435005}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_FootA
+      position: {x: -4.82708898e-19, y: -1.83980255e-17, z: -2.22044605e-16}
+      rotation: {x: 1.79490134e-09, y: -2.16229656e-09, z: 5.92119775e-08, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_FootB
+      position: {x: 1.86581481, y: 3.94643621e-07, z: -6.03961325e-14}
+      rotation: {x: .69711256, y: .118465528, z: -.69711256, w: .118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_FootC
+      position: {x: 7.3052675e-14, y: 1.28562258e-15, z: -1.14435005}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_FootA
+      position: {x: 5.34496252e-08, y: 2.45639342e-07, z: 8.06881317e-09}
+      rotation: {x: 4.15511465e-08, y: 7.06109571e-09, z: -3.11633599e-08, w: -1}
+      scale: {x: 1, y: .99999994, z: .99999994}
+      transformModified: 1
+    - name: jntRig_Rt_FootB
+      position: {x: 1.86581469, y: 5.6476091e-07, z: 2.58909239e-07}
+      rotation: {x: -.69711256, y: -.118465528, z: .69711256, w: -.118465528}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_FootC
+      position: {x: 7.3052675e-14, y: 1.28562258e-15, z: -1.14435005}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_Hand
+      position: {x: 11.3065004, y: 21.9158993, z: -.229053006}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Rt_Hand
+      position: {x: -4.04329694e-05, y: 1.12422849e-05, z: -1.09329801e-06}
+      rotation: {x: 1, y: -1.36220113e-09, z: -1.45530723e-11, w: -1.41494965e-07}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlGim_Rt_Wrist
+      position: {x: 8.52556623e-05, y: -2.01807367e-07, z: -9.2938518e-07}
+      rotation: {x: .012394988, y: -1.47120076e-07, z: -.519913435, w: .854129076}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: gr_Rt_SDKHandControls
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -1.22460635e-16, y: 0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Rt_FingerA
+      position: {x: .888670683, y: -1.77968323, z: -.550745785}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Rt_FingerB
+      position: {x: .888670683, y: -2.45461726, z: -.407048672}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Rt_FingerC
+      position: {x: .888670683, y: -2.45461726, z: -.104218908}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Rt_FingerD
+      position: {x: .888670683, y: -2.45461726, z: .188320488}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Rt_FingerE
+      position: {x: .888670683, y: -2.45461726, z: .455133975}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlDriv_Rt_Hand
+      position: {x: .888670683, y: -1.27968538, z: .0240426548}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerAa
+      position: {x: .329600006, y: .156399995, z: -.541271985}
+      rotation: {x: -.699642539, y: -.0205973312, z: .370489001, w: .610584915}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerAa
+      position: {x: 3.86462773e-07, y: 1.20424675e-08, z: -1.85174838e-06}
+      rotation: {x: 1.45641876e-09, y: 2.42628797e-08, z: -1.42872949e-08, w: 1}
+      scale: {x: 1, y: .99999994, z: 1.00000012}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerAb
+      position: {x: .859202385, y: -5.68404812e-06, z: 7.25069549e-06}
+      rotation: {x: 0, y: 0, z: -.0958826616, w: .99539268}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerAb
+      position: {x: -1.28420641e-06, y: 4.66058125e-08, z: 4.59227522e-07}
+      rotation: {x: -3.63307606e-08, y: 4.87734866e-08, z: -3.60313734e-09, w: 1}
+      scale: {x: .999999821, y: .999999881, z: .999999821}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerAc
+      position: {x: .66247642, y: -3.13130181e-06, z: -1.8385048e-05}
+      rotation: {x: 0, y: 0, z: .0630685687, w: .998009205}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerAc
+      position: {x: 3.5841461e-07, y: -1.64002305e-08, z: 3.53277483e-06}
+      rotation: {x: 6.89786077e-08, y: -7.41595585e-08, z: 3.39035661e-10, w: 1}
+      scale: {x: .999999881, y: 1.00000012, z: .999999881}
+      transformModified: 1
+    - name: jntEnd_Rt_FingerAd
+      position: {x: .876888454, y: -1.96539277e-05, z: -2.41455564e-05}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_Palm
+      position: {x: 1.05949998, y: -.0322000012, z: .0252589993}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerCa
+      position: {x: .892700016, y: -.176200002, z: -.159074202}
+      rotation: {x: .999985397, y: -.0054032458, z: 3.30853401e-19, w: -6.12314493e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerCa
+      position: {x: -7.18392101e-08, y: -1.13177794e-06, z: 1.38602836e-22}
+      rotation: {x: -1.1200346e-19, y: -2.07286234e-17, z: -9.31308974e-10, w: -1}
+      scale: {x: 1, y: .999999762, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerCb
+      position: {x: .681739092, y: -6.71041635e-05, z: -3.4338513e-18}
+      rotation: {x: 0, y: 0, z: -.00580013031, w: .999983191}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerCb
+      position: {x: 6.99880445e-07, y: 1.32950743e-06, z: 3.17049792e-17}
+      rotation: {x: 6.24443249e-21, y: -1.57333574e-17, z: -1.01863395e-09, w: 1}
+      scale: {x: 1, y: 1.00000024, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerCc
+      position: {x: .500000179, y: -3.10923861e-06, z: -2.67421019e-18}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerCc
+      position: {x: 1.1920929e-07, y: -5.42106591e-07, z: 8.38012708e-18}
+      rotation: {x: -6.05698561e-22, y: 1.52611101e-18, z: -8.73114844e-11, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Rt_FingerCd
+      position: {x: .69930017, y: 5.5091401e-05, z: -1.62633417e-18}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerDa
+      position: {x: .892700016, y: -.136299998, z: .316004008}
+      rotation: {x: 1, y: -0, z: 0, w: -6.12323426e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerDa
+      position: {x: -5.96046448e-08, y: 8.04662704e-07, z: -2.98023224e-08}
+      rotation: {x: 0, y: -0, z: 0, w: -1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerDb
+      position: {x: .607900023, y: 0, z: 3.11535078e-17}
+      rotation: {x: 0, y: 0, z: -.00580013031, w: .999983191}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerDb
+      position: {x: 5.73880982e-07, y: 1.91413437e-06, z: -3.11535078e-17}
+      rotation: {x: 1.42116425e-14, y: -9.44701339e-17, z: -4.6565346e-10, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerDc
+      position: {x: .512335122, y: -5.68827163e-05, z: 3.26230372e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerDc
+      position: {x: -4.76837158e-07, y: -5.23436029e-07, z: -1.27792006e-16}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Rt_FingerDd
+      position: {x: .571138144, y: 2.52415084e-05, z: 3.42395169e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_PalmCupA
+      position: {x: -2.38418579e-07, y: 1.34110451e-07, z: -.049999997}
+      rotation: {x: -.388951033, y: .191571414, z: -.662036479, w: .611330688}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerBa
+      position: {x: .892700016, y: -.164900005, z: -.572184026}
+      rotation: {x: .999999046, y: -.00138445292, z: 8.47732949e-20, w: -6.12322831e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerBa
+      position: {x: 1.84053249e-07, y: 1.89194509e-06, z: -5.96046448e-08}
+      rotation: {x: .00123260915, y: .252199769, z: -.0735176429, w: -.964877725}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerBb
+      position: {x: .598902404, y: 4.16973235e-05, z: -2.7069517e-17}
+      rotation: {x: 0, y: 0, z: -.00580013031, w: .999983191}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerBb
+      position: {x: -1.5027446e-07, y: -2.46115701e-06, z: 3.51277864e-17}
+      rotation: {x: 2.84215214e-14, y: 1.04772887e-16, z: -9.31313415e-10, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerBc
+      position: {x: .440217286, y: -1.23078316e-05, z: -2.59650621e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerBc
+      position: {x: -8.94069672e-08, y: 1.37965526e-06, z: -2.15124845e-17}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntEnd_Rt_FingerBd
+      position: {x: .575122595, y: -2.09181071e-05, z: -2.45209603e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_PalmCupB
+      position: {x: -2.38418579e-07, y: 1.63912773e-07, z: .0500000082}
+      rotation: {x: -.317121923, y: .170357883, z: .43628487, w: .82466203}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerEa
+      position: {x: .892700016, y: -.0318000019, z: .661294997}
+      rotation: {x: .999758244, y: -.00336776744, z: -.0189493783, w: -.0106328018}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerEa
+      position: {x: 2.10551161e-06, y: 2.92861819e-06, z: -8.22908106e-08}
+      rotation: {x: -1.16199662e-05, y: -.302059293, z: .00693854271, w: -.953263879}
+      scale: {x: 1, y: .999999642, z: 1}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerEb
+      position: {x: .381382465, y: -1.44995329e-05, z: 5.67168513e-07}
+      rotation: {x: 1.49025592e-08, y: -1.30052663e-10, z: -.00872653536, w: .999961913}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerEb
+      position: {x: -3.14586487e-06, y: -2.49036248e-06, z: 2.00633522e-07}
+      rotation: {x: 3.07359258e-08, y: -1.69754499e-09, z: -5.59396862e-10, w: 1}
+      scale: {x: .999999881, y: 1.00000036, z: .999999762}
+      transformModified: 1
+    - name: jntDriv_Rt_FingerEc
+      position: {x: .375287652, y: 7.24957645e-05, z: -3.70068022e-07}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_FingerEc
+      position: {x: -2.74181366e-06, y: -4.63260221e-06, z: 4.33351545e-07}
+      rotation: {x: 1.76995968e-07, y: -8.69034178e-10, z: 8.73444206e-10, w: 1}
+      scale: {x: .999999821, y: .99999994, z: .999999881}
+      transformModified: 1
+    - name: jntEnd_Rt_FingerEd
+      position: {x: .486273527, y: 6.38205665e-06, z: -2.51462689e-06}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ZGr_Rt_LegA
+      position: {x: 1.42891002, y: 14.4467001, z: -.00760805979}
+      rotation: {x: 1.19348975e-14, y: -8.32667268e-17, z: 8.32667268e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntCon_Rt_LegA
+      position: {x: -0, y: 0, z: 1.38777878e-17}
+      rotation: {x: .5, y: -.5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlGim_Rt_LegA
+      position: {x: 7.93204401e-17, y: 7.07212075e-19, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_LegA
+      position: {x: 7.93204401e-17, y: -1.60149676e-19, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_LegB
+      position: {x: 6.66555882, y: 3.69852754e-16, z: 6.66133815e-16}
+      rotation: {x: 0, y: 0, z: -.00743942102, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ctrlFK_Rt_LegC
+      position: {x: 6.73167038, y: -3.27703958e-07, z: -1.99840144e-15}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_LegA
+      position: {x: 7.93204401e-17, y: -1.60149676e-19, z: 0}
+      rotation: {x: 3.71719354e-19, y: 4.97064212e-17, z: 4.83369888e-07, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_LegB
+      position: {x: 6.66555882, y: 3.69852754e-16, z: 6.66133815e-16}
+      rotation: {x: -9.43403427e-23, y: 2.5557897e-20, z: -.00744037936, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntIK_Rt_LegC
+      position: {x: 6.73167038, y: -3.27703958e-07, z: -1.99840144e-15}
+      rotation: {x: -1.18238752e-14, y: 7.57727214e-15, z: 4.74974314e-07, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_LegA
+      position: {x: 7.93204401e-17, y: -1.60149676e-19, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_LegAa
+      position: {x: -1.5864088e-16, y: -1.44248487e-17, z: 0}
+      rotation: {x: -4.76837158e-07, y: 1, z: 0, w: 0}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_LegAb
+      position: {x: 6.59890318, y: 6.37955964e-06, z: 1.09893705e-15}
+      rotation: {x: -4.76837158e-07, y: 1, z: 0, w: 0}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_LegB
+      position: {x: 6.66555882, y: 3.69852754e-16, z: 6.66133815e-16}
+      rotation: {x: 0, y: 0, z: -.00743942102, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntRig_Rt_LegBa
+      position: {x: -1.04942194e-06, y: 6.42752184e-06, z: -1.1920929e-07}
+      rotation: {x: 5.35983531e-07, y: 1, z: 5.91595715e-08, w: -6.00464176e-08}
+      scale: {x: 1.00000012, y: 1, z: 1.00000024}
+      transformModified: 1
+    - name: jntRig_Rt_LegBb
+      position: {x: 6.66435385, y: 1.16250142e-07, z: 1.1920929e-07}
+      rotation: {x: 5.35983531e-07, y: 1, z: -5.91595715e-08, w: 6.00464176e-08}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: jntRig_Rt_LegC
+      position: {x: 6.73167086, y: -2.69002697e-07, z: 1.58150856e-15}
+      rotation: {x: -2.95797857e-08, y: -3.00232088e-08, z: -4.43423076e-10, w: -1}
+      scale: {x: 1.00000024, y: 1.00000012, z: 1.00000012}
+      transformModified: 1
+    - name: locTarg_Rt_FootA
+      position: {x: -3.8701296e-06, y: -1.01343382e-07, z: -8.0688114e-09}
+      rotation: {x: -1.55032187e-09, y: 1.31124511e-09, z: .584698439, w: .811250746}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Rt_LegA
+      position: {x: 7.93204401e-17, y: -1.60149676e-19, z: 0}
+      rotation: {x: 3.71719354e-19, y: 4.97064212e-17, z: 4.83369888e-07, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Rt_LegB
+      position: {x: 6.66518641, y: -.0498376638, z: 2.39837459e-06}
+      rotation: {x: -9.43403427e-23, y: 2.5557897e-20, z: -.00744037936, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStretch_Rt_LegC
+      position: {x: 6.73129797, y: .049837593, z: 2.42216265e-06}
+      rotation: {x: -1.18238752e-14, y: 7.57727214e-15, z: 4.74974314e-07, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Rt_LegA
+      position: {x: 7.93204401e-17, y: -1.60149676e-19, z: 0}
+      rotation: {x: 3.71719354e-19, y: 4.97064212e-17, z: 4.83369888e-07, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Rt_LegB
+      position: {x: 6.66555882, y: 3.69852754e-16, z: 6.66133815e-16}
+      rotation: {x: -9.43403427e-23, y: 2.5557897e-20, z: -.00744037936, w: .999972343}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: jntStrIK_Rt_LegC
+      position: {x: 6.73167038, y: -3.27703958e-07, z: -1.99840144e-15}
+      rotation: {x: -1.18238752e-14, y: 7.57727214e-15, z: 4.74974314e-07, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grLocal_Geometry
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grA1_LocalGeo
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1Local_Cn_Head
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1Local_Cn_Trunk
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1Local_Cn_Waist
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1Local_Lf_Arm
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1Local_Lf_Leg
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1Local_Rt_Arm
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1Local_Rt_Leg
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grA12_LocalGeo
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A12Local_Cn_Head
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A12Local_Cn_Trunk
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A12Local_Cn_Waist
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A12Local_Lf_Arm
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A12Local_Lf_Leg
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A12Local_Rt_Arm
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A12Local_Rt_Leg
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grLocal_Utilities
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Cn_SpineE_orientWorld
+      position: {x: 1.17025013e-15, y: 22.8546486, z: -.0637256056}
+      rotation: {x: .520586014, y: -.478529274, z: -.520586014, w: .478529274}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Cn_SpineF_orientWorld
+      position: {x: 1.85693508e-15, y: 25.0586605, z: .122154981}
+      rotation: {x: .5, y: -.5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmA_orientWorld
+      position: {x: -2.70959783, y: 21.9158878, z: -.176345631}
+      rotation: {x: .70699966, y: -.0123296436, z: .0123296147, w: .706998885}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmIK_parentWorld
+      position: {x: -11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_ArmPV_parentWorld
+      position: {x: -2.70959783, y: 21.9158878, z: -.176345631}
+      rotation: {x: -.707103431, y: .707103491, z: -.00216723094, w: .00216796878}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_FootIK_parentWorld
+      position: {x: -1.36614645, y: .0512876064, z: .747904956}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegA_orientWorld
+      position: {x: -1.42890513, y: 14.446703, z: -.00760805607}
+      rotation: {x: .5, y: .5, z: -.5, w: -.5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Lf_LegPV_parentWorld
+      position: {x: -1.42890513, y: 14.446703, z: -.00760805607}
+      rotation: {x: -2.28892146e-19, y: -.00373809249, z: .999993026, w: 6.12319125e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmA_orientWorld
+      position: {x: 2.70959997, y: 21.9158993, z: -.176346004}
+      rotation: {x: -.706998885, y: .0123296147, z: .0123296436, w: .70699966}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmIK_parentWorld
+      position: {x: 11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_ArmPV_parentWorld
+      position: {x: 2.70959997, y: 21.9158993, z: -.176346004}
+      rotation: {x: .707103491, y: .707103491, z: -.00216758111, w: -.00216758111}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_FootIK_parentWorld
+      position: {x: 1.36614645, y: .0512876064, z: .747904956}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegA_orientWorld
+      position: {x: 1.42891002, y: 14.4467001, z: -.00760805979}
+      rotation: {x: .5, y: -.5, z: -.5, w: .5}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locTarget_Rt_LegPV_parentWorld
+      position: {x: 1.42891002, y: 14.4467001, z: -.00760805979}
+      rotation: {x: -2.28892792e-19, y: -.00373810297, z: .999993026, w: 6.12319125e-17}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locUtl_Lf_ArmA_DistanceTarget
+      position: {x: -2.70959783, y: 21.9158878, z: -.176345631}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locUtl_Lf_ArmC_DistanceTarget
+      position: {x: -11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locUtl_Lf_LegA_DistanceTarget
+      position: {x: -1.42890513, y: 14.446703, z: -.00760805607}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locUtl_Lf_LegC_DistanceTarget
+      position: {x: -1.42890513, y: 1.0502193, z: -.107764751}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locUtl_Rt_ArmA_DistanceTarget
+      position: {x: 2.70959997, y: 21.9158993, z: -.176346004}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locUtl_Rt_ArmC_DistanceTarget
+      position: {x: 11.3064547, y: 21.9158878, z: -.229052827}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locUtl_Rt_LegA_DistanceTarget
+      position: {x: 1.42891002, y: 14.4467001, z: -.00760805979}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: locUtl_Rt_LegC_DistanceTarget
+      position: {x: 1.42890513, y: 1.0502193, z: -.107764751}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Norman_Curves
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: WorldSpace
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grWorld_Geometry
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grA1_WorldGeo
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1World_Cn_Head
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfAll_BocaBurger
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfAll_mlTeethLower
+      position: {x: -0, y: .0187133178, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfAll_mlTeethUpper
+      position: {x: -0, y: .0187133178, z: .0277605951}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Cn_Head
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Cn_Neck
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Cn_Nose
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_Ear
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_Eye
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_Ear
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_Eye
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfML_Cn_Tongue
+      position: {x: -6.04273009e-05, y: 24.1192322, z: .916004777}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1World_Cn_Trunk
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Cn_SpineA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Cn_SpineB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Cn_SpineC
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1World_Cn_Waist
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Cn_Pelvis
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1World_Lf_Arm
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_ArmA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_ArmB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_ArmC
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_ArmD
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_Hand
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1World_Lf_Leg
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_FootA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_FootB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_LegA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_LegB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_LegC
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Lf_LegD
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1World_Rt_Arm
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_ArmA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_ArmB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_ArmC
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_ArmD
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_Hand
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grViz_A1World_Rt_Leg
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_FootA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_FootB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_LegA
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_LegB
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_LegC
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: srfBind_Rt_LegD
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: grWorld_Utilities
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: crvIK_Cn_Tongue_Twist
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: ikHCn_Tongue_StretchySpline
+      position: {x: 5.73791237e-09, y: 24.0224018, z: 1.62065959}
+      rotation: {x: .0503208712, y: .705313981, z: .0503208824, w: .705313981}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 3
+  userData: 

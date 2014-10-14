@@ -1,0 +1,496 @@
+
+LEAP ASSET PIPELINE GUIDE
+
+Author: Tomislav Pejsa
+Last updated: 3/30/2012
+
+0. Overview
+
+1. Exporting character models - 3ds Max
+1.1 Skeleton
+1.2 Morph targets
+1.3 Materials
+1.4 Animations
+1.5 Lip-sync
+
+2. Importing character models
+2.1 Morph target preprocessing
+2.2 Writing the LMC file
+2.3 Importing into Unity
+2.4 Instancing the model
+2.5 Setting up default components
+2.6 Creating a prefab agent
+
+3. Creating characters - DAZ
+3.1 Obtaining DAZ and purchasing characters
+3.2 Creating your character
+3.3 Exporting the character
+
+
+
+0. Overview
+
+
+
+The recommended pipeline can be visualized as follows:
+
+[DAZ] => (FBX,COLLADA) => [3ds Max] => (FBX) => [Asset Tools] => (FBX) => [Unity]
+              ||                                     /\
+              ||=====================================||
+
+LEAP is built on Unity engine, and it relies on Unity's asset infrastucture to
+prepare and import models. The primary model import format is FBX, though 
+COLLADA is supported as well. Basic features like skinning, multitexturing and 
+shader materials are implicitly supported. Additionally, LEAP implements 
+support for facial animation using morph targets (blend shapes).
+
+Your models can come from any source, but one of the most convenient ways of
+creating and animating them is by using the figure posing and rendering studio
+DAZ. Since DAZ has excellent support for FBX and COLLADA export, a model can
+be easily exported directly to Unity, or to your favorite modeling application
+like 3ds Max or Maya for additional editing.
+
+If your model contains morph target animation, you need to first import it
+into 3ds Max for additional tweaking. We provide a set of Max scripts which 
+extract morph target animations into a representation that can be imported 
+into Unity and used by LEAP. Moreover, before the FBX models are imported into
+Unity, you must invoke a special standalone utility to automatically post-
+process the morph targets, otherwise Unity won't import them correctly.
+
+
+
+1. Exporting character models - 3ds Max
+
+In order to get your model into Unity, you will need to export it as an FBX
+file. For this you will need Autodesk FBX plugins for 3ds Max; it is 
+recommended that you get the latest version, though anything from 2011 on
+should work fine.
+
+To export your model, you need to go File -> Export, specify FBX as your target 
+format, and then specify the appropriate FBX plugin settings. For general guide-
+lines on configuring the FBX plugin, consult the plugin documentation. Here we
+will give guidelines on features of particular relevance to Unity and LEAP.
+
+1.1 Skeleton
+
+FBX plugin: Can export Max Dummy nodes and Bones, but only with Skin modifier 
+(Physique is not supported). Be sure to enable Skin export in plugin export
+settings. Moreover, since LEAP uses the metric system, make sure that under 
+Units the target unit is set to meters.
+
+Gaze helpers: If you want to use LEAP's Gaze Controller, you must create 
+helper bones for every bone in the gaze chain (normally head and eyes). This
+can be done in Unity itself, but the recommended approach is to do it in 
+3ds Max. The procedure is as follows:
+
+   1. Select the bone for which you want to create a helper.
+
+   2. Clone the bone (Ctrl+V), and give it an appropriate name.
+
+   3. Max will automatically link the helper bone to the *parent* of the 
+   original bone, which is incorrect - unlink the bone e.g. using the Schematic
+   View. 
+
+   4. Next, translate the helper bone in the direction of the gaze (e.g. if the
+   bone is an eye helper, translate it through the pupils of the eye).
+   Translation magnitude is unimportant, as long as it is greater than 0.
+
+   5. Finally, link the cloned bone to the original bone (e.g. left eye gaze 
+  helper would be linked to the left eye).
+
+1.2 Morph targets
+
+FBX plugin: Exports morph targets defined using Morpher modifier without
+problems. Be sure to enable Morph export in the plugin settings.
+
+Original meshes: If your scene still contains the original meshes that are
+linked to the Morpher modifier, you should delete them before export.
+
+1.3 Materials
+
+Alpha and gloss maps: If your character was exported from DAZ, then 
+transparency and gloss data will be stored in separate textures, but Unity
+expects them to be encoded in the alpha channel of the diffuse texture. You
+can use Photoshop or similar tool to add an alpha channel to the diffuse 
+texture, and copy your transparency/gloss data there. When saving your final
+image, be sure to save it in a format that supports the alpha channel, such as
+TIFF. Moreover, after importing the model to Unity, you may need to manually
+edit the material and change texture type from Diffuse to Specular or
+Transparent.
+
+1.4 Animations
+
+Morph channels: Animation in LEAP is based on morph channels. A morph channel
+is an animation parameter that animates some part of the character - e.g.
+ModifierBlinkLeft closes the left eye, ExpressionFear deforms the face into a
+fearful expression, VisemeAh deforms the lips into the shape of phoneme 'Ah'.
+Since character model can differ in their bone structure and/or morph targets
+they have, in order to work correctly for a specific character, morph channels
+need to be manually mapped to that character's morph targets and bone trans-
+formations. The only way to currently define morph channel mappings is using
+an XML file format called LMC (see section 2.2 for details).
+
+Morph target animation: If your model contains morph target animations, Unity 
+will not be able to import them; it can only import bone animations. The trick
+is to create dummy bones and copy morph target keyframes onto them; the dummy
+bones and keyframe data on them will be correctly imported by Unity. We provide
+a Max script UnityMorphAnimSetup.ms which can be invoked to automatically
+extract animations for several well-known DAZ figures. With modifications, the
+script can be used for other models as well.
+
+For example, to extract morph target animations from a character based on
+DAZ Genesis figure, simply do the following:
+
+   1. If you scene already contains dummy bones for LEAP morph channels, delete
+   them. You will recognize them in the Schematic View because their names
+   start with the prefix MC (e.g. "MC&VisemeEh").
+
+   2. On the 3ds Max main menu, go to MAXScript -> Run Script, and choose
+   the Max script UnityMorphAnimSetup.ms.
+
+   3. Press F11 to open the MAXScript Listener, and invoke the following
+   script function:
+
+	setupMorphAnimations mcDAZGenesisMappings
+
+   where mcDAZGenesisMappings is a global array defined in
+   UnityMorphAnimSetup.ms, which defines mappings between the character's
+   morph targets and LEAP morph channels.
+
+   4. Check the Schematic View to make sure that the script has created the
+   dummy bones in your scene.
+
+Note: If you want to use the script with different characters that use a
+different set of morph targets, you need to specify morph target -> morph
+channel mappings as a first argument to setupMorphAnimations. Examples of such
+mappings can be found in UnityMorphAnimSetup.ms.
+
+1.5 Lip-sync
+
+LEAP does not currently provide an on-line lip-sync solution, so any lip-sync
+animations need to be generated offline. The recommended way of doing so is 
+using the inexpensive FaceFX 3ds Max plugin.
+
+Though limited compared to the full-fledged FaceFX Studio, FaceFX plugin can
+generate lip animations given an audio file and accompanying text script. To
+generate a lip-sync animation for one audio clip, do the following:
+
+   1. Load the FaceFX plugin by going to the Utilities tab -> More... -> 
+   FaceFX.
+
+   2. Set the Analysis Actor for your character figure by clicking Change 
+   Analysis Actor and choosing the appropriate .facefx Actor file. Characters 
+   with different morph target sets or bone structures should have different 
+   analysis actors. We provide analysis actors for a several DAZ figures, 
+   including Genesis.
+
+   3. Load the Actor file (.fx) for your character by clicking Load Actor and
+   choosing the appropriate .facefx file. This is often going to be the same as
+   your analysis actor - for example, that is the case with our DAZ figure 
+   actors.
+
+   4. Under Animations, click Generate and choose your audio file. If there is 
+   a text file with the same name in the same directory containing the script 
+   of the audio utterance, FaceFX will use it to improve lip-sync results.
+
+   5. To import the generated keyframe data onto your model, select the model 
+   mesh, position the Time Slider to where you want your animation to be, and 
+   then (under FaceFX->Animations) click Import. 
+
+The generated lip-sync animation data can then be exported just like any other 
+animation. Note that, since lip-sync animations usually include morph target
+animations, you will need to use the procedure described in 1.4 to extract
+morph target animation data onto dummy bones.
+
+FaceFX actors: When FaceFX performs audio analysis, it needs to know how to map
+inferred phonemes to morph targets or bones of the target character. FaceFX
+actors (stored as .facefx files) define mappings of phonemes to morph targets
+and bones. Analysis actors are used to map FaceFX standardized phonemes to
+viseme channels used by your system, while 'main' actors are normally used
+to map viseme channels to morph targets and bones, and often more general
+conversational animation (e.g. special channels for controlling eye blinks,
+eyebrows and other parts of the face).
+
+You can define a FaceFX analysis actor for your character using the free 
+version of FaceFX Studio. Due to limitations of the free version, you will
+probably want to keep your actor as simple as possible (just one-on-one 
+mappings of FaceFX phonemes to viseme morph targets), and then use is as your
+'main' actor. For more information on how to use FaceFX, consult the FaceFX
+documentation and examples.
+
+
+
+2. Importing character models
+
+
+
+2.1 Morph target preprocessing
+
+If your model contains morph targets, they need to be preprocessed by a special
+Asset Tools command line utility FBXMorphPreprocess before Unity can import 
+them. Simply call:
+
+	FBXMorphPreprocess ludacris.fbx
+
+2.2 Writing your LMC file
+
+Next you must define morph channels for you character. Morph channels for a 
+specific character (or a class of characters based on the same model figure) 
+are defined using the LMC file format.
+
+Unfortunately, there is currently no GUI application for defining morph channel
+mappings, so LMC files must be written manually. Each LMC file must contain a
+sequence of morph channel definitions. Each morph channel definition specifies
+a list of 1) morph targets, 2) bone transformations (rotation/translation), 
+and 3) other morph channels, that the current morph channel maps to. Magnitude
+of a morph target, transformation, or morph subchannel can be controlled using
+the refValue parameter (0-1 - though values <1 are typically used only for
+complex morph channels that engage multiple morph targets)
+
+A trimmed-down example of an LMC file can be seen below:
+
+<?xml version="1.0" encoding="utf-8"?>
+<LMC xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <animSettings>
+    <linkAnimations>true</linkAnimations>
+    <animTrackPrefix>MC_</animTrackPrefix>
+  </animSettings>
+  <morphChannels>
+    <LMCMorphChannel>
+      <name>ExpressionAnger</name>
+      <submeshes>
+        <LMCSubmeshMapping>
+          <name>body</name>
+          <mtName>MT&amp;body&amp;Angry_body</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+      </submeshes>
+    </LMCMorphChannel>
+    <LMCMorphChannel>
+      <name>ExpressionSurprise</name>
+      <submeshes>
+        <LMCSubmeshMapping>
+          <name>body</name>
+          <mtName>MT&amp;body&amp;BrowUpL_body</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+        <LMCSubmeshMapping>
+          <name>body</name>
+          <mtName>MT&amp;body&amp;BrowUpR_body</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+        <LMCSubmeshMapping>
+          <name>body</name>
+          <mtName>MT&amp;body&amp;EyeLidsTopUpL_body</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+        <LMCSubmeshMapping>
+          <name>body</name>
+          <mtName>MT&amp;body&amp;EyeLidsTopUpR_body</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+        <LMCSubmeshMapping>
+          <name>body</name>
+          <mtName>MT&amp;body&amp;MouthOpen_body</mtName>
+          <refValue>1</refValue>
+        </LMCSubmeshMapping>
+        <LMCSubmeshMapping>
+          <name>body</name>
+          <mtName>MT&amp;body&amp;MouthSmile_body</mtName>
+          <refValue>0.25</refValue>
+        </LMCSubmeshMapping>
+      </submeshes>
+      <bones>
+        <LMCBoneMapping>
+          <name>lowerJaw</name>
+          <refPosition>
+            <x>0</x>
+            <y>0</y>
+            <z>0</z>
+          </refPosition>
+          <refRotation>
+            <x>6.000001</x>
+            <y>0</y>
+            <z>0</z>
+          </refRotation>
+        </LMCBoneMapping>
+      </bones>
+    </LMCMorphChannel>
+  </morphChannels>
+</LMC>
+
+One nice thing with DAZ characters is that the LMC file typically needs to be 
+defined only once per figure. That means, if you have an array of characters 
+using the same base figure (e.g. Genesis), you can reuse the LMC file for all
+the characters. For example, we provide LMC files that should work for most
+characters based on DAZ Genesis figure.
+
+Once you have defined your LMC file, give it the same name as your FBX file
+(e.g. ludacris.lmc) and place it in the same directory.
+
+2.3 Importing into Unity
+
+In LEAP's Assets\Agents directory, create a subdirectory for your character
+(e.g. Assets\Agents\Ludacris), and copy the character's FBX and LMC files 
+there. Next, open up Unity, and it will automatically try and import the
+character with default importer settings. These settings usually won't be
+correct for your specific character, so you will need to modify them and then
+reimport the model.
+
+Import settings: To modify the import settings, select the model in the 
+Project view. Then in the Inspector, under FBXImporter, specify the following:
+
+   - Scale Factor: 1
+   
+   - Mesh Compression: Off
+   
+   - Optimize Mesh should be unchecked.
+
+   - Normals: This should be set to Import. However, if you notice any 
+   problems with your model's shading, or if during animation you notice that
+   some vertices aren't animated correctly, try setting this option to 
+   Calculate. Then you should also set Smoothing Angle to maximum (180).
+
+   - Animation Wrap Mode: Set it to Loop.
+
+   - Animation List: Here you must specify the list of animations on your 
+   character (otherwise all keyframe data will be lumped into a single
+   'animation', usually called 'Take01'). For each animation, specify its name
+   start and end frames, wrap mode (usually Loop).
+
+Once you are done modifying the import settings, click Apply and wait for the
+model to be reimported.
+
+2.4 Instancing the model
+
+Imported models can be instanced by simply dragging and dropping them into the
+scene.
+
+2.5 Setting up default components
+
+When your model was imported, LEAP automatically added some basic functional
+components onto it, such as Morph Controller and other scripts needed for 
+animation. However, to give your character more advanced LEAP capabilities,
+such as gaze, speech, and head gestures, you need to add and configure the
+components (scripts) which implement said functionality. The easiest way to do
+this is to select the character in the Hierarchy view and then click LEAP -> 
+Agent Setup -> Set Up Default Agent on Unity main menu. This will add common
+used components to the character, and apply default settings to them. Some 
+manual configuration may still be needed for individual components, as we
+describe below.
+
+Body Idle Controller:
+
+   - Idle Animation: Set it to whatever you want the idle animation to be (e.g.
+   NeutralPose, or NeutralPoseSit).
+
+   - Perlin Motion Enabled: Set to true if you want some random motion to be
+   applied to the character to make it appear less rigid.
+
+   - Perlin Motion Gen: Here you can configure the type of random motion that
+   will be applied. To apply random motion to a bone or set of morph channels,
+   expand the Transforms field with a new element and, for the new Transform,
+   define settings such as transf. type, axes, magnitude, rate, bone and morph
+   channel list.
+
+Face Controller:
+
+   - Perlin Motion Enabled: Same as Body Idle Controller.
+
+   - Perlin Motion Gen: Same as Body Idle Controller.
+
+Gaze Controller:
+
+   - Stylized Gaze: Enable if you want cartoon dynamics (as opposed to bio-
+   logical dynamics) to be applied to the character's eye motion.
+
+   - Gaze Joints: Define the chain of bones that will be affected by the Gaze
+   Controller. The chain should have the hierarchy of the following form:
+   
+   ...---> Body3 ---> Body2 ---> Body1 ---> LEye
+                                        |
+                                        |-> REye
+
+   The bones should be defined in the sequence (LEye, REye, Body1, Body2,
+   Body3, ...) For each bone, define type (left eye, right eye, or body),
+   velocity (human eyes - 150; human head - 50), motor range (human eyes -
+   45, 45, 55, 55; human head - 90, 90, 180, 180), bone, and helper bone.
+
+2.6 Creating a prefab agent
+
+Once you are happy with your character is set up, you can create a prefab from
+it. This will allow you to easily use the character in different scenes, by
+simply dragging and dropping the prefab into the scene.
+
+First create an empty prefab in your character's Assets\Agents subdirectory,
+by going to the Unity main menu and clicking Assets -> Create -> Prefab. Next,
+drag and drop your character from the Hierarchy view and onto the prefab in the
+Project view. This will link the prefab to your character.
+
+If you have made changes to a character model (e.g. added new animations or
+modified morph targets), any character instanced from its prefab may no longer
+look or behave correctly. In that case, you should select the character
+instance in the scene, click LEAP -> Agent Setup -> Refresh Agent, and the
+selected instance will be updated accordingly. You may need to relink it to its
+prefab afterwards.
+
+
+
+3. Creating characters - DAZ
+
+
+
+DAZ is a commercial character editing, posing and animation tool, commonly used
+by enthusiasts who want to create 3D render art. More recently it has received
+excellent support for exporting the character into game engine-friendly formats
+such as FBX, which has increased its popularity among game designers and other
+users who can benefit from high-quality 3D characters. We highly recommend it
+as a cost-effective source of characters for use with LEAP, and we have gone to
+great lengths to set up a content path from DAZ to Unity for this purpose.
+
+3.1 Obtaining DAZ and purchasing characters
+
+DAZ main program can be downloaded free of charge from DAZ website. Simply
+download it and follow the installation instructions. Characters must be 
+purchased through the online DAZ store. Again, once you have purchased a
+character, simply download it and follow the installation instructions.
+
+3.2 Creating your character
+
+To create your own character, simply choose a starting character (e.g. one you
+downloaded from DAZ store) and edit it using the provided parameters. For more
+information consult DAZ documentation.
+
+3.3 Exporting the character
+
+Once you are happy with how your character looks, you can export it and then
+either import it into Max for additional work, or directly import it into Unity
+(you may need to run it through FBXMorphPreprocess first).
+
+We recommend exporting the character as FBX. The procedure is as follows:
+
+   1. Go to File -> Export, define the file name, and click Save.
+   
+   2. Under Export Options, make sure Figures, Animations and Morphs are 
+   checked.
+
+   3. Under Output Options, deselect Embed Textures and select Collect Textures
+   to Folder. Also enable Merge Clothing into Figure Skeleton.
+
+   4. Next you must Edit Morph Export Rules to define which morph targets will
+   be exported and which will ignored or baked into the model. If you want to 
+   have the ability to animate a morph target in Max or LEAP (e.g. visemes), 
+   you will need to export it. Export rules use string matching to identify
+   morph targets by name and apply actions to them. Therefore, for each rule
+   you should specify partial or full morph target name, and select appropriate
+   action (Export, Bake or Ignore). Rules stack - every rule applies to the
+   result of the rules under it. Once you are done, click Accept.
+
+   5. Click Accept and DAZ will export the character.
+
+3.4 Importing the character into 3ds Max
+
+The character can be imported into Max using the Autodesk FBX plug-in. Use
+the same settings as specified in section 1.1, except units should be set to
+scene units (usually inches) rather than meters.
+

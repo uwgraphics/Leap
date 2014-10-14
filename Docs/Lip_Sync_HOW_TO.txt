@@ -1,0 +1,49 @@
+1. Create audio files and text scripts. Put these side-by-side in the same folder. They should have the same names (.wav for audio, .txt for written text)
+2. open 3ds Max 2011
+3. open Jasmin.max from the LEAPAssets repository
+4. Click "utilities" button (the little hammer)
+5. Click "More..."
+6. Select "FaceFX", OK
+7. Click "Load Actor..."
+8. Choose "DAZ Genesis.facefx" from the LEAPAssets repository
+9. Click "Change Analysis Actor..."
+10. Choose "DAZ Genesis.facefx" from the LEAPAssets repository (again)
+11. Under "Nodes" click the dropdown list and select "FxMorphTargetNode"
+12. Click "Generate" at the bottom
+13. Select the audio file you want to generate lip-syncs for
+14. Repeat previous two steps for all audio files
+15. Click the "Time Configuration" button at the bottom right of the screen
+16. Increase "End Time" to the next even 100 (e.g., if currently at 2636, change to 2700)
+17. Scrub to the very last frame (e.g., 2700)
+18. Select the animation to import (from the list of generated ones), and click "Import"
+19. Record the start and end times in the character's anim sheet in the LEAPAssets repository
+20. Repeat steps 15-19 for the rest of the animations you want to import
+21. Open Graph Editors -> Saved Schematic Views -> Schematic View 1
+22. Delete the dummy viseme bones that are already there (green squares with names like MC&VisemeW)
+23. Select the blue square named "body" (this is the base mesh)
+24. Go to MAXScript -> Run Script...
+25. Choose "UnityMorphAnimSetup.ms" in the LEAPAssets repository
+26. Go to MAXScript -> MAXScript Listener...
+27. type in "setupMorphAnimations mcMappingsDAZGenesis"
+    NOTE: this function and argument are found in the UnityMorphAnimSetup.ms script, and can be seen by going to MAXScript -> Open Script... and selecting that script
+28. Hit enter
+29. Go back to schematic editor and delete the dummy bones that don't have red squares (don't have animations)
+30. Go to File -> Export
+31. Save in the same place you put the audio files
+32. Make sure the units are set to Meters (under Advanced Options)
+33. Click OK
+34. Click OK
+35. 3ds Max can now be closed
+36. Copy the created .FBX file into LEAPAssets/Tools
+37. From a command prompt, run "FBXMorphPreprocess.exe YOURCHARACTER.FBX" replacing YOURCHARACTER.FBX with appropriate .FBX file
+38. Bring the updated .FBX file back out of the Tools directory to wherever it was before.
+39. Copy the .FBX file into a new agents directory in the Unity directories (like "JasminTEST")
+40. Open Unity
+41. In the Project View, select the newly created asset in the new agent folder you created
+42. In the Inspector, change scale factor to 1
+43. Add animations (clicking the +)
+44. Name the same as the audio files
+45. Specify the start and end times (in frame number) that you recorded before.
+46. Click "Apply"
+47. Animations have been created, put these (and the audio) in a good place in the Unity Assets repository
+48. Animations can now be added to the character.

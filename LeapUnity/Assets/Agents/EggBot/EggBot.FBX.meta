@@ -1,0 +1,153 @@
+fileFormatVersion: 2
+guid: 0be0c73fe96ad2d40893c66018891314
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: lShin
+    100002: lToe
+    100004: //RootNode
+    100006: lFoot
+    100008: lThigh
+    100010: rToe
+    100012: rFoot
+    100014: rShin
+    100016: rThigh
+    100018: earPods
+    100020: lEye
+    100022: rEye
+    100024: head
+    100026: neck10
+    100028: neck09
+    100030: neck08
+    100032: neck07
+    100034: neck06
+    100036: neck05
+    100038: neck04
+    100040: neck03
+    100042: neck02
+    100044: neck01
+    100046: chest
+    100048: abBand3
+    100050: abBand2
+    100052: abBand1
+    100054: abdomen
+    100056: hip
+    100058: eggbot
+    100060: eggbot_MeshPart0
+    100062: eggbot_MeshPart1
+    400000: lShin
+    400002: lToe
+    400004: //RootNode
+    400006: lFoot
+    400008: lThigh
+    400010: rToe
+    400012: rFoot
+    400014: rShin
+    400016: rThigh
+    400018: earPods
+    400020: lEye
+    400022: rEye
+    400024: head
+    400026: neck10
+    400028: neck09
+    400030: neck08
+    400032: neck07
+    400034: neck06
+    400036: neck05
+    400038: neck04
+    400040: neck03
+    400042: neck02
+    400044: neck01
+    400046: chest
+    400048: abBand3
+    400050: abBand2
+    400052: abBand1
+    400054: abdomen
+    400056: hip
+    400058: eggbot
+    400060: eggbot_MeshPart0
+    400062: eggbot_MeshPart1
+    4300000: eggbot
+    4300002: eggbot_MeshPart0
+    4300004: eggbot_MeshPart1
+    7400000: Take 001
+    7400002: NeutralPose
+    11100000: //RootNode
+    11400000: //RootNode
+    11400002: //RootNode
+    11400004: //RootNode
+    13700000: eggbot
+    13700002: eggbot_MeshPart0
+    13700004: eggbot_MeshPart1
+  materials:
+    importMaterials: 1
+    materialName: 3
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    clipAnimations:
+    - name: NeutralPose
+      takeName: 
+      firstFrame: 1
+      lastFrame: 2
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      keepAdditionalBonesAnimation: 1
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      skeletonMaskElements: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 3
+    addColliders: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    handles: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  additionalBone: 1
+  animationType: 1
+  userData: 

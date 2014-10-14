@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a0cbd66fb272e4805bdbb4beb41f3bd2
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - weightedBlurShader: {fileID: 4800000, guid: 2d682ff91abe151458acf9fe6290b71c,
+      type: 3}
+  - preDofShader: {fileID: 4800000, guid: 834c51739af01bb42bccead071c02c22, type: 3}
+  - blurShader: {fileID: 4800000, guid: 4ccd66c89fb5c5e48b59e0d7e0f7153a, type: 3}
+  - recordCenterDepthShader: {fileID: 4800000, guid: bc271db60e3cc49c99b6622ced5fd210,
+      type: 3}
+  - focusOnThis: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 

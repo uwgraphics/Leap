@@ -1,0 +1,1 @@
+This plan has a small local network of doctors, from which the individual must choose a primary care physician to authorize and coordinate their health care within the network.

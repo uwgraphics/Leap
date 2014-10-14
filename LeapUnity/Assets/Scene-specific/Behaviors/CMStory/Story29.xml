@@ -1,0 +1,8 @@
+<behaviors>
+	<channel type="gaze">
+		<action endTime="367.0" startTime="0" target="StoryDog"/>
+		<action endTime="865.0" startTime="367.0" target="MainCamera"/>
+		<action endTime="8475.0" startTime="865.0" target="unknown"/>
+	</channel>
+	<channel type="speech">Story29</channel>
+</behaviors>
