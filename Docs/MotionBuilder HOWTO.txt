@@ -1,0 +1,203 @@
+
+Fixing performance issues on cs.wisc computers:
+
+1) Start MotionBuilder.
+
+2) Start Task Manager.
+
+3) Set motionbuilder.exe process priority to High.
+
+
+Rigging a character for animation in MotionBuilder:
+
+	P1) Get a humanoid character model in FBX format. I use DAZ character based on the Genesis figure.
+
+1) Start with an empty scene: File -> New.
+
+2) Import your character: File -> Merge -> navigate to and select the character's FBX file (in my example, "Jason.fbx"). Default merge options should be fine. The character must be in T-pose.
+
+3) Create a Character: Asset Browser -> Templates -> Characters -> drag and drop a Character asset into the scene.
+
+4) Your character is under Navigator -> Characters. You can change the default name "Character" into whatever you like. I will use the name "Jason" for my example.
+
+5) Now we will specify mappings from default MotionBuilder joint names to the specific joint names of your character. Note that this is unnecessary if your character uses the same joint naming scheme as MotionBuilder default. Select Jason character in the Navigator and click on Character Definition tab.
+
+6) MotionBuilder joints are listed in the Character Definition tab and organized into groups like "Base", "Auxiliary", etc. Go through all the joints and under Naming Template, specify the name (or uniquely identifying part of the name) of the joint in your character. For instance, for Jason I would specify the following name template:
+
+	Hips -> hip
+	LeftUpLeg -> lThigh
+	LeftLeg -> lShin
+	...
+	
+	S1) Once you have specified the naming template, you can save the template by going to Characterization Tool -> DaVinci Menu -> Edit -> Extract Naming Template. Then specify template name and click OK.
+	
+	S2) You can then reuse your saved naming template on characters that use the same joint naming scheme. To do so, load your character as described above, go to Characterization Tool -> Map Bones, select your template from the list, and click OK.
+	
+7) When you are done, click on the Characterize checkbox and choose Biped. All bones in the Characterization -> Figure tab should now be green. If they are yellow, that usually means the character is not in perfect T-pose. You can fix that problem as follows:
+
+	i) Go to X-Ray mode: Display -> X-Ray or hit Ctrl+A.
+	ii) Selecting a bone in the viewport.
+	iii) Select Rotate tool.
+	iv) Rotate the bone until it becomes green in the Figure tab.
+	
+8) Create a Control Rig for the character: Characterization Tool -> DaVinci Menu -> Control Rig -> Create. Choose an FK/IK rig.
+
+9) Your rig is under Navigator -> Control Rigs. You can change the default name "Control Rig" into whatever you like. I will use the name "JasonRig" for my example.
+
+10) Save the rigged character to an FBX file - e.g. "Jason.fbx".
+
+
+Rigging eyes for target-based gaze control (a.k.a. "look-at" behavior):
+
+    P1) Your character should have articulated eyes, and each eye should have a bone which controls it. Moreover, the character should be in a neutral pose, without any animation applied to the eyes or head.
+    
+    S1) This tutorial describes the procedure for one eye. The procedure should be identical for both eyes, whether left or right.
+
+1) Create a "look-ahead" node for the eye. This is a node located right in front of the pupil when the eye is in a neutral orientation. The purpose of this node is to enable the character to look "straight ahead" by simply orienting the eye in the direction of this node. You can create a look-ahead node as follows:
+
+    i) Select the eye bone.
+    ii) Duplicate the eye bone and name the new bone something descriptive, e.g. "lEyeLookAhead".
+    iii) Parent the look-head bone to the head bone (i.e. the eye's parent bone).
+    iv) Translate the look-ahead bone forward, so that it is positioned right in front and center of the pupils (if your rig is any good, you should be able to just use Local frame and translate in the direction of z-axis).
+    
+2) Create an "up" node for the eye. This is done in the exact same way as with the look-ahead node, except is step 1)iv) you will translate the bone upward, so that it is located above the eye bone.
+    
+3) Go to Asset Browser -> Constraints and create an Aim constraint. It will from then on be located under Navigator -> Constraints. You can rename the constraint to something descriptive, like "lEyeLookAt".
+
+4) Under Constraint Properties, set the Constrained Object property to the eye bone - e.g. you can do so by dragging and dropping the eye bone onto the property.
+
+5) World Up Object property should be set to your up node, created in step 2.
+
+6) Aim At Object 1 property should be set to the look-ahead node, created in Step 1.
+
+7) To activate the constraint, click Snap and then click Active. You can test the constraint by translating the look-ahead bone - the eye should follow.
+
+    S1) If you do not wish the eye to look directly at the look-ahead bone, but to the side (e.g. if you want your character to appear perpetually cross-eyed), you need to introduce a rotation offset into the constraint. Here is how to do it:
+    
+        i) Make sure your look-at constraint is selected.
+        ii) Under Properties, set the Rotation Offset property to desired values.
+
+8) To have the character look at other objects in the scene, simply drag and drop additional objects to the Aim At Object <n> property of the look-at constraint.
+
+9) To control which object the character is currently gazing at, select the look-at constraint, go to Properties -> Constraint Axes, and modify the values of <object_name>.Weight properties. For example, to have the left eye look straight ahead, set all weights to 0 and "lEyeLookAhead.Weight" to 100.
+
+    S1) To animate the character's gaze behavior, you can keyframe the weight properties (described in step 9) same as you would any other property.
+    
+    S2) You may also want to limit the rotation range of your eye bones. Human eyes cannot normally rotate more than 45-55 deg in any direction. Moreover, human eyes cannot rotate around the forward axis. Our look-at constraint has no such limits and may cause the eyes to reach unrealistic orientations. To avoid this, you can do the following:
+    
+        i) Select the eye bone.
+        ii) Under Properties, select All (Type).
+        iii) Check Enable Rotation DOF.
+        iv) Check Enable Min X/Y/Z and Enable Max X/Y/Z (assuming x and y are the pitch and yaw axes of your eye, while z is the forward axis, or roll axis).
+        v) Under Min Freedom, specify the minimum rotation values for the eye (e.g. -45 deg for x and y axes, 0 deg for z axis).
+        vi) Under Max Freedom, specify the maximum rotation values for the eye (e.g. +45 deg for x and y axes, 0 deg for z axis).
+
+
+Retargeting motion capture data to a character:
+
+	P1) Get some motion capture data, ideally BVH or FBX files that have already been prepared for MotionBuilder. I use MotionBuilder-friendly BVH files from the CMU database available on cgspeed - http://sites.google.com/a/cgspeed.com/cgspeed/motion-capture/cmu-bvh-conversion.
+	
+	S1) Note that any motion capture data should be fine, but MotionBuilder uses certain conventions for joint names, so you will need to provide a joint naming template, as described above. Also, frame 0 of the motion must be T-pose.
+
+1) Import your rigged character: File -> Merge -> choose character's FBX file. I will use "Jason.fbx" for my example.
+
+2) Import a motion file: File -> Motion File Import -> select a BVH file (or another supported file format)-> Import. Make sure Create option is selected (rather than Merge) in the import dialog. I will use "HandShakeA.bvh" for my example.
+
+3) Create a "dummy" Character: Asset Browser -> Templates -> Characters -> drag and drop a Character asset into the scene. Name the character after your animation - e.g. "HandShakeA".
+
+4) Your scene should contain a node called "BVH:reference" or something similar. This node corresponds to the skeleton loaded from the motion capture file. In the Navigator tab, drag and drop the "HandShakeA" character onto the "BVH:reference" node, click Characterize and choose Biped.
+
+5) Now you need to link your target character to the "dummy" character, so that the loaded motion can be retargeted and played back on your target character. To do this, select your character and go to Character Controls -> DaVinci Menu -> Source -> <your dummy character> (in my case that would be "HandShakeA").
+
+6) Click Play and watch as the motion is played back on your target character.
+
+	S1) If the results look reasonable, you may want to bake the motion to the target character: Character Controls -> DaVinci Menu -> Bake(plot) -> Bake(plot) Skeleton.
+
+	S2) Once you have baked the motion onto the target character, you are free to delete the "dummy" character as well as the original motion data. To delete objects from the scene: select the object in the Navigator -> right-click the object -> Select Branches -> right-click the object again -> Delete.
+
+	S3) If you are having trouble playing back the animation on your character, make sure you have selected your character's rig under Character Controls -> DaVinci Menu -> Source, and also make sure Stance checkbox in the Character Controls tab is unchecked.
+
+	S4) It's a good idea to save your retargetted motion under a new name, e.g. "Jason@HandShakeA.fbx".
+
+
+Exporting animations in FBX format:
+
+1) Character Controls -> DaVinci Menu -> Save Character Animation.
+
+2) Specify a name for the animation file, e.g. "Jason@HandShakeA.fbx".
+
+3) Check the animation takes you want to export. In my example, I just want to export "HandShakeA". Unless you plan to use the animation in MotionBuilder, you can uncheck Save Control Rig and Save Character Extensions.
+
+4) Click Save.
+
+	S1) Before exporting, you might want to ensure your takes have correctly specified start and end frames. In my example, the default start frame for "HandShakeA" is 0, but that is incorrect, because frame 0 is the T-pose; the actual animation starts at frame 1. So I would select the "HandShakeA" take, and specify value 1 in the S textbox.
+
+
+Cleaning up motion data - filtering:
+
+1) Select the animation take you wish to filter.
+
+2) Select the joints you want to filter, or all the joints if you wish to apply a filter to all the motion data.
+
+3) Under the Filters tab, select the filter you want to apply. In my example, I am going to use the Butterworth filter to eliminate high-frequency noise from the motion data.
+
+4) Specify start and end frames of the animation segment the filter should apply to. One way to do this is to navigate to the desired start frame on the timeline (e.g. frame 1) and click Set Start, and then navigate to the end frame (e.g. frame 203) and click Set Stop.
+
+5) Specify filter-specific settings - e.g. for Butterworth I will typically specify Cut-off Frequency 3 Hz and leave everything else at default values.
+
+6) Click Preview and then play the animation to see if desired visual result has been achieved. If not, you can adjust the filter settings.
+
+	S1) Stop animation playback before adjusting filter settings and hitting Preview again. MotionBuilder always crashes for me when I neglect to do that.
+	
+7) If you are happy with the appearance of the filtered motion, click Accept.
+
+
+Cleaning up motion data - keyframing and layering:
+
+	S1) You can see what animation layers your take has under the Animation Layers window. The original animation is contained in the BaseAnimation layer. Any edits you want to make to the animation should be made in layers added on top of the BaseAnimation layer, otherwise you will irreversibly overwrite the original animation.
+
+1) To create a new layer, click New Layer. You can also make your edits in AnimLayer1, which is created by default, in which case you can skip this step.
+
+2) Select the layer where you want to make your edits.
+
+3) Select the FCurves tab.
+
+4) Use the MotionBuilder keyframing and curve editing tools to edit the motion:
+	
+	i) Navigate to a frame on the timeline. If you want to make an edit that propagates throughout the whole animation (often the case when cleaning up motion capture data), go to frame 0.
+	ii) Select a bone, e.g. "lShldr".
+	iii) Select the properties you want to edit, e.g. Rotation (Lcl).
+	iv) Hit K to set a keyframe.
+	v) Select each individual property (e.g. Rotation (Lcl) -> x) and move the keyframe up and down in the curve editor to modify its value.
+
+
+Merging multi-character interactions:
+
+	P1) FBX file containing Character A, performing a set of actions.
+	
+	P2) Separate FBX file containing Character B, performing a set of actions that match Character A's actions.
+	
+1) First make sure that actions (takes) performed by Character B have the same names as corresponding takes on Character A. Note that you can also rename takes when merging.
+
+2) Merge Character B into the scene containing Character A: File -> Merge -> select Character B's FBX file.
+
+3) Under Merge Options, for every Scene element specify that it should be duplicated (green checkmark with + sign), rather than merged or ignored. Also, here you can specify new names for takes from Character B's file. Make sure they match the names of Character A' takes. Click Merge when you are done.
+
+4) Takes with same names will be merged automatically. Any motions under the take will play simultaneously, even if they are on different characters.
+
+
+Realigning motion in the ground plane:
+
+1) Select the skeleton root at some animation frame.
+
+2) Select the BaseAnimation layer.
+
+3) Go to FCurves tab and select Translation (Lcl) and/or Rotation (Lcl) under transformation types.
+
+4) Hit A to zoom on all the root keyframes and select all the keyframes (click and drag).
+
+5) Translate/rotate the root along the ground plane using the Translate and Rotate tools.
+
+6) Under Key Controls, click Move Keys - all the root keyframes will be translated and rotated by the amount applied at the current pose.
+
+
