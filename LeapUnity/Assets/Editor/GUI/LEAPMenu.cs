@@ -163,17 +163,17 @@ public class LEAPMenu
 		gazectr.childControllers[0] = blinkctr;
 		gazectr.childControllers[1] = eactr;
 		// Initialize controller states
-		rootctr.UEdCreateStates();
-		lococtr.UEdCreateStates();
-		idlectr.UEdCreateStates();
-		gestctr.UEdCreateStates();
-		facectr.UEdCreateStates();
-		exprctr.UEdCreateStates();
-		spctr.UEdCreateStates();
-		gazectr.UEdCreateStates();
-		blinkctr.UEdCreateStates();
-		eactr.UEdCreateStates();
-		FaceController.UEdInitRandomHeadMotion(obj);
+		rootctr._CreateStates();
+		lococtr._CreateStates();
+		idlectr._CreateStates();
+		gestctr._CreateStates();
+		facectr._CreateStates();
+		exprctr._CreateStates();
+		spctr._CreateStates();
+		gazectr._CreateStates();
+		blinkctr._CreateStates();
+		eactr._CreateStates();
+		FaceController._InitRandomHeadMotion(obj);
 		
 		// Add GUI helper components
 		obj.AddComponent<EyeLaserGizmo>();
@@ -254,7 +254,7 @@ public class LEAPMenu
 				continue;
 			
 			AnimController anim_ctrl = (AnimController)comp;
-			anim_ctrl.UEdCreateStates();
+			anim_ctrl._CreateStates();
 		}
 	}
 	

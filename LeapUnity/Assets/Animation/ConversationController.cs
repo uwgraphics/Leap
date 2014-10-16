@@ -488,7 +488,7 @@ public class ConversationController: AnimController
 		addNewTarget = false;
 	}
 
-	public override void UEdCreateStates()
+	public override void _CreateStates()
 	{
 		// Initialize states
 		_InitStateDefs<ConversationState>();

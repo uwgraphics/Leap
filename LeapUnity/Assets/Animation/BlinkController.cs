@@ -486,7 +486,7 @@ public class BlinkController : AnimController
 		rBlinkWeight = morphCtrl.morphChannels[rBlinkMTIndex].weight;
 	}
 	
-	public override void UEdCreateStates()
+	public override void _CreateStates()
 	{
 		// Initialize states
 		_InitStateDefs<BlinkState>();

@@ -324,7 +324,7 @@ public class ExpressionController : AnimController
 		return time;
 	}
 	
-	public override void UEdCreateStates()
+	public override void _CreateStates()
 	{
 		// Initialize states
 		_InitStateDefs<ExpressionState>();

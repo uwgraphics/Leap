@@ -33,7 +33,7 @@ public class RootController : AnimController
 		// TODO: enable all animation
 	}
 	
-	public override void UEdCreateStates()
+	public override void _CreateStates()
 	{
 		// Initialize states
 		_InitStateDefs<RootState>();

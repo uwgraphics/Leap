@@ -266,7 +266,7 @@ public class EyesAliveController : AnimController
 		cancelGazeShift = false;
 	}
 	
-	public override void UEdCreateStates()
+	public override void _CreateStates()
 	{
 		// Initialize states
 		_InitStateDefs<EyesAliveState>();

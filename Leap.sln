@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FBXMorphPreprocess", "Tools\FBXMorphPreprocess\FBXMorphPreprocess.vcxproj", "{9FFBDEED-4594-480D-8E8F-3E6CA2D09264}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2A88DF2B-DC3B-4325-8C65-C8867D9873E2} = {2A88DF2B-DC3B-4325-8C65-C8867D9873E2}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FBXUtils", "Tools\FBXUtils\FBXUtils.vcxproj", "{2A88DF2B-DC3B-4325-8C65-C8867D9873E2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{FEB9D489-FD42-4D0B-8D51-4ECF6235D973}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9FFBDEED-4594-480D-8E8F-3E6CA2D09264}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9FFBDEED-4594-480D-8E8F-3E6CA2D09264}.Debug|Win32.Build.0 = Debug|Win32
+		{9FFBDEED-4594-480D-8E8F-3E6CA2D09264}.Release|Win32.ActiveCfg = Release|Win32
+		{9FFBDEED-4594-480D-8E8F-3E6CA2D09264}.Release|Win32.Build.0 = Release|Win32
+		{2A88DF2B-DC3B-4325-8C65-C8867D9873E2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2A88DF2B-DC3B-4325-8C65-C8867D9873E2}.Debug|Win32.Build.0 = Debug|Win32
+		{2A88DF2B-DC3B-4325-8C65-C8867D9873E2}.Release|Win32.ActiveCfg = Release|Win32
+		{2A88DF2B-DC3B-4325-8C65-C8867D9873E2}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9FFBDEED-4594-480D-8E8F-3E6CA2D09264} = {FEB9D489-FD42-4D0B-8D51-4ECF6235D973}
+		{2A88DF2B-DC3B-4325-8C65-C8867D9873E2} = {FEB9D489-FD42-4D0B-8D51-4ECF6235D973}
+	EndGlobalSection
+EndGlobal

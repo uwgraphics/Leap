@@ -198,7 +198,7 @@ public class SimpleListenController : AnimController
 			speechProc.Kill();
 	}
 	
-	public override void UEdCreateStates()
+	public override void _CreateStates()
 	{
 		// Initialize states
 		_InitStateDefs<SimpleListenState>();
