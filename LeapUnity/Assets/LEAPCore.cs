@@ -17,4 +17,9 @@ public class LEAPCore : MonoBehaviour
 	/// What time step to take in forward Euler (e.g. used in gaze shifts).
 	/// </summary>
 	public static float eulerTimeStep = 0.015f;
+
+    /// <summary>
+    /// Frame rate to use for animation viewing and editing.
+    /// </summary>
+    public static int editFrameRate = 60;
 }

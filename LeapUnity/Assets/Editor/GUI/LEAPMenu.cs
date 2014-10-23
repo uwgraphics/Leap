@@ -5,6 +5,35 @@ using System.Collections;
 
 public class LEAPMenu
 {
+    [MenuItem("LEAP/Animation/Test Animation Timeline", true, 10)]
+    private static bool ValidateTestAnimationTimeline()
+    {
+        var obj = Selection.activeGameObject;
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (obj == null || wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test Animation Timeline", false, 10)]
+    private static void TestAnimationTimeline()
+    {
+        GameObject obj = Selection.activeGameObject;
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+
+        timeline.RemoveAllLayers();
+
+        /*timeline.AddLayer(AnimationLayerMode.Additive, 5, "Gaze");
+        timeline.AddAnimation("Gaze", new AnimationInstance(obj, "TestLookLeft"), 180);
+        timeline.AddAnimation("Gaze", new AnimationInstance(obj, "TestLookLeft"), 30);*/
+        timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
+        timeline.AddAnimation("BaseAnimation", new AnimationInstance(obj, "Sneaking"), 0);
+    }
+
 	/// <summary>
 	/// Validates the specified menu item.
 	/// </summary>
@@ -12,7 +41,7 @@ public class LEAPMenu
 	/// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
 	/// </returns>
 	[MenuItem( "LEAP/Animation/Load Morph Channels", true )]
-	private static bool vMiLoadMorphChannels()
+	private static bool ValidateLoadMorphChannels()
 	{
 		GameObject obj = Selection.activeGameObject;
 		if( obj == null || obj.GetComponent<MorphController>() == null )
@@ -28,7 +57,7 @@ public class LEAPMenu
 	/// when user clicks a menu item.
 	/// </summary>
 	[MenuItem( "LEAP/Animation/Load Morph Channels" )]
-	private static void hMiLoadMorphChannels()
+	private static void LoadMorphChannels()
 	{
 		GameObject obj = Selection.activeGameObject;
 		
@@ -61,7 +90,7 @@ public class LEAPMenu
 	/// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
 	/// </returns>
 	[MenuItem( "LEAP/Animation/Save Morph Channels", true )]
-	private static bool vMiSaveMorphChannels()
+	private static bool ValidateSaveMorphChannels()
 	{
 		GameObject obj = Selection.activeGameObject;
 		if( obj == null || obj.GetComponent<MorphController>() == null )
@@ -77,7 +106,7 @@ public class LEAPMenu
 	/// when user clicks a menu item.
 	/// </summary>
 	[MenuItem( "LEAP/Animation/Save Morph Channels" )]
-	private static void hMiSaveMorphChannels()
+	private static void SaveMorphChannels()
 	{
 		GameObject obj = Selection.activeGameObject;
 		
@@ -111,7 +140,7 @@ public class LEAPMenu
 	/// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
 	/// </returns>
 	[MenuItem( "LEAP/Agent Setup/Set Up Default Agent", true )]
-	private static bool vMiSetupDefaultAgent()
+	private static bool ValidateSetupDefaultAgent()
 	{
 		GameObject obj = Selection.activeGameObject;
 		if( obj == null )
@@ -127,7 +156,7 @@ public class LEAPMenu
 	/// functional components when user clicks a menu item.
 	/// </summary>
 	[MenuItem( "LEAP/Agent Setup/Set Up Default Agent" )]
-	private static void hMiSetupDefaultAgent()
+	private static void SetupDefaultAgent()
 	{
 		GameObject obj = Selection.activeGameObject;
 		
@@ -186,7 +215,7 @@ public class LEAPMenu
 	/// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
 	/// </returns>
 	[MenuItem( "LEAP/Agent Setup/Refresh Agent", true )]
-	private static bool vMiRefreshAgent()
+	private static bool ValidateRefreshAgent()
 	{
 		GameObject obj = Selection.activeGameObject;
 		if( obj == null )
@@ -202,7 +231,7 @@ public class LEAPMenu
 	/// functional components when user clicks a menu item.
 	/// </summary>
 	[MenuItem( "LEAP/Agent Setup/Refresh Agent" )]
-	private static void hMiRefreshAgent()
+	private static void RefreshAgent()
 	{
 		GameObject obj = Selection.activeGameObject;
 		GameObject baseobj = (GameObject)EditorUtility.GetPrefabParent(obj);
@@ -227,7 +256,7 @@ public class LEAPMenu
 	/// true if an agent is selected, false otherwise.
 	/// </returns>
 	[MenuItem( "LEAP/Agent Setup/Init. Controller States", true )]
-	private static bool vMiCreateFSMStates()
+	private static bool ValidateCreateFSMStates()
 	{
 		GameObject obj = Selection.activeGameObject;
 		if( obj == null )
@@ -243,7 +272,7 @@ public class LEAPMenu
 	/// animation controllers defined on the selected agent.
 	/// </summary>
 	[MenuItem( "LEAP/Agent Setup/Init. Controller States" )]
-	private static void hMiCreateFSMStates()
+	private static void CreateFSMStates()
 	{
 		GameObject obj = Selection.activeGameObject;
 		Component[] comp_list = obj.GetComponents<AnimController>();
@@ -265,7 +294,7 @@ public class LEAPMenu
 	/// true if a photo mosaic is selected, false otherwise.
 	/// </returns>
 	[MenuItem( "LEAP/Scenario/Mosaic Keyframe" )]
-	private static bool vMiMosaicKeyframe()
+	private static bool ValidateMosaicKeyframe()
 	{
 		GameObject obj = Selection.activeGameObject;
 		if( obj == null || obj.GetComponent<PhotoMosaic>() == null )
@@ -280,7 +309,7 @@ public class LEAPMenu
 	/// Keyframes the current position and scale of the photo mosaic.
 	/// </summary>
 	[MenuItem( "LEAP/Scenario/Mosaic Keyframe" )]
-	private static void hMiMosaicKeyframe()
+	private static void MosaicKeyframe()
 	{
 		GameObject obj = Selection.activeGameObject;
 		PhotoMosaic pm = obj.GetComponent<PhotoMosaic>();
