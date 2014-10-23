@@ -27,9 +27,9 @@ public class LEAPMenu
 
         timeline.RemoveAllLayers();
 
-        /*timeline.AddLayer(AnimationLayerMode.Additive, 5, "Gaze");
+        timeline.AddLayer(AnimationLayerMode.Additive, 5, "Gaze");
         timeline.AddAnimation("Gaze", new AnimationInstance(obj, "TestLookLeft"), 180);
-        timeline.AddAnimation("Gaze", new AnimationInstance(obj, "TestLookLeft"), 30);*/
+        timeline.AddAnimation("Gaze", new AnimationInstance(obj, "TestLookLeft"), 30);
         timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
         timeline.AddAnimation("BaseAnimation", new AnimationInstance(obj, "Sneaking"), 0);
     }

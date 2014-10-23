@@ -450,9 +450,9 @@ public class AnimationTimeline
     /// </summary>
     /// <param name="animationClipName">Animation clip name</param>
     /// <returns>Animation clip</returns>
-    public AnimationClip Bake(string animationClipName)
+    public void Bake(string animationClipName)
     {
-        return null;
+        BakeRange(animationClipName, 0, FrameLength);
     }
 
     /// <summary>
@@ -462,9 +462,130 @@ public class AnimationTimeline
     /// <param name="startFrame">Start frame index</param>
     /// <param name="length">Range length in frames</param>
     /// <returns>Animation clip</returns>
-    public AnimationClip BakeRange(string animationClipName, int startFrame, int length)
+    public void BakeRange(string animationClipName, int startFrame, int length)
     {
-        return null;
+        // Get all character models animated using the timeline
+        var models = new HashSet<ModelController>();
+        foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
+        {
+            var instance = kvp.Value.Animation;
+            models.Add(instance.Model);
+        }
+
+        // Ensure each model has an animation clip with the specified name
+        foreach (var model in models)
+        {
+            AnimationClip newClip = null;
+
+            // Does the model already have an animation clip with that name?
+            var animationComponent = model.gameObject.animation;
+            foreach (AnimationState animationState in animationComponent)
+            {
+                if (animationState.name == animationClipName)
+                {
+                    newClip = animationState.clip;
+                    newClip.ClearCurves();
+                }
+            }
+
+            if (newClip == null)
+            {
+                // Model does not have an animation clip with the specified name, so create a new one
+                newClip = new AnimationClip();
+                AnimationUtility.SetAnimationType(newClip, ModelImporterAnimationType.Legacy);
+                animationComponent.AddClip(newClip, newClip.name);
+            }
+        }
+
+        // For each model, retrieve its nodes and create empty anim. curves for them
+        var curvesPerModel = new Dictionary<string, AnimationCurve[]>();
+        foreach (var model in models)
+        {
+            Transform[] bones = ModelController.GetAllBones(model.gameObject);
+            curvesPerModel[model.gameObject.name] = new AnimationCurve[6 + (bones.Length - 1)*3];
+            // 6 animated properties for the root, 3 for the other bones
+        }
+
+        // Apply the animation at each frame in the range and bake the resulting frame to the curve on each model
+        GoToFrame(startFrame);
+        while (CurrentFrame <= startFrame + length && CurrentFrame != FrameLength)
+        {
+            _ApplyAnimation();
+
+            foreach (var model in models)
+            {
+                Transform[] bones = ModelController.GetAllBones(model.gameObject);
+                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                {
+                    var bone = bones[boneIndex];
+
+                    if (boneIndex == 0)
+                    {
+                        // Key position on the root bone
+
+                        var positionKeyframe = new Keyframe();
+                        positionKeyframe.time = ((float)(CurrentFrame - startFrame)) / LEAPCore.editFrameRate;
+
+                        positionKeyframe.value = bone.localPosition.x;
+                        curvesPerModel[model.gameObject.name][boneIndex * 6].AddKey(positionKeyframe);
+
+                        positionKeyframe.value = bone.localPosition.y;
+                        curvesPerModel[model.gameObject.name][boneIndex * 6 + 1].AddKey(positionKeyframe);
+
+                        positionKeyframe.value = bone.localPosition.z;
+                        curvesPerModel[model.gameObject.name][boneIndex * 6 + 2].AddKey(positionKeyframe);
+                    }
+
+                    // Key rotation
+
+                    var rotationKeyFrame = new Keyframe();
+                    rotationKeyFrame.time = ((float)(CurrentFrame - startFrame)) / LEAPCore.editFrameRate;
+
+                    rotationKeyFrame.value = bone.localRotation.x;
+                    curvesPerModel[model.gameObject.name][3 + boneIndex * 3].AddKey(rotationKeyFrame);
+
+                    rotationKeyFrame.value = bone.localRotation.y;
+                    curvesPerModel[model.gameObject.name][3 + boneIndex * 3 + 1].AddKey(rotationKeyFrame);
+
+                    rotationKeyFrame.value = bone.localRotation.z;
+                    curvesPerModel[model.gameObject.name][3 + boneIndex * 3 + 2].AddKey(rotationKeyFrame);
+                }
+            }
+        }
+
+        // Set the curves to their animation clips on each model
+        foreach (var model in models)
+        {
+            AnimationClip newClip = null;
+
+            // Get the animation clip
+            var animationComponent = model.gameObject.animation;
+            foreach (AnimationState animationState in animationComponent)
+            {
+                if (animationState.name == animationClipName)
+                    newClip = animationState.clip;
+            }
+
+            // Set curves on that clip
+            Transform[] bones = ModelController.GetAllBones(model.gameObject);
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                var bone = bones[boneIndex];
+
+                if (boneIndex == 0)
+                {
+                    // Set position curves on root bone
+                    newClip.SetCurve("", typeof(Transform), "localPosition.x", curvesPerModel[model.gameObject.name][boneIndex * 6]);
+                    newClip.SetCurve("", typeof(Transform), "localPosition.y", curvesPerModel[model.gameObject.name][boneIndex * 6 + 1]);
+                    newClip.SetCurve("", typeof(Transform), "localPosition.z", curvesPerModel[model.gameObject.name][boneIndex * 6 + 2]);
+                }
+
+                // Set rotation curves
+                newClip.SetCurve("", typeof(Transform), "localRotation.x", curvesPerModel[model.gameObject.name][3 + boneIndex * 3]);
+                newClip.SetCurve("", typeof(Transform), "localRotation.y", curvesPerModel[model.gameObject.name][3 + boneIndex * 3 + 1]);
+                newClip.SetCurve("", typeof(Transform), "localRotation.z", curvesPerModel[model.gameObject.name][3 + boneIndex * 3 + 2]);
+            }
+        }
     }
 
     public void Update(float deltaTime)
@@ -481,6 +602,19 @@ public class AnimationTimeline
             _AddTime(deltaTime);
         }
 
+        _ApplyAnimation();
+    }
+
+    private void _AddTime(float deltaTime)
+    {
+        if (CurrentTime + deltaTime > TimeLength)
+            CurrentTime += deltaTime - TimeLength;
+        else
+            CurrentTime += deltaTime;
+    }
+
+    private void _ApplyAnimation()
+    {
         // Apply active animation instances in layers in correct order
         foreach (var layer in _layerContainers)
         {
@@ -501,14 +635,6 @@ public class AnimationTimeline
                 }
             }
         }
-    }
-
-    private void _AddTime(float deltaTime)
-    {
-        if (CurrentTime + deltaTime > TimeLength)
-            CurrentTime += deltaTime - TimeLength;
-        else
-            CurrentTime += deltaTime;
     }
 
     private void _AddAnimationToLayerContainer(ScheduledInstance newInstance, LayerContainer targetLayerContainer)

@@ -47,6 +47,11 @@ public class LeapAnimationEditor : EditorWindow
         _frameTimer.Start();
 
         Timeline.Update(deltaTime);
+        if (Timeline.Playing)
+        {
+            SceneView.RepaintAll();
+            this.Repaint();
+        }
     }
 
     private void OnGUI()
@@ -76,11 +81,27 @@ public class LeapAnimationEditor : EditorWindow
             && Timeline.Active && !Timeline.Playing)
         {
             Timeline.PreviousFrame();
+            SceneView.RepaintAll();
         }
         if (GUI.Button(new Rect(160, 10, 40, 40), _timelineNextFrameTexture)
             && Timeline.Active && !Timeline.Playing)
         {
             Timeline.NextFrame();
+            SceneView.RepaintAll();
+        }
+
+        // Update the playback slider
+        if (Timeline.Active && Timeline.Playing || !Timeline.Active)
+        {
+            GUI.HorizontalSlider(new Rect(20, 60, this.position.width - 50, 20), Timeline.CurrentTime / Timeline.TimeLength, 0, 1);
+        }
+        else
+        {
+            Timeline.GoToTime(
+                GUI.HorizontalSlider(new Rect(20, 60, this.position.width - 50, 20), Timeline.CurrentTime / Timeline.TimeLength, 0, 1)
+                * Timeline.TimeLength
+                );
+            SceneView.RepaintAll();
         }
     }
 

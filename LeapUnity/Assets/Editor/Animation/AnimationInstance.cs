@@ -76,7 +76,6 @@ public class AnimationInstance
     }
 
     protected bool _isBaked = false;
-    private int _lastAppliedFrame = 0;
 
     /// <summary>
     /// Constructor.
@@ -146,14 +145,20 @@ public class AnimationInstance
     /// <param name="layerMode">Animation layering mode</param>
     public virtual void Apply(int frame, AnimationLayerMode layerMode)
     {
-        if (_lastAppliedFrame == frame)
-            return;
-        else
-            _lastAppliedFrame = frame;
-
+        // Configure how the animation clip will be applied to the model
         Animation[AnimationClip.name].time = ((float)frame) / TimeLength;
+        if (layerMode == AnimationLayerMode.Additive)
+        {
+            Animation[AnimationClip.name].weight = Weight;
+            Animation[AnimationClip.name].blendMode = AnimationBlendMode.Additive;
+        }
+        else
+        {
+            Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
+        }
+
+        // Apply the animation clip to the model
         Animation[AnimationClip.name].enabled = true;
-        Animation[AnimationClip.name].weight = Weight;
         Animation.Sample();
         Animation[AnimationClip.name].enabled = false;
     }

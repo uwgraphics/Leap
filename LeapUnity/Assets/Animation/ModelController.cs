@@ -414,6 +414,32 @@ public class ModelController : MonoBehaviour
     }
 
     /// <summary>
+    /// Get all bones in a character model
+    /// </summary>
+    /// <param name="obj">Character model</param>
+    /// <returns>Array of all bones</returns>
+    public static Transform[] GetAllBones(GameObject obj)
+    {
+        var bones = new List<Transform>();
+        _GetAllBones(FindRootBone(obj), bones);
+        return bones.ToArray();
+    }
+
+    // Traverse a model's bone hierarchy and add all bones into a list
+    private static void _GetAllBones(Transform rootBone, List<Transform> bones)
+    {
+        if (rootBone == null)
+            return;
+
+        bones.Add(rootBone);
+
+        foreach (Transform child in rootBone)
+        {
+            _GetAllBones(child, bones);
+        }
+    }
+
+    /// <summary>
     /// Automatically attaches tags to model parts. 
     /// </summary>
     /// <param name="gameObj">
