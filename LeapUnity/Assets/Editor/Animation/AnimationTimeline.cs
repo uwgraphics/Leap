@@ -165,6 +165,10 @@ public class AnimationTimeline
         get { return _currentTime; }
         private set
         {
+            // TODO: catch a bug here
+            if (_currentTime == float.NaN)
+                throw new Exception("Tried setting current time on timeline to NaN");
+            //
             _currentTime = value;
             if (_currentTime < 0f)
                 _currentTime = 0f;
@@ -207,6 +211,7 @@ public class AnimationTimeline
         get { return (1f / LEAPCore.editFrameRate) * FrameLength; }
     }
 
+    private Dictionary<string, AnimationInstance> _initialPoseAnimationInstances;
     private List<LayerContainer> _layerContainers;
     private Dictionary<int, ScheduledInstance> _animationInstancesById;
     private float _currentTime = 0;
@@ -217,11 +222,28 @@ public class AnimationTimeline
     /// </summary>
     public AnimationTimeline()
     {
+        _initialPoseAnimationInstances = new Dictionary<string, AnimationInstance>();
         _layerContainers = new List<LayerContainer>();
         _animationInstancesById = new Dictionary<int, ScheduledInstance>();
 
         Active = false;
         Playing = false;
+    }
+
+    /// <summary>
+    /// Get all character models animated on this animation timeline.
+    /// </summary>
+    /// <returns>List of models</returns>
+    public ModelController[] GetAllModels()
+    {
+        var models = new HashSet<ModelController>();
+        foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
+        {
+            var instance = kvp.Value.Animation;
+            models.Add(instance.Model);
+        }
+
+        return models.ToArray();
     }
 
     /// <summary>
@@ -464,13 +486,7 @@ public class AnimationTimeline
     /// <returns>Animation clip</returns>
     public void BakeRange(string animationClipName, int startFrame, int length)
     {
-        // Get all character models animated using the timeline
-        var models = new HashSet<ModelController>();
-        foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
-        {
-            var instance = kvp.Value.Animation;
-            models.Add(instance.Model);
-        }
+        ModelController[] models = GetAllModels();
 
         // Ensure each model has an animation clip with the specified name
         foreach (var model in models)
@@ -588,6 +604,27 @@ public class AnimationTimeline
         }
     }
 
+    public void ResetModelsToInitialPose()
+    {
+        // Set all models to initial pose
+        ModelController[] models = GetAllModels();
+        foreach (var model in models)
+        {
+            AnimationInstance initialPoseInstance = null;
+            if (!_initialPoseAnimationInstances.ContainsKey(model.gameObject.name))
+            {
+                initialPoseInstance = new AnimationInstance(model.gameObject, "InitialPose");
+                _initialPoseAnimationInstances[model.gameObject.name] = initialPoseInstance;
+            }
+            else
+            {
+                initialPoseInstance = _initialPoseAnimationInstances[model.gameObject.name];
+            }
+
+            initialPoseInstance.Apply(0, AnimationLayerMode.Override);
+        }
+    }
+
     public void Update(float deltaTime)
     {
         if (!Active)
@@ -615,6 +652,8 @@ public class AnimationTimeline
 
     private void _ApplyAnimation()
     {
+        ResetModelsToInitialPose();
+
         // Apply active animation instances in layers in correct order
         foreach (var layer in _layerContainers)
         {

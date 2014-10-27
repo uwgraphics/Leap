@@ -34,6 +34,22 @@ public class LEAPMenu
         timeline.AddAnimation("BaseAnimation", new AnimationInstance(obj, "Sneaking"), 0);
     }
 
+    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 9)]
+    private static bool ValidateResetModelsToInitialPose()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        return wnd.Timeline != null;
+    }
+
+    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", false, 9)]
+    private static void ResetModelsToInitialPose()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+        timeline.ResetModelsToInitialPose();
+        SceneView.RepaintAll();
+    }
+
 	/// <summary>
 	/// Validates the specified menu item.
 	/// </summary>

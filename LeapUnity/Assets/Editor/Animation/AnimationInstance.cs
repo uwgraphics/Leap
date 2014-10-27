@@ -99,6 +99,14 @@ public class AnimationInstance
         foreach (AnimationState animationState in Animation)
         {
             var clip = animationState.clip;
+            if (clip == null)
+            {
+                // TODO: this is needed b/c Unity is a buggy piece of crap
+                Debug.LogWarning(string.Format("Animation state {0} on model {1} has clip set to null",
+                    animationState.name, Animation.gameObject.name));
+                continue;
+            }
+
             if (clip.name == animationClipName)
             {
                 // There is already a defined clip for this animation instance,
@@ -147,9 +155,9 @@ public class AnimationInstance
     {
         // Configure how the animation clip will be applied to the model
         Animation[AnimationClip.name].time = ((float)frame) / TimeLength;
+        Animation[AnimationClip.name].weight = Weight;
         if (layerMode == AnimationLayerMode.Additive)
         {
-            Animation[AnimationClip.name].weight = Weight;
             Animation[AnimationClip.name].blendMode = AnimationBlendMode.Additive;
         }
         else
@@ -161,6 +169,10 @@ public class AnimationInstance
         Animation[AnimationClip.name].enabled = true;
         Animation.Sample();
         Animation[AnimationClip.name].enabled = false;
+        //
+        /*Debug.Log(string.Format("Applied animation {0} at frame {1} in layer moder {2} at weight {3}",
+            AnimationClip.name, frame, layerMode.ToString(), Weight));*/
+        //
     }
 
     /// <summary>

@@ -56,6 +56,9 @@ public class LeapAnimationEditor : EditorWindow
 
     private void OnGUI()
     {
+        if (Timeline == null)
+            return;
+
         _InitGUI();
 
         // Animation timeline activation/deactivation
@@ -63,6 +66,12 @@ public class LeapAnimationEditor : EditorWindow
             Timeline.Active ? _timelineActiveDownTexture : _timelineActiveTexture))
         {
             Timeline.Active = !Timeline.Active;
+
+            if (!Timeline.Active)
+            {
+                Timeline.ResetModelsToInitialPose();
+                SceneView.RepaintAll();
+            }
         }
 
         // Enable/disable playback on the timeline
