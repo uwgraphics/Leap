@@ -32,22 +32,38 @@ public class LEAPMenu
         timeline.AddAnimation("Gaze", new AnimationInstance(obj, "TestLookLeft"), 30);
         timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
         timeline.AddAnimation("BaseAnimation", new AnimationInstance(obj, "Sneaking"), 0);
+
     }
 
-    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 9)]
+    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 8)]
     private static bool ValidateResetModelsToInitialPose()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", false, 9)]
+    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", false, 8)]
     private static void ResetModelsToInitialPose()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
         timeline.ResetModelsToInitialPose();
         SceneView.RepaintAll();
+    }
+
+    [MenuItem("LEAP/Animation/Bake Animation", true, 9)]
+    private static bool ValidateBakeAnimation()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        return wnd.Timeline != null;
+    }
+
+    [MenuItem("LEAP/Animation/Bake Animation", false, 9)]
+    private static void BakeAnimation()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+        timeline.BakeRange("SneakingStart", 0, 60);
     }
 
 	/// <summary>

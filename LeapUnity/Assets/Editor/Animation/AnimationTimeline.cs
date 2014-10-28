@@ -167,7 +167,10 @@ public class AnimationTimeline
         {
             // TODO: catch a bug here
             if (_currentTime == float.NaN)
-                throw new Exception("Tried setting current time on timeline to NaN");
+            {
+                Debug.LogError("Tried setting current time on timeline to NaN");
+                _currentTime = 0;
+            }
             //
             _currentTime = value;
             if (_currentTime < 0f)
@@ -508,6 +511,7 @@ public class AnimationTimeline
             {
                 // Model does not have an animation clip with the specified name, so create a new one
                 newClip = new AnimationClip();
+                newClip.name = animationClipName;
                 AnimationUtility.SetAnimationType(newClip, ModelImporterAnimationType.Legacy);
                 animationComponent.AddClip(newClip, newClip.name);
             }
@@ -518,13 +522,15 @@ public class AnimationTimeline
         foreach (var model in models)
         {
             Transform[] bones = ModelController.GetAllBones(model.gameObject);
-            curvesPerModel[model.gameObject.name] = new AnimationCurve[6 + (bones.Length - 1)*3];
-            // 6 animated properties for the root, 3 for the other bones
+            curvesPerModel[model.gameObject.name] = new AnimationCurve[3 + bones.Length*4];
+            // 3 properties for the root position, 4 for the rotation of each bone (incl. root)
+            for (int curveIndex = 0; curveIndex < curvesPerModel[model.gameObject.name].Length; ++curveIndex)
+                curvesPerModel[model.gameObject.name][curveIndex] = new AnimationCurve();
         }
 
         // Apply the animation at each frame in the range and bake the resulting frame to the curve on each model
         GoToFrame(startFrame);
-        while (CurrentFrame <= startFrame + length && CurrentFrame != FrameLength)
+        while (CurrentFrame <= startFrame + length && CurrentFrame < FrameLength)
         {
             _ApplyAnimation();
 
@@ -543,13 +549,13 @@ public class AnimationTimeline
                         positionKeyframe.time = ((float)(CurrentFrame - startFrame)) / LEAPCore.editFrameRate;
 
                         positionKeyframe.value = bone.localPosition.x;
-                        curvesPerModel[model.gameObject.name][boneIndex * 6].AddKey(positionKeyframe);
+                        curvesPerModel[model.gameObject.name][0].AddKey(positionKeyframe);
 
                         positionKeyframe.value = bone.localPosition.y;
-                        curvesPerModel[model.gameObject.name][boneIndex * 6 + 1].AddKey(positionKeyframe);
+                        curvesPerModel[model.gameObject.name][1].AddKey(positionKeyframe);
 
                         positionKeyframe.value = bone.localPosition.z;
-                        curvesPerModel[model.gameObject.name][boneIndex * 6 + 2].AddKey(positionKeyframe);
+                        curvesPerModel[model.gameObject.name][2].AddKey(positionKeyframe);
                     }
 
                     // Key rotation
@@ -558,15 +564,20 @@ public class AnimationTimeline
                     rotationKeyFrame.time = ((float)(CurrentFrame - startFrame)) / LEAPCore.editFrameRate;
 
                     rotationKeyFrame.value = bone.localRotation.x;
-                    curvesPerModel[model.gameObject.name][3 + boneIndex * 3].AddKey(rotationKeyFrame);
+                    curvesPerModel[model.gameObject.name][3 + boneIndex * 4].AddKey(rotationKeyFrame);
 
                     rotationKeyFrame.value = bone.localRotation.y;
-                    curvesPerModel[model.gameObject.name][3 + boneIndex * 3 + 1].AddKey(rotationKeyFrame);
+                    curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 1].AddKey(rotationKeyFrame);
 
                     rotationKeyFrame.value = bone.localRotation.z;
-                    curvesPerModel[model.gameObject.name][3 + boneIndex * 3 + 2].AddKey(rotationKeyFrame);
+                    curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 2].AddKey(rotationKeyFrame);
+
+                    rotationKeyFrame.value = bone.localRotation.w;
+                    curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 3].AddKey(rotationKeyFrame);
                 }
             }
+
+            NextFrame();
         }
 
         // Set the curves to their animation clips on each model
@@ -587,19 +598,21 @@ public class AnimationTimeline
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
                 var bone = bones[boneIndex];
+                string bonePath = ModelController.GetBonePath(bone);
 
                 if (boneIndex == 0)
                 {
                     // Set position curves on root bone
-                    newClip.SetCurve("", typeof(Transform), "localPosition.x", curvesPerModel[model.gameObject.name][boneIndex * 6]);
-                    newClip.SetCurve("", typeof(Transform), "localPosition.y", curvesPerModel[model.gameObject.name][boneIndex * 6 + 1]);
-                    newClip.SetCurve("", typeof(Transform), "localPosition.z", curvesPerModel[model.gameObject.name][boneIndex * 6 + 2]);
+                    newClip.SetCurve(bonePath, typeof(Transform), "localPosition.x", curvesPerModel[model.gameObject.name][0]);
+                    newClip.SetCurve(bonePath, typeof(Transform), "localPosition.y", curvesPerModel[model.gameObject.name][1]);
+                    newClip.SetCurve(bonePath, typeof(Transform), "localPosition.z", curvesPerModel[model.gameObject.name][2]);
                 }
 
                 // Set rotation curves
-                newClip.SetCurve("", typeof(Transform), "localRotation.x", curvesPerModel[model.gameObject.name][3 + boneIndex * 3]);
-                newClip.SetCurve("", typeof(Transform), "localRotation.y", curvesPerModel[model.gameObject.name][3 + boneIndex * 3 + 1]);
-                newClip.SetCurve("", typeof(Transform), "localRotation.z", curvesPerModel[model.gameObject.name][3 + boneIndex * 3 + 2]);
+                newClip.SetCurve(bonePath, typeof(Transform), "localRotation.x", curvesPerModel[model.gameObject.name][3 + boneIndex * 4]);
+                newClip.SetCurve(bonePath, typeof(Transform), "localRotation.y", curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 1]);
+                newClip.SetCurve(bonePath, typeof(Transform), "localRotation.z", curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 2]);
+                newClip.SetCurve(bonePath, typeof(Transform), "localRotation.w", curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 3]);
             }
         }
     }

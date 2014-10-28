@@ -425,6 +425,19 @@ public class ModelController : MonoBehaviour
         return bones.ToArray();
     }
 
+    /// <summary>
+    /// Get path of the specified bone relative to the root.
+    /// </summary>
+    /// <param name="bone">Bone transform</param>
+    /// <returns>Relative path of the bone</returns>
+    public static string GetBonePath(Transform bone)
+    {
+        if (bone.tag == "RootBone")
+            return bone.name;
+
+        return GetBonePath(bone.parent) + "/" + bone.name;
+    }
+
     // Traverse a model's bone hierarchy and add all bones into a list
     private static void _GetAllBones(Transform rootBone, List<Transform> bones)
     {

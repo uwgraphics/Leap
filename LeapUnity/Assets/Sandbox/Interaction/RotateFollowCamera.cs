@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 /// <summary>
@@ -7,9 +6,6 @@ using UnityEngine;
 [AddComponentMenu("Camera-Control/Rotate Follow")]
 public class RotateFollowCamera : MonoBehaviour
 {
-	// TODO: How can we define input axes automatically (e.g. on package import),
-	// so the user doesn't have to?
-
 	/// <summary>
 	/// The target we are following
 	/// </summary>

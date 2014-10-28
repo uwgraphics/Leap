@@ -1,0 +1,6 @@
+LeapAnimationEditor:
+
+[] When playing back the timeline and layering TestLookLeft, the animation TestLookLeft is applied at the final pose instantly after 0th frame ("final pose" being the pose of the last keyframe), rather than smoothly interpolated.
+    - This happens in both additive and override layering modes.
+    - Timing of the animation instance is correct.
+    - Animation interpolates correctly when clip is played in Unity Animation window.
