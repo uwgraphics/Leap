@@ -40,6 +40,59 @@ ModelImporter:
     100068: srfBind_Rt_LegB
     100070: srfBind_Rt_LegC
     100072: srfBind_Rt_LegD
+    100074: Bone_Eye2_R
+    100076: Bone_Eye2_R 1
+    100078: Bone_Eye_L
+    100080: Bone_Eye_R
+    100082: Chair
+    100084: Char_Norman_1
+    100086: eye_Center
+    100088: eyeL_Lookahead
+    100090: eyeL_Up
+    100092: eyeR_Lookahead
+    100094: eyeR_Up
+    100096: Hand_R
+    100098: Norman_Ctrl:ChestEndEffector
+    100100: Norman_Ctrl:ChestOriginEffector
+    100102: Norman_Ctrl:Head
+    100104: Norman_Ctrl:HeadEffector
+    100106: Norman_Ctrl:Hips
+    100108: Norman_Ctrl:HipsEffector
+    100110: Norman_Ctrl:LeftAnkleEffector
+    100112: Norman_Ctrl:LeftArm
+    100114: Norman_Ctrl:LeftElbowEffector
+    100116: Norman_Ctrl:LeftFoot
+    100118: Norman_Ctrl:LeftForeArm
+    100120: Norman_Ctrl:LeftHand
+    100122: Norman_Ctrl:LeftHipEffector
+    100124: Norman_Ctrl:LeftKneeEffector
+    100126: Norman_Ctrl:LeftLeg
+    100128: Norman_Ctrl:LeftShoulderEffector
+    100130: Norman_Ctrl:LeftUpLeg
+    100132: Norman_Ctrl:LeftWristEffector
+    100134: Norman_Ctrl:Reference
+    100136: Norman_Ctrl:RightAnkleEffector
+    100138: Norman_Ctrl:RightArm
+    100140: Norman_Ctrl:RightElbowEffector
+    100142: Norman_Ctrl:RightFoot
+    100144: Norman_Ctrl:RightForeArm
+    100146: Norman_Ctrl:RightHand
+    100148: Norman_Ctrl:RightHipEffector
+    100150: Norman_Ctrl:RightKneeEffector
+    100152: Norman_Ctrl:RightLeg
+    100154: Norman_Ctrl:RightShoulderEffector
+    100156: Norman_Ctrl:RightUpLeg
+    100158: Norman_Ctrl:RightWristEffector
+    100160: Norman_Ctrl:Spine
+    100162: Norman_Ctrl:Spine1
+    100164: Norman_Ctrl:Spine2
+    100166: Obj_000001
+    100168: Obj_000002
+    100170: Obj_000003
+    100172: Obj_000004
+    100174: Obj_000005
+    100176: Obj_000006
+    100178: Obj_000007
     400000: Hand_L
     400002: Hand_L001
     400004: //RootNode
@@ -77,6 +130,59 @@ ModelImporter:
     400068: srfBind_Rt_LegB
     400070: srfBind_Rt_LegC
     400072: srfBind_Rt_LegD
+    400074: Bone_Eye2_R
+    400076: Bone_Eye2_R 1
+    400078: Bone_Eye_L
+    400080: Bone_Eye_R
+    400082: Chair
+    400084: Char_Norman_1
+    400086: eye_Center
+    400088: eyeL_Lookahead
+    400090: eyeL_Up
+    400092: eyeR_Lookahead
+    400094: eyeR_Up
+    400096: Hand_R
+    400098: Norman_Ctrl:ChestEndEffector
+    400100: Norman_Ctrl:ChestOriginEffector
+    400102: Norman_Ctrl:Head
+    400104: Norman_Ctrl:HeadEffector
+    400106: Norman_Ctrl:Hips
+    400108: Norman_Ctrl:HipsEffector
+    400110: Norman_Ctrl:LeftAnkleEffector
+    400112: Norman_Ctrl:LeftArm
+    400114: Norman_Ctrl:LeftElbowEffector
+    400116: Norman_Ctrl:LeftFoot
+    400118: Norman_Ctrl:LeftForeArm
+    400120: Norman_Ctrl:LeftHand
+    400122: Norman_Ctrl:LeftHipEffector
+    400124: Norman_Ctrl:LeftKneeEffector
+    400126: Norman_Ctrl:LeftLeg
+    400128: Norman_Ctrl:LeftShoulderEffector
+    400130: Norman_Ctrl:LeftUpLeg
+    400132: Norman_Ctrl:LeftWristEffector
+    400134: Norman_Ctrl:Reference
+    400136: Norman_Ctrl:RightAnkleEffector
+    400138: Norman_Ctrl:RightArm
+    400140: Norman_Ctrl:RightElbowEffector
+    400142: Norman_Ctrl:RightFoot
+    400144: Norman_Ctrl:RightForeArm
+    400146: Norman_Ctrl:RightHand
+    400148: Norman_Ctrl:RightHipEffector
+    400150: Norman_Ctrl:RightKneeEffector
+    400152: Norman_Ctrl:RightLeg
+    400154: Norman_Ctrl:RightShoulderEffector
+    400156: Norman_Ctrl:RightUpLeg
+    400158: Norman_Ctrl:RightWristEffector
+    400160: Norman_Ctrl:Spine
+    400162: Norman_Ctrl:Spine1
+    400164: Norman_Ctrl:Spine2
+    400166: Obj_000001
+    400168: Obj_000002
+    400170: Obj_000003
+    400172: Obj_000004
+    400174: Obj_000005
+    400176: Obj_000006
+    400178: Obj_000007
     2300000: Hand_L
     2300002: Hand_L001
     2300004: srfBind_Cn_Head
@@ -113,6 +219,15 @@ ModelImporter:
     2300066: srfBind_Rt_LegB
     2300068: srfBind_Rt_LegC
     2300070: srfBind_Rt_LegD
+    2300072: Chair
+    2300074: Hand_R
+    2300076: Obj_000001
+    2300078: Obj_000002
+    2300080: Obj_000003
+    2300082: Obj_000004
+    2300084: Obj_000005
+    2300086: Obj_000006
+    2300088: Obj_000007
     3300000: Hand_L
     3300002: Hand_L001
     3300004: srfBind_Cn_Head
@@ -149,6 +264,15 @@ ModelImporter:
     3300066: srfBind_Rt_LegB
     3300068: srfBind_Rt_LegC
     3300070: srfBind_Rt_LegD
+    3300072: Chair
+    3300074: Hand_R
+    3300076: Obj_000001
+    3300078: Obj_000002
+    3300080: Obj_000003
+    3300082: Obj_000004
+    3300084: Obj_000005
+    3300086: Obj_000006
+    3300088: Obj_000007
     4300000: srfBind_Cn_Pelvis
     4300002: srfBind_Cn_SpineA
     4300004: srfBind_Cn_SpineB
@@ -185,13 +309,23 @@ ModelImporter:
     4300066: srfBind_Lf_FootB 3
     4300068: srfBind_Lf_FootB 1
     4300070: srfBind_Lf_FootB 2
+    4300072: Hand_R
+    4300074: Chair
+    4300076: Obj_000007
+    4300078: Obj_000006
+    4300080: Obj_000005
+    4300082: Obj_000004
+    4300084: Obj_000003
+    4300086: Obj_000002
+    4300088: Obj_000001
     7400000: InitialPose
-    7400002: Sneaking
+    7400002: WindowWashing
     9500000: //RootNode
     11100000: //RootNode
     11400000: //RootNode
     11400002: //RootNode
     11400004: //RootNode
+    13700000: srfBind_Cn_Head
   materials:
     importMaterials: 1
     materialName: 0
@@ -313,10 +447,10 @@ ModelImporter:
       maskType: 0
       maskSource: {instanceID: 0}
     - serializedVersion: 16
-      name: Sneaking
+      name: WindowWashing
       takeName: Take 001
       firstFrame: 1
-      lastFrame: 1596
+      lastFrame: 562
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

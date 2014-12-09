@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections;
+using System.Linq;
 
 public class LEAPMenu
 {
@@ -27,12 +28,18 @@ public class LEAPMenu
 
         timeline.RemoveAllLayers();
 
-        timeline.AddLayer(AnimationLayerMode.Additive, 5, "Gaze");
-        timeline.AddAnimation("Gaze", new AnimationInstance(obj, "TestLookLeft"), 180);
-        timeline.AddAnimation("Gaze", new AnimationInstance(obj, "TestLookLeft"), 30);
+        var bodyAnimation = new AnimationClipInstance(obj, "InitialPose");
         timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
-        timeline.AddAnimation("BaseAnimation", new AnimationInstance(obj, "Sneaking"), 0);
-
+        timeline.AddAnimation("BaseAnimation", bodyAnimation, 0);
+        timeline.AddLayer(AnimationLayerMode.Override, 5, "Gaze");
+        /*timeline.AddAnimation("Gaze", new AnimationClipInstance(obj, "TestLookLeft"), 50);
+        timeline.AddAnimation("Gaze", new AnimationClipInstance(obj, "TestLookLeft"), 300);*/
+        timeline.AddAnimation("Gaze",
+            new EyeGazeInstance(obj, "Gaze1", 149, GameObject.FindGameObjectsWithTag("GazeTarget").FirstOrDefault(gt => gt.name == "WindowUpperLeft2"),
+            0f, 0f), 78);
+        /*timeline.AddAnimation("Gaze",
+            new EyeGazeInstance(obj, "Gaze2", 32, GameObject.FindGameObjectsWithTag("GazeTarget").FirstOrDefault(gt => gt.name == "WindowUpperLeft2"),
+                0.8f, 0.8f), 181);*/
     }
 
     [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 8)]
@@ -63,7 +70,7 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        timeline.BakeRange("SneakingStart", 0, 60);
+        timeline.Bake("SneakingWithAutoGaze");
     }
 
 	/// <summary>
@@ -193,7 +200,7 @@ public class LEAPMenu
 		GameObject obj = Selection.activeGameObject;
 		
 		// Tag model parts
-		ModelController.AutoTagModel(obj);
+        ModelUtils.AutoTagModel(obj);
 		
 		// Create default anim. controllers
 		AnimControllerTree atree = obj.AddComponent<AnimControllerTree>();
@@ -239,6 +246,55 @@ public class LEAPMenu
 		// Add GUI helper components
 		obj.AddComponent<EyeLaserGizmo>();
 	}
+
+    /// <summary>
+    /// Validates the specified menu item.
+    /// </summary>
+    /// <returns>
+    /// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
+    /// </returns>
+    [MenuItem("LEAP/Agent Setup/Set Up Gaze Agent", true)]
+    private static bool ValidateSetupGazeAgent()
+    {
+        GameObject obj = Selection.activeGameObject;
+        if (obj == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Automatically tags the selected agent and adds default
+    /// functional components when user clicks a menu item.
+    /// </summary>
+    [MenuItem("LEAP/Agent Setup/Set Up Gaze Agent")]
+    private static void SetupGazeAgent()
+    {
+        GameObject obj = Selection.activeGameObject;
+
+        // Tag model parts
+        ModelUtils.AutoTagModel(obj);
+
+        // Create default anim. controllers
+        AnimControllerTree atree = obj.AddComponent<AnimControllerTree>();
+        RootController rootctr = obj.AddComponent<RootController>();
+        GazeController gazectr = obj.AddComponent<GazeController>();
+        //BlinkController blinkctr = obj.AddComponent<BlinkController>();
+        
+        // Link the controllers into a hierarchy
+        atree.rootController = obj.GetComponent<RootController>();
+        rootctr.childControllers = new AnimController[1];
+        rootctr.childControllers[0] = gazectr;
+
+        // Initialize controller states
+        rootctr._CreateStates();
+        gazectr._CreateStates();
+
+        // Add GUI helper components
+        obj.AddComponent<EyeLaserGizmo>();
+    }
 	
 	/// <summary>
 	/// Validates the specified menu item.

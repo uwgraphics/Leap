@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public enum GazeState
 {
@@ -149,6 +150,9 @@ public class GazeController : AnimController
     {
         get
         {
+            if (lEyeIndex < 0)
+                lEyeIndex = _FindGazeJointIndex("LEyeBone");
+            
             return lEyeIndex >= 0 ? gazeJoints[lEyeIndex] : null;
         }
     }
@@ -160,6 +164,9 @@ public class GazeController : AnimController
     {
         get
         {
+            if (rEyeIndex < 0)
+                rEyeIndex = _FindGazeJointIndex("REyeBone");
+
             return rEyeIndex >= 0 ? gazeJoints[rEyeIndex] : null;
         }
     }
@@ -171,6 +178,9 @@ public class GazeController : AnimController
     {
         get
         {
+            if (headIndex < 0)
+                headIndex = _FindGazeJointIndex("HeadBone");
+
             return headIndex >= 0 ? gazeJoints[headIndex] : null;
         }
     }
@@ -182,6 +192,9 @@ public class GazeController : AnimController
     {
         get
         {
+            if (torsoIndex < 0)
+                torsoIndex = _FindGazeJointIndex("TorsoBone");
+
             return torsoIndex >= 0 ? gazeJoints[torsoIndex] : null;
         }
     }
@@ -221,14 +234,14 @@ public class GazeController : AnimController
             if (LEye == null || REye == null)
                 return 0;
 
-            float ce = Vector3.Angle(LEye.FaceDirection, REye.FaceDirection);
+            float ce = Vector3.Angle(LEye.Direction, REye.Direction);
             if (ce > 0.00001f)
             {
                 // Is the character cross-eyed or eye-divergent?
                 float lt, rt;
                 GeomUtil.ClosestPoints2Lines(
-                    LEye.bone.position, LEye.bone.position + LEye.FaceDirection,
-                    REye.bone.position, REye.bone.position + REye.FaceDirection,
+                    LEye.bone.position, LEye.bone.position + LEye.Direction,
+                    REye.bone.position, REye.bone.position + REye.Direction,
                     out lt, out rt);
                 if (rt <= 0)
                     ce = 0;
@@ -249,14 +262,14 @@ public class GazeController : AnimController
             if (LEye == null || REye == null)
                 return 0;
 
-            float ed = Vector3.Angle(LEye.FaceDirection, REye.FaceDirection);
+            float ed = Vector3.Angle(LEye.Direction, REye.Direction);
             if (ed > 0.00001f)
             {
                 // Is the character cross-eyed or eye-divergent?
                 float lt, rt;
                 GeomUtil.ClosestPoints2Lines(
-                    LEye.bone.position, LEye.bone.position + LEye.FaceDirection,
-                    REye.bone.position, REye.bone.position + REye.FaceDirection,
+                    LEye.bone.position, LEye.bone.position + LEye.Direction,
+                    REye.bone.position, REye.bone.position + REye.Direction,
                     out lt, out rt);
                 if (rt > 0)
                     ed = 0;
@@ -342,6 +355,9 @@ public class GazeController : AnimController
     /// </param>
     public virtual void GazeAt(GameObject gazeTarget)
     {
+        if (gazeTarget == null)
+            GazeAway();
+
         this.gazeTarget = gazeTarget;
         doGazeShift = true;
     }
@@ -374,6 +390,101 @@ public class GazeController : AnimController
     }
 
     /// <summary>
+    /// Trigger a gaze aversion away from the current gaze target.
+    /// </summary>
+    public virtual void GazeAway()
+    {
+        float yaw = 0f;
+        float pitch = 0f;
+
+        // Compute gaze shift amplitude
+        float P = UnityEngine.Random.Range(1f, 15f);
+        float A = -6.9f * Mathf.Log(P / 15.7f);
+
+        // Compute gaze direction
+        float U = UnityEngine.Random.Range(0f, 100f);
+        pitch = 0f;
+        yaw = 0f;
+        if (U < 15.54f)
+        {
+            yaw = A;
+        }
+        else if (U < 22f)
+        {
+            pitch = A / Mathf.Sqrt(2f);
+            yaw = A / Mathf.Sqrt(2f);
+        }
+        else if (U < 39.69f)
+        {
+            pitch = A;
+        }
+        else if (U < 47.13f)
+        {
+            pitch = A / Mathf.Sqrt(2f);
+            yaw = -A / Mathf.Sqrt(2f);
+        }
+        else if (U < 63.93f)
+        {
+            yaw = -A;
+        }
+        else if (U < 71.82f)
+        {
+            pitch = -A / Mathf.Sqrt(2f);
+            yaw = -A / Mathf.Sqrt(2f);
+        }
+        else if (U < 92.2f)
+        {
+            pitch = -A;
+        }
+        else
+        {
+            pitch = -A / Mathf.Sqrt(2f);
+            yaw = A / Mathf.Sqrt(2f);
+        }
+
+        GazeAway(yaw, pitch);
+    }
+
+
+    /// <summary>
+    /// Trigger a gaze aversion away from the current gaze target.
+    /// </summary>
+    public virtual void GazeAway(float yaw, float pitch)
+    {
+        // Get eye centroid
+        Vector3 eyeCentroid = 0.5f * (LEye.bone.position + REye.bone.position);
+
+        // Get current target distance
+        float targetDist = curGazeTarget != null ?
+            Vector3.Distance(curGazeTarget.transform.position, eyeCentroid) :
+            2f;
+
+        // Store current eye orientations
+        float lEyeYaw = LEye.Yaw;
+        float lEyePitch = LEye.Pitch;
+        float rEyeYaw = REye.Yaw;
+        float rEyePitch = REye.Pitch;
+
+        // Compute new gaze direction
+        LEye.Yaw += yaw;
+        LEye.Pitch += pitch;
+        REye.Yaw += yaw;
+        REye.Pitch += pitch;
+        Vector3 newDir = 0.5f * (LEye.Direction + REye.Direction);
+
+        // Restore current eye orientations
+        LEye.Yaw = lEyeYaw;
+        LEye.Pitch = lEyePitch;
+        REye.Yaw = rEyeYaw;
+        REye.Pitch = rEyePitch;
+
+        // Compute new gaze target position
+        Vector3 targetPos = eyeCentroid + targetDist * newDir;
+
+        GazeAt(targetPos);
+    }
+
+    /// <summary>
     /// Interrupt ongoing gaze shift.
     /// </summary>
     public virtual void StopGaze()
@@ -396,7 +507,11 @@ public class GazeController : AnimController
     public void ApplyVOR()
     {
         foreach (GazeJoint joint in gazeJoints)
-            joint._ApplyVOR();
+            if (!joint.IsEye)
+                joint._ApplyVOR();
+
+        foreach (var eye in eyes)
+            eye._ApplyVOR();
     }
 
     /// <summary>
@@ -464,11 +579,11 @@ public class GazeController : AnimController
 
     protected override void _Init()
     {
-        // Create shorthands for some commonly used gaze joints
+        // Get joint chain indices
+        torsoIndex = _FindGazeJointIndex("TorsoBone");
+        headIndex = _FindGazeJointIndex("HeadBone");
         lEyeIndex = _FindGazeJointIndex("LEyeBone");
         rEyeIndex = _FindGazeJointIndex("REyeBone");
-        headIndex = _FindGazeJointIndex("HeadBone");
-        torsoIndex = _FindGazeJointIndex("TorsoBone");
 
         // Initialize every gaze joint
         List<GazeJoint> eye_list = new List<GazeJoint>();
@@ -493,11 +608,15 @@ public class GazeController : AnimController
         InitVOR();
 
         // Create helper gaze target
-        helperTarget = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        helperTarget.name = "GTHelper";
-        helperTarget.renderer.enabled = false;
-        helperTarget.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-        helperTarget.transform.parent = transform;
+        helperTarget = GameObject.Find("GTHelper");
+        if (helperTarget == null)
+        {
+            helperTarget = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            helperTarget.name = "GTHelper";
+            helperTarget.renderer.enabled = false;
+            helperTarget.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+            helperTarget.transform.parent = transform;
+        }
 
         // Get other relevant anim. controllers
         blinkCtrl = gameObject.GetComponent<BlinkController>();
@@ -518,17 +637,15 @@ public class GazeController : AnimController
         stopGazeShift = false;
 
         if (holdGaze)
-            // Eyes should remain fixed on their target no matter what
-            ApplyVORForEyes();
+        {
+            // Fixate gaze to the current target
+            ApplyVOR();
+        }
 
         if (doGazeShift && gazeTarget != null)
         {
             // Interrupt whatever the face is doing
-            faceCtrl.stopGesture = true;
-            reenableRandomHeadMotion = faceCtrl.randomMotionEnabled;
-            reenableRandomSpeechMotion = faceCtrl.speechMotionEnabled;
-            faceCtrl.speechMotionEnabled = false;
-            faceCtrl.randomMotionEnabled = false;
+            _StopFace();
 
             GoToState((int)GazeState.Shifting);
         }
@@ -544,17 +661,15 @@ public class GazeController : AnimController
         }
 
         // Interrupt whatever the face is doing
-        faceCtrl.stopGesture = true;
-        faceCtrl.speechMotionEnabled = false;
-        faceCtrl.randomMotionEnabled = false;
+        _StopFace();
 
         // Advance gaze shift
         float dt = 0;
-        for (float t = 0; t < Time.deltaTime; )
+        for (float t = 0; t < DeltaTime; )
         {
             t += LEAPCore.eulerTimeStep;
-            dt = (t <= Time.deltaTime) ? LEAPCore.eulerTimeStep :
-                Time.deltaTime - t + LEAPCore.eulerTimeStep;
+            dt = (t <= DeltaTime) ? LEAPCore.eulerTimeStep :
+                DeltaTime - t + LEAPCore.eulerTimeStep;
             if (_AdvanceGazeShift(dt))
             {
                 GoToState((int)GazeState.NoGaze);
@@ -588,9 +703,7 @@ public class GazeController : AnimController
     protected virtual void Transition_ShiftingNoGaze()
     {
         InitVOR();
-        faceCtrl.randomMotionEnabled = reenableRandomHeadMotion;
-        //Check to see if the character is still actually speaking first?...
-        faceCtrl.speechMotionEnabled = reenableRandomSpeechMotion;
+        _RestartFace();
     }
 
     protected virtual bool _AdvanceGazeShift(float deltaTime)
@@ -735,7 +848,7 @@ public class GazeController : AnimController
 
             // Closest points on view line
             Vector3 e1 = eye.bone.position;
-            Vector3 e2 = e1 + eye.FaceDirection;
+            Vector3 e2 = e1 + eye.Direction;
             Vector3 v1 = curGazeTarget.transform.position;
             Vector3 v2 = cam.transform.position;
             Vector3 v = v2 - v1;
@@ -814,7 +927,7 @@ public class GazeController : AnimController
             float dnew = drh * Mathf.Sin(Mathf.Deg2Rad * (alpha + maxce / 2f)) /
                 Mathf.Sin(Mathf.Deg2Rad * maxce / 2f);
             Vector3 thvn = d > 0.00001f ? (effGazeTrgPos - hpt).normalized :
-                (LEye.FaceDirection + REye.FaceDirection).normalized;
+                (LEye.Direction + REye.Direction).normalized;
             effGazeTrgPos = hpt + dnew * thvn;
         }
 
@@ -830,7 +943,7 @@ public class GazeController : AnimController
         foreach (GazeJoint eye in eyes)
         {
             wp_eyes += eye.bone.position;
-            wd_src += eye.FaceDirection;
+            wd_src += eye.Direction;
         }
         wp_eyes *= (1f / eyes.Length); // eye centroid position
         wd_src *= (1f / eyes.Length); // mean gaze direction
@@ -889,7 +1002,7 @@ public class GazeController : AnimController
         Vector3 ec = new Vector3(0, 0, 0);
         foreach (GazeJoint eye in eyes)
         {
-            srcdir += eye.FaceDirection;
+            srcdir += eye.Direction;
             ec += eye.bone.position;
         }
         srcdir /= (float)eyes.Length;
@@ -914,9 +1027,6 @@ public class GazeController : AnimController
                 joint.trgRotAlign = Quaternion.Slerp(joint.srcRot, joint.trgRot, amin);
                 joint.trgRotAlign = Quaternion.Slerp(joint.trgRotAlign, joint.trgRot, joint.align);
                 joint.distRotAlign = GazeJoint.DistanceToRotate(joint.srcRot, joint.trgRotAlign);
-                //
-                Debug.Log("Trunk rotation amplitude " + joint.distRotAlign);
-                //
             }
             else if (gji == headIndex)
             {
@@ -1112,9 +1222,9 @@ public class GazeController : AnimController
             {
                 Quaternion curhrot = Head.bone.localRotation;
 
-                Vector3 vh1 = Head.FaceDirection;
+                Vector3 vh1 = Head.Direction;
                 Head.bone.localRotation = Head.trgRotAlign;
-                Vector3 vh2 = Head.FaceDirection;
+                Vector3 vh2 = Head.Direction;
                 Vector3 vh = vh2 - vh1;
                 Head.bone.localRotation = curhrot;
 
@@ -1123,12 +1233,12 @@ public class GazeController : AnimController
                     GazeJoint eye = eyes[ei];
                     Quaternion curerot = eye.bone.localRotation;
 
-                    Vector3 ve1 = eye.FaceDirection;
+                    Vector3 ve1 = eye.Direction;
                     eye.bone.localRotation = eye._ComputeTargetRotation(EffGazeTargetPosition);
                     Quaternion erot = Quaternion.Inverse(eye.srcRot) * eye.bone.localRotation;
                     if (erot == Quaternion.identity)
                         break;
-                    Vector3 ve2 = eye.FaceDirection;
+                    Vector3 ve2 = eye.Direction;
                     Vector3 ve = ve2 - ve1;
 
                     opc[ei] = Vector3.Angle(ve, vh) / 180f;
@@ -1349,6 +1459,34 @@ public class GazeController : AnimController
             joint._RestoreState();
     }
 
+    /// <summary>
+    /// Stop any ongoing facial movements.
+    /// </summary>
+    protected virtual void _StopFace()
+    {
+        if (faceCtrl == null)
+            return;
+
+        faceCtrl.stopGesture = true;
+        reenableRandomHeadMotion = faceCtrl.randomMotionEnabled;
+        reenableRandomSpeechMotion = faceCtrl.speechMotionEnabled;
+        faceCtrl.speechMotionEnabled = false;
+        faceCtrl.randomMotionEnabled = false;
+    }
+
+    /// <summary>
+    /// Restart any facial movements that were previously active.
+    /// </summary>
+    protected virtual void _RestartFace()
+    {
+        if (faceCtrl == null)
+            return;
+
+        faceCtrl.randomMotionEnabled = reenableRandomHeadMotion;
+        //Check to see if the character is still actually speaking first?...
+        faceCtrl.speechMotionEnabled = reenableRandomSpeechMotion;
+    }
+
     public override void _CreateStates()
     {
         // Initialize states
@@ -1361,7 +1499,59 @@ public class GazeController : AnimController
         states[(int)GazeState.Shifting].lateUpdateHandler = "LateUpdate_Shifting";
         states[(int)GazeState.Shifting].nextStates[0].nextState = "NoGaze";
         states[(int)GazeState.Shifting].nextStates[0].transitionHandler = "Transition_ShiftingNoGaze";
+
+        // Get all bones needed for gaze actuation
+        var lEyeBone = ModelUtils.FindBoneWithTag(gameObject.transform, "LEyeBone");
+        var lEyeGazeHelper = ModelUtils.FindBoneWithTag(gameObject.transform, "LEyeGazeHelper");
+        var rEyeBone = ModelUtils.FindBoneWithTag(gameObject.transform, "REyeBone");
+        var rEyeGazeHelper = ModelUtils.FindBoneWithTag(gameObject.transform, "REyeGazeHelper");
+        var headBones = ModelUtils.GetAllBonesWithTag(gameObject, "HeadBone");
+        var headGazeHelpers = ModelUtils.GetAllBonesWithTag(gameObject, "HeadGazeHelper");
+        var torsoBones = ModelUtils.GetAllBonesWithTag(gameObject, "TorsoBone");
+        var torsoGazeHelpers = ModelUtils.GetAllBonesWithTag(gameObject, "TorsoGazeHelper");
+
+        // Add default eye joints
+        gazeJoints = new GazeJoint[2 + headBones.Length + torsoBones.Length];
+        gazeJoints[0] = new GazeJoint();
+        gazeJoints[0].type = GazeJointType.LEye;
+        gazeJoints[0].bone = lEyeBone;
+        gazeJoints[0].helper = lEyeGazeHelper;
+        gazeJoints[1] = new GazeJoint();
+        gazeJoints[1].type = GazeJointType.REye;
+        gazeJoints[1].bone = rEyeBone;
+        gazeJoints[1].helper = rEyeGazeHelper;
+        gazeJoints[0].upMR = gazeJoints[0].downMR =
+            gazeJoints[1].upMR = gazeJoints[1].downMR = 35f;
+        gazeJoints[0].inMR = gazeJoints[0].outMR =
+            gazeJoints[1].inMR = gazeJoints[1].outMR = 45f;
+        gazeJoints[0].velocity = gazeJoints[1].velocity = 170f;
+
+        // Add default head joints
+        for (int headBoneIndex = headBones.Length-1; headBoneIndex >= 0; --headBoneIndex)
+        {
+            var headJoint = new GazeJoint();
+            headJoint.type = GazeJointType.Head;
+            headJoint.bone = headBones[headBoneIndex];
+            headJoint.helper = headGazeHelpers.FirstOrDefault(helper => helper.parent == headBones[headBoneIndex]);
+            headJoint.upMR = headJoint.downMR = 90f;
+            headJoint.inMR = headJoint.outMR = 180f;
+            headJoint.velocity = 75f;
+
+            gazeJoints[2 + headBones.Length - headBoneIndex - 1] = headJoint;
+        }
+
+        // Add default torso joints
+        for (int torsoBoneIndex = torsoBones.Length - 1; torsoBoneIndex >= 0; --torsoBoneIndex)
+        {
+            var torsoJoint = new GazeJoint();
+            torsoJoint.type = GazeJointType.Torso;
+            torsoJoint.bone = torsoBones[torsoBoneIndex];
+            torsoJoint.helper = torsoGazeHelpers.FirstOrDefault(helper => helper.parent == torsoBones[torsoBoneIndex]);
+            torsoJoint.upMR = torsoJoint.downMR = 90f;
+            torsoJoint.inMR = torsoJoint.outMR = 180f;
+            torsoJoint.velocity = 40f;
+
+            gazeJoints[2 + headBones.Length + torsoBones.Length - torsoBoneIndex - 1] = torsoJoint;
+        }
     }
-
-
 }

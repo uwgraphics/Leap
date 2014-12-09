@@ -36,6 +36,14 @@ public abstract class AnimController : MonoBehaviour
     }
 
     /// <summary>
+    /// Elapsed time since last update.
+    /// </summary>
+    public virtual float DeltaTime
+    {
+        get { return gameObject.GetComponent<AnimControllerTree>().DeltaTime; }
+    }
+
+    /// <summary>
     /// Enabled/disable this controller and its subtree.
     /// </summary>
     public bool isEnabled = true;
@@ -70,10 +78,10 @@ public abstract class AnimController : MonoBehaviour
     /// </summary>
     public bool logStateChange = false;
 
-    protected StateMachine fsm; // Animation controller's internal state machine
-    protected AnimController parentCtrl = null;
-    protected MorphController morphCtrl = null;
-    protected ModelController mdlCtrl = null;
+    protected StateMachine _fsm; // Animation controller's internal state machine
+    protected AnimController _parentController = null;
+    protected MorphController _morphController = null;
+    protected ModelController _modelController = null;
 
     /// <summary>
     /// Animation controller name. 
@@ -93,7 +101,7 @@ public abstract class AnimController : MonoBehaviour
     {
         get
         {
-            return states[fsm.State].name;
+            return states[_fsm.State].name;
         }
     }
 
@@ -104,7 +112,7 @@ public abstract class AnimController : MonoBehaviour
     {
         get
         {
-            return fsm.State;
+            return _fsm.State;
         }
     }
 
@@ -115,7 +123,7 @@ public abstract class AnimController : MonoBehaviour
     {
         get
         {
-            return parentCtrl;
+            return _parentController;
         }
     }
 
@@ -126,7 +134,7 @@ public abstract class AnimController : MonoBehaviour
     {
         get
         {
-            return mdlCtrl;
+            return _modelController;
         }
     }
 
@@ -137,7 +145,7 @@ public abstract class AnimController : MonoBehaviour
     {
         get
         {
-            return morphCtrl;
+            return _morphController;
         }
     }
 
@@ -149,7 +157,7 @@ public abstract class AnimController : MonoBehaviour
     /// </param>
     public virtual void GoToState(string nextState)
     {
-        GoToState(fsm.GetStateId(nextState));
+        GoToState(_fsm.GetStateId(nextState));
     }
 
     /// <summary>
@@ -172,7 +180,7 @@ public abstract class AnimController : MonoBehaviour
         OnStateChange(old_state, nextState);
         // Then, do the actual state change
         _StateTransition(nextState);
-        fsm.GoToState(nextState);
+        _fsm.GoToState(nextState);
     }
 
     /// <summary>
@@ -190,12 +198,12 @@ public abstract class AnimController : MonoBehaviour
             return;
         }
 
-        if (ctrl.parentCtrl != null)
+        if (ctrl._parentController != null)
         {
             // Controller already child of another controller, detach...
-            ctrl.parentCtrl.RemoveChild(ctrl);
+            ctrl._parentController.RemoveChild(ctrl);
         }
-        ctrl.parentCtrl = this;
+        ctrl._parentController = this;
 
         List<AnimController> children = new List<AnimController>(childControllers);
         if (children.Contains(ctrl))
@@ -222,7 +230,7 @@ public abstract class AnimController : MonoBehaviour
 
         List<AnimController> children = new List<AnimController>(childControllers);
         children.Remove(ctrl);
-        ctrl.parentCtrl = null;
+        ctrl._parentController = null;
         childControllers = children.ToArray();
     }
 
@@ -264,16 +272,17 @@ public abstract class AnimController : MonoBehaviour
         }
 
         // Get essential components
-        mdlCtrl = GetComponent<ModelController>();
-        if (mdlCtrl == null)
+        _modelController = GetComponent<ModelController>();
+        if (_modelController == null)
         {
             enabled = false;
             return;
         }
-        morphCtrl = GetComponent<MorphController>();
+        _morphController = GetComponent<MorphController>();
 
         // Perform initialization
         Debug.Log(string.Format("Initializing {0} on agent {1}", this.Name, gameObject.name));
+        _Init();
         _InitFSM();
 
         foreach (AnimController ctrl in childControllers)
@@ -302,7 +311,7 @@ public abstract class AnimController : MonoBehaviour
         }
 
         _Update();
-        fsm.Update();
+        _fsm.Update();
 
         foreach (AnimController ctrl in childControllers)
         {
@@ -323,7 +332,7 @@ public abstract class AnimController : MonoBehaviour
             return;
 
         _LateUpdate();
-        fsm.LateUpdate();
+        _fsm.LateUpdate();
 
         foreach (AnimController ctrl in childControllers)
         {
@@ -367,9 +376,7 @@ public abstract class AnimController : MonoBehaviour
     /// </summary>
     protected virtual void _InitFSM()
     {
-        _Init();
-
-        fsm = new StateMachine();
+        _fsm = new StateMachine();
 
         // Initialize the FSM - states
         Type ctrl_type = this.GetType();
@@ -394,7 +401,7 @@ public abstract class AnimController : MonoBehaviour
             }
 
             // Register new state
-            fsm.RegisterState(sd.name, handler, handlerLate);
+            _fsm.RegisterState(sd.name, handler, handlerLate);
         }
 
         // Initialize the FSM - state transitions
@@ -413,7 +420,7 @@ public abstract class AnimController : MonoBehaviour
                 }
 
                 // Register new state transition
-                fsm.RegisterStateTransition(sd.name, std.nextState, handler);
+                _fsm.RegisterStateTransition(sd.name, std.nextState, handler);
             }
         }
     }
@@ -427,7 +434,7 @@ public abstract class AnimController : MonoBehaviour
     protected virtual void _StateTransition(int nextState)
     {
         if (logStateChange)
-            Debug.Log(string.Format("State change from {0} to {1}", State, fsm.FindStateName(nextState)));
+            Debug.Log(string.Format("State change from {0} to {1}", State, _fsm.FindStateName(nextState)));
     }
 
     protected virtual void OnStateChange(int srcState, int trgState)

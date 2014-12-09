@@ -4,3 +4,13 @@ LeapAnimationEditor:
     - This happens in both additive and override layering modes.
     - Timing of the animation instance is correct.
     - Animation interpolates correctly when clip is played in Unity Animation window.
+    
+[] (Might be the same bug as above) When layering a synthesized gaze animation (Gaze1), gaze shift is extremely quick (~3 frames or ~100 ms)
+    - Playing the animation clip in Unity Animation window works as expected - gaze shift is ~20 frames
+
+[X] Animation baking using AnimationTimeline.BakeRange() gives a completely messed up animation
+
+
+Models:
+
+[] Norman model gets a bit cross-eyed when animating gaze using standard gaze model - cross-eyedness removal might be necessary

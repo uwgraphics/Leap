@@ -1,0 +1,575 @@
+fileFormatVersion: 2
+guid: 213d30b8e465fa14faef6acc1f413f7a
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: Bone_Eye2_R
+    100002: Bone_Eye2_R 1
+    100004: Bone_Eye_L
+    100006: Bone_Eye_R
+    100008: Chair
+    100010: Char_Norman_1
+    100012: eye_Center
+    100014: eyeL_Lookahead
+    100016: eyeL_Up
+    100018: eyeR_Lookahead
+    100020: eyeR_Up
+    100022: Hand_L
+    100024: Hand_R
+    100026: Norman_Ctrl:ChestEndEffector
+    100028: Norman_Ctrl:ChestOriginEffector
+    100030: Norman_Ctrl:Head
+    100032: Norman_Ctrl:HeadEffector
+    100034: Norman_Ctrl:Hips
+    100036: Norman_Ctrl:HipsEffector
+    100038: Norman_Ctrl:LeftAnkleEffector
+    100040: Norman_Ctrl:LeftArm
+    100042: Norman_Ctrl:LeftElbowEffector
+    100044: Norman_Ctrl:LeftFoot
+    100046: Norman_Ctrl:LeftForeArm
+    100048: Norman_Ctrl:LeftHand
+    100050: Norman_Ctrl:LeftHipEffector
+    100052: Norman_Ctrl:LeftKneeEffector
+    100054: Norman_Ctrl:LeftLeg
+    100056: Norman_Ctrl:LeftShoulderEffector
+    100058: Norman_Ctrl:LeftUpLeg
+    100060: Norman_Ctrl:LeftWristEffector
+    100062: Norman_Ctrl:Reference
+    100064: Norman_Ctrl:RightAnkleEffector
+    100066: Norman_Ctrl:RightArm
+    100068: Norman_Ctrl:RightElbowEffector
+    100070: Norman_Ctrl:RightFoot
+    100072: Norman_Ctrl:RightForeArm
+    100074: Norman_Ctrl:RightHand
+    100076: Norman_Ctrl:RightHipEffector
+    100078: Norman_Ctrl:RightKneeEffector
+    100080: Norman_Ctrl:RightLeg
+    100082: Norman_Ctrl:RightShoulderEffector
+    100084: Norman_Ctrl:RightUpLeg
+    100086: Norman_Ctrl:RightWristEffector
+    100088: Norman_Ctrl:Spine
+    100090: Norman_Ctrl:Spine1
+    100092: Norman_Ctrl:Spine2
+    100094: Obj_000001
+    100096: Obj_000002
+    100098: Obj_000003
+    100100: Obj_000004
+    100102: Obj_000005
+    100104: Obj_000006
+    100106: Obj_000007
+    100108: srfBind_Cn_Head
+    100110: srfBind_Cn_Neck
+    100112: srfBind_Cn_Nose
+    100114: srfBind_Cn_Pelvis
+    100116: srfBind_Cn_SpineA
+    100118: srfBind_Cn_SpineB
+    100120: srfBind_Cn_SpineC
+    100122: srfBind_Lf_ArmA
+    100124: srfBind_Lf_ArmB
+    100126: srfBind_Lf_ArmC
+    100128: srfBind_Lf_ArmD
+    100130: srfBind_Lf_Ear
+    100132: srfBind_Lf_Eye
+    100134: srfBind_Lf_FootA
+    100136: srfBind_Lf_FootB
+    100138: srfBind_Lf_FootB 1
+    100140: srfBind_Lf_FootB 2
+    100142: srfBind_Lf_FootB 3
+    100144: srfBind_Lf_LegA
+    100146: srfBind_Lf_LegB
+    100148: srfBind_Lf_LegC
+    100150: srfBind_Lf_LegD
+    100152: srfBind_Rt_ArmA
+    100154: srfBind_Rt_ArmB
+    100156: srfBind_Rt_ArmC
+    100158: srfBind_Rt_ArmD
+    100160: srfBind_Rt_Ear
+    100162: srfBind_Rt_Eye
+    100164: srfBind_Rt_FootA
+    100166: srfBind_Rt_LegA
+    100168: srfBind_Rt_LegB
+    100170: srfBind_Rt_LegC
+    100172: srfBind_Rt_LegD
+    100174: //RootNode
+    400000: Bone_Eye2_R
+    400002: Bone_Eye2_R 1
+    400004: Bone_Eye_L
+    400006: Bone_Eye_R
+    400008: Chair
+    400010: Char_Norman_1
+    400012: eye_Center
+    400014: eyeL_Lookahead
+    400016: eyeL_Up
+    400018: eyeR_Lookahead
+    400020: eyeR_Up
+    400022: Hand_L
+    400024: Hand_R
+    400026: Norman_Ctrl:ChestEndEffector
+    400028: Norman_Ctrl:ChestOriginEffector
+    400030: Norman_Ctrl:Head
+    400032: Norman_Ctrl:HeadEffector
+    400034: Norman_Ctrl:Hips
+    400036: Norman_Ctrl:HipsEffector
+    400038: Norman_Ctrl:LeftAnkleEffector
+    400040: Norman_Ctrl:LeftArm
+    400042: Norman_Ctrl:LeftElbowEffector
+    400044: Norman_Ctrl:LeftFoot
+    400046: Norman_Ctrl:LeftForeArm
+    400048: Norman_Ctrl:LeftHand
+    400050: Norman_Ctrl:LeftHipEffector
+    400052: Norman_Ctrl:LeftKneeEffector
+    400054: Norman_Ctrl:LeftLeg
+    400056: Norman_Ctrl:LeftShoulderEffector
+    400058: Norman_Ctrl:LeftUpLeg
+    400060: Norman_Ctrl:LeftWristEffector
+    400062: Norman_Ctrl:Reference
+    400064: Norman_Ctrl:RightAnkleEffector
+    400066: Norman_Ctrl:RightArm
+    400068: Norman_Ctrl:RightElbowEffector
+    400070: Norman_Ctrl:RightFoot
+    400072: Norman_Ctrl:RightForeArm
+    400074: Norman_Ctrl:RightHand
+    400076: Norman_Ctrl:RightHipEffector
+    400078: Norman_Ctrl:RightKneeEffector
+    400080: Norman_Ctrl:RightLeg
+    400082: Norman_Ctrl:RightShoulderEffector
+    400084: Norman_Ctrl:RightUpLeg
+    400086: Norman_Ctrl:RightWristEffector
+    400088: Norman_Ctrl:Spine
+    400090: Norman_Ctrl:Spine1
+    400092: Norman_Ctrl:Spine2
+    400094: Obj_000001
+    400096: Obj_000002
+    400098: Obj_000003
+    400100: Obj_000004
+    400102: Obj_000005
+    400104: Obj_000006
+    400106: Obj_000007
+    400108: srfBind_Cn_Head
+    400110: srfBind_Cn_Neck
+    400112: srfBind_Cn_Nose
+    400114: srfBind_Cn_Pelvis
+    400116: srfBind_Cn_SpineA
+    400118: srfBind_Cn_SpineB
+    400120: srfBind_Cn_SpineC
+    400122: srfBind_Lf_ArmA
+    400124: srfBind_Lf_ArmB
+    400126: srfBind_Lf_ArmC
+    400128: srfBind_Lf_ArmD
+    400130: srfBind_Lf_Ear
+    400132: srfBind_Lf_Eye
+    400134: srfBind_Lf_FootA
+    400136: srfBind_Lf_FootB
+    400138: srfBind_Lf_FootB 1
+    400140: srfBind_Lf_FootB 2
+    400142: srfBind_Lf_FootB 3
+    400144: srfBind_Lf_LegA
+    400146: srfBind_Lf_LegB
+    400148: srfBind_Lf_LegC
+    400150: srfBind_Lf_LegD
+    400152: srfBind_Rt_ArmA
+    400154: srfBind_Rt_ArmB
+    400156: srfBind_Rt_ArmC
+    400158: srfBind_Rt_ArmD
+    400160: srfBind_Rt_Ear
+    400162: srfBind_Rt_Eye
+    400164: srfBind_Rt_FootA
+    400166: srfBind_Rt_LegA
+    400168: srfBind_Rt_LegB
+    400170: srfBind_Rt_LegC
+    400172: srfBind_Rt_LegD
+    400174: //RootNode
+    2300000: Chair
+    2300002: Hand_L
+    2300004: Hand_R
+    2300006: Obj_000001
+    2300008: Obj_000002
+    2300010: Obj_000003
+    2300012: Obj_000004
+    2300014: Obj_000005
+    2300016: Obj_000006
+    2300018: Obj_000007
+    2300020: srfBind_Cn_Neck
+    2300022: srfBind_Cn_Nose
+    2300024: srfBind_Cn_Pelvis
+    2300026: srfBind_Cn_SpineA
+    2300028: srfBind_Cn_SpineB
+    2300030: srfBind_Cn_SpineC
+    2300032: srfBind_Lf_ArmA
+    2300034: srfBind_Lf_ArmB
+    2300036: srfBind_Lf_ArmC
+    2300038: srfBind_Lf_ArmD
+    2300040: srfBind_Lf_Ear
+    2300042: srfBind_Lf_Eye
+    2300044: srfBind_Lf_FootA
+    2300046: srfBind_Lf_FootB
+    2300048: srfBind_Lf_FootB 1
+    2300050: srfBind_Lf_FootB 2
+    2300052: srfBind_Lf_FootB 3
+    2300054: srfBind_Lf_LegA
+    2300056: srfBind_Lf_LegB
+    2300058: srfBind_Lf_LegC
+    2300060: srfBind_Lf_LegD
+    2300062: srfBind_Rt_ArmA
+    2300064: srfBind_Rt_ArmB
+    2300066: srfBind_Rt_ArmC
+    2300068: srfBind_Rt_ArmD
+    2300070: srfBind_Rt_Ear
+    2300072: srfBind_Rt_Eye
+    2300074: srfBind_Rt_FootA
+    2300076: srfBind_Rt_LegA
+    2300078: srfBind_Rt_LegB
+    2300080: srfBind_Rt_LegC
+    2300082: srfBind_Rt_LegD
+    3300000: Chair
+    3300002: Hand_L
+    3300004: Hand_R
+    3300006: Obj_000001
+    3300008: Obj_000002
+    3300010: Obj_000003
+    3300012: Obj_000004
+    3300014: Obj_000005
+    3300016: Obj_000006
+    3300018: Obj_000007
+    3300020: srfBind_Cn_Neck
+    3300022: srfBind_Cn_Nose
+    3300024: srfBind_Cn_Pelvis
+    3300026: srfBind_Cn_SpineA
+    3300028: srfBind_Cn_SpineB
+    3300030: srfBind_Cn_SpineC
+    3300032: srfBind_Lf_ArmA
+    3300034: srfBind_Lf_ArmB
+    3300036: srfBind_Lf_ArmC
+    3300038: srfBind_Lf_ArmD
+    3300040: srfBind_Lf_Ear
+    3300042: srfBind_Lf_Eye
+    3300044: srfBind_Lf_FootA
+    3300046: srfBind_Lf_FootB
+    3300048: srfBind_Lf_FootB 1
+    3300050: srfBind_Lf_FootB 2
+    3300052: srfBind_Lf_FootB 3
+    3300054: srfBind_Lf_LegA
+    3300056: srfBind_Lf_LegB
+    3300058: srfBind_Lf_LegC
+    3300060: srfBind_Lf_LegD
+    3300062: srfBind_Rt_ArmA
+    3300064: srfBind_Rt_ArmB
+    3300066: srfBind_Rt_ArmC
+    3300068: srfBind_Rt_ArmD
+    3300070: srfBind_Rt_Ear
+    3300072: srfBind_Rt_Eye
+    3300074: srfBind_Rt_FootA
+    3300076: srfBind_Rt_LegA
+    3300078: srfBind_Rt_LegB
+    3300080: srfBind_Rt_LegC
+    3300082: srfBind_Rt_LegD
+    4300000: srfBind_Cn_Pelvis
+    4300002: srfBind_Cn_SpineA
+    4300004: srfBind_Cn_SpineB
+    4300006: srfBind_Cn_SpineC
+    4300008: srfBind_Lf_ArmA
+    4300010: srfBind_Lf_ArmB
+    4300012: srfBind_Lf_ArmC
+    4300014: srfBind_Lf_ArmD
+    4300016: Hand_L
+    4300018: srfBind_Cn_Neck
+    4300020: srfBind_Cn_Head
+    4300022: srfBind_Rt_Ear
+    4300024: srfBind_Lf_Ear
+    4300026: srfBind_Cn_Nose
+    4300028: srfBind_Lf_Eye
+    4300030: srfBind_Rt_Eye
+    4300032: srfBind_Rt_ArmA
+    4300034: srfBind_Rt_ArmB
+    4300036: srfBind_Rt_ArmC
+    4300038: srfBind_Rt_ArmD
+    4300040: Hand_R
+    4300042: srfBind_Lf_LegA
+    4300044: srfBind_Lf_LegB
+    4300046: srfBind_Lf_LegC
+    4300048: srfBind_Lf_LegD
+    4300050: srfBind_Lf_FootA
+    4300052: srfBind_Lf_FootB
+    4300054: srfBind_Rt_LegA
+    4300056: srfBind_Rt_LegB
+    4300058: srfBind_Rt_LegC
+    4300060: srfBind_Rt_LegD
+    4300062: srfBind_Rt_FootA
+    4300064: srfBind_Lf_FootB 1
+    4300066: srfBind_Lf_FootB 3
+    4300068: srfBind_Lf_FootB 2
+    4300070: Chair
+    4300072: Obj_000007
+    4300074: Obj_000006
+    4300076: Obj_000005
+    4300078: Obj_000004
+    4300080: Obj_000003
+    4300082: Obj_000002
+    4300084: Obj_000001
+    7400000: WindowWashing
+    9500000: //RootNode
+    11100000: //RootNode
+    11400000: //RootNode
+    11400002: //RootNode
+    11400004: //RootNode
+    13700000: srfBind_Cn_Head
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 2
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: WindowWashing
+      takeName: Take 001
+      firstFrame: 1
+      lastFrame: 702
+      wrapMode: 2
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Chair
+        weight: 1
+      - path: Char_Norman_1
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/Bone_Eye_L
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/Bone_Eye_L/Bone_Eye2_R
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/Bone_Eye_L/srfBind_Lf_Eye
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/Bone_Eye_R
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/Bone_Eye_R/Bone_Eye2_R
+          1
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/Bone_Eye_R/srfBind_Rt_Eye
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/eye_Center
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/srfBind_Cn_Nose
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/srfBind_Lf_Ear
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/srfBind_Rt_Ear
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC/srfBind_Lf_ArmD
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC/srfBind_Lf_ArmD/Hand_L
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC/srfBind_Rt_ArmD
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC/srfBind_Rt_ArmD/Hand_R
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Lf_LegA
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD/srfBind_Lf_FootA
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD/srfBind_Lf_FootA/srfBind_Lf_FootB
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Rt_LegA
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
+          1
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
+          2
+        weight: 1
+      - path: Char_Norman_1/srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
+          3
+        weight: 1
+      - path: eyeL_Lookahead
+        weight: 1
+      - path: eyeL_Up
+        weight: 1
+      - path: eyeR_Lookahead
+        weight: 1
+      - path: eyeR_Up
+        weight: 1
+      - path: Norman_Ctrl:Reference
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:ChestEndEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:ChestOriginEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:HeadEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:LeftUpLeg
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:LeftUpLeg/Norman_Ctrl:LeftLeg
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:LeftUpLeg/Norman_Ctrl:LeftLeg/Norman_Ctrl:LeftFoot
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:RightUpLeg
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:RightUpLeg/Norman_Ctrl:RightLeg
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:RightUpLeg/Norman_Ctrl:RightLeg/Norman_Ctrl:RightFoot
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1/Norman_Ctrl:Spine2
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1/Norman_Ctrl:Spine2/Norman_Ctrl:Head
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1/Norman_Ctrl:Spine2/Norman_Ctrl:LeftArm
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1/Norman_Ctrl:Spine2/Norman_Ctrl:LeftArm/Norman_Ctrl:LeftForeArm
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1/Norman_Ctrl:Spine2/Norman_Ctrl:LeftArm/Norman_Ctrl:LeftForeArm/Norman_Ctrl:LeftHand
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1/Norman_Ctrl:Spine2/Norman_Ctrl:RightArm
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1/Norman_Ctrl:Spine2/Norman_Ctrl:RightArm/Norman_Ctrl:RightForeArm
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:Hips/Norman_Ctrl:Spine/Norman_Ctrl:Spine1/Norman_Ctrl:Spine2/Norman_Ctrl:RightArm/Norman_Ctrl:RightForeArm/Norman_Ctrl:RightHand
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:HipsEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:LeftAnkleEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:LeftElbowEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:LeftHipEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:LeftKneeEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:LeftShoulderEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:LeftWristEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:RightAnkleEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:RightElbowEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:RightHipEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:RightKneeEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:RightShoulderEffector
+        weight: 1
+      - path: Norman_Ctrl:Reference/Norman_Ctrl:RightWristEffector
+        weight: 1
+      - path: Obj_000001
+        weight: 1
+      - path: Obj_000002
+        weight: 1
+      - path: Obj_000003
+        weight: 1
+      - path: Obj_000004
+        weight: 1
+      - path: Obj_000005
+        weight: 1
+      - path: Obj_000006
+        weight: 1
+      - path: Obj_000007
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  additionalBone: 0
+  userData: 

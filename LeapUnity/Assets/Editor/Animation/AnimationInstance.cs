@@ -20,7 +20,7 @@ public enum AnimationLayerMode
 /// Animation instance. This can be either an existing animation clip
 /// or a procedural animation that can be baked into an animation clip.
 /// </summary>
-public class AnimationInstance
+public abstract class AnimationInstance
 {
     /// <summary>
     /// Character model controller to which this animation instance is applied.
@@ -64,18 +64,34 @@ public class AnimationInstance
     /// </summary>
     public virtual int FrameLength
     {
-        get { return (int)(AnimationClip.length * LEAPCore.editFrameRate + 0.5f); }
+        get { return (int)(TimeLength * LEAPCore.editFrameRate + 0.5f); }
     }
 
     /// <summary>
     /// Length of this instance in seconds.
     /// </summary>
-    public virtual float TimeLength
+    public abstract float TimeLength
     {
-        get { return AnimationClip.length; }
+        get;
     }
 
-    protected bool _isBaked = false;
+    /// <summary>
+    /// true if the animation instance is being baked into the animation clip,
+    /// false otherwise.
+    /// </summary>
+    public virtual bool IsBaking
+    {
+        get { return _isBaking; }
+        protected set { _isBaking = value; }
+    }
+
+    protected virtual AnimationCurve[] _AnimationCurves
+    {
+        get;
+        set;
+    }
+
+    protected bool _isBaking = false;
 
     /// <summary>
     /// Constructor.
@@ -107,43 +123,41 @@ public class AnimationInstance
                 continue;
             }
 
-            if (clip.name == animationClipName)
+            if (clip.name == animationClipName && AssetDatabase.GetAssetPath(clip) != "")
             {
                 // There is already a defined clip for this animation instance,
                 // so assume that is the animation
                 this.AnimationClip = clip;
-                _isBaked = true;
+                // TODO: this is needed b/c Unity is a buggy piece of crap
+                Animation.RemoveClip(clip);
+                Animation.AddClip(clip, animationClipName);
+                break;
             }
             else
             {
-                continue;
+                this.AnimationClip = null;
             }
         }
 
-        if (!_isBaked)
+        if (this.AnimationClip == null)
         {
             // No clip found for this animation instance, create an empty one
-            AnimationClip[] allClips = AnimationClip.FindObjectsOfType<AnimationClip>();
-            while (allClips.Any(clip => clip.name == animationClipName))
-            {
-                animationClipName += "1";
-            }
-            this.AnimationClip = new AnimationClip();
-            AnimationUtility.SetAnimationType(this.AnimationClip, ModelImporterAnimationType.Legacy);
-
-            // Add the clip to character's animation component
-            Animation.AddClip(this.AnimationClip, AnimationClip.name);
+            AnimationClip = LEAPAssetUtils.CreateAnimationClipOnModel(animationClipName, model);
         }
+
+        // Create empty animation curves for baking the animation instance
+        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model.gameObject);
 
         // Set default animation weight
         Weight = 1f;
     }
 
     /// <summary>
-    /// Bake the animation instance into an animation clip.
+    /// Start baking the animation instance into an animation clip.
     /// </summary>
-    public virtual void Bake()
+    public virtual void StartBake()
     {
+        IsBaking = true;
     }
 
     /// <summary>
@@ -151,28 +165,26 @@ public class AnimationInstance
     /// </summary>
     /// <param name="frame">Frame index</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public virtual void Apply(int frame, AnimationLayerMode layerMode)
-    {
-        // Configure how the animation clip will be applied to the model
-        Animation[AnimationClip.name].time = ((float)frame) / TimeLength;
-        Animation[AnimationClip.name].weight = Weight;
-        if (layerMode == AnimationLayerMode.Additive)
-        {
-            Animation[AnimationClip.name].blendMode = AnimationBlendMode.Additive;
-        }
-        else
-        {
-            Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
-        }
+    public abstract void Apply(int frame, AnimationLayerMode layerMode);
 
-        // Apply the animation clip to the model
-        Animation[AnimationClip.name].enabled = true;
-        Animation.Sample();
-        Animation[AnimationClip.name].enabled = false;
-        //
-        /*Debug.Log(string.Format("Applied animation {0} at frame {1} in layer moder {2} at weight {3}",
-            AnimationClip.name, frame, layerMode.ToString(), Weight));*/
-        //
+    /// <summary>
+    /// Finish baking the animation instance into an animation clip.
+    /// </summary>
+    public virtual void FinishBake()
+    {
+        IsBaking = false;
+        AnimationClip.ClearCurves();
+        LEAPAssetUtils.SetAnimationCurvesOnClip(Model.gameObject, AnimationClip, _AnimationCurves);
+        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model.gameObject);
+
+        // Write animation clip to file
+        string path = LEAPAssetUtils.GetModelDirectory(Model.gameObject) + AnimationClip.name + ".anim";
+        if (AssetDatabase.GetAssetPath(AnimationClip) != path)
+        {
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(AnimationClip, path);
+        }
+        AssetDatabase.SaveAssets();
     }
 
     /// <summary>

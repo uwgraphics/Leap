@@ -26,11 +26,13 @@ Last updated: 3/30/2012
 3.2 Creating your character
 3.3 Exporting the character
 
+4. Importing animations from MotionBuilder
+4.1 Importing into 3ds Max
+4.2 Importing into Unity
+
 
 
 0. Overview
-
-
 
 The recommended pipeline can be visualized as follows:
 
@@ -56,7 +58,6 @@ extract morph target animations into a representation that can be imported
 into Unity and used by LEAP. Moreover, before the FBX models are imported into
 Unity, you must invoke a special standalone utility to automatically post-
 process the morph targets, otherwise Unity won't import them correctly.
-
 
 
 1. Exporting character models - 3ds Max
@@ -219,10 +220,7 @@ mappings of FaceFX phonemes to viseme morph targets), and then use is as your
 documentation and examples.
 
 
-
 2. Importing character models
-
-
 
 2.1 Morph target preprocessing
 
@@ -357,6 +355,8 @@ Project view. Then in the Inspector, under FBXImporter, specify the following:
    character (otherwise all keyframe data will be lumped into a single
    'animation', usually called 'Take01'). For each animation, specify its name
    start and end frames, wrap mode (usually Loop).
+   
+   - In Unity 4+, your Rig type should be set to Legacy.
 
 Once you are done modifying the import settings, click Apply and wait for the
 model to be reimported.
@@ -435,10 +435,7 @@ selected instance will be updated accordingly. You may need to relink it to its
 prefab afterwards.
 
 
-
 3. Creating characters - DAZ
-
-
 
 DAZ is a commercial character editing, posing and animation tool, commonly used
 by enthusiasts who want to create 3D render art. More recently it has received
@@ -469,7 +466,7 @@ either import it into Max for additional work, or directly import it into Unity
 
 We recommend exporting the character as FBX. The procedure is as follows:
 
-   1. Go to File -> Export, define the file name, and click Save.
+   1. Go to File -> Export, specify the file name, and click Save.
    
    2. Under Export Options, make sure Figures, Animations and Morphs are 
    checked.
@@ -494,3 +491,60 @@ The character can be imported into Max using the Autodesk FBX plug-in. Use
 the same settings as specified in section 1.1, except units should be set to
 scene units (usually inches) rather than meters.
 
+
+4. Importing animations from MotionBuilder
+
+Motion capture animations can be imported into Leap for Unity by using the
+following pipeline: (1) save animations from MotionBuilder as FBX files, (2)
+import FBX files into 3ds Max, (3) export the animations from 3ds Max as FBX
+files compatible with Unity, and (4) import FBX files into Unity. Step 1 is
+trivial, since FBX is the primary file format for MotionBuilder. Steps 2-4 are
+explained in more detail below.
+
+4.1 Importing into 3ds Max
+
+Animations in FBX format saved out from MotionBuilder can be imported into 3ds
+Max as follows:
+
+   1. Go to File -> Import, select your FBX file, and click Open.
+   
+   2. Under Export Options, Include -> Animation, make sure Animation is
+   checked. Under Include -> Animation -> Deformations, everything should be
+   checked.
+   
+   3. Under Advanced Options -> Units, uncheck Automatic and select Centimeters
+   as your conversion unit.
+   
+   4. Click OK.
+
+4.2 Importing into Unity
+
+Once you have your animation in 3ds Max, you can export it similar as you would
+a character model. The procedure is as follows:
+
+   1. Go to File -> Export, specify the file name, and click Save.
+   
+   2. Under Export Options, Include -> Animation, make sure Animation is
+   checked. Under Include -> Animation -> Deformations, everything should be
+   checked.
+   
+   3. Under Advanced Options -> Units, uncheck Automatic and select Meters as
+   your conversion unit.
+   
+   4. Click OK.
+   
+The exported FBX file should then be placed into your project directory and
+imported into Unity. Unity does cannot import individual animations - instead,
+you need to import the whole character model with one or more animation takes
+from the FBX file, using the procedure in section 2.3. When you specify your
+list of animation takes in the import settings, these animations will be
+extracted by Unity and stored as .anim files in your project directory. You can
+now link these animations to the Animation component of a previously imported
+character model.
+
+Some tips for configuring your import settings:
+
+   - Set Anim. Compression to Keyframe Reduction.
+   
+   - The first frame of your animation is typically the character's initial
+   pose. Your actual animation starts at frame 1.

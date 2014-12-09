@@ -99,6 +99,26 @@ public class LeapAnimationEditor : EditorWindow
             SceneView.RepaintAll();
         }
 
+        // Show current position on the timeline
+        GUI.Label(new Rect(210, 10, 60, 40), string.Format("{0} / {1}", Timeline.CurrentFrame, Timeline.FrameLength));
+
+        // Update playback speed
+        GUI.Label(new Rect(240, 30, 20, 19), "X");
+        string timeScaleStr = ((double)Timeline.TimeScale).ToString("0.00");
+        timeScaleStr = GUI.TextField(new Rect(210, 30, 30, 19), timeScaleStr);
+        float timeScale = 1f;
+        try { timeScale = (float)double.Parse(timeScaleStr); }
+        catch (Exception) { timeScale = 1f; }
+        Timeline.TimeScale = timeScale;
+
+        // Bake anim. controllers
+        if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "BC")
+            && Timeline.Active && !Timeline.Playing)
+        {
+            Timeline.BakeInstances();
+            SceneView.RepaintAll();
+        }
+
         // Update the playback slider
         if (Timeline.Active && Timeline.Playing || !Timeline.Active)
         {
@@ -132,9 +152,9 @@ public class LeapAnimationEditor : EditorWindow
     /// <summary>
     /// Show/hide Leap animation editor window.
     /// </summary>
-    [MenuItem("Window/LEAP Animation")]
+    [MenuItem("Window/Leap Animation")]
     public static void ShowLeapAnimationEditor()
     {
-        EditorWindow.GetWindow<LeapAnimationEditor>();
+        EditorWindow.GetWindow<LeapAnimationEditor>("Leap Animation");
     }
 }

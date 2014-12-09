@@ -21,5 +21,5 @@ public class LEAPCore : MonoBehaviour
     /// <summary>
     /// Frame rate to use for animation viewing and editing.
     /// </summary>
-    public static int editFrameRate = 60;
+    public static int editFrameRate = 30;
 }

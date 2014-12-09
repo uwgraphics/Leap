@@ -9,23 +9,18 @@ using System.Collections.Generic;
 /// </summary>
 public class ModelController : MonoBehaviour
 {
-    public static string[] rootBoneNames = { "root", "pelvis", "hip", "Bip01" };
-    public static string[] lEyeBoneNames = { "lEye" };
-    public static string[] rEyeBoneNames = { "rEye" };
-    public static string[] headBoneNames = { "head" };
-    public static string[] neckBoneNames = { "neck" };
-    public static string[] gazeHelperNames = { "GazeHelper", "Dummy" };
-
     private Transform rootBone = null; // Model skeleton root
     private Transform lEyeBone = null;
     private Transform rEyeBone = null;
     private Transform headBone = null;
+
     // Initial pose (both local and global)
     private Dictionary<int, Vector3> initLPos = new Dictionary<int, Vector3>();
     private Dictionary<int, Quaternion> initLRot = new Dictionary<int, Quaternion>();
     private Dictionary<int, Vector3> initLScal = new Dictionary<int, Vector3>();
     private Dictionary<int, Vector3> initWPos = new Dictionary<int, Vector3>();
     private Dictionary<int, Quaternion> initWRot = new Dictionary<int, Quaternion>();
+
     // Previous pose, or rather pose at the end of LateUpdate phase of the previous frame
     private Dictionary<int, Vector3> prevLPos = new Dictionary<int, Vector3>();
     private Dictionary<int, Quaternion> prevLRot = new Dictionary<int, Quaternion>();
@@ -226,7 +221,7 @@ public class ModelController : MonoBehaviour
     /// </summary>
     public void _StoreCurrentPose()
     {
-        _StoreCurPose(rootBone);
+        _StoreCurrentPose(rootBone);
     }
 
     /// <summary>
@@ -234,27 +229,35 @@ public class ModelController : MonoBehaviour
     /// </summary>
     public void _Init()
     {
+        if (rootBone == null)
+            _InitBones();
+
         // Get initial skeletal pose
         _GetInitBoneTransforms(rootBone);
     }
 
     void Awake()
     {
-        // Try to find bones by their tags and set them
-        if (rootBone == null)
-            rootBone = FindRootBone(gameObject);
-        if (rootBone == null)
-            rootBone = gameObject.transform;
-        if (lEyeBone == null)
-            lEyeBone = FindBoneWithTag(rootBone, "LEyeBone");
-        if (rEyeBone == null)
-            rEyeBone = FindBoneWithTag(rootBone, "REyeBone");
-        if (headBone == null)
-            headBone = FindBoneWithTag(rootBone, "HeadBone");
+        _InitBones();
     }
 
     void Update()
     {
+    }
+
+    private void _InitBones()
+    {
+        // Try to find bones by their tags and set them
+        if (rootBone == null)
+            rootBone = ModelUtils.FindRootBone(gameObject);
+        if (rootBone == null)
+            rootBone = gameObject.transform;
+        if (lEyeBone == null)
+            lEyeBone = ModelUtils.FindBoneWithTag(rootBone, "LEyeBone");
+        if (rEyeBone == null)
+            rEyeBone = ModelUtils.FindBoneWithTag(rootBone, "REyeBone");
+        if (headBone == null)
+            headBone = ModelUtils.FindBoneWithTag(rootBone, "HeadBone");
     }
 
     private void _GetInitBoneTransforms(Transform bone)
@@ -283,7 +286,7 @@ public class ModelController : MonoBehaviour
         }
     }
 
-    private void _StoreCurPose(Transform root)
+    private void _StoreCurrentPose(Transform root)
     {
         prevLPos[root.GetInstanceID()] = root.localPosition;
         prevLRot[root.GetInstanceID()] = root.localRotation;
@@ -291,271 +294,8 @@ public class ModelController : MonoBehaviour
 
         foreach (Transform child in root)
         {
-            _StoreCurPose(child);
+            _StoreCurrentPose(child);
         }
-    }
-
-    /// <summary>
-    /// Finds a bone in the agent's skeleton by name.
-    /// </summary>
-    /// <param name="parent">
-    /// Parent bone.
-    /// </param>
-    /// <param name="bone">
-    /// Bone name.
-    /// </param>
-    /// <returns>
-    /// Bone, or null if the bone cannot be found <see cref="Transform"/>
-    /// </returns>
-    public static Transform FindBone(Transform parent, string boneName)
-    {
-        if (parent.name == boneName)
-            return parent;
-
-        Transform bone = null;
-
-        foreach (Transform child in parent)
-        {
-            bone = FindBone(child, boneName);
-
-            if (bone != null)
-                break;
-        }
-
-        return bone;
-    }
-
-    /// <summary>
-    /// Finds a bone in the agent's skeleton by keyword.
-    /// </summary>
-    /// <param name="parent">
-    /// Parent bone <see cref="System.String"/>
-    /// </param>
-    /// <param name="nameKeyword">
-    /// Bone name keyword <see cref="System.String"/>
-    /// </param>
-    /// <returns>
-    /// Bone, or null if the bone cannot be found <see cref="Transform"/>
-    /// </returns>
-    public static Transform FindBoneByKeyword(Transform parent, string nameKeyword)
-    {
-        if (parent.name.ToLowerInvariant().Contains(nameKeyword.ToLowerInvariant()))
-            return parent;
-
-        Transform bone = null;
-
-        foreach (Transform child in parent)
-        {
-            bone = FindBone(child, nameKeyword);
-
-            if (bone != null)
-                break;
-        }
-
-        return bone;
-    }
-
-    /// <summary>
-    /// Finds a bone in the agent's skeleton by tag.
-    /// </summary>
-    /// <param name="parent">
-    /// Parent bone <see cref="System.String"/>
-    /// </param>
-    /// <param name="boneTag">
-    /// Bone tag <see cref="System.String"/>
-    /// </param>
-    /// <returns>
-    /// Bone, or null if the bone cannot be found <see cref="Transform"/>
-    /// </returns>
-    public static Transform FindBoneWithTag(Transform parent, string boneTag)
-    {
-        if (parent.tag == boneTag)
-            return parent;
-
-        Transform bone = null;
-
-        foreach (Transform child in parent)
-        {
-            bone = FindBoneWithTag(child, boneTag);
-
-            if (bone != null)
-                break;
-        }
-
-        return bone;
-    }
-
-    /// <summary>
-    /// Finds the root bone of a character model. 
-    /// </summary>
-    /// <param name="obj">
-    /// Character model <see cref="GameObject"/>
-    /// </param>
-    /// <returns>
-    /// Root bone, or null if it could not be found <see cref="Transform"/>
-    /// </returns>
-    public static Transform FindRootBone(GameObject obj)
-    {
-        Transform root = FindBoneWithTag(obj.transform, "RootBone");
-        if (root == null)
-        {
-            foreach (Transform child in obj.transform)
-            {
-                if (child.childCount > 0)
-                {
-                    // We'll make an educated guess that this is the root
-                    root = child;
-                    break;
-                }
-            }
-        }
-
-        return root;
-    }
-
-    /// <summary>
-    /// Get all bones in a character model
-    /// </summary>
-    /// <param name="obj">Character model</param>
-    /// <returns>Array of all bones</returns>
-    public static Transform[] GetAllBones(GameObject obj)
-    {
-        var bones = new List<Transform>();
-        _GetAllBones(FindRootBone(obj), bones);
-        return bones.ToArray();
-    }
-
-    /// <summary>
-    /// Get path of the specified bone relative to the root.
-    /// </summary>
-    /// <param name="bone">Bone transform</param>
-    /// <returns>Relative path of the bone</returns>
-    public static string GetBonePath(Transform bone)
-    {
-        if (bone.tag == "RootBone")
-            return bone.name;
-
-        return GetBonePath(bone.parent) + "/" + bone.name;
-    }
-
-    // Traverse a model's bone hierarchy and add all bones into a list
-    private static void _GetAllBones(Transform rootBone, List<Transform> bones)
-    {
-        if (rootBone == null)
-            return;
-
-        bones.Add(rootBone);
-
-        foreach (Transform child in rootBone)
-        {
-            _GetAllBones(child, bones);
-        }
-    }
-
-    /// <summary>
-    /// Automatically attaches tags to model parts. 
-    /// </summary>
-    /// <param name="gameObj">
-    /// Model to tag. <see cref="GameObject"/>
-    /// </param>
-    public static void AutoTagModel(GameObject gameObj)
-    {
-        // TODO: we could improve this further, e.g. use string matching
-
-        Transform bone = null, hbone = null;
-
-        // Tag the model
-        gameObj.tag = "Agent";
-
-        // Tag the root bone
-        foreach (string name in rootBoneNames)
-        {
-            bone = ModelController.FindBoneByKeyword(gameObj.transform, name);
-
-            if (bone != null)
-            {
-                bone.tag = "RootBone";
-
-                break;
-            }
-        }
-
-        if (bone == null || bone.tag != "RootBone")
-        {
-            Debug.LogWarning("Failed to automatically tag the model Root bone. You will need to identify and tag the bone manually.");
-        }
-
-        // Tag the left eye
-        foreach (string name in lEyeBoneNames)
-        {
-            bone = ModelController.FindBoneByKeyword(gameObj.transform, name);
-
-            if (bone != null)
-            {
-                bone.tag = "LEyeBone";
-
-                // Find the helper, too
-                foreach (string hname in gazeHelperNames)
-                {
-                    hbone = ModelController.FindBoneByKeyword(bone, name + hname);
-
-                    if (hbone != null)
-                    {
-                        hbone.tag = "LEyeGazeHelper";
-
-                        break;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        if (bone == null || bone.tag != "LEyeBone")
-        {
-            Debug.LogWarning("Failed to automatically tag the model Left Eye bone. You will need to identify and tag the bone manually.");
-        }
-        if (hbone == null || hbone.tag != "LEyeGazeHelper")
-        {
-            Debug.LogWarning("Failed to automatically tag the model Left Eye gaze helper bone. You will need to identify and tag the bone manually.");
-        }
-
-        // Tag the right eye
-        foreach (string name in rEyeBoneNames)
-        {
-            bone = ModelController.FindBoneByKeyword(gameObj.transform, name);
-
-            if (bone != null)
-            {
-                bone.tag = "REyeBone";
-
-                // Find the helper, too
-                foreach (string hname in gazeHelperNames)
-                {
-                    hbone = ModelController.FindBoneByKeyword(bone, name + hname);
-
-                    if (hbone != null)
-                    {
-                        hbone.tag = "REyeGazeHelper";
-
-                        break;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        if (bone == null || bone.tag != "REyeBone")
-        {
-            Debug.LogWarning("Failed to automatically tag the model Right Eye bone. You will need to identify and tag the bone manually.");
-        }
-        if (hbone == null || hbone.tag != "REyeGazeHelper")
-        {
-            Debug.LogWarning("Failed to automatically tag the model Right Eye gaze helper bone. You will need to identify and tag the bone manually.");
-        }
-
-        // TODO: tag torso and head bones
     }
 }
 

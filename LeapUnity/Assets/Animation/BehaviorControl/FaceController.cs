@@ -344,7 +344,7 @@ public class FaceController : AnimController
     protected virtual void LateUpdate_Speech()
     {
         speechMotionGen.LateApply();
-        pauseTime += Time.deltaTime;
+        pauseTime += DeltaTime;
 
         if (doGesture /*|| pauseTime > pauseLength*/ )
             // Start head gesture
@@ -385,7 +385,7 @@ public class FaceController : AnimController
             rot = finRot;
         Head.bone.localRotation = rot;
 
-        time += Time.deltaTime;
+        time += DeltaTime;
         if (time > length)
         {
             time = 0;
@@ -526,7 +526,7 @@ public class FaceController : AnimController
 
     public static void _InitRandomHeadMotion(GameObject agent)
     {
-        Transform bone = ModelController.FindBoneWithTag(agent.transform, "HeadBone");
+        Transform bone = ModelUtils.FindBoneWithTag(agent.transform, "HeadBone");
 
         if (bone == null)
         {

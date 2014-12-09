@@ -214,11 +214,30 @@ public class AnimationTimeline
         get { return (1f / LEAPCore.editFrameRate) * FrameLength; }
     }
 
+    /// <summary>
+    /// Playback rate of the animation.
+    /// </summary>
+    public float TimeScale
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Are animation instances of the timeline being baked into clips right now?
+    /// </summary>
+    public bool IsBakingInstances
+    {
+        get;
+        private set;
+    }
+
     private Dictionary<string, AnimationInstance> _initialPoseAnimationInstances;
     private List<LayerContainer> _layerContainers;
     private Dictionary<int, ScheduledInstance> _animationInstancesById;
     private float _currentTime = 0;
     private int _nextInstanceId = 0;
+    private HashSet<int> _activeAnimationInstanceIds;
 
     /// <summary>
     /// Constructor.
@@ -228,9 +247,11 @@ public class AnimationTimeline
         _initialPoseAnimationInstances = new Dictionary<string, AnimationInstance>();
         _layerContainers = new List<LayerContainer>();
         _animationInstancesById = new Dictionary<int, ScheduledInstance>();
+        _activeAnimationInstanceIds = new HashSet<int>();
 
         Active = false;
         Playing = false;
+        TimeScale = 1f;
     }
 
     /// <summary>
@@ -494,49 +515,25 @@ public class AnimationTimeline
         // Ensure each model has an animation clip with the specified name
         foreach (var model in models)
         {
-            AnimationClip newClip = null;
-
-            // Does the model already have an animation clip with that name?
-            var animationComponent = model.gameObject.animation;
-            foreach (AnimationState animationState in animationComponent)
-            {
-                if (animationState.name == animationClipName)
-                {
-                    newClip = animationState.clip;
-                    newClip.ClearCurves();
-                }
-            }
-
-            if (newClip == null)
-            {
-                // Model does not have an animation clip with the specified name, so create a new one
-                newClip = new AnimationClip();
-                newClip.name = animationClipName;
-                AnimationUtility.SetAnimationType(newClip, ModelImporterAnimationType.Legacy);
-                animationComponent.AddClip(newClip, newClip.name);
-            }
+            LEAPAssetUtils.CreateAnimationClipOnModel(animationClipName, model.gameObject);
         }
 
         // For each model, retrieve its nodes and create empty anim. curves for them
         var curvesPerModel = new Dictionary<string, AnimationCurve[]>();
         foreach (var model in models)
         {
-            Transform[] bones = ModelController.GetAllBones(model.gameObject);
-            curvesPerModel[model.gameObject.name] = new AnimationCurve[3 + bones.Length*4];
-            // 3 properties for the root position, 4 for the rotation of each bone (incl. root)
-            for (int curveIndex = 0; curveIndex < curvesPerModel[model.gameObject.name].Length; ++curveIndex)
-                curvesPerModel[model.gameObject.name][curveIndex] = new AnimationCurve();
+            curvesPerModel[model.gameObject.name] = LEAPAssetUtils.CreateAnimationCurvesForModel(model.gameObject);
         }
 
         // Apply the animation at each frame in the range and bake the resulting frame to the curve on each model
         GoToFrame(startFrame);
-        while (CurrentFrame <= startFrame + length && CurrentFrame < FrameLength)
+        while (CurrentFrame < startFrame + length - 1 && CurrentFrame < FrameLength - 1)
         {
             _ApplyAnimation();
 
             foreach (var model in models)
             {
-                Transform[] bones = ModelController.GetAllBones(model.gameObject);
+                Transform[] bones = ModelUtils.GetAllBones(model.gameObject);
                 for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
                 {
                     var bone = bones[boneIndex];
@@ -583,40 +580,46 @@ public class AnimationTimeline
         // Set the curves to their animation clips on each model
         foreach (var model in models)
         {
-            AnimationClip newClip = null;
-
-            // Get the animation clip
-            var animationComponent = model.gameObject.animation;
-            foreach (AnimationState animationState in animationComponent)
-            {
-                if (animationState.name == animationClipName)
-                    newClip = animationState.clip;
-            }
-
-            // Set curves on that clip
-            Transform[] bones = ModelController.GetAllBones(model.gameObject);
-            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-            {
-                var bone = bones[boneIndex];
-                string bonePath = ModelController.GetBonePath(bone);
-
-                if (boneIndex == 0)
-                {
-                    // Set position curves on root bone
-                    newClip.SetCurve(bonePath, typeof(Transform), "localPosition.x", curvesPerModel[model.gameObject.name][0]);
-                    newClip.SetCurve(bonePath, typeof(Transform), "localPosition.y", curvesPerModel[model.gameObject.name][1]);
-                    newClip.SetCurve(bonePath, typeof(Transform), "localPosition.z", curvesPerModel[model.gameObject.name][2]);
-                }
-
-                // Set rotation curves
-                newClip.SetCurve(bonePath, typeof(Transform), "localRotation.x", curvesPerModel[model.gameObject.name][3 + boneIndex * 4]);
-                newClip.SetCurve(bonePath, typeof(Transform), "localRotation.y", curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 1]);
-                newClip.SetCurve(bonePath, typeof(Transform), "localRotation.z", curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 2]);
-                newClip.SetCurve(bonePath, typeof(Transform), "localRotation.w", curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 3]);
-            }
+            AnimationClip newClip = LEAPAssetUtils.GetAnimationClipOnModel(animationClipName, model.gameObject);
+            LEAPAssetUtils.SetAnimationCurvesOnClip(model.gameObject, newClip, curvesPerModel[model.gameObject.name]);
         }
     }
 
+    /// <summary>
+    /// Go through the entire animation and bake the outputs of all animation
+    /// instances into animation clips.
+    /// </summary>
+    public void BakeInstances()
+    {
+        Debug.Log("Baking all animation instances...");
+
+        // Initialize each model's animation tree
+        _InitControllers();
+
+        // Bake instances
+        IsBakingInstances = true;
+        GoToFrame(0);
+        while (CurrentFrame < FrameLength - 1)
+        {
+            _AddTime(1f / LEAPCore.editFrameRate);
+            _ApplyAnimation();
+        }
+        foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
+            if (kvp.Value.Animation.IsBaking)
+                kvp.Value.Animation.FinishBake();
+        IsBakingInstances = false;
+
+        Debug.Log("Finished baking all animation instances."); 
+        
+        // TODO: implement saving new animation clips as assets (files), e.g.
+        // AssetDatabase.CreateAsset(yourAnimClip, "Assets/MyAnim.anim");
+        // AssetDatabase.SaveAssets();
+    }
+
+    /// <summary>
+    /// Reset all character models to initial pose, encoded in
+    /// InitialPose animation clip.
+    /// </summary>
     public void ResetModelsToInitialPose()
     {
         // Set all models to initial pose
@@ -626,7 +629,7 @@ public class AnimationTimeline
             AnimationInstance initialPoseInstance = null;
             if (!_initialPoseAnimationInstances.ContainsKey(model.gameObject.name))
             {
-                initialPoseInstance = new AnimationInstance(model.gameObject, "InitialPose");
+                initialPoseInstance = new AnimationClipInstance(model.gameObject, "InitialPose");
                 _initialPoseAnimationInstances[model.gameObject.name] = initialPoseInstance;
             }
             else
@@ -635,9 +638,15 @@ public class AnimationTimeline
             }
 
             initialPoseInstance.Apply(0, AnimationLayerMode.Override);
+
+            model._Init();
         }
     }
 
+    /// <summary>
+    /// Update the animation timeline.
+    /// </summary>
+    /// <param name="deltaTime">Elapsed time since last update</param>
     public void Update(float deltaTime)
     {
         if (!Active)
@@ -649,7 +658,7 @@ public class AnimationTimeline
         if (Playing)
         {
             // Animation is playing, so advance time
-            _AddTime(deltaTime);
+            _AddTime(deltaTime * TimeScale);
         }
 
         _ApplyAnimation();
@@ -661,6 +670,11 @@ public class AnimationTimeline
             CurrentTime += deltaTime - TimeLength;
         else
             CurrentTime += deltaTime;
+
+        // Make sure controllers have access to the latest delta time
+        ModelController[] models = GetAllModels();
+        foreach (var model in models)
+            model.GetComponent<AnimControllerTree>().DeltaTime = deltaTime;
     }
 
     private void _ApplyAnimation()
@@ -673,20 +687,46 @@ public class AnimationTimeline
             var animationsInLayer = layer.Animations;
             foreach (var animation in animationsInLayer)
             {
-                if (animation.StartFrame > CurrentFrame)
+                if (animation.StartFrame > CurrentFrame ||
+                    animation.StartFrame + animation.Animation.FrameLength <= CurrentFrame)
                 {
+                    if (_activeAnimationInstanceIds.Contains(animation.InstanceId))
+                    {
+                        // This animation instance has just become inactive
+
+                        _activeAnimationInstanceIds.Remove(animation.InstanceId);
+                        if (IsBakingInstances)
+                            animation.Animation.FinishBake();
+
+                        Debug.Log(string.Format("Deactivating animation instance {0} on model {1}", animation.Animation.AnimationClip.name,
+                            animation.Animation.Model.gameObject.name));
+                    }
+
                     continue;
-                }
-                else if (animation.StartFrame + animation.Animation.FrameLength <= CurrentFrame)
-                {
-                    break;
                 }
                 else
                 {
+                    // This animation instance is active, so apply it
+
+                    if (!_activeAnimationInstanceIds.Contains(animation.InstanceId))
+                    {
+                        // This animation instance has just become active
+
+                        _activeAnimationInstanceIds.Add(animation.InstanceId);
+                        if (IsBakingInstances)
+                            animation.Animation.StartBake();
+
+                        Debug.Log(string.Format("Activating animation instance {0} on model {1}", animation.Animation.AnimationClip.name,
+                            animation.Animation.Model.gameObject.name));
+
+                    }
+
                     animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
                 }
             }
         }
+
+        _StoreModelsCurrentPose();
     }
 
     private void _AddAnimationToLayerContainer(ScheduledInstance newInstance, LayerContainer targetLayerContainer)
@@ -704,5 +744,25 @@ public class AnimationTimeline
         }
         if (!newInstanceAdded)
             targetLayerContainer._GetAnimations().Add(newInstance);
+    }
+
+    private void _StoreModelsCurrentPose()
+    {
+        ModelController[] models = GetAllModels();
+        foreach (var model in models)
+        {
+            model._StoreCurrentPose();
+        }
+    }
+
+    private void _InitControllers()
+    {
+        ModelController[] models = GetAllModels();
+        foreach (var model in models)
+        {
+            var animControllerTree = model.gameObject.GetComponent<AnimControllerTree>();
+            if (animControllerTree != null)
+                animControllerTree.Start();
+        }
     }
 }
