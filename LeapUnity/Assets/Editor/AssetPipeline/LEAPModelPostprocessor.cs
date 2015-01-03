@@ -8,7 +8,6 @@ using System.IO;
 
 public class LEAPModelPostprocessor : AssetPostprocessor
 {
-	
 	/// <summary>
 	/// Postprocess model.
 	/// </summary>

@@ -6,8 +6,8 @@ using System.Linq;
 
 public class LEAPMenu
 {
-    [MenuItem("LEAP/Animation/Test Animation Timeline", true, 10)]
-    private static bool ValidateTestAnimationTimeline()
+    [MenuItem("LEAP/Animation/Init Animation Timeline", true, 10)]
+    private static bool ValidateInitAnimationTimeline()
     {
         var obj = Selection.activeGameObject;
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
@@ -19,37 +19,41 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Animation/Test Animation Timeline", false, 10)]
-    private static void TestAnimationTimeline()
+    [MenuItem("LEAP/Animation/Init Animation Timeline", false, 10)]
+    private static void InitAnimationTimeline()
     {
-        GameObject obj = Selection.activeGameObject;
+        var obj = Selection.activeGameObject;
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
 
         timeline.RemoveAllLayers();
 
+        // Create animation layers and instances
         var bodyAnimation = new AnimationClipInstance(obj, "InitialPose");
         timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
+        timeline.GetLayer("BaseAnimation").IKEnabled = true;
         timeline.AddAnimation("BaseAnimation", bodyAnimation, 0);
-        timeline.AddLayer(AnimationLayerMode.Override, 5, "Gaze");
+        timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
         /*timeline.AddAnimation("Gaze", new AnimationClipInstance(obj, "TestLookLeft"), 50);
         timeline.AddAnimation("Gaze", new AnimationClipInstance(obj, "TestLookLeft"), 300);*/
-        timeline.AddAnimation("Gaze",
+        /*timeline.AddAnimation("Gaze",
             new EyeGazeInstance(obj, "Gaze1", 149, GameObject.FindGameObjectsWithTag("GazeTarget").FirstOrDefault(gt => gt.name == "WindowUpperLeft2"),
             0f, 0f), 78);
-        /*timeline.AddAnimation("Gaze",
+        timeline.AddAnimation("Gaze",
             new EyeGazeInstance(obj, "Gaze2", 32, GameObject.FindGameObjectsWithTag("GazeTarget").FirstOrDefault(gt => gt.name == "WindowUpperLeft2"),
                 0.8f, 0.8f), 181);*/
+
+        timeline.Init();
     }
 
-    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 8)]
+    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 5)]
     private static bool ValidateResetModelsToInitialPose()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", false, 8)]
+    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", false, 5)]
     private static void ResetModelsToInitialPose()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
@@ -58,19 +62,58 @@ public class LEAPMenu
         SceneView.RepaintAll();
     }
 
-    [MenuItem("LEAP/Animation/Bake Animation", true, 9)]
+    [MenuItem("LEAP/Animation/Bake Animation", true, 6)]
     private static bool ValidateBakeAnimation()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Bake Animation", false, 9)]
+    [MenuItem("LEAP/Animation/Bake Animation", false, 6)]
     private static void BakeAnimation()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
         timeline.Bake("SneakingWithAutoGaze");
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze", true, 7)]
+    private static bool ValidateLoadEyeGaze()
+    {
+        var obj = Selection.activeGameObject;
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (obj == null || wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze", false, 7)]
+    private static void LoadEyeGaze()
+    {
+        var obj = Selection.activeGameObject;
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+
+        // TODO: remove this after testing
+        InitAnimationTimeline();
+        //
+        string baseAnimationName = timeline.GetLayer("BaseAnimation").Animations[0].Animation.AnimationClip.name;
+        EyeGazeEditor.LoadEyeGazeForModel(timeline, baseAnimationName, "Gaze");
+        // TODO: move eye gaze inference to separate menu items
+        EyeGazeEditor.InferEyeGazeAttributes(timeline, baseAnimationName, "Gaze");
+        EyeGazeEditor.FixEyeGazeBetweenShifts(timeline, baseAnimationName, "Gaze");
+        foreach (var instance in timeline.GetLayer("Gaze").Animations)
+        {
+            Debug.Log(string.Format("EyeGazeInstance: model = {0}, animationClip = {1}, startFrame = {2}, endFrame = {3}, target = {4}, headAlign = {5}, torsoAlign = {6}",
+                instance.Animation.Model.gameObject.name, instance.Animation.AnimationClip.name,
+                instance.StartFrame, instance.StartFrame + instance.Animation.FrameLength,
+                (instance.Animation as EyeGazeInstance).Target.name,
+                (instance.Animation as EyeGazeInstance).HeadAlign, (instance.Animation as EyeGazeInstance).TorsoAlign));
+        }
+        //
     }
 
 	/// <summary>

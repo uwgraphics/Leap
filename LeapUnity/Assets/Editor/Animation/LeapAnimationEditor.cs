@@ -35,7 +35,7 @@ public class LeapAnimationEditor : EditorWindow
         if (Timeline == null)
         {
             // Create the animation timeline
-            Timeline = new AnimationTimeline();
+            Timeline = AnimationTimeline.Instance;
             Timeline.Active = false;
             Timeline.Stop();
         }
@@ -110,6 +110,22 @@ public class LeapAnimationEditor : EditorWindow
         try { timeScale = (float)double.Parse(timeScaleStr); }
         catch (Exception) { timeScale = 1f; }
         Timeline.TimeScale = timeScale;
+
+        // Enable/disable layers
+        float layerToggleLeft = 20;
+        float layerToggleTop = 90;
+        int layerCount = 0;
+        foreach (var layer in Timeline.Layers)
+        {
+            layer.Active = GUI.Toggle(new Rect(layerToggleLeft, layerToggleTop, 140, 20), layer.Active, layer.LayerName);
+            layerToggleLeft += 140;
+            ++layerCount;
+            if (layerCount >= 3)
+            {
+                layerToggleLeft = 20;
+                layerToggleTop += 30;
+            }
+        }
 
         // Bake anim. controllers
         if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "BC")

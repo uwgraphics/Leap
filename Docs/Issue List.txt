@@ -1,16 +1,63 @@
 LeapAnimationEditor:
 
-[] When playing back the timeline and layering TestLookLeft, the animation TestLookLeft is applied at the final pose instantly after 0th frame ("final pose" being the pose of the last keyframe), rather than smoothly interpolated.
-    - This happens in both additive and override layering modes.
-    - Timing of the animation instance is correct.
-    - Animation interpolates correctly when clip is played in Unity Animation window.
-    
-[] (Might be the same bug as above) When layering a synthesized gaze animation (Gaze1), gaze shift is extremely quick (~3 frames or ~100 ms)
-    - Playing the animation clip in Unity Animation window works as expected - gaze shift is ~20 frames
+#13 [X] When using more than one Head joint, eyes often fail to reach the gaze target
+  - This is like bug #6 again, but now with multiple Head joints
+  - Happens in the same place as #6 - WindowWashingGaze3, WindowCenterLeft doesn't get reached
+  - Fixed by changing how target rotations for joints are updated to account for body movement - now we just do GazeJoint.UpdateTargerRotation() for the *current* joint, rather than all the subsequent joints; keep this change in mind in case it breaks something else
 
-[X] Animation baking using AnimationTimeline.BakeRange() gives a completely messed up animation
+#12 [] Eyes still sometimes snap during gaze shifts
+  - Seems to be happening at gaze shift boundaries
+  - Happens often around WindowWashingGaze8 instance, about 210 frames into the WindowWashing animation
+  - Can't repro anymore, maybe it's fixed?
+
+#11 [] Gaze controller sometimes enters a broken state where eyes are snapping betwen targets rather than moving smoothly
+  - Happens in the final third of InitialPose test case
+
+#10 [X] One or both eyes get stuck before reaching the target
+  - Similar to what was going on in #5
+  - See TestGaze5 with InitialPose as base animation, for example
+  - Improved OMR clamping, bug seems to be fixed for now
+
+#9 [X] One or more of the eyes snap back after reaching gaze target, when they should VOR
+  - Can't repro, but keep an eye on it
+  - This seems to be caused by ClampMRToSource(), which snaps the rotations right back to source, because CheckMR() indicates we are starting outside OMR even at source rotations!
+  - Provisional fix added to ClampMRToSource(), but it won't be very robust
+
+#8 [] Saccadic velocities are too low - they should be in excess of 500 deg/s for pure saccades, but they barely reach 200 deg/s
+
+#7 [X] One of the eyes snaps back after reaching the gaze target sometimes
+  - This happens when applying WindowWashing gaze sequence to static pose (InitialPose)
+  - The problem is due to OMR clamping in GazeJoint.ApplyVOR()
+
+#6 [X] Due to opposing body movement, some gaze shifts are unable to reach their target
+  - This can cause gaze snapping when another gaze shift is triggered
+  - See for example WindowWashingGaze3, where WindowCenterLeft is never reached
+  - Fundamentally this is because we fail to consider the future when synthesizing a gaze shift - i.e., how far the eyes and head will actually have to rotate due to unexpected changes in body movement direction, which determines also max. velocities of the gaze joints
+  - Taking into account the future pose gives us somewhat higher max. velocities, but insufficient to compensate for opposing movement of the body
+  - Removing rot. progress normalization greatly improves the appearance of gaze shifts, since eyes are now always progressing forward - but is this neurophysiologically correct?
+  - One problem is, HEAD doesn't move at all - that's because headAlign = 0 and target is within OMR; however, without head contribution the eyes seem to be too slow
+  - This is pure saccadic gaze, yet peak eye velocity is far too low (~180 deg/s) - it should be closer to 500 deg/s!
+  - Testing the same gaze sequence with static pose (InitialPose) and the eyes get "stuck" in the same spot w/o ever reaching the gaze target - must be a bug
+  - It was a bug - fixed now, there was an UpdateTargetRotations() call in the wrong place
+
+#5 [X] Target rotations don't get correctly computed in VOR, causing a discontinuity of head rotations when VOR kicks in
+  - Maybe fixTarget should be the same for *all* joints, rather than different for each
+  - It is now and this seems to have gotten rid of some discontinuities
+
+#3 [X] Target rotations of the root joint in the gaze joint chain don't get updated correctly to compensate for body motion
+  - Fixed now, not entirely sure if it works properly
+
+#2 [X] When playing back the timeline and layering TestLookLeft, the animation TestLookLeft is applied at the final pose instantly after 0th frame ("final pose" being the pose of the last keyframe), rather than smoothly interpolated
+  - This happens in both additive and override layering modes
+  - Timing of the animation instance is correct
+  - Animation interpolates correctly when clip is played in Unity Animation window.
+  - Might be the same bug as above - when layering a synthesized gaze animation (Gaze1), gaze shift is extremely quick (~3 frames or ~100 ms)
+  - Playing the animation clip in Unity Animation window works as expected - gaze shift is ~20 frames
+  - Fixed by making sure clip time is correctly set for in both AnimationClipInstance.Apply() and AnimationControllerInstance.Apply()
+
+#1 [X] Animation baking using AnimationTimeline.BakeRange() gives a completely messed up animation
 
 
-Models:
+Character Models:
 
-[] Norman model gets a bit cross-eyed when animating gaze using standard gaze model - cross-eyedness removal might be necessary
+#4 [] Norman model gets a bit cross-eyed when animating gaze using standard gaze model - cross-eyedness removal might be necessary

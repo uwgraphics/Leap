@@ -46,7 +46,7 @@ public class AnimControllerTree : MonoBehaviour
 
         // Initialize the model controller
         _modelController = GetComponent<ModelController>();
-        _modelController._Init();
+        _modelController.Init();
 
         // Initialize animation controllers
         rootController._InitTree();

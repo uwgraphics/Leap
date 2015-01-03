@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 /// <summary>
 /// Some useful methods for working with LEAP assets.
@@ -310,9 +311,21 @@ public static class LEAPAssetUtils
         }
     }
 
-    public static string GetModelDirectory(GameObject model)
+    /// <summary>
+    /// Get asset directory of the specified character model.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="full">If true, full directory is returned</param>
+    /// <returns>Asset directory</returns>
+    public static string GetModelDirectory(GameObject model, bool full = false)
     {
         string path = AssetDatabase.GetAssetPath(model.animation["InitialPose"].clip);
-        return path.Substring(0, path.LastIndexOf('/') + 1);
+        string dir = path.Substring(0, path.LastIndexOf('/') + 1);
+        if (full)
+        {
+            dir = Application.dataPath + dir.Substring(dir.IndexOf('/'));
+        }
+        
+        return dir;
     }
 }

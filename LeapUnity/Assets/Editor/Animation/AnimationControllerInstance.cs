@@ -151,7 +151,7 @@ public class AnimationControllerInstance : AnimationInstance
         else
         {
             // Configure how the animation clip will be applied to the model
-            Animation[AnimationClip.name].time = ((float)frame) / TimeLength;
+            Animation[AnimationClip.name].normalizedTime = ((float)frame) / FrameLength;
             Animation[AnimationClip.name].weight = Weight;
             if (layerMode == AnimationLayerMode.Additive)
             {

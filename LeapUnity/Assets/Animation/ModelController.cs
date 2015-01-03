@@ -225,9 +225,9 @@ public class ModelController : MonoBehaviour
     }
 
     /// <summary>
-    /// Initializes the model controller.
+    /// Initialize the model controller.
     /// </summary>
-    public void _Init()
+    public void Init()
     {
         if (rootBone == null)
             _InitBones();

@@ -12,17 +12,30 @@ public class AnimationEditGizmos : MonoBehaviour
     /// </summary>
     public bool showGazeTargets = true;
 
-    public Color gazeTargetColor = Color.red;
-
     private void OnDrawGizmos()
     {
-        GameObject[] gazeTargets = GameObject.FindGameObjectsWithTag("GazeTarget");
-        foreach (var gazeTarget in gazeTargets)
+        if (showGazeTargets)
         {
-            string icon = "GazeTargetGizmo.png";
-            // TODO: use different icon for current gaze target
+            var model = ModelUtils.GetSelectedModel();
+            var gazeController = model != null ? model.GetComponent<GazeController>() : null;
 
-            Gizmos.DrawIcon(gazeTarget.transform.position, icon, true);
+            GameObject[] gazeTargets = GameObject.FindGameObjectsWithTag("GazeTarget");
+            foreach (var gazeTarget in gazeTargets)
+            {
+                string icon = "GazeTargetGizmo.png";
+                if (gazeController != null)
+                {
+                    if (gazeController._CurrentGazeTarget == gazeTarget)
+                        icon = "GazeTargetCurrentGizmo.png";
+                }
+
+                Gizmos.DrawIcon(gazeTarget.transform.position, icon, true);
+            }
+
+            if (gazeController != null)
+            {
+                Gizmos.DrawIcon(gazeController.FixGazeTargetPosition, "GazeTargetFixGizmo.png", true);
+            }
         }
     }
 }

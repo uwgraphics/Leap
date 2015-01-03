@@ -18,35 +18,6 @@ public class DirectableJoint
     /// </summary>
     public Transform helper = null;
 
-    /// <summary>
-    /// Peak velocity of the joint.
-    /// </summary>
-    public float velocity = 50f; // 150 for the eyes
-
-    /// <summary>
-    /// Joint's upward motor range (in degs). 
-    /// </summary>
-    public float upMR = 90f; // 40 for the eyes
-
-    /// <summary>
-    /// Joint's downward motor range (in degs). 
-    /// </summary>
-    public float downMR = 90f;
-
-    /// <summary>
-    /// Joint's inward motor range (in degs).
-    /// </summary>
-    /// <remarks>"Inward" direction is right for all joints
-    /// but the right eye (in which case it is left).</remarks>
-    public float inMR = 180f; // 55 for the eyes
-
-    /// <summary>
-    /// Joint's outward motor range (in degs). 
-    /// </summary>
-    /// <remarks>"Outward" direction is left for all joints
-    /// but the left eye (in which case it is right).</remarks>
-    public float outMR = 180f;
-
     //protected GameObject agent; // This is the agent root!
     protected Transform rootBone = null;
     protected Quaternion COBRot;
@@ -257,56 +228,6 @@ public class DirectableJoint
 
         // Cache change-of-basis rotation
         COBRot = _ComputeCOBRotation();
-    }
-
-    /// <summary>
-    /// true if MR limits are broken, otherwise false.
-    /// </summary>
-    public virtual bool CheckMR()
-    {
-        float yaw = this.bone == mdlCtrl.REye ? (Yaw - InitYaw) : (-Yaw + InitYaw);
-        float pitch = Pitch - InitPitch;
-
-        bool res = false;
-        if (yaw >= 0f && pitch >= 0f)
-            res = yaw <= inMR && pitch <= downMR;
-        else if (yaw <= 0f && pitch >= 0f)
-            res = -yaw <= outMR && pitch <= downMR;
-        else if (yaw <= 0f && pitch <= 0f)
-            res = -yaw <= outMR && -pitch <= upMR;
-        else if (yaw >= 0f && pitch <= 0f)
-            res = yaw <= inMR && -pitch <= upMR;
-
-        return !res;
-    }
-
-    /// <summary>
-    /// Clamp joint orientation to MR limits. 
-    /// </summary>
-    public virtual bool ClampMR()
-    {
-        Quaternion srcrot = InitRotation;
-        Quaternion trgrot = bone.localRotation;
-        float rotd = DistanceToRotate(srcrot, trgrot);
-        bone.localRotation = srcrot;
-        for (float t = LEAPCore.eulerTimeStep * velocity / rotd; t <= 1f; )
-        {
-            // Update joint rotation
-            Quaternion prevrot = bone.localRotation;
-            bone.localRotation = Quaternion.Slerp(srcrot, trgrot, t);
-
-            // Has the joint violated MR limits?
-            if (CheckMR())
-            {
-                // Yes, previous rotation is as far as we can go
-                bone.localRotation = prevrot;
-                return false;
-            }
-
-            // Advance joint rotation
-            t += (LEAPCore.eulerTimeStep * velocity / rotd);
-        }
-        return true;
     }
 
     private Quaternion _ComputeCOBRotation()

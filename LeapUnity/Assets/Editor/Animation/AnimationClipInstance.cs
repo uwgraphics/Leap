@@ -43,7 +43,7 @@ public class AnimationClipInstance : AnimationInstance
     public override void Apply(int frame, AnimationLayerMode layerMode)
     {
         // Configure how the animation clip will be applied to the model
-        Animation[AnimationClip.name].normalizedTime = ((float)frame) / FrameLength;
+        Animation[AnimationClip.name].normalizedTime = Mathf.Clamp01(((float)frame) / FrameLength);
         Animation[AnimationClip.name].weight = Weight;
         if (layerMode == AnimationLayerMode.Additive)
         {

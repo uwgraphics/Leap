@@ -7,6 +7,40 @@ using System.Diagnostics;
 using System.IO;
 
 /// <summary>
+/// Structure holding a character model's skeletal pose.
+/// </summary>
+public struct ModelPose
+{
+    Vector3 rootPosition;
+    Quaternion[] boneRotations;
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    public ModelPose(GameObject model)
+    {
+        Transform[] bones = ModelUtils.GetAllBones(model);
+        rootPosition = bones[0].position;
+        boneRotations = new Quaternion[bones.Length];
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            boneRotations[boneIndex] = bones[boneIndex].localRotation;
+    }
+
+    /// <summary>
+    /// Apply the pose to a character model.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    public void Apply(GameObject model)
+    {
+        Transform[] bones = ModelUtils.GetAllBones(model);
+        bones[0].position = rootPosition;
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            bones[boneIndex].localRotation = boneRotations[boneIndex];
+    }
+}
+
+/// <summary>
 /// Some useful methods for working with LEAP character models.
 /// </summary>
 public static class ModelUtils
@@ -320,5 +354,20 @@ public static class ModelUtils
         }
 
         // TODO: tag torso and head bones
+    }
+
+    /// <summary>
+    /// Get currently selected character model (or null if no model is selected)
+    /// </summary>
+    /// <returns>Selected character model</returns>
+    public static GameObject GetSelectedModel()
+    {
+        GameObject obj = Selection.activeGameObject;
+        if (obj == null || obj.GetComponent<ModelController>() == null)
+        {
+            return null;
+        }
+
+        return obj;
     }
 }

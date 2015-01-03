@@ -478,7 +478,7 @@ public class FaceController : AnimController
     {
         doGesture = false;
         stopGesture = false;
-        maxHeadVelocity = gestSpeedMults[(int)gestSpeed].mult * Head.velocity;
+        maxHeadVelocity = gestSpeedMults[(int)gestSpeed].mult * 75f;
         gestLeft = numGestures;
         ret = false;
         sustain = false;

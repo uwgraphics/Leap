@@ -192,8 +192,8 @@ public class TestScenario : Scenario
 		                 1f : gctrl.eyeSize );
 		gctrl.eyeTorque = ( condition != ConditionType.SG_Timing && condition != ConditionType.SG ?
 		                   1f : gctrl.eyeTorque );
-		gctrl.stageGazeBlinks = ( condition != ConditionType.SG_GEB && condition != ConditionType.SG ?
-		                       false : true );
+		/*gctrl.stageGazeBlinks = ( condition != ConditionType.SG_GEB && condition != ConditionType.SG ?
+		                       false : true );*/
 		// TODO: now SG_CER condition includes both target pose adaptation techniques
 		gctrl.enableED = condition == ConditionType.SG_ED || condition == ConditionType.SG || condition == ConditionType.SG_CER;
 		gctrl.enableAEM = condition == ConditionType.SG_Timing || condition == ConditionType.SG;
