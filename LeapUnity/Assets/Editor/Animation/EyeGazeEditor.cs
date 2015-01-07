@@ -280,8 +280,9 @@ public static class EyeGazeEditor
             // Get min. and full target rotations for the torso
             Quaternion torsoTrgRotFull = gazeController.Torso._ComputeTargetRotation(gazeController.EffGazeTargetPosition);
             float distRot = gazeController._ComputeGazeShiftAmplitude();
+            gazeController.Amplitude = distRot;
             float torsoDistRotFull = GazeJoint.DistanceToRotate(gazeController.Torso.srcRot, torsoTrgRotFull);
-            float torsoDistRotMin = instance.GazeController._ComputeTorsoDistanceToRotate(torsoDistRotFull);
+            float torsoDistRotMin = instance.GazeController._ComputeTorsoDistanceToRotate();
             float alignMin = gazeController.Torso.srcRot != torsoTrgRot ? torsoDistRotMin / torsoDistRotFull : 0f;
             Quaternion torsoTrgRotMin = Quaternion.Slerp(gazeController.Torso.srcRot, torsoTrgRot, alignMin);
             
@@ -301,7 +302,7 @@ public static class EyeGazeEditor
         // Compute head alignment
         instance.HeadAlign = headTrgRotMin != headTrgRotFull ?
             GazeJoint.DistanceToRotate(headTrgRotMin, headTrgRot) / GazeJoint.DistanceToRotate(headTrgRotMin, headTrgRotFull) : 0f;
-        //instance.HeadAlign = Mathf.Clamp01(instance.HeadAlign);
+        instance.HeadAlign = Mathf.Clamp01(instance.HeadAlign);
         instance.HeadAlign = 0f;
         gazeController.Head.align = instance.HeadAlign;
     }

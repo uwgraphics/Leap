@@ -156,6 +156,30 @@ public class GazeJoint : DirectableJoint
     [HideInInspector]
     public bool trgReached = false;
 
+    // Source rotation during VOR
+    [HideInInspector]
+    public Quaternion fixSrcRot;
+
+    // Target rotation during VOR
+    [HideInInspector]
+    public Quaternion fixTrgRot;
+
+    // Alignment-constrained target rotation during VOR
+    [HideInInspector]
+    public Quaternion fixTrgRotAlign;
+
+    // Distance between source rotation and aligning target rotation during VOR
+    [HideInInspector]
+    public float fixDistRotAlign;
+
+    // Rotation progress during VOR
+    [HideInInspector]
+    public float fixRotParamAlign;
+
+    // Joint weight in the current gaze shift
+    [HideInInspector]
+    public float curWeight = 1f;
+
     private MorphController morphCtrl;
     private GazeController gazeCtrl;
 
@@ -165,38 +189,6 @@ public class GazeJoint : DirectableJoint
         {
             return type == GazeJointType.LEye ||
                 type == GazeJointType.REye;
-        }
-    }
-
-    /// <summary>
-    /// Source local rotation
-    /// (at the start of the current gaze shift).
-    /// </summary>
-    public virtual Quaternion SourceRotation
-    {
-        get
-        {
-            return srcRot;
-        }
-        set
-        {
-            srcRot = value;
-        }
-    }
-
-    /// <summary>
-    /// Target local rotation
-    /// (at the end of the current gaze shift).
-    /// </summary>
-    public virtual Quaternion TargetRotation
-    {
-        get
-        {
-            return trgRot;
-        }
-        set
-        {
-            trgRot = value;
         }
     }
 
@@ -336,19 +328,21 @@ public class GazeJoint : DirectableJoint
 
     public void _InitVOR()
     {
-        trgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
+        fixSrcRot = srcRot;
+        fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
 
         if (IsEye)
         {
-            trgRotAlign = trgRot;
+            fixRotParamAlign = rotParamAlign;
+            fixTrgRotAlign = fixTrgRot;
         }
         else
         {
             Quaternion curRot = Quaternion.Slerp(srcRot, trgRotAlign, rotParamAlign);
-            float distRot = DistanceToRotate(srcRot, trgRot);
-            float distRotAlign = DistanceToRotate(srcRot, curRot);
-            rotParamAlign = distRot > 0.00001f ? distRotAlign / distRot : 0f;
-            trgRotAlign = srcRot != trgRot ? Quaternion.Slerp(srcRot, trgRot, rotParamAlign) : srcRot;
+            float fixDistRot = DistanceToRotate(fixSrcRot, fixTrgRot);
+            float fixDistRotAlign = DistanceToRotate(fixSrcRot, curRot);
+            fixRotParamAlign = fixDistRot > 0.00001f ? fixDistRotAlign / fixDistRot : 0f;
+            fixTrgRotAlign = fixSrcRot != fixTrgRot ? Quaternion.Slerp(fixSrcRot, fixTrgRot, fixRotParamAlign) : fixSrcRot;
             // TODO: there might be a small discontinuity here, keep an eye out for it
         }
     }
@@ -357,12 +351,17 @@ public class GazeJoint : DirectableJoint
     {
         _UpdateVORTargetRotation();
 
-        _ApplyRotation(trgRotAlign);
+        _ApplyRotation(fixTrgRotAlign);
         if (IsEye)
         {
             // VOR fixation must not break OMR limits
             if (mrReached = CheckMR())
+            {
+                Quaternion curSrcRot = srcRot;
+                srcRot = fixSrcRot;
                 ClampMR();
+                srcRot = curSrcRot;
+            }
         }
     }
 
@@ -370,12 +369,12 @@ public class GazeJoint : DirectableJoint
     {
         if (IsEye)
         {
-            trgRotAlign = trgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
+            fixTrgRotAlign = fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
         }
         else
         {
-            trgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
-            trgRotAlign = srcRot != trgRot ? Quaternion.Slerp(srcRot, trgRot, rotParamAlign) : srcRot;
+            fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
+            fixTrgRotAlign = fixSrcRot != fixTrgRot ? Quaternion.Slerp(fixSrcRot, fixTrgRot, fixRotParamAlign) : fixSrcRot;
         }
     }
 
@@ -391,6 +390,7 @@ public class GazeJoint : DirectableJoint
         align = IsEye ? 1f : Mathf.Clamp01(align);
         curAlign = align;
         latencyTime = 0;
+        curWeight = weight;
 
         // Initialize rotations
         srcRot = bone.localRotation;
@@ -575,7 +575,7 @@ public class GazeJoint : DirectableJoint
     public void _ApplyRotation(Quaternion q)
     {
         var last = gazeCtrl.GetLastGazeJointInChain(type);
-        bone.localRotation = Quaternion.Slerp(bone.localRotation, q, last.weight);
+        bone.localRotation = Quaternion.Slerp(bone.localRotation, q, last.curWeight);
         if (IsEye || !IsEye && gazeCtrl.removeRoll)
             _RemoveRoll(); // gaze rotations should have no roll component
     }
@@ -704,14 +704,22 @@ public class GazeJoint : DirectableJoint
     // Write gaze joint state to log
     public void _LogState()
     {
+        if (this != gazeCtrl.GetLastGazeJointInChain(type))
+            return;
+
         /*Debug.Log(string.Format("{0}: curVelocity = {1} [maxVelocity = {2}], latencyTime = {3}, cur*OMR = ({4}, {5}, {6}, {7}), " +
             "curAlign = {8}, srcRot = ({9}, {10}, {11}), trgRot = ({12}, {13}, {14}), trgRotAlign = ({15}, {16}, {17}), trgRotMR = ({18}, {19}, {20}), " +
-            "distRotAlign = {21}, distRotMR = {22}, rotParamAlign = {23}, rotParamMR = {24}, mrReached = {25}, trgReached = {26}",
+            "distRotAlign = {21}, distRotMR = {22}, rotParamAlign = {23}, rotParamMR = {24}, mrReached = {25}, trgReached = {26}, " +
+            "fixSrcRot = ({27}, {28}, {29}), fixTrgRot = ({30}, {31}, {32}), fixDistRotAlign = {33}, fixRotParamAlign = {34}", 
             type.ToString(), curVelocity, maxVelocity, latencyTime, curUpMR, curDownMR, curInMR, curOutMR,
             curAlign, srcRot.eulerAngles.x, srcRot.eulerAngles.y, srcRot.eulerAngles.z,
             trgRot.eulerAngles.x, trgRot.eulerAngles.y, trgRot.eulerAngles.z,
             trgRotAlign.eulerAngles.x, trgRotAlign.eulerAngles.y, trgRotAlign.eulerAngles.z,
             trgRotMR.eulerAngles.x, trgRotMR.eulerAngles.y, trgRotMR.eulerAngles.z,
-            distRotAlign, distRotMR, rotParamAlign, rotParamMR, mrReached, trgReached));*/
+            distRotAlign, distRotMR, rotParamAlign, rotParamMR, mrReached, trgReached,
+            fixSrcRot.eulerAngles.x, fixSrcRot.eulerAngles.y, fixSrcRot.eulerAngles.z,
+            fixTrgRot.eulerAngles.x, fixTrgRot.eulerAngles.y, fixTrgRot.eulerAngles.z,
+            fixTrgRotAlign.eulerAngles.x, fixTrgRotAlign.eulerAngles.y, fixTrgRotAlign.eulerAngles.z,
+            fixDistRotAlign, fixRotParamAlign));*/
     }
 }

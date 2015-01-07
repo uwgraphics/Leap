@@ -29,19 +29,11 @@ public class LEAPMenu
         timeline.RemoveAllLayers();
 
         // Create animation layers and instances
-        var bodyAnimation = new AnimationClipInstance(obj, "InitialPose");
+        var bodyAnimation = new AnimationClipInstance(obj, "WindowWashing");
         timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
         timeline.GetLayer("BaseAnimation").IKEnabled = true;
         timeline.AddAnimation("BaseAnimation", bodyAnimation, 0);
         timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
-        /*timeline.AddAnimation("Gaze", new AnimationClipInstance(obj, "TestLookLeft"), 50);
-        timeline.AddAnimation("Gaze", new AnimationClipInstance(obj, "TestLookLeft"), 300);*/
-        /*timeline.AddAnimation("Gaze",
-            new EyeGazeInstance(obj, "Gaze1", 149, GameObject.FindGameObjectsWithTag("GazeTarget").FirstOrDefault(gt => gt.name == "WindowUpperLeft2"),
-            0f, 0f), 78);
-        timeline.AddAnimation("Gaze",
-            new EyeGazeInstance(obj, "Gaze2", 32, GameObject.FindGameObjectsWithTag("GazeTarget").FirstOrDefault(gt => gt.name == "WindowUpperLeft2"),
-                0.8f, 0.8f), 181);*/
 
         timeline.Init();
     }

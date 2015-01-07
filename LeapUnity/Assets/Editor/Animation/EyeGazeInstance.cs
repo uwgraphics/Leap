@@ -76,6 +76,9 @@ public class EyeGazeInstance : AnimationControllerInstance
         public float maxVelocity, curVelocity, latency, latencyTime;
         public bool mrReached, trgReached;
         public float adjUpMR, adjDownMR, adjInMR, adjOutMR, curUpMR, curDownMR, curInMR, curOutMR;
+        public float curAlign, curWeight;
+        public Quaternion fixSrcRot, fixTrgRot, fixTrgRotAlign;
+        public float fixDistRotAlign, fixRotParamAlign;
 
         public _GazeJointState(GazeJoint joint)
         {
@@ -101,6 +104,13 @@ public class EyeGazeInstance : AnimationControllerInstance
             curDownMR = joint.curDownMR;
             curInMR = joint.curInMR;
             curOutMR = joint.curOutMR;
+            curAlign = joint.curAlign;
+            curWeight = joint.curWeight;
+            fixSrcRot = joint.fixSrcRot;
+            fixTrgRot = joint.fixTrgRot;
+            fixTrgRotAlign = joint.fixTrgRotAlign;
+            fixDistRotAlign = joint.fixDistRotAlign;
+            fixRotParamAlign = joint.fixRotParamAlign;
         }
 
         public void Apply(GazeJoint joint)
@@ -127,6 +137,13 @@ public class EyeGazeInstance : AnimationControllerInstance
             joint.curDownMR = curDownMR;
             joint.curInMR = curInMR;
             joint.curOutMR = curOutMR;
+            joint.curAlign = curAlign;
+            joint.curWeight = curWeight;
+            joint.fixSrcRot = fixSrcRot;
+            joint.fixTrgRot = fixTrgRot;
+            joint.fixTrgRotAlign = fixTrgRotAlign;
+            joint.fixDistRotAlign = fixDistRotAlign;
+            joint.fixRotParamAlign = fixRotParamAlign;
         }
     }
 
@@ -158,28 +175,30 @@ public class EyeGazeInstance : AnimationControllerInstance
             BakeMask.Set(curveIndex++, true);
             BakeMask.Set(curveIndex, true);
         }
-
-        // Register handler for gaze controller state changes
-        GazeController.StateChange += new StateChangeEvtH(GazeController_StateChange);
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.StartBake"/>
+    /// <see cref="AnimationInstance.Start"/>
     /// </summary>
-    public override void StartBake()
+    public override void Start()
     {
-        base.StartBake();
+        base.Start();
+
+        // Register handler for gaze controller state changes
+        GazeController.StateChange += new StateChangeEvtH(GazeController_StateChange);
 
         // Initiate gaze shift to target
         if (GazeController.Head != null)
         {
-            GazeController.Head.align = HeadAlign;
+            //GazeController.Head.align = HeadAlign;
+            GazeController.Head.align = 0.2f;
             GazeController.Head.weight = 1f;
         }
         if (GazeController.Torso != null)
         {
-            GazeController.Torso.align = TorsoAlign;
-            GazeController.Head.weight = 0f;
+            //GazeController.Torso.align = TorsoAlign;
+            GazeController.Torso.align = 0.4f;
+            GazeController.Torso.weight = 1f;
         }
         GazeController.GazeAt(Target);
     }
@@ -198,14 +217,15 @@ public class EyeGazeInstance : AnimationControllerInstance
                     // Make sure gaze remains fixated after gaze shift completion
                     GazeController.fixGaze = true;
                 }
-                // TODO: need better way to handle going back to original motion when gaze instance is finished
+                // TODO: need a better way to handle going back to original motion when gaze instance is finished
 
                 if (_gazeShiftStarted)
                 {
                     // Gaze shift just started, compute updated gaze parameters for anticipated body movement
-                    _gazeShiftStarted = false;
                     _AdjustGazeParamsForMovingBase();
                 }
+
+                _gazeShiftStarted = false;
             }
         }
 
@@ -213,14 +233,14 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.FinishBake"/>
+    /// <see cref="AnimationInstance.Finish"/>
     /// </summary>
-    public override void FinishBake()
+    public override void Finish()
     {
-        /*if (GazeController.StateId == (int)GazeState.Shifting)
-            GazeController.StopGaze();*/
+        // Unregister handler for gaze controller state changes
+        GazeController.StateChange -= GazeController_StateChange;
 
-        base.FinishBake();
+        base.Finish();
 
         // TODO: stop fixating gaze at the target
         // (maybe gaze straight ahead again?)

@@ -10,6 +10,24 @@ using System.Linq;
 /// </summary>
 public class AnimationTimeline
 {
+    public delegate void LayerEvtH(string layerName);
+    public delegate void AnimationEvtH(int animationInstanceId);
+
+    /// <summary>
+    /// Event triggered on every animation frame when a layer has been applied.
+    /// </summary>
+    public event LayerEvtH LayerApplied;
+
+    /// <summary>
+    /// Event triggered when an animation instance becomes active during playback.
+    /// </summary>
+    public event AnimationEvtH AnimationStarted;
+
+    /// <summary>
+    /// Event triggered when an animation instance becomes inactive during playback.
+    /// </summary>
+    public event AnimationEvtH AnimationFinished;
+
     private static AnimationTimeline _instance = null;
 
     /// <summary>
@@ -255,15 +273,6 @@ public class AnimationTimeline
     {
         get;
         set;
-    }
-
-    /// <summary>
-    /// Are animation instances of the timeline being baked into clips right now?
-    /// </summary>
-    public bool IsBakingInstances
-    {
-        get;
-        private set;
     }
 
     private Dictionary<string, AnimationInstance> _initialPoseAnimationInstances;
@@ -641,18 +650,21 @@ public class AnimationTimeline
         // Initialize each model's animation tree
         _InitControllers();
 
-        // Bake instances
-        IsBakingInstances = true;
+        // Set all instance to bake
+        foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
+            kvp.Value.Animation.IsBaking = true;
+        
+        // Apply & bake instances
         GoToFrame(0);
         /*while (CurrentFrame < FrameLength - 1)
         {
             _AddTime(1f / LEAPCore.editFrameRate);
             _ApplyAnimation();
         }
+
+        // Save baked instances to animation clips
         foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
-            if (kvp.Value.Animation.IsBaking)
-                kvp.Value.Animation.FinishBake();
-        IsBakingInstances = false;
+            kvp.Value.Animation.FinalizeBake();
 
         Debug.Log("Finished baking all animation instances.");*/
     }
@@ -775,12 +787,14 @@ public class AnimationTimeline
                     {
                         // This animation instance has just become inactive
 
+                        animation.Animation.Finish();
                         _activeAnimationInstanceIds.Remove(animation.InstanceId);
-                        if (IsBakingInstances)
-                            animation.Animation.FinishBake();
 
                         Debug.Log(string.Format("{0}: Deactivating animation instance {1} on model {2}",
                             CurrentFrame, animation.Animation.AnimationClip.name, animation.Animation.Model.gameObject.name));
+
+                        // Notify listeners that the animation instance has just become inactive
+                        AnimationFinished(animation.InstanceId);
                     }
 
                     continue;
@@ -794,11 +808,13 @@ public class AnimationTimeline
                         // This animation instance has just become active
 
                         _activeAnimationInstanceIds.Add(animation.InstanceId);
-                        if (IsBakingInstances)
-                            animation.Animation.StartBake();
+                        animation.Animation.Start();
 
                         Debug.Log(string.Format("{0}: Activating animation instance {1} on model {2}",
                             CurrentFrame, animation.Animation.AnimationClip.name, animation.Animation.Model.gameObject.name));
+
+                        // Notify listeners that the animation instance has just become active
+                        AnimationStarted(animation.InstanceId);
                     }
 
                     animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
@@ -806,7 +822,11 @@ public class AnimationTimeline
             }
 
             if (layer.IKEnabled)
+                // Set up IK goals for this animation layer
                 _SetIKGoals();
+
+            // Notify listeners that the layer has finished applying
+            LayerApplied(layer.LayerName);
         }
 
         // Apply any active end-effector constraints

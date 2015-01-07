@@ -305,7 +305,7 @@ public class BlinkController : AnimController
         // Compute rotation distance
         float hrotd = 0;
         if (gazeCtrl.Head != null)
-            hrotd = UnityEngine.Quaternion.Angle(gazeCtrl.Head.SourceRotation, gazeCtrl.Head.TargetRotation);
+            hrotd = UnityEngine.Quaternion.Angle(gazeCtrl.Head.srcRot, gazeCtrl.Head.trgRot);
 
         // Compute blink probability
         //float pb = 0.4f*hrotd/30f - 0.067f;

@@ -63,7 +63,7 @@ public class EyeLaserGizmo : MonoBehaviour
             Gizmos.DrawRay(gctrl.Head.bone.position, gctrl.Head.Direction * gazetargetDist);
         }
 
-        if (showTorsoLaser)
+        if (showTorsoLaser && gctrl.Torso != null)
         {
             Gizmos.color = torsoLaserColor;
             Gizmos.DrawRay(gctrl.Torso.bone.position, gctrl.Torso.Direction * gazetargetDist);

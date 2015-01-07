@@ -20,6 +20,7 @@ public class LeapAnimationEditor : EditorWindow
         private set;
     }
 
+    private AnimationEditGizmos _animationEditGizmos = null;
     private Stopwatch _frameTimer = new Stopwatch();
 
     private bool _guiInitialized = false;
@@ -34,10 +35,18 @@ public class LeapAnimationEditor : EditorWindow
     {
         if (Timeline == null)
         {
-            // Create the animation timeline
+            // Initialize the animation timeline
             Timeline = AnimationTimeline.Instance;
             Timeline.Active = false;
             Timeline.Stop();
+            
+            // Subscribe to events from the animation timeline
+            Timeline.LayerApplied += new AnimationTimeline.LayerEvtH(AnimationTimeline_LayerApplied);
+            Timeline.AnimationStarted += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
+            Timeline.AnimationFinished += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
+
+            // Get component for drawing animation edit gizmos
+            _animationEditGizmos = UnityEngine.Object.FindObjectOfType(typeof(AnimationEditGizmos)) as AnimationEditGizmos;
         }
 
         // Update timings
@@ -163,6 +172,40 @@ public class LeapAnimationEditor : EditorWindow
         _timelineNextFrameTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineNextFrame");
 
         _guiInitialized = true;
+    }
+
+    private void AnimationTimeline_LayerApplied(string layerName)
+    {
+        var model = ModelUtils.GetSelectedModel();
+        if (model == null)
+            return;
+
+        if (layerName == "BaseAnimation")
+        {
+            // TODO:
+            // 1) make the layer(s) for which constraints are shown configurable
+            // 2) check for which end-effectors there are active constraints and only show those
+            Transform[] lWrist = ModelUtils.GetAllBonesWithTag(model, "LWrist");
+            Transform[] rWrist = ModelUtils.GetAllBonesWithTag(model, "RWrist");
+            Transform[] lAnkle = ModelUtils.GetAllBonesWithTag(model, "LAnkle");
+            Transform[] rAnkle = ModelUtils.GetAllBonesWithTag(model, "RAnkle");
+            if (lWrist.Length > 0)
+                _animationEditGizmos._SetEndEffectorConstraint(lWrist[0]);
+            if (rWrist.Length > 0)
+                _animationEditGizmos._SetEndEffectorConstraint(rWrist[0]);
+            if (lAnkle.Length > 0)
+                _animationEditGizmos._SetEndEffectorConstraint(lAnkle[0]);
+            if (rAnkle.Length > 0)
+                _animationEditGizmos._SetEndEffectorConstraint(rAnkle[0]);
+        }
+    }
+
+    private void AnimationTimeline_AnimationStarted(int animationInstanceId)
+    {
+    }
+
+    private void AnimationTimeline_AnimationFinished(int animationInstanceId)
+    {
     }
 
     /// <summary>

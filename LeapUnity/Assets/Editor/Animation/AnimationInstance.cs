@@ -76,22 +76,23 @@ public abstract class AnimationInstance
     }
 
     /// <summary>
-    /// true if the animation instance is being baked into the animation clip,
-    /// false otherwise.
+    /// Set to true to have the animation instance baked into the animation clip.
     /// </summary>
+    /// <remarks>When this is true, the AnimationInstance must save the result of each frame
+    /// as new keyframes in the corresponding animation curves (_AnimationCurves array). It is the responsibility
+    /// of each AnimationInstance subclass to implement this functionality in its override of the Apply() method.</remarks>
     public virtual bool IsBaking
-    {
-        get { return _isBaking; }
-        protected set { _isBaking = value; }
-    }
-
-    protected virtual AnimationCurve[] _AnimationCurves
     {
         get;
         set;
     }
 
-    protected bool _isBaking = false;
+    // Animation curves for baking the current instance
+    protected virtual AnimationCurve[] _AnimationCurves
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Constructor.
@@ -153,11 +154,11 @@ public abstract class AnimationInstance
     }
 
     /// <summary>
-    /// Start baking the animation instance into an animation clip.
+    /// Start the application of the current animation instance.
     /// </summary>
-    public virtual void StartBake()
+    /// <remarks>AnimationTimeline calls this function during playback, on the first frame of the current instance.</remarks>
+    public virtual void Start()
     {
-        IsBaking = true;
     }
 
     /// <summary>
@@ -168,9 +169,18 @@ public abstract class AnimationInstance
     public abstract void Apply(int frame, AnimationLayerMode layerMode);
 
     /// <summary>
-    /// Finish baking the animation instance into an animation clip.
+    /// Finish the application of the current animation instance.
     /// </summary>
-    public virtual void FinishBake()
+    /// <remarks>AnimationTimeline calls this function during playback, after the last frame of the current instance.</remarks>
+    public virtual void Finish()
+    {
+    }
+
+    /// <summary>
+    /// Finalize baking the animation instance into an animation clip.
+    /// </summary>
+    /// <remarks>This will save baked animation curves to an animation clip.</remarks>
+    public virtual void FinalizeBake()
     {
         IsBaking = false;
         AnimationClip.ClearCurves();

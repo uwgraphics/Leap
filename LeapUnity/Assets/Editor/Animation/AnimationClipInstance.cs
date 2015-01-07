@@ -28,14 +28,6 @@ public class AnimationClipInstance : AnimationInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.StartBake()"/>
-    /// </summary>
-    public override void StartBake()
-    {
-        return;
-    }
-
-    /// <summary>
     /// Apply animation instance to the character model at specified frame.
     /// </summary>
     /// <param name="frame">Frame index</param>
@@ -65,10 +57,10 @@ public class AnimationClipInstance : AnimationInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.FinishBake()"/>
+    /// <see cref="AnimationInstance.FinalizeBake()"/>
     /// </summary>
-    public override void FinishBake()
+    public override void FinalizeBake()
     {
-        return;
+        // Do nothing - AnimationClipInstance is "baked" by definition
     }
 }

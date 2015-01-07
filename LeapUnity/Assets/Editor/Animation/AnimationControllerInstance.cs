@@ -69,13 +69,11 @@ public class AnimationControllerInstance : AnimationInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.StartBake()"/>
+    /// <see cref="AnimationInstance.Start()"/>
     /// </summary>
-    public override void StartBake()
+    public override void Start()
     {
-        base.StartBake();
-
-        // TODO: initialize the controller
+        base.Start();
     }
 
     /// <summary>
@@ -174,12 +172,10 @@ public class AnimationControllerInstance : AnimationInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.FinishBake()"/>
+    /// <see cref="AnimationInstance.Finish()"/>
     /// </summary>
-    public override void FinishBake()
+    public override void Finish()
     {
-        base.FinishBake();
-
-        // TODO: stop the controller
+        base.Finish();
     }
 }
