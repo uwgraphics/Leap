@@ -328,22 +328,30 @@ public class GazeJoint : DirectableJoint
 
     public void _InitVOR()
     {
-        fixSrcRot = srcRot;
-        fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
-
-        if (IsEye)
+        if (gazeCtrl.FixGazeTarget != null)
         {
-            fixRotParamAlign = rotParamAlign;
-            fixTrgRotAlign = fixTrgRot;
+            fixSrcRot = srcRot;
+            fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
+
+            if (IsEye)
+            {
+                fixRotParamAlign = rotParamAlign;
+                fixTrgRotAlign = fixTrgRot;
+            }
+            else
+            {
+                Quaternion curRot = Quaternion.Slerp(srcRot, trgRotAlign, rotParamAlign);
+                float fixDistRot = DistanceToRotate(fixSrcRot, fixTrgRot);
+                float fixDistRotAlign = DistanceToRotate(fixSrcRot, curRot);
+                fixRotParamAlign = fixDistRot > 0.00001f ? fixDistRotAlign / fixDistRot : 0f;
+                fixTrgRotAlign = fixSrcRot != fixTrgRot ? Quaternion.Slerp(fixSrcRot, fixTrgRot, fixRotParamAlign) : fixSrcRot;
+                // TODO: there might be a small discontinuity here, keep an eye out for it
+            }
         }
         else
         {
-            Quaternion curRot = Quaternion.Slerp(srcRot, trgRotAlign, rotParamAlign);
-            float fixDistRot = DistanceToRotate(fixSrcRot, fixTrgRot);
-            float fixDistRotAlign = DistanceToRotate(fixSrcRot, curRot);
-            fixRotParamAlign = fixDistRot > 0.00001f ? fixDistRotAlign / fixDistRot : 0f;
-            fixTrgRotAlign = fixSrcRot != fixTrgRot ? Quaternion.Slerp(fixSrcRot, fixTrgRot, fixRotParamAlign) : fixSrcRot;
-            // TODO: there might be a small discontinuity here, keep an eye out for it
+            fixSrcRot = fixTrgRot = fixTrgRotAlign = bone.localRotation;
+            fixRotParamAlign = 0f;
         }
     }
 
@@ -367,14 +375,17 @@ public class GazeJoint : DirectableJoint
 
     public void _UpdateVORTargetRotation()
     {
-        if (IsEye)
+        if (gazeCtrl.FixGazeTarget != null)
         {
-            fixTrgRotAlign = fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
-        }
-        else
-        {
-            fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
-            fixTrgRotAlign = fixSrcRot != fixTrgRot ? Quaternion.Slerp(fixSrcRot, fixTrgRot, fixRotParamAlign) : fixSrcRot;
+            if (IsEye)
+            {
+                fixTrgRotAlign = fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
+            }
+            else
+            {
+                fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
+                fixTrgRotAlign = fixSrcRot != fixTrgRot ? Quaternion.Slerp(fixSrcRot, fixTrgRot, fixRotParamAlign) : fixSrcRot;
+            }
         }
     }
 

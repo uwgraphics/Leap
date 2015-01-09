@@ -3,14 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public enum LimbType
-{
-    LeftArm,
-    RightArm,
-    LeftLeg,
-    RightLeg
-}
-
 /// <summary>
 /// Simple, analytical IK solver for 3-joint limbs.
 /// </summary>
@@ -19,11 +11,6 @@ public enum LimbType
 /// and other limbs.</remarks>
 public class LimbIKSolver : IKSolver
 {
-    /// <summary>
-    /// Limb type handled by the current IK solver.
-    /// </summary>
-    public LimbType limbType = LimbType.LeftArm;
-    
     protected Transform shoulder, elbow, wrist;
     protected Vector3 elbowAxis = new Vector3(0f, 1f, 0f);
 
@@ -32,14 +19,17 @@ public class LimbIKSolver : IKSolver
     /// </summary>
     public override void Init()
     {
+        if (endEffectors.Length != 1)
+        {
+            Debug.LogError("LimbIKSolver incorrectly configured, must specify exactly one end-effector tag");
+            return;
+        }
+
         base.Init();
 
-        shoulder = ModelUtils.FindBoneWithTag(Model.Root, _GetTagForJoint(limbType, 0));
-        elbow = ModelUtils.FindBoneWithTag(Model.Root, _GetTagForJoint(limbType, 1));
-        wrist = ModelUtils.FindBoneWithTag(Model.Root, _GetTagForJoint(limbType, 2));
-
-        goals = new IKGoal[1];
-        goals[0] = new IKGoal(wrist, Vector3.zero, 0f);
+        shoulder = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 2));
+        elbow = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 1));
+        wrist = ModelUtils.FindBoneWithTag(Model.Root, endEffectors[0]);
     }
 
     /// <summary>
@@ -56,21 +46,34 @@ public class LimbIKSolver : IKSolver
 	    Quaternion lcl_sq0 = shoulder.localRotation;
         Quaternion sq0 = shoulder.rotation;
         Quaternion lcl_eq0 = elbow.localRotation;
-        //Quaternion wq0 = wrist.localRotation;
+        Quaternion wq0 = wrist.rotation;
 
-	    // Flex elbow to make goal achievable
+	    // Determine if goal is within reach
 	    Vector3 cur_n = wrist.position - shoulder.position;
 	    Vector3 goal_n = goal.position - shoulder.position;
 	    float goal_l = goal_n.magnitude; // distance from shoulder to goal
-	    Vector3 cur_es = shoulder.position - elbow.position;
-	    Vector3 cur_ew = wrist.position - elbow.position;
-	    float les = cur_es.magnitude;
-	    float lew = cur_ew.magnitude;
-	    cur_es.Normalize();
-	    cur_ew.Normalize();
-	    // If elbow is completely extended or collapsed, we reuse previous rot. axis
+        Vector3 cur_es = shoulder.position - elbow.position;
+        Vector3 cur_ew = wrist.position - elbow.position;
+        float les = cur_es.magnitude;
+        float lew = cur_ew.magnitude;
+        cur_es.Normalize();
+        cur_ew.Normalize();
+        // Don't allow the arm to extend completley
+        // TODO: body solver should take care of this
+        if (goal_l >= 0.95f * (les + lew))
+        {
+            goal_l = 0.95f * (les + lew);
+            goal_n = goal_n.normalized * goal_l;
+
+            //Debug.LogWarning(string.Format("Limb {0} cannot reach the goal", endEffectors[0]));
+        }
+        //
+
+        // If elbow is completely extended or collapsed, we reuse previous rot. axis
 	    if (Mathf.Abs(Mathf.Abs(Vector3.Dot(cur_es, cur_ew)) - 1f) > 0.0001f)
 		    elbowAxis = Vector3.Cross(cur_es, cur_ew).normalized;
+
+        // Flex elbow to make goal achievable
 	    float eth = Vector3.Angle(cur_es, cur_ew);
         float goal_coseth = (les * les + lew * lew - goal_l * goal_l) / (2f * les * lew);
         float goal_eth = Mathf.Rad2Deg * Mathf.Acos(Mathf.Clamp(goal_coseth, -1f, 1f));
@@ -95,67 +98,84 @@ public class LimbIKSolver : IKSolver
 	    float alpha = Mathf.Rad2Deg * Mathf.Atan2(a, b);
 	    Quaternion sq1 = Quaternion.AngleAxis(-2f * alpha + Mathf.PI * Mathf.Rad2Deg, goal_n) * sqref;
         Quaternion sq2 = Quaternion.AngleAxis(-2f * alpha - Mathf.PI * Mathf.Rad2Deg, goal_n) * sqref;
-		if( Quaternion.Dot(sq0, sq1) > Quaternion.Dot(sq0, sq2))
+		if (Quaternion.Dot(sq0, sq1) > Quaternion.Dot(sq0, sq2))
 			sq = sq1;
 		else
 			sq = sq2;
         shoulder.localRotation = Quaternion.Inverse(shoulder.parent.rotation) * sq;
 
-	    // TODO: fix wrist/ankle
-
 	    // Blend based on goal weight
 	    shoulder.localRotation = Quaternion.Slerp(lcl_sq0, shoulder.localRotation, goal.weight);
 	    elbow.localRotation = Quaternion.Slerp(lcl_eq0, elbow.localRotation, goal.weight);
+        if (goal.preserveAbsoluteRotation)
+        {
+            wrist.rotation = wq0;
+        }
     }
 
-    protected virtual string _GetTagForJoint(LimbType limbType, int jointIndex)
+    /// <summary>
+    /// Get tag on the joint that is part of the specified end-effector's limb.
+    /// </summary>
+    /// <param name="endEffector">End effector tag</param>
+    /// <param name="jointIndex">Joint index within the limb's chain (0 corresponds to the end-effector)</param>
+    /// <returns></returns>
+    public static string GetJointTagForLimb(string endEffector, int jointIndex)
     {
-        string sidePrefix, jointName;
-
-        // Determine side prefix
-        if (limbType == LimbType.LeftArm || limbType == LimbType.LeftLeg)
-            sidePrefix = "L";
-        else // if (limbType == LimbType.RightArm || limbType == LimbType.RightLeg)
-            sidePrefix = "R";
-
-        // Determine joint name
-        if (limbType == LimbType.LeftArm || limbType == LimbType.RightArm)
+        if (endEffector == "LWrist")
         {
             switch (jointIndex)
             {
                 case 0:
-                    jointName = "Shoulder";
-                    break;
+                    return endEffector;
                 case 1:
-                    jointName = "Elbow";
-                    break;
+                    return "LElbow";
                 case 2:
-                    jointName = "Wrist";
-                    break;
+                    return "LShoulder";
                 default:
-                    jointName = "Shoulder";
-                    break;
+                    return endEffector;
             }
         }
-        else // if (limbType == LimbType.LeftLeg || limbType == LimbType.RightLeg)
+        else if (endEffector == "RWrist")
         {
             switch (jointIndex)
             {
                 case 0:
-                    jointName = "Hip";
-                    break;
+                    return endEffector;
                 case 1:
-                    jointName = "Knee";
-                    break;
+                    return "RElbow";
                 case 2:
-                    jointName = "Ankle";
-                    break;
+                    return "RShoulder";
                 default:
-                    jointName = "Hip";
-                    break;
+                    return endEffector;
             }
         }
-
-        return sidePrefix + jointName;
+        else if (endEffector == "LAnkle")
+        {
+            switch (jointIndex)
+            {
+                case 0:
+                    return endEffector;
+                case 1:
+                    return "LKnee";
+                case 2:
+                    return "LHip";
+                default:
+                    return endEffector;
+            }
+        }
+        else // if (endEffector == "RAnkle")
+        {
+            switch (jointIndex)
+            {
+                case 0:
+                    return endEffector;
+                case 1:
+                    return "RKnee";
+                case 2:
+                    return "RHip";
+                default:
+                    return endEffector;
+            }
+        }
     }
 }

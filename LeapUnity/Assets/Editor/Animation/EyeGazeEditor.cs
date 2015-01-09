@@ -11,81 +11,185 @@ using System.Linq;
 /// </summary>
 public static class EyeGazeEditor
 {
-    public static string eyeGazeDirectory = "Assets/EyeGaze";
-
     /// <summary>
-    /// Infer eye gaze target and alignment parameters for currently defined
-    /// eye gaze instances on the character model.
+    /// Gaze editing operation. Add an eye gaze instance to the animation timeline.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
-    /// <param name="baseAnimationName">Base animation name</param>
+    /// <param name="newInstance">New eye gaze instance</param>
+    /// <param name="newStartFrame">New eye gaze instance start frame</param>
     /// <param name="layerName">Animation layer holding eye gaze animations</param>
-    /// <param name="createTargets">If gaze target could not be found for a gaze shift,
-    /// a "dummy" gaze target object will be created in the scene</param>
-    public static void InferEyeGazeAttributes(AnimationTimeline timeline, string baseAnimationName, string layerName = "Gaze",
-        bool createTargets = true)
+    public static void AddEyeGaze(AnimationTimeline timeline, EyeGazeInstance newInstance,
+        int newStartFrame, string layerName = "Gaze")
     {
-        bool timelineActive = timeline.Active;
-        timeline.Active = true;
-        var gazeLayer = timeline.GetLayer("Gaze");
-        foreach (var scheduledInstance in gazeLayer.Animations)
+        // Search the timeline for any overlapping instances:
+        // 1) If the overlapping instance starts before the new instance:
+        //   a) Shorten the overlapping one to end just before the new one, but only if the shortened instance is still longer than 0.5s (1s for gaze-back)
+        //        If the shortened instances is followed by a gaze-back instance, remove the gaze-back instance
+        //   b) Otherwise remove the overlapping instance
+        //        If the removed instance was a gaze-back instance, extend the previous instance to end just before the new one
+        // 2) If the overlapping instance starts at or after the new instance:
+        //   a) Delay the start of the overlapping one, but only if the shortened instance is still longer than 0.5s  (1s for gaze-back)
+        //   b) Otherwise remove the overlapping instance
+        // Find the next instance after the new one:
+        // 1) If the next instance starts less than 0.5s before the new one ends, extend the new one to end just before the next one
+        // 2) Otherwise, insert a gaze-back instance between the new and next instances
+        // Finally, add the new instance
+
+        // Trim or remove overlapping eye gaze instances
+        int newEndFrame = newStartFrame + newInstance.FrameLength - 1;
+        List<AnimationTimeline.ScheduledInstance> overlappingInstances = timeline.GetLayer(layerName).Animations.Where(inst =>
+            !(inst.StartFrame + inst.Animation.FrameLength - 1 < newStartFrame || newEndFrame < inst.StartFrame)).ToList();
+        foreach (var overlappingInstance in overlappingInstances)
         {
-            if (!(scheduledInstance.Animation is EyeGazeInstance))
+            if (timeline.GetAnimation(overlappingInstance.InstanceId) == null)
+            {
+                // Overlapping instance was a gaze-back that was removed on a previous iteration
                 continue;
-            var instance = scheduledInstance.Animation as EyeGazeInstance;
+            }
+            
+            int overlappingStartFrame = overlappingInstance.StartFrame;
+            int overlappingEndFrame = overlappingInstance.StartFrame + overlappingInstance.Animation.FrameLength - 1;
+            bool overlappingIsGazeBack = overlappingInstance.Animation.AnimationClip.name.EndsWith(LEAPCore.gazeBackSuffix);
+            int overlappingMinLength = overlappingIsGazeBack ? Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate) :
+                Mathf.RoundToInt(LEAPCore.minEyeGazeLength * LEAPCore.editFrameRate);
 
-            // Get gaze shift start and end frames
-            int startFrame = scheduledInstance.StartFrame;
-            int endFrame = scheduledInstance.StartFrame + instance.FrameLength;
+            if (overlappingStartFrame < newStartFrame)
+            {
+                if (newStartFrame - overlappingStartFrame >= overlappingMinLength)
+                {
+                    (overlappingInstance.Animation as EyeGazeInstance).SetFrameLength(newStartFrame - overlappingStartFrame);
 
-            // Apply the animation at the end of the gaze shift
-            timeline.GoToFrame(endFrame);
-            timeline.Update(0);
+                    if (!overlappingIsGazeBack)
+                    {
+                        var gazeBackOverlappingInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(
+                            inst => inst.Animation.AnimationClip.name == overlappingInstance.Animation.AnimationClip.name + LEAPCore.gazeBackSuffix);
+                        if (gazeBackOverlappingInstance != null)
+                            timeline.RemoveAnimation(gazeBackOverlappingInstance.InstanceId);
+                    }
+                }
+                else
+                {
+                    if (!overlappingIsGazeBack)
+                    {
+                        RemoveEyeGaze(timeline, overlappingInstance.InstanceId);
+                    }
+                    else
+                    {
+                        string prevOverlappingName = overlappingInstance.Animation.AnimationClip.name;
+                        prevOverlappingName = prevOverlappingName.Remove(
+                            prevOverlappingName.Length - LEAPCore.gazeBackSuffix.Length, LEAPCore.gazeBackSuffix.Length);
+                        var prevOverlappingInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(
+                            inst => inst.Animation.AnimationClip.name == prevOverlappingName);
 
-            // Infer gaze target
-            if (instance.Target == null && createTargets)
-                _InferEyeGazeTarget(instance);
-
-            // Infer head and torso alignments
-            _InferEyeGazeAlignments(timeline, scheduledInstance.InstanceId);
+                        timeline.RemoveAnimation(overlappingInstance.InstanceId);
+                        if (prevOverlappingInstance != null)
+                            (prevOverlappingInstance.Animation as EyeGazeInstance).SetFrameLength(newStartFrame - prevOverlappingInstance.StartFrame);
+                    }
+                }
+            }
+            else
+            {
+                if (overlappingEndFrame - newEndFrame >= overlappingMinLength)
+                {
+                    overlappingInstance._SetStartFrame(newEndFrame + 1);
+                }
+                else
+                {
+                    RemoveEyeGaze(timeline, overlappingInstance.InstanceId);
+                }
+            }
         }
-        timeline.Active = timelineActive;
+
+        // Fill the gap to the next eye gaze instance
+        var nextInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(inst => inst.StartFrame > newEndFrame);
+        if (nextInstance != null)
+        {
+            int nextStartFrame = nextInstance.StartFrame;
+
+            if (nextStartFrame - newEndFrame - 1 < Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate))
+            {
+                newInstance.SetFrameLength(nextStartFrame - newStartFrame);
+                newEndFrame = nextStartFrame - newStartFrame;
+            }
+            else
+            {
+                var gazeBackInstance = new EyeGazeInstance(newInstance.Model.gameObject, newInstance.AnimationClip.name + LEAPCore.gazeBackSuffix,
+                    Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
+                timeline.AddAnimation(layerName, gazeBackInstance, newEndFrame + 1);
+            }
+        }
+        else if (timeline.FrameLength - newEndFrame - 1 >= Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate))
+        {
+            var gazeBackInstance = new EyeGazeInstance(newInstance.Model.gameObject, newInstance.AnimationClip.name + LEAPCore.gazeBackSuffix,
+                    Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
+            timeline.AddAnimation(layerName, gazeBackInstance, newEndFrame + 1);
+        }
+
+        // Add the new eye gaze instance
+        timeline.AddAnimation(layerName, newInstance, newStartFrame);
     }
 
     /// <summary>
-    /// Extend eye gaze instances such that gaze remains fixed to the target until
-    /// the next eye gaze instance. That way, gaze behavior is always constrained by
-    /// artist annotations.
+    /// Gaze editing operation. Remove an eye gaze instance from the animation timeline.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
-    /// <param name="baseAnimationName">Base animation name</param>
-    /// <param name="layerName">Animation layer holding eye gaze animations</param>
-    public static void FixEyeGazeBetweenShifts(AnimationTimeline timeline, string baseAnimationName, string layerName = "Gaze")
+    /// <param name="instanceId">Eye gaze instance ID</param>
+    public static void RemoveEyeGaze(AnimationTimeline timeline, int instanceId)
     {
-        bool timelineActive = timeline.Active;
-        timeline.Active = true;
-        var gazeLayer = timeline.GetLayer("Gaze");
-        EyeGazeInstance prevInstance = null;
-        int prevStartFrame = 0;
-        foreach (var curScheduledInstance in gazeLayer.Animations)
+        // First remove the follow-up gaze-back instance, if one exists
+        string layerName = timeline.GetLayerForAnimation(instanceId).LayerName;
+        var instance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
+        var gazeBackInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(inst =>
+            inst.Animation.AnimationClip.name == instance.AnimationClip.name + LEAPCore.gazeBackSuffix);
+        if (gazeBackInstance != null)
+            timeline.RemoveAnimation(gazeBackInstance.InstanceId);
+
+        // Then remove the actual instnace
+        timeline.RemoveAnimation(instanceId);
+
+        // TODO: this will actually require adding a "negative" displacement map
+        // which also removes the gaze component from the underlying  body motion
+    }
+
+    /// <summary>
+    /// Gaze editing operation. Set new start and end times for the eye gaze instance.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="instanceId">Eye gaze instance ID</param>
+    /// <param name="startFrame">New start frame for the eye gaze instance</param>
+    /// <param name="endFrame">New end frame for the eye gaze instance</param>
+    public static void SetEyeGazeTiming(AnimationTimeline timeline, int instanceId,
+        int startFrame, int endFrame)
+    {
+        if (endFrame - startFrame + 1 < Mathf.RoundToInt(LEAPCore.minEyeGazeLength * LEAPCore.editFrameRate))
         {
-            if (!(curScheduledInstance.Animation is EyeGazeInstance))
-                continue;
-
-            var curInstance = curScheduledInstance.Animation as EyeGazeInstance;
-            if (prevInstance != null)
-            {
-                prevInstance.SetFrameLength(curScheduledInstance.StartFrame - prevStartFrame);
-            }
-
-            prevInstance = curInstance;
-            prevStartFrame = curScheduledInstance.StartFrame;
+            throw new Exception(string.Format("Error setting eye gaze timing! Eye gaze instance must be longer than {0}s", LEAPCore.minEyeGazeLength));
         }
 
-        if (prevInstance != null)
-        {
-            prevInstance.SetFrameLength(timeline.FrameLength - prevStartFrame);
-        }
+        // Changing the timing of an instance is equivalent to removing the instance and then re-adding it with new times
+        string layerName = timeline.GetLayerForAnimation(instanceId).LayerName;
+        var instance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
+        RemoveEyeGaze(timeline, instanceId);
+        instance.SetFrameLength(endFrame - startFrame + 1);
+        AddEyeGaze(timeline, instance, startFrame, layerName);
+    }
+
+    /// <summary>
+    /// Gaze editing operation. Set new head and torso alignment values for the eye gaze instance.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="instanceId">Eye gaze instance ID</param>
+    /// <param name="headAlign">New head alignment value for the eye gaze instance</param>
+    /// <param name="torsoAlign">New torso alignment value for the eye gaze instance</param>
+    public static void SetEyeGazeAlignments(AnimationTimeline timeline, int instanceId,
+        float headAlign, float torsoAlign)
+    {
+        headAlign = Mathf.Clamp01(headAlign);
+        torsoAlign = Mathf.Clamp01(torsoAlign);
+        
+        var instance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
+        instance.HeadAlign = headAlign;
+        instance.TorsoAlign = torsoAlign;
     }
 
     /// <summary>
@@ -98,7 +202,7 @@ public static class EyeGazeEditor
     public static bool LoadEyeGazeForModel(AnimationTimeline timeline, string baseAnimationName, string layerName = "Gaze")
     {
         // Get gaze behavior file path
-        string path = Application.dataPath + eyeGazeDirectory.Substring(eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
+        string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
             path += '/';
         path += (baseAnimationName + ".csv");
@@ -146,7 +250,7 @@ public static class EyeGazeEditor
                     }
                     string animationClipName = lineElements[attributeIndices["AnimationClip"]];
                     int startFrame = int.Parse(lineElements[attributeIndices["StartFrame"]]);
-                    int frameLength = int.Parse(lineElements[attributeIndices["EndFrame"]]) - startFrame;
+                    int frameLength = int.Parse(lineElements[attributeIndices["EndFrame"]]) - startFrame + 1;
                     string gazeTargetName = lineElements[attributeIndices["Target"]];
                     GameObject gazeTarget = null;
                     if (gazeTargets != null)
@@ -161,17 +265,105 @@ public static class EyeGazeEditor
                     // Create and schedule gaze instance
                     var gazeInstance = new EyeGazeInstance(modelController.gameObject,
                         animationClipName, frameLength, gazeTarget, headAlign, torsoAlign);
-                    timeline.AddAnimation(layerName, gazeInstance, startFrame);
+                    AddEyeGaze(timeline, gazeInstance, startFrame, layerName);
                 }
             }
         }
         catch (Exception ex)
         {
-            UnityEngine.Debug.LogError("Unable to load eye gaze from asset file " + path);
+            UnityEngine.Debug.LogError(string.Format("Unable to load eye gaze from asset file {0}: {1}", path, ex.Message));
             return false;
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Extend eye gaze instances such that gaze remains fixed to the target until
+    /// the next eye gaze instance. That way, gaze behavior is always constrained by
+    /// artist annotations.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationName">Base animation name</param>
+    /// <param name="layerName">Animation layer holding eye gaze animations</param>
+    public static void FixEyeGazeBetweenShifts(AnimationTimeline timeline, string layerName = "Gaze")
+    {
+        bool timelineActive = timeline.Active;
+        timeline.Active = true;
+        var gazeLayer = timeline.GetLayer("Gaze");
+        EyeGazeInstance prevInstance = null;
+        int prevStartFrame = 0;
+        foreach (var curScheduledInstance in gazeLayer.Animations)
+        {
+            if (!(curScheduledInstance.Animation is EyeGazeInstance))
+                continue;
+
+            var curInstance = curScheduledInstance.Animation as EyeGazeInstance;
+            if (prevInstance != null)
+            {
+                prevInstance.SetFrameLength(curScheduledInstance.StartFrame - prevStartFrame);
+            }
+
+            prevInstance = curInstance;
+            prevStartFrame = curScheduledInstance.StartFrame;
+        }
+
+        if (prevInstance != null)
+        {
+            prevInstance.SetFrameLength(timeline.FrameLength - prevStartFrame);
+        }
+        timeline.Active = timelineActive;
+    }
+
+    /// <summary>
+    /// Infer eye gaze target and alignment parameters for currently defined
+    /// eye gaze instances on the character model.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationName">Base animation name</param>
+    /// <param name="layerName">Animation layer holding eye gaze animations</param>
+    /// <param name="createTargets">If gaze target could not be found for a gaze shift,
+    /// a "dummy" gaze target object will be created in the scene</param>
+    public static void InferEyeGazeAttributes(AnimationTimeline timeline, string baseAnimationName, string layerName = "Gaze",
+        bool createTargets = true)
+    {
+        bool timelineActive = timeline.Active;
+        timeline.Active = true;
+        var gazeLayer = timeline.GetLayer("Gaze");
+        foreach (var scheduledInstance in gazeLayer.Animations)
+        {
+            if (!(scheduledInstance.Animation is EyeGazeInstance))
+                continue;
+            var instance = scheduledInstance.Animation as EyeGazeInstance;
+
+            // Get gaze shift start and end frames
+            int startFrame = scheduledInstance.StartFrame;
+            int endFrame = scheduledInstance.StartFrame + instance.FrameLength;
+
+            /*// Apply the animation at the end of the gaze shift
+            timeline.GoToFrame(endFrame);
+            timeline.Update(0);
+
+            // Infer gaze target
+            if (instance.Target == null && createTargets)
+                _InferEyeGazeTarget(instance);
+
+            // Infer head and torso alignments
+            _InferEyeGazeAlignments(timeline, scheduledInstance.InstanceId);*/
+            // TODO: fix problems with eye gaze attribute inference
+            if (instance.Target != null)
+            {
+                instance.HeadAlign = 0f;
+                instance.TorsoAlign = 0f;
+            }
+            else
+            {
+                instance.HeadAlign = 1f;
+                instance.TorsoAlign = 1f;
+            }
+            //
+        }
+        timeline.Active = timelineActive;
     }
 
     private static void _InferEyeGazeTarget(EyeGazeInstance instance)

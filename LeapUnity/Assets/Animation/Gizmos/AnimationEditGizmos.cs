@@ -69,7 +69,7 @@ public class AnimationEditGizmos : MonoBehaviour
             Gizmos.DrawIcon(gazeTarget.transform.position, icon, true);
         }
 
-        if (gazeController != null)
+        if (gazeController != null && gazeController.FixGazeTarget != null)
         {
             Gizmos.DrawIcon(gazeController.FixGazeTargetPosition, "GazeTargetFixGizmo.png", true);
         }

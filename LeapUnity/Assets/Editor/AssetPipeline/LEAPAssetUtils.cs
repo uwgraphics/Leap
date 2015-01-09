@@ -328,4 +328,86 @@ public static class LEAPAssetUtils
         
         return dir;
     }
+
+    /// <summary>
+    /// Load end-effector constraint annotations for the specified animation clip.
+    /// </summary>
+    /// <param name="clip"></param>
+    public static AnimationTimeline.EndEffectorConstraint[] LoadEndEffectorConstraintsForClip(AnimationClip clip)
+    {
+        string clipPath = AssetDatabase.GetAssetPath(clip);
+        if (clipPath == "")
+        {
+            UnityEngine.Debug.LogWarning(string.Format("No asset file exists for animation clip " + clip.name));
+            return null;
+        }
+
+        string eecPath = clipPath.Substring(0, clipPath.LastIndexOf('.')) + "#EEC.csv";
+        List<AnimationTimeline.EndEffectorConstraint> constraints = new List<AnimationTimeline.EndEffectorConstraint>();
+        
+        if (!File.Exists(eecPath))
+        {
+            UnityEngine.Debug.LogWarning(string.Format("No end-effector constraint asset file exists for animation clip " + clip.name));
+            return null;
+        }
+
+        try
+        {
+            var reader = new StreamReader(eecPath);
+            bool firstLine = true;
+            string line = "";
+            string[] lineElements = null;
+            Dictionary<string, int> attributeIndices = new Dictionary<string, int>();
+            Dictionary<string, int> lastConstraintEndFrames = new Dictionary<string, int>();
+            
+            while (!reader.EndOfStream && (line = reader.ReadLine()) != "")
+            {
+                if (line[0] == '#')
+                {
+                    // Comment line, skip
+                    continue;
+                }
+                else if (firstLine)
+                {
+                    // Load attribute names from first line
+                    firstLine = false;
+                    lineElements = line.Split(",".ToCharArray());
+                    for (int attributeIndex = 0; attributeIndex < lineElements.Length; ++attributeIndex)
+                    {
+                        attributeIndices[lineElements[attributeIndex]] = attributeIndex;
+                    }
+                }
+                else
+                {
+                    // Load constraint specification
+                    lineElements = line.Split(",".ToCharArray());
+
+                    // Get constraint data
+                    string endEffector = lineElements[attributeIndices["EndEffector"]];
+                    int startFrame = int.Parse(lineElements[attributeIndices["StartFrame"]]);
+                    int frameLength = int.Parse(lineElements[attributeIndices["EndFrame"]]) - startFrame + 1;
+                    bool preserveAbsoluteRotation = bool.Parse(lineElements[attributeIndices["PreserveAbsoluteRotation"]]);
+
+                    if (lastConstraintEndFrames.ContainsKey(endEffector) && lastConstraintEndFrames[endEffector] >= startFrame)
+                    {
+                        UnityEngine.Debug.LogWarning(string.Format("Error in end-effector constraint asset file {0}: constraint ({1}, {2}, {3}) precedes or  overlaps another constraint on the same end-effector",
+                            eecPath, endEffector, startFrame, startFrame + frameLength - 1));
+                    }
+                    else
+                    {
+                        // Add constraint
+                        constraints.Add(new AnimationTimeline.EndEffectorConstraint(endEffector, startFrame, frameLength, preserveAbsoluteRotation));
+                        lastConstraintEndFrames[endEffector] = startFrame + frameLength - 1;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError(string.Format("Unable to load end-effector constraints from asset file {0}: {1}", eecPath, ex.Message));
+            return null;
+        }
+
+        return constraints.ToArray();
+    }
 }

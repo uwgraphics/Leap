@@ -1,8 +1,19 @@
 Leap Animation Editor:
 
-#19 [] Discontinuities of head and torso rotations at the start of the very first gaze shift in the sequence
+#23 [X] There is a small discontinuity in gaze joint rotations when a new gaze shift starts after a gap
+
+#22 [X] In WindowWashing example, the very first gaze shift starts in the wrong state, like VOR isn't correctly initialized
+  - Mistakenly took out setting fixGaze = true in AnimationTimeline._InitControllers(), fixed now
+
+#21 [X] In EyeGazeEditor.AddEyeGaze(), trimming a gaze-back instance sometimes gives an instance that is shorter than the threshold (minEyeGazeLength)
+  - Example - TestGaze7-Back (in InitialPose test case) ends up being 205-209
+  - No bug, just threshold set too low
+
+#19 [X] Discontinuities of head and torso rotations at the start of gaze shifts
   - Likely due to VOR state variables not being correctly initialized, yet VOR is getting applied while head and torso are latent
   - This should be taken care of as we implement "boundary cases" - gaze controller kicking in and blending out
+  - Should have been taken care of with the changes to VOR when FixGazeTarget is null, yet the problem persists
+  - Problem fixed
 
 #20 [] Incongruent eye movements occasionally still happen
   - In InitialPose test case, somewhere between frames 200-300, eye gaze directions become divergent over the course of the gaze shift, though they seem to correct themselves by the end

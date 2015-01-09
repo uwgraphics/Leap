@@ -134,6 +134,7 @@ public class GazeController : AnimController
     protected Vector3 effGazeTrgPos; // Effective gaze target position
 
     protected GameObject helperTarget; // Allows gazing at arbitrary point in space
+    protected GameObject aheadHelperTarget; // Allows the character to gaze ahead
     protected GameObject cam = null;
     protected BlinkController blinkCtrl = null;
     protected FaceController faceCtrl = null;
@@ -229,12 +230,23 @@ public class GazeController : AnimController
     }
 
     /// <summary>
+    /// Gaze target for VOR.
+    /// </summary>
+    public virtual GameObject FixGazeTarget
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
     /// Position of the gaze target for VOR.
     /// </summary>
     public virtual Vector3 FixGazeTargetPosition
     {
-        get;
-        protected set;
+        get
+        {
+            return FixGazeTarget != null ? FixGazeTarget.transform.position : Vector3.zero;
+        }
     }
 
     /// <summary>
@@ -404,7 +416,10 @@ public class GazeController : AnimController
     public virtual void GazeAt(GameObject gazeTarget)
     {
         if (gazeTarget == null)
-            GazeAway();
+        {
+            GazeAhead();
+            return;
+        }
 
         this.gazeTarget = gazeTarget;
         doGazeShift = true;
@@ -428,14 +443,16 @@ public class GazeController : AnimController
     /// Direct the agent's gaze to a "neutral position", i.e.
     /// whatever is in front of it. 
     /// </summary>
-    public virtual void GazeAtFront()
+    public virtual void GazeAhead()
     {
-        // TODO: this is broken, fix it
         // Position the helper gaze target in front of the agent
-        Vector3 head_iwpos = ModelController.GetInitWorldPosition(Head.bone);
-        helperTarget.transform.localPosition = new Vector3(0f, head_iwpos.y, 1000f);
+        Vector3 bodyPos = ModelController.BodyPosition;
+        Vector3 bodyDir = ModelController.BodyDirection;
+        float height = ModelController.GetInitWorldPosition(Head.bone).y;
+        Vector3 pos = (new Vector3(bodyPos.x, height, bodyPos.z)) + height * bodyDir;
+        aheadHelperTarget.transform.position = pos;
 
-        GazeAt(helperTarget);
+        GazeAt(aheadHelperTarget);
     }
 
     /// <summary>
@@ -550,9 +567,15 @@ public class GazeController : AnimController
     {
         // Set fixation target
         if (curGazeTarget != null)
-            FixGazeTargetPosition = curGazeTarget.transform.position;
+        {
+            // VOR towards current gaze target
+            FixGazeTarget = curGazeTarget;
+        }
         else
-            FixGazeTargetPosition = EyeCenter + 1.5f * EyeDirection;
+        {
+            // No current gaze target, VOR towards nothing
+            FixGazeTarget = null;
+        }
 
         // Initialize target rotations of joints for the fixation target
         for (int ji = gazeJoints.Length - 1; ji >= 0; --ji)
@@ -560,6 +583,16 @@ public class GazeController : AnimController
             GazeJoint joint = gazeJoints[ji];
             joint._InitVOR();
         }
+    }
+
+    /// <summary>
+    /// Initialize "fixation" without a specific target - the agent
+    /// will simply maintain current gaze direction while VOR is active.
+    /// </summary>
+    public virtual void InitVORNoTarget()
+    {
+        curGazeTarget = null;
+        InitVOR();
     }
 
     /// <summary>
@@ -571,8 +604,6 @@ public class GazeController : AnimController
         {
             GazeJoint joint = gazeJoints[ji];
             joint._ApplyVOR();
-            /*if (!joint.IsEye)
-                _UpdateTargetRotations(ji - 1);*/
         }
     }
 
@@ -920,16 +951,32 @@ public class GazeController : AnimController
         headNeck = headneck_list.ToArray();
         torso = headneck_list.ToArray();
 
-        // Create helper gaze target
-        helperTarget = GameObject.Find("GTHelper");
+        // Find/create helper gaze target
+        string helperTargetName = gameObject.name + "GazeHelper";
+        helperTarget = GameObject.Find(helperTargetName);
         if (helperTarget == null)
         {
             helperTarget = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            helperTarget.name = "GTHelper";
+            helperTarget.name = helperTargetName;
+            helperTarget.tag = "GazeTarget";
             helperTarget.renderer.enabled = false;
             helperTarget.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-            helperTarget.transform.parent = transform;
         }
+
+        // Find/create helper gaze target for looking ahead
+        string aheadHelperTargetName = gameObject.name + "GazeAheadHelper";
+        aheadHelperTarget = GameObject.Find(aheadHelperTargetName);
+        if (aheadHelperTarget == null)
+        {
+            aheadHelperTarget = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            aheadHelperTarget.name = aheadHelperTargetName;
+            aheadHelperTarget.tag = "GazeTarget";
+            aheadHelperTarget.renderer.enabled = false;
+            aheadHelperTarget.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+        }
+
+        // Initialize gaze targets
+        _CurrentGazeTarget = FixGazeTarget = null;
 
         // Get other relevant anim. controllers
         blinkCtrl = gameObject.GetComponent<BlinkController>();
@@ -1000,10 +1047,13 @@ public class GazeController : AnimController
     protected virtual void Transition_NoGazeShifting()
     {
         doGazeShift = false;
-        _CurrentGazeTarget = gazeTarget;
 
+        // Set gaze targets
+        if (FixGazeTarget == null)
+            InitVOR();
+        _CurrentGazeTarget = gazeTarget;
+        
         // Initialize new gaze shift
-        // TODO: make sure eyes VOR correctly if they are starting late
         _InitGazeParams(); // initial rotations, alignments, latencies...
         _ViewAlignTarget(); // if eyes don't need to align fully, then how much?
         _ViewAdjustOMR(); // correct asymmetric OMR if needed
@@ -1048,18 +1098,15 @@ public class GazeController : AnimController
             // Compute joint velocity
             if (torsoIndex > 0 && ji == gazeJoints.Length - 1)
             {
-                // The first torso joint
                 Torso._RecalculateVelocity();
             }
             else if (torsoIndex > 0 && ji == torsoIndex - 1 ||
                 ji == gazeJoints.Length - 1)
             {
-                // The first head joint
                 Head._RecalculateVelocity();
             }
             else if (ji == headIndex - 1)
             {
-                // The eyes
                 _RecalculateEyeVelocities();
             }
 
@@ -1071,12 +1118,6 @@ public class GazeController : AnimController
             
             // Update joint rotations
             joint._AdvanceRotation(deltaTime);
-            /*if (!joint.IsEye)
-            {
-                // Update target rotations of child joints to account for
-                // movement of the current joint
-                _UpdateTargetRotations(ji - 1);
-            }*/
 
             // Has the joint reached its target?
             if (!joint.IsEye)
@@ -1106,8 +1147,6 @@ public class GazeController : AnimController
             // but could it become a problem in some circumstances?
            body_aligned == gazeJoints.Length - eyes.Length)
         {
-            /*foreach( GazeJoint eye in eyes )
-                eye.trgReached = true;*/
             return true;
         }
 

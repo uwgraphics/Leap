@@ -191,13 +191,13 @@ public class EyeGazeInstance : AnimationControllerInstance
         if (GazeController.Head != null)
         {
             //GazeController.Head.align = HeadAlign;
-            GazeController.Head.align = 0.2f;
+            GazeController.Head.align = 0.3f;
             GazeController.Head.weight = 1f;
         }
         if (GazeController.Torso != null)
         {
             //GazeController.Torso.align = TorsoAlign;
-            GazeController.Torso.align = 0.4f;
+            GazeController.Torso.align = 0.3f;
             GazeController.Torso.weight = 1f;
         }
         GazeController.GazeAt(Target);
@@ -217,7 +217,6 @@ public class EyeGazeInstance : AnimationControllerInstance
                     // Make sure gaze remains fixated after gaze shift completion
                     GazeController.fixGaze = true;
                 }
-                // TODO: need a better way to handle going back to original motion when gaze instance is finished
 
                 if (_gazeShiftStarted)
                 {
@@ -226,6 +225,17 @@ public class EyeGazeInstance : AnimationControllerInstance
                 }
 
                 _gazeShiftStarted = false;
+            }
+
+            if (Target == null)
+            {
+                // This is gaze shift ahead, blend it out
+                float t = Mathf.Clamp01(((float)frame) / FrameLength);
+                float t2 = t * t;
+                foreach (var gazeJoint in GazeController.gazeJoints)
+                {
+                    gazeJoint.curWeight = gazeJoint.weight * (1f + 2f * t2 * t - 3f * t2);
+                }
             }
         }
 
@@ -237,13 +247,16 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// </summary>
     public override void Finish()
     {
+        if (Target == null)
+        {
+            // Next gaze shift will have no previous target for VOR
+            GazeController.InitVORNoTarget();
+        }
+
         // Unregister handler for gaze controller state changes
         GazeController.StateChange -= GazeController_StateChange;
 
         base.Finish();
-
-        // TODO: stop fixating gaze at the target
-        // (maybe gaze straight ahead again?)
     }
 
     // Compute gaze shift parameters to account for anticipated body movement

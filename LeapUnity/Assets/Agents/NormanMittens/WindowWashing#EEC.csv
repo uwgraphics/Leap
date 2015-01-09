@@ -1,0 +1,15 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation
+#LWrist,0,702,true
+#RWrist,0,702,true
+RWrist,19,211,true
+RWrist,227,244,true
+RWrist,266,368,true
+RWrist,381,400,true
+RWrist,422,512,true
+RWrist,524,552,true
+RWrist,576,653,true
+RWrist,667,690,true
+LWrist,227,240,true
+LWrist,381,395,true
+LWrist,524,544,true
+LWrist,667,687,true

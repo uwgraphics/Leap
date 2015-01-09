@@ -71,6 +71,38 @@ public class ModelController : MonoBehaviour
     }
 
     /// <summary>
+    /// Position of the character, computed as average of positions of both feet.
+    /// </summary>
+    public virtual Vector3 BodyPosition
+    {
+        get
+        {
+            var lFoot = GameObject.FindGameObjectWithTag("LAnkle").transform;
+            var rFoot = GameObject.FindGameObjectWithTag("RAnkle").transform;
+
+            return 0.5f * (lFoot.transform.position + rFoot.transform.position);
+        }
+    }
+
+    /// <summary>
+    /// Facing direction of the character's whole body,
+    /// computed from positions of both feet.
+    /// </summary>
+    public virtual Vector3 BodyDirection
+    {
+        get
+        {
+            var lFoot = GameObject.FindGameObjectWithTag("LAnkle").transform;
+            var rFoot = GameObject.FindGameObjectWithTag("RAnkle").transform;
+
+            Vector3 bodyRight = (rFoot.position - lFoot.position).normalized;
+            Vector3 bodyUp = new Vector3(0f, 1f, 0f);
+
+            return -Vector3.Cross(bodyUp, bodyRight);
+        }
+    }
+
+    /// <summary>
     /// Gets the previous (stored) position of the specified bone.
     /// </summary>
     /// <param name="bone">

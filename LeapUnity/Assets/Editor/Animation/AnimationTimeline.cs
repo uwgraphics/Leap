@@ -60,7 +60,7 @@ public class AnimationTimeline
         public int InstanceId { get; private set; }
 
         /// <summary>Layer container containing this animation instnace.</summary>
-        public LayerContainer LayerContainer { get; private set; }
+        public LayerContainer OwningLayer { get; private set; }
 
         /// <summary>
         /// Constructor.
@@ -74,7 +74,7 @@ public class AnimationTimeline
             this.InstanceId = id;
             this.StartFrame = startFrame;
             this.Animation = animation;
-            this.LayerContainer = layerContainer;
+            this.OwningLayer = layerContainer;
         }
 
         public void _SetStartFrame(int startFrame) { StartFrame = startFrame; }
@@ -172,6 +172,114 @@ public class AnimationTimeline
         public List<ScheduledInstance> _GetAnimations()
         {
             return _animationInstances;
+        }
+    }
+
+    /// <summary>
+    /// End-effector constraint specification.
+    /// </summary>
+    public struct EndEffectorConstraint
+    {
+        /// <summary>
+        /// End-effector tag.
+        /// </summary>
+        public string endEffector;
+
+        /// <summary>
+        /// Constraint start frame.
+        /// </summary>
+        public int startFrame;
+
+        /// <summary>
+        /// Length of the constraint in frames.
+        /// </summary>
+        public int frameLength;
+
+        /// <summary>
+        /// If true, absolute rotation of the end-effector should be preserved.
+        /// </summary>
+        public bool preserveAbsoluteRotation;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="endEffector">End-effector tag</param>
+        /// <param name="startFrame">Constraint start frame</param>
+        /// <param name="frameLength">Length of the constraint in frames</param>
+        /// <param name="preserveAbsoluteRotation">If true, absolute rotation of the end-effector should be preserved</param>
+        public EndEffectorConstraint(string endEffector, int startFrame, int frameLength, bool preserveAbsoluteRotation)
+        {
+            this.endEffector = endEffector;
+            this.startFrame = startFrame;
+            this.frameLength = frameLength;
+            this.preserveAbsoluteRotation = preserveAbsoluteRotation;
+        }
+    }
+
+    /// <summary>
+    /// Container holding end-effector constraint annotations for a particular animation clip.
+    /// </summary>
+    public class EndEffectorConstraintContainer
+    {
+        /// <summary>
+        /// Animation clip.
+        /// </summary>
+        public AnimationClip AnimationClip
+        {
+            get;
+            private set;
+        }
+        
+        private Dictionary<string, List<EndEffectorConstraint>> _constraints;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="animationClip">Animation clip</param>
+        /// <param name="constraints">End-effector constraints for the animation clip</param>
+        public EndEffectorConstraintContainer(AnimationClip animationClip, EndEffectorConstraint[] constraints)
+        {
+            this.AnimationClip = animationClip;
+
+            _constraints = new Dictionary<string,List<EndEffectorConstraint>>();
+            for (int constraintIndex = 0; constraintIndex < constraints.Length; ++constraintIndex)
+            {
+                string endEffector = constraints[constraintIndex].endEffector;
+                if (!_constraints.ContainsKey(endEffector))
+                    _constraints[endEffector] = new List<EndEffectorConstraint>();
+
+                _constraints[endEffector].Add(constraints[constraintIndex]);
+            }
+        }
+
+        /// <summary>
+        /// Get list of constraints on the specified end-effector.
+        /// </summary>
+        /// <param name="endEffector">End-effector tag</param>
+        /// <returns>List of constraints</returns>
+        public IList<EndEffectorConstraint> GetConstraintsForEndEffector(string endEffector)
+        {
+            return _constraints.ContainsKey(endEffector) ? _constraints[endEffector].AsReadOnly() : null;
+        }
+
+        /// <summary>
+        /// Get end-effector constraints active at the specified frame.
+        /// </summary>
+        /// <param name="frame">Frame index</param>
+        /// <param name="frameWindow">Defines neighborhood of frames on either side of the frame index
+        /// within to search for active constraints - this is used mainly for detecting onset of constraints
+        /// that need to be blended in.</param>
+        /// <returns>Active end-effector constraints</returns>
+        public EndEffectorConstraint[] GetConstraintsAtFrame(int frame, int frameWindow = 0)
+        {
+            List<EndEffectorConstraint> activeConstraints = new List<EndEffectorConstraint>();
+            foreach (KeyValuePair<string, List<EndEffectorConstraint>> kvp in _constraints)
+            {
+                activeConstraints.AddRange(
+                    kvp.Value.Where(eec => frame >= (eec.startFrame - frameWindow) && frame <= (eec.startFrame + eec.frameLength - 1 + frameWindow)));
+            }
+
+            return activeConstraints.Count > 0 ? activeConstraints.ToArray() : null;
         }
     }
 
@@ -278,6 +386,7 @@ public class AnimationTimeline
     private Dictionary<string, AnimationInstance> _initialPoseAnimationInstances;
     private List<LayerContainer> _layerContainers;
     private Dictionary<int, ScheduledInstance> _animationInstancesById;
+    private Dictionary<AnimationClip, EndEffectorConstraintContainer> _endEffectorConstraints;
     private float _currentTime = 0;
     private int _nextInstanceId = 0;
     private HashSet<int> _activeAnimationInstanceIds;
@@ -291,6 +400,7 @@ public class AnimationTimeline
         _initialPoseAnimationInstances = new Dictionary<string, AnimationInstance>();
         _layerContainers = new List<LayerContainer>();
         _animationInstancesById = new Dictionary<int, ScheduledInstance>();
+        _endEffectorConstraints = new Dictionary<AnimationClip, EndEffectorConstraintContainer>();
         _activeAnimationInstanceIds = new HashSet<int>();
         _storedModelPoses = new Dictionary<string, ModelPose>();
 
@@ -384,8 +494,9 @@ public class AnimationTimeline
     /// <param name="layerIndex">Layer name</param>
     /// <param name="animation">Animation instance</param>
     /// <param name="startFrame">Animation start frame on the timeline</param>
+    /// <param name="loadEndEffectorConstraints">If true, end-effector constraints will be loaded for the animation clip of the added instance</param>
     /// <returns>Animation instance ID</returns>
-    public int AddAnimation(string layerName, AnimationInstance animation, int startFrame)
+    public int AddAnimation(string layerName, AnimationInstance animation, int startFrame, bool loadEndEffectorConstraints = false)
     {
         if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
         {
@@ -400,6 +511,17 @@ public class AnimationTimeline
         // Also add the instance so it can be fetched by ID
         _animationInstancesById.Add(newInstance.InstanceId, newInstance);
 
+        // Load end-effector constraints for that animation clip (if they exist and haven't already been loaded)
+        if (loadEndEffectorConstraints && !_endEffectorConstraints.ContainsKey(newInstance.Animation.AnimationClip))
+        {
+            EndEffectorConstraint[] endEffectorConstraints = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(newInstance.Animation.AnimationClip);
+            if (endEffectorConstraints != null)
+            {
+                _endEffectorConstraints.Add(newInstance.Animation.AnimationClip,
+                    new EndEffectorConstraintContainer(newInstance.Animation.AnimationClip, endEffectorConstraints));
+            }
+        }
+
         return newInstance.InstanceId;
     }
 
@@ -407,14 +529,22 @@ public class AnimationTimeline
     /// Remove an existing animation instance from the timeline.
     /// </summary>
     /// <param name="animationInstanceId">Animation instance ID</param>
-    /// <param name="startFrame">Animation start frame on the timeline</param>
-    public void RemoveAnimation(int animationInstanceId, int startFrame)
+    public void RemoveAnimation(int animationInstanceId)
     {
         if (!_animationInstancesById.ContainsKey(animationInstanceId))
             return;
 
+        // If this is the only instance using its animation clip, also remove end-effector constraints
         ScheduledInstance instanceToRemove = _animationInstancesById[animationInstanceId];
-        instanceToRemove.LayerContainer._GetAnimations().Remove(instanceToRemove);
+        var animationClip = instanceToRemove.Animation.AnimationClip;
+        if (_endEffectorConstraints.ContainsKey(animationClip) &&
+            !_animationInstancesById.Any(inst => inst.Value.Animation.AnimationClip == animationClip && inst.Value.InstanceId != animationInstanceId))
+        {
+            _endEffectorConstraints.Remove(animationClip);
+        }
+
+        // Then remove the animation instance itself
+        instanceToRemove.OwningLayer._GetAnimations().Remove(instanceToRemove);
         _animationInstancesById.Remove(animationInstanceId);
     }
 
@@ -427,12 +557,12 @@ public class AnimationTimeline
         if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
             return;
 
-        var targetLayerContainer = GetLayer(layerName);
-        foreach (var instance in targetLayerContainer.Animations)
+        var instanceIds = new List<int>(_animationInstancesById.Keys);
+        foreach (int instanceId in instanceIds)
         {
-            _animationInstancesById.Remove(instance.InstanceId);
+            if (_animationInstancesById[instanceId].OwningLayer.LayerName == layerName)
+                RemoveAnimation(instanceId);
         }
-        targetLayerContainer._GetAnimations().Clear();
     }
 
     /// <summary>
@@ -477,12 +607,49 @@ public class AnimationTimeline
 
         // Temporarily remove animation from its layer container
         var modifiedInstance = _animationInstancesById[animationInstanceId];
-        var targetLayerContainer = modifiedInstance.LayerContainer;
+        var targetLayerContainer = modifiedInstance.OwningLayer;
         targetLayerContainer._GetAnimations().Remove(modifiedInstance);
         
         // Update the instance start time and add it to the layer container again
         modifiedInstance._SetStartFrame(startFrame);
         _AddAnimationToLayerContainer(modifiedInstance, targetLayerContainer);
+    }
+
+    /// <summary>
+    /// Get layer containing the animation instance.
+    /// </summary>
+    /// <param name="animationInstanceId">Animation instance ID</param>
+    /// <returns>Layer container</returns>
+    public LayerContainer GetLayerForAnimation(int animationInstanceId)
+    {
+        if (!_animationInstancesById.ContainsKey(animationInstanceId))
+        {
+            throw new Exception(string.Format("Animation instance with ID {0} does not exist", animationInstanceId));
+        }
+
+        return _animationInstancesById[animationInstanceId].OwningLayer;
+    }
+
+    /// <summary>
+    /// Get constraints on the specific end-effector for specific animation.
+    /// </summary>
+    /// <param name="animationInstanceId">Animation instance ID</param>
+    /// <returns>List of end-effector constraints</returns>
+    public IList<EndEffectorConstraint> GetEndEffectorConstraintsForAnimation(int animationInstanceId, string endEffector)
+    {
+        if (!_animationInstancesById.ContainsKey(animationInstanceId))
+        {
+            throw new Exception(string.Format("Animation instance with ID {0} does not exist", animationInstanceId));
+        }
+
+        var animationClip = _animationInstancesById[animationInstanceId].Animation.AnimationClip;
+        if (!_endEffectorConstraints.ContainsKey(animationClip))
+        {
+            // Animation has no end-effector constraints
+            return null;
+        }
+
+        return _endEffectorConstraints[animationClip].GetConstraintsForEndEffector(endEffector);
     }
 
     /// <summary>
@@ -818,12 +985,11 @@ public class AnimationTimeline
                     }
 
                     animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
+                    if (layer.IKEnabled)
+                        // Set up IK goals for this animation
+                        _SetIKGoals(animation.Animation.Model, animation.Animation.AnimationClip);
                 }
             }
-
-            if (layer.IKEnabled)
-                // Set up IK goals for this animation layer
-                _SetIKGoals();
 
             // Notify listeners that the layer has finished applying
             LayerApplied(layer.LayerName);
@@ -888,7 +1054,9 @@ public class AnimationTimeline
 
             var gazeController = model.gameObject.GetComponent<GazeController>();
             if (gazeController != null)
+            {
                 gazeController.fixGaze = false;
+            }
         }
     }
 
@@ -903,23 +1071,41 @@ public class AnimationTimeline
         }
     }
 
-    private void _SetIKGoals()
+    private void _SetIKGoals(ModelController model, AnimationClip animationClip)
     {
-        // TODO: implement this properly - IK goals should be determined
-        // from annotated end-effector constraints on animation clips
+        if (!_endEffectorConstraints.ContainsKey(animationClip))
+            return;
 
-        ModelController[] models = GetAllModels();
-        foreach (var model in models)
+        int constraintFrameWindow = Mathf.RoundToInt(LEAPCore.endEffectorConstraintBlendTime * LEAPCore.editFrameRate);
+        EndEffectorConstraint[] activeConstraints = _endEffectorConstraints[animationClip].GetConstraintsAtFrame(CurrentFrame, constraintFrameWindow);
+        if (activeConstraints == null)
+            return;
+        IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+
+        foreach (var constraint in activeConstraints)
         {
-            IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+            // Compute constraint weight
+            float t = 1f;
+            if (CurrentFrame < constraint.startFrame)
+                t = Mathf.Clamp01(1f - ((float)(constraint.startFrame - CurrentFrame)) / constraintFrameWindow);
+            else if (CurrentFrame > (constraint.startFrame + constraint.frameLength - 1))
+                t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1))) / constraintFrameWindow);
+            float t2 = t * t;
+            float weight = - 2f * t2 * t + 3f * t2;
+
             foreach (var solver in solvers)
             {
-                if (solver is LimbIKSolver)
+                if (solver.endEffectors.Contains(constraint.endEffector))
                 {
-                    var limbSolver = solver as LimbIKSolver;
-                    limbSolver.goals[0].position = limbSolver.goals[0].endEffector.position;
-                    //limbSolver.goals[0].position = GameObject.FindGameObjectsWithTag("GazeTarget").First(obj => obj.name == "TestIK").transform.position;
-                    limbSolver.goals[0].weight = 1f;
+                    for (int goalIndex = 0; goalIndex < solver.goals.Length; ++goalIndex)
+                    {
+                        if (solver.goals[goalIndex].endEffector.tag == constraint.endEffector)
+                        {
+                            solver.goals[goalIndex].position = solver.goals[goalIndex].endEffector.position;
+                            solver.goals[goalIndex].weight = Mathf.Max(solver.goals[goalIndex].weight, weight);
+                            solver.goals[goalIndex].preserveAbsoluteRotation = constraint.preserveAbsoluteRotation;
+                        }
+                    }
                 }
             }
         }

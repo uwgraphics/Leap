@@ -25,16 +25,23 @@ public class IKGoal
     public float weight;
 
     /// <summary>
+    /// Preserve absolute orientation of the end-effector.
+    /// </summary>
+    public bool preserveAbsoluteRotation;
+
+    /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="endEffector">End-effector bone</param>
     /// <param name="position">Target world-space position of the end-effector</param>
     /// <param name="weight">Goal weight</param>
-    public IKGoal(Transform endEffector, Vector3 position, float weight)
+    /// <param name="preserveAbsoluteRotation">Preserve aboslute orientation of the end-effector</param>
+    public IKGoal(Transform endEffector, Vector3 position, float weight, bool preserveAbsoluteRotation = false)
     {
         this.endEffector = endEffector;
         this.position = position;
         this.weight = weight;
+        this.preserveAbsoluteRotation = preserveAbsoluteRotation;
     }
 }
 
@@ -43,6 +50,11 @@ public class IKGoal
 /// </summary>
 public abstract class IKSolver : MonoBehaviour
 {
+    /// <summary>
+    /// Tags on end-effectors handled by this IK solver.
+    /// </summary>
+    public string[] endEffectors = new string[0];
+
     /// <summary>
     /// IK goals.
     /// </summary>
@@ -72,6 +84,10 @@ public abstract class IKSolver : MonoBehaviour
         Model = gameObject.GetComponent<ModelController>();
         if (Model == null)
             Debug.LogError("Cannot initialize IKSolver on a character without ModelController");
+
+        goals = new IKGoal[endEffectors.Length];
+        for (int goalIndex = 0; goalIndex < goals.Length; ++goalIndex)
+            goals[goalIndex] = new IKGoal(ModelUtils.FindBoneWithTag(Model.Root, endEffectors[goalIndex]), Vector3.zero, 0f);
     }
 
     /// <summary>

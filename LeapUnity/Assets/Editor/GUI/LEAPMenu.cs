@@ -32,8 +32,24 @@ public class LEAPMenu
         var bodyAnimation = new AnimationClipInstance(obj, "WindowWashing");
         timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
         timeline.GetLayer("BaseAnimation").IKEnabled = true;
-        timeline.AddAnimation("BaseAnimation", bodyAnimation, 0);
+        int instanceId = timeline.AddAnimation("BaseAnimation", bodyAnimation, 0, true);
         timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
+        
+        // Print end-effector constraints on the base animation
+        string[] endEffectors = { "LWrist", "RWrist", "LAnkle", "RAnkle"};
+        foreach (string endEffector in endEffectors)
+        {
+            var endEffectorConstraints = timeline.GetEndEffectorConstraintsForAnimation(instanceId, endEffector);
+            if (endEffectorConstraints == null)
+                continue;
+
+            foreach (var endEffectorConstraint in endEffectorConstraints)
+            {
+                Debug.Log(string.Format("End-effector constraint: animationClip = {0}, endEffector = {1}, startFrame = {2}, endFrame = {3}, preserveAbsoluteRotation = {4}",
+                    bodyAnimation.AnimationClip, endEffector, endEffectorConstraint.startFrame,
+                    endEffectorConstraint.startFrame + endEffectorConstraint.frameLength - 1, endEffectorConstraint.preserveAbsoluteRotation));
+            }
+        }
 
         timeline.Init();
     }
@@ -89,23 +105,24 @@ public class LEAPMenu
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
 
-        // TODO: remove this after testing
+        // TODO: remove this after testing 
         InitAnimationTimeline();
         //
         string baseAnimationName = timeline.GetLayer("BaseAnimation").Animations[0].Animation.AnimationClip.name;
         EyeGazeEditor.LoadEyeGazeForModel(timeline, baseAnimationName, "Gaze");
         // TODO: move eye gaze inference to separate menu items
         EyeGazeEditor.InferEyeGazeAttributes(timeline, baseAnimationName, "Gaze");
-        EyeGazeEditor.FixEyeGazeBetweenShifts(timeline, baseAnimationName, "Gaze");
+        //
+
+        // Print eye gaze instances
         foreach (var instance in timeline.GetLayer("Gaze").Animations)
         {
             Debug.Log(string.Format("EyeGazeInstance: model = {0}, animationClip = {1}, startFrame = {2}, endFrame = {3}, target = {4}, headAlign = {5}, torsoAlign = {6}",
                 instance.Animation.Model.gameObject.name, instance.Animation.AnimationClip.name,
-                instance.StartFrame, instance.StartFrame + instance.Animation.FrameLength,
-                (instance.Animation as EyeGazeInstance).Target.name,
+                instance.StartFrame, instance.StartFrame + instance.Animation.FrameLength - 1,
+                (instance.Animation as EyeGazeInstance).Target != null ? (instance.Animation as EyeGazeInstance).Target.name : "null",
                 (instance.Animation as EyeGazeInstance).HeadAlign, (instance.Animation as EyeGazeInstance).TorsoAlign));
         }
-        //
     }
 
 	/// <summary>
