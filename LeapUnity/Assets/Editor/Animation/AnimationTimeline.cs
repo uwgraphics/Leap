@@ -10,8 +10,19 @@ using System.Linq;
 /// </summary>
 public class AnimationTimeline
 {
+    public delegate void TimelineControlEvtH(bool controlState);
     public delegate void LayerEvtH(string layerName);
     public delegate void AnimationEvtH(int animationInstanceId);
+
+    /// <summary>
+    /// Event triggered when animation timeline is activated.
+    /// </summary>
+    public event TimelineControlEvtH TimelineActivated;
+
+    /// <summary>
+    /// Event triggered when animation timeline is deactivated.
+    /// </summary>
+    public event TimelineControlEvtH TimelineDeactivated;
 
     /// <summary>
     /// Event triggered on every animation frame when a layer has been applied.
@@ -381,6 +392,18 @@ public class AnimationTimeline
     {
         get;
         set;
+    }
+
+    /// <summary>
+    /// If true, animation instances on the timeline are currently being baked into
+    /// animation clips.
+    /// </summary>
+    public bool IsBakingInstances
+    {
+        get
+        {
+            return _animationInstancesById.Any(kvp => kvp.Value.Animation.IsBaking);
+        }
     }
 
     private Dictionary<string, AnimationInstance> _initialPoseAnimationInstances;
@@ -810,7 +833,7 @@ public class AnimationTimeline
     /// Go through the entire animation and bake the outputs of all animation
     /// instances into animation clips.
     /// </summary>
-    public void BakeInstances()
+    public void StartBakeInstances()
     {
         Debug.Log("Baking all animation instances...");
 
@@ -823,17 +846,24 @@ public class AnimationTimeline
         
         // Apply & bake instances
         GoToFrame(0);
-        /*while (CurrentFrame < FrameLength - 1)
+    }
+
+    /// <summary>
+    /// Save all baked animation instances into animation clips and stop baking.
+    /// </summary>
+    public void FinalizeBakeInstances()
+    {
+        if (!IsBakingInstances)
         {
-            _AddTime(1f / LEAPCore.editFrameRate);
-            _ApplyAnimation();
+            throw new Exception("Tried to finalize baking animation instances when no animation instance are baking");
         }
 
-        // Save baked instances to animation clips
+        // Save any baked instances to animation clips
         foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
-            kvp.Value.Animation.FinalizeBake();
+            if (kvp.Value.Animation.IsBaking)
+                kvp.Value.Animation.FinalizeBake();
 
-        Debug.Log("Finished baking all animation instances.");*/
+        Debug.Log("Finished baking all animation instances");
     }
 
     /// <summary>
@@ -928,12 +958,25 @@ public class AnimationTimeline
         if (Playing)
         {
             // Animation is playing, so advance time
-            _AddTime(deltaTime * TimeScale);
+            bool loopedAround = _AddTime(deltaTime * TimeScale);
+
+            if (loopedAround)
+            {
+                if (IsBakingInstances)
+                {
+                    FinalizeBakeInstances();
+                    Playing = false;
+                    return;
+                }
+            }
         }
 
         _ApplyAnimation();
     }
 
+    // TODO: remove this
+    Quaternion[] prevRots = null;
+    //
     public void _ApplyAnimation()
     {
         ResetModelsToInitialPose();
@@ -1000,21 +1043,41 @@ public class AnimationTimeline
         _ClearIKGoals();
 
         _StoreModelsCurrentPose();
+        // TODO: remove this
+        /*var gazeCtrl = GetAllModels().FirstOrDefault(mdl => mdl.gameObject.name == "Norman").GetComponent<GazeController>();
+        if (prevRots == null)
+            prevRots = new Quaternion[gazeCtrl.gazeJoints.Length];
+        string deltaRotStr = "";
+        for (int jointIndex = 0; jointIndex < gazeCtrl.gazeJoints.Length; ++jointIndex)
+        {
+            float deltaRot = GazeJoint.DistanceToRotate(prevRots[jointIndex], gazeCtrl.gazeJoints[jointIndex].bone.localRotation);
+            deltaRotStr += (gazeCtrl.gazeJoints[jointIndex].type.ToString() + ": " + deltaRot.ToString() + " ");
+            prevRots[jointIndex] = gazeCtrl.gazeJoints[jointIndex].bone.localRotation;
+        }
+        Debug.LogWarning(deltaRotStr);*/
+        //
     }
 
-    private void _AddTime(float deltaTime)
+    private bool _AddTime(float deltaTime)
     {
-        if (CurrentTime + deltaTime > TimeLength)
-            CurrentTime += (deltaTime - TimeLength);
-        else
-            CurrentTime += deltaTime;
+        bool loopedAround = false;
 
-        //Debug.Log(string.Format("START FRAME (deltaTime = {0} sec, CurrentFrame = {1}", deltaTime, CurrentFrame));
+        if (CurrentTime + deltaTime > TimeLength)
+        {
+            loopedAround = true;
+            CurrentTime += (deltaTime - TimeLength);
+        }
+        else
+        {
+            CurrentTime += deltaTime;
+        }
 
         // Make sure controllers have access to the latest delta time
         ModelController[] models = GetAllModels();
         foreach (var model in models)
             model.GetComponent<AnimControllerTree>().DeltaTime = deltaTime;
+
+        return loopedAround;
     }
 
     private void _AddAnimationToLayerContainer(ScheduledInstance newInstance, LayerContainer targetLayerContainer)
@@ -1093,6 +1156,7 @@ public class AnimationTimeline
             float t2 = t * t;
             float weight = - 2f * t2 * t + 3f * t2;
 
+            // Set the constraint goal in relevant IK solvers
             foreach (var solver in solvers)
             {
                 if (solver.endEffectors.Contains(constraint.endEffector))

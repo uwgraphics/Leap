@@ -23,6 +23,11 @@ public enum GazeJointType
 /// </summary>
 public class GazeController : AnimController
 {
+    public void TEST()
+    {
+        Debug.LogWarning("TEST");
+    }
+
     /// <summary>
     /// Next gaze target.
     /// </summary>
@@ -52,6 +57,12 @@ public class GazeController : AnimController
     /// Predictability of the gaze target (0-1). 
     /// </summary>
     public float predictability = 1f;
+
+    /// <summary>
+    /// Relative position of the gaze target in the future
+    /// (used in computing gaze shift parameters for rel. moving targets).
+    /// </summary>
+    public Vector3 movingTargetPositionOffset;
 
     /// <summary>
     /// If true, cartoon animation principles will be applied to 
@@ -128,7 +139,7 @@ public class GazeController : AnimController
     protected int torsoIndex = -1;
 
     protected GameObject curGazeTarget = null; // Current gaze target
-    protected float latencyStart = 0f;
+    protected Vector3 curMovingTargetPosOff = Vector3.zero; // Rel. position offset of the current target in near future
     protected float adjEyeAlign = 1f;
     protected float maxCrEyedView = 0f; // Maximum cross-eyedness allowed, adjusted by view angle
     protected Vector3 effGazeTrgPos; // Effective gaze target position
@@ -206,17 +217,6 @@ public class GazeController : AnimController
     }
 
     /// <summary>
-    /// Current gaze target. 
-    /// </summary>
-    public virtual GameObject GazeTarget
-    {
-        get
-        {
-            return curGazeTarget;
-        }
-    }
-
-    /// <summary>
     /// Effective position of the gaze target,
     /// with view-based eye alignment and cross-eyedness
     /// correction taken into account.
@@ -272,6 +272,35 @@ public class GazeController : AnimController
     {
         get;
         set;
+    }
+
+    /// <summary>
+    /// Estimated time duration of the current gaze shift.
+    /// </summary>
+    public float EstTimeLength
+    {
+        get
+        {
+            if (StateId == (int)GazeState.Shifting)
+            {
+                float eyeRotTime = 0f;
+                foreach (var eye in eyes)
+                {
+                    float evm = 0.75f * eye.maxVelocity;
+                    float edr = Mathf.Min(eye.distRotAlign, eye.distRotMR);
+                    eyeRotTime = Mathf.Max(eyeRotTime, evm > 0f ? edr / evm : 0f);
+                }
+
+                float hvm = 0.625f * Head.maxVelocity;
+                float headRotTime = hvm > 0f ? Head.distRotAlign / hvm : 0f;
+
+                return Mathf.Max(headRotTime, eyeRotTime);
+            }
+            else
+            {
+                return 0f;
+            }
+        }
     }
 
     /// <summary>
@@ -423,6 +452,7 @@ public class GazeController : AnimController
 
         this.gazeTarget = gazeTarget;
         doGazeShift = true;
+        movingTargetPositionOffset = Vector3.zero;
 
         Debug.Log("GazeAt " + gazeTarget.gameObject);
     }
@@ -458,7 +488,7 @@ public class GazeController : AnimController
     /// <summary>
     /// Trigger a gaze aversion away from the current gaze target.
     /// </summary>
-    public virtual void GazeAway()
+    /*public virtual void GazeAway()
     {
         float yaw = 0f;
         float pitch = 0f;
@@ -509,13 +539,13 @@ public class GazeController : AnimController
         }
 
         GazeAway(yaw, pitch);
-    }
+    }*/
 
 
     /// <summary>
     /// Trigger a gaze aversion away from the current gaze target.
     /// </summary>
-    public virtual void GazeAway(float yaw, float pitch)
+    /*public virtual void GazeAway(float yaw, float pitch)
     {
         // Get eye centroid
         Vector3 eyeCentroid = 0.5f * (LEye.bone.position + REye.bone.position);
@@ -548,7 +578,7 @@ public class GazeController : AnimController
         Vector3 targetPos = eyeCentroid + targetDist * newDir;
 
         GazeAt(targetPos);
-    }
+    }*/
 
     /// <summary>
     /// Interrupt ongoing gaze shift.
@@ -671,6 +701,9 @@ public class GazeController : AnimController
     // Initialize gaze parameters at the start of a gaze shift
     public virtual void _InitGazeParams()
     {
+        _CurrentGazeTarget = gazeTarget;
+        curMovingTargetPosOff = movingTargetPositionOffset;
+
         // Eyes geometry parameters
         eyeSize = Mathf.Clamp(eyeSize, 1f, 5.8f); // eyes can't be larger than the head...
         eyeTorque = eyeTorque < 1f ? 1f : eyeTorque;
@@ -741,24 +774,48 @@ public class GazeController : AnimController
     // Calculate peak velocities in the gaze shift
     public virtual void _CalculateMaxVelocities()
     {
-        // Estimate max. OMR
+        /*// Estimate max. OMR
         // TODO: Should it be adjusted or original OMR?
         float OMR = -float.MaxValue;
         foreach (GazeJoint eye in eyes)
             OMR = Mathf.Max(OMR,
                             Mathf.Max(Mathf.Max(eye.curUpMR, eye.curDownMR),
-                                      Mathf.Max(eye.curInMR, eye.curOutMR)));
+                                      Mathf.Max(eye.curInMR, eye.curOutMR)));*/
+        
+        if (Torso != null)
+        {
+            // For the upper body joints
+            float torsoDistRotAlign = _ComputeDistRotAlignForMovingTarget(Torso);
+            for (int gji = torsoIndex; gji < gazeJoints.Length; ++gji)
+            {
+                GazeJoint joint = gazeJoints[gji];
+                if (joint == Torso)
+                {
+                    joint.maxVelocity = (4f / 3f) * (joint.velocity / 15f) * torsoDistRotAlign +
+                        joint.velocity / 0.5f;
+                }
+                else
+                {
+                    joint.maxVelocity = Torso.maxVelocity;
+                }
+            }
+        }
 
-        // For the upper body joints
-        for (int gji = gazeJoints.Length - 1; gji >= eyes.Length; --gji)
+        // For the head joints
+        float headDistRotAlign = _ComputeDistRotAlignForMovingTarget(Head);
+        for (int gji = headIndex; gji < torsoIndex; ++gji)
         {
             GazeJoint joint = gazeJoints[gji];
-            if (torsoIndex > 0 && gji >= torsoIndex)
-                joint.maxVelocity = (4f / 3f) * (joint.velocity / 15f) * joint.distRotAlign +
-                    joint.velocity / 0.5f;
-            else if (gji >= headIndex)
-                joint.maxVelocity = (4f / 3f) * (joint.velocity / 50f) * joint.distRotAlign +
+
+            if (joint == Head)
+            {
+                joint.maxVelocity = (4f / 3f) * (joint.velocity / 50f) * headDistRotAlign +
                     joint.velocity / 2.5f;
+            }
+            else
+            {
+                joint.maxVelocity = Head.maxVelocity;
+            }
         }
 
         // How opposing are the eye and head rotations? (rare)
@@ -831,10 +888,6 @@ public class GazeController : AnimController
                     float ha = Head.distRotAlign / GazeJoint.DistanceToRotate(Head.srcRot, Head.trgRot);
                     float et = (1f - ha) * etu + ha * etl;
                     eye.maxVelocity *= et;
-                    /*eye.maxVelocity *= etl;
-                    float et = Mathf.Clamp01( (Head.distRotAlign/Head.maxVelocity)*
-                        (eye.distRotMR/eye.maxVelocity) );
-                    eye.maxVelocity *= ( (1f-et)*etu/etl + et );*/
                 }
 
                 // Speed up the eyes if they need to rotate far
@@ -854,13 +907,35 @@ public class GazeController : AnimController
             // Find the shortest eye rotation distance
             float Amin = float.MaxValue;
             foreach (GazeJoint eye in eyes)
-                Amin = Mathf.Min(eye.distRotMR, Amin);
-            Amin = Mathf.Min(Amin, OMR);
+            {
+                float adjDistRotMR = eye.distRotMR;
+
+                if (curMovingTargetPosOff != Vector3.zero)
+                {
+                    // Adjust rotational distance based on future target offset
+                    Quaternion curTrgRot = eye.trgRot;
+                    Quaternion curTrgRotMR = eye.trgRotMR;
+                    float curDistRotMR = eye.distRotMR;
+                    eye.trgRot = eye._ComputeTargetRotation(EffGazeTargetPosition + curMovingTargetPosOff);
+                    eye._InitTargetRotationMR();
+                    adjDistRotMR = eye.distRotMR;
+
+                    // Restore current target rotations
+                    eye.trgRot = curTrgRot;
+                    eye.trgRotMR = curTrgRotMR;
+                    eye.distRotMR = curDistRotMR;
+                }
+
+                // Update shortest eye rotation distance
+                Amin = Mathf.Min(adjDistRotMR, Amin);
+            }
 
             foreach (GazeJoint eye in eyes)
+            {
                 // TODO: This is a quick hack that approximates eye velocity
                 // based on about how far the saccade will be
                 eye.maxVelocity = 4f * (eye.velocity / 150f) * Amin + eye.velocity / 6f;
+            }
         }
 
         if (stylizeGaze)
@@ -878,7 +953,7 @@ public class GazeController : AnimController
     }
 
     // Compute overall amplitude of the gaze shift towards current target
-    public virtual float _ComputeGazeShiftAmplitude()
+    public virtual float _ComputeGazeShiftAmplitude(bool adjustForMovingTarget = false)
     {
         Vector3 srcdir = new Vector3(0, 0, 0);
         Vector3 ec = new Vector3(0, 0, 0);
@@ -889,7 +964,8 @@ public class GazeController : AnimController
         }
         srcdir /= (float)eyes.Length;
         ec /= (float)eyes.Length;
-        Vector3 trgdir = (EffGazeTargetPosition - ec).normalized;
+        Vector3 trgPos = adjustForMovingTarget ? EffGazeTargetPosition + curMovingTargetPosOff : EffGazeTargetPosition;
+        Vector3 trgdir = (trgPos - ec).normalized;
         
         return Vector3.Angle(srcdir, trgdir);
     }
@@ -921,7 +997,8 @@ public class GazeController : AnimController
     public virtual float _ComputeTorsoLatency()
     {
         float pred = Mathf.Clamp01(predictability);
-        return -0.25f * Amplitude * pred + 0.5f * Amplitude - 57.5f * pred + 105f;
+        float amplitude = _ComputeGazeShiftAmplitude(true);
+        return -0.25f * amplitude * pred + 0.5f * amplitude - 57.5f * pred + 105f;
     }
 
     protected override void _Init()
@@ -1051,7 +1128,6 @@ public class GazeController : AnimController
         // Set gaze targets
         if (FixGazeTarget == null)
             InitVOR();
-        _CurrentGazeTarget = gazeTarget;
         
         // Initialize new gaze shift
         _InitGazeParams(); // initial rotations, alignments, latencies...
@@ -1397,7 +1473,9 @@ public class GazeController : AnimController
         {
             float p = eye.Pitch - eye.InitPitch;
             float y = eye.Yaw - eye.InitYaw;
-            eye.bone.localRotation = eye.trgRot;
+            eye.bone.localRotation = curMovingTargetPosOff != Vector3.zero ?
+                eye._ComputeTargetRotation(EffGazeTargetPosition + curMovingTargetPosOff) :
+                eye.trgRot;
             float trgp = eye.Pitch - eye.InitPitch;
             float trgy = eye.Yaw - eye.InitYaw;
             eye.bone.localRotation = eye.srcRot;
@@ -1454,7 +1532,6 @@ public class GazeController : AnimController
         // Find the maximum difference between the target orientation and the eyes' orientation at max. OMR
         float maxdl = -float.MaxValue;
         Quaternion maxdq = Quaternion.identity;
-        //GazeJoint maxeye = null;
         foreach (GazeJoint eye in eyes)
         {
             float dl = GazeJoint.DistanceToRotate(eye.srcRot, eye.trgRot) - eye.distRotAlign;
@@ -1464,7 +1541,6 @@ public class GazeController : AnimController
                 maxdq = eye.bone.localRotation;
                 eye.ClampMR();
                 maxdq = Quaternion.Inverse(eye.bone.localRotation) * maxdq;
-                //maxeye = eye;
             }
         }
 
@@ -1474,6 +1550,24 @@ public class GazeController : AnimController
         Head.distRotAlign = DirectableJoint.DistanceToRotate(Head.srcRot, trgrot);
 
         ReapplyCurrentPose();
+    }
+
+    // Compute aligning rotational distance for specified joint, adjusted for
+    // future position of the moving gaze target
+    protected virtual float _ComputeDistRotAlignForMovingTarget(GazeJoint joint)
+    {
+        float adjDistRotAlign = joint.distRotAlign;
+        if (curMovingTargetPosOff != Vector3.zero)
+        {
+            // Adjust rotational distance based on future target offset
+            float distRot = GazeJoint.DistanceToRotate(joint.srcRot, joint.trgRot);
+            Quaternion adjTrgRot = joint._ComputeTargetRotation(EffGazeTargetPosition + curMovingTargetPosOff);
+            adjDistRotAlign = distRot > 0f ?
+                joint.distRotAlign / distRot * GazeJoint.DistanceToRotate(joint.srcRot, adjTrgRot) :
+                0f;
+        }
+        
+        return adjDistRotAlign;
     }
 
     // Adjust head target rotations so eyes can achieve alignment

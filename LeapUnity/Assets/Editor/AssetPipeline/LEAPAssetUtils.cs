@@ -259,6 +259,24 @@ public static class LEAPAssetUtils
     }
 
     /// <summary>
+    /// Get all animation clips from the specified character model.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <returns>Array of animation clips</returns>
+    public static AnimationClip[] GetAllAnimationClipsOnModel(GameObject model)
+    {
+        var animationComponent = model.gameObject.animation;
+        var animationClips = new List<AnimationClip>();
+        foreach (AnimationState animationState in animationComponent)
+        {
+            if (animationState.clip != null)
+                animationClips.Add(animationState.clip);
+        }
+
+        return animationClips.ToArray();
+    }
+
+    /// <summary>
     /// Create an array of animation curves for specified character model.
     /// </summary>
     /// <param name="model">Character model</param>
@@ -308,6 +326,39 @@ public static class LEAPAssetUtils
                 clip.SetCurve(bonePath, typeof(Transform), "localRotation.z", curves[3 + boneIndex * 4 + 2]);
             if (curves[3 + boneIndex * 4 + 3].keys.Length > 0)
                 clip.SetCurve(bonePath, typeof(Transform), "localRotation.w", curves[3 + boneIndex * 4 + 3]);
+        }
+    }
+
+    /// <summary>
+    /// Make sure animation clips added to the character model's Animation component are
+    /// correctly associated with the model.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    public static void FixModelAnimationClipAssoc(GameObject model)
+    {
+        var animationComponent = model.GetComponent<Animation>();
+        AnimationClip[] clips = GetAllAnimationClipsOnModel(model);
+        Transform[] bones = ModelUtils.GetAllBones(model);
+        Transform rootBone = ModelUtils.FindRootBone(model);
+
+        foreach (var clip in clips)
+        {
+            AnimationClipCurveData[] allCurvesData = AnimationUtility.GetAllCurves(clip, true);
+            clip.ClearCurves();
+
+            foreach (var curveData in allCurvesData)
+            {
+                string boneName = curveData.path.LastIndexOf('/') >= 0 ?
+                    curveData.path.Substring(curveData.path.LastIndexOf('/') + 1) : curveData.path;
+                Transform bone = ModelUtils.FindBone(rootBone, boneName);
+
+                if (bone != null)
+                {
+                    // Bone found, make sure the curve has the right path
+                    string bonePath = ModelUtils.GetBonePath(bone);
+                    clip.SetCurve(bonePath, curveData.type, curveData.propertyName, curveData.curve);
+                }
+            }
         }
     }
 

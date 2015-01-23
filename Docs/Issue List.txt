@@ -1,5 +1,21 @@
 Leap Animation Editor:
 
+#26 [X] In EyeGazeInstance._AdjustGazeParamsForMovingBase, even when look-ahead time is zero, recomputed gaze parameters are different:
+  - In WindowWashing test case there are a ton of examples of gaze shifts where Head.maxVelocity is wildly different from original when lookAheadTime = 0
+  - Solution will be to modify the gaze controller such that we can specify predicted position offset of the (relatively) moving target and the gaze controller will do the actual computation of gaze shift parameters
+
+#25 [] Sometimes the whole characters snaps to wrong pose and gets rendered
+  - Seems to happen when switching between gaze instances, but unsure
+  - Affects the whole pose, even the feet - maybe resets to initial pose w/o even applying the body motion!
+  - Blatant example in WindowWashing around frame 90
+  - The problem is absent in baked clip
+  - Seems to happen less frequently after commenting out SceneView.RepaintAll() call in LeapAnimationEditor.Update()
+  - Completely baffling, it's like the scene gets repainted before animation is applied, but that should be impossible
+  - Removing _AdjustGazeParamsForMovingBase() seems to eliminate the problem
+  - Solution to #26 may also fix this issue, keep an eye on it
+
+#24 [] Inference of head and torso alignment values seems to be incorrect in EyeGazeEditor
+
 #23 [X] There is a small discontinuity in gaze joint rotations when a new gaze shift starts after a gap
 
 #22 [X] In WindowWashing example, the very first gaze shift starts in the wrong state, like VOR isn't correctly initialized
@@ -32,6 +48,9 @@ Leap Animation Editor:
   - The problem is greatly reduced when we take out base.FinishBake() call from EyeGazeInstance.FinishBake() - could it be a timing issue, with writing out the clip being too slow?
   - Problem reduced by delaying the saving of baked curves until after the whole animation has been played & applied - still happens occasionally, though (check that it's only during playback and not in baked animation)
   - It seems to happen more in WindowWashing test case
+  - Seems to happen when switching between gaze instances - or more specifically when transition from NoGaze to  Shifting in the gaze controller
+  - The problem seems unrelated to latency
+  - Occasionally it doesn't happen at all
   
 #16 [X] Torso joints sometimes snap to wrong rotation values during gaze shifts
   - They always seem to snap back to correct rotations, though

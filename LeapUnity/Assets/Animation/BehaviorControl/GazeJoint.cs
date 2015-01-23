@@ -642,20 +642,10 @@ public class GazeJoint : DirectableJoint
             float rpmv = rp * maxVelocity;
             float rp2 = rp * rp;
 
-            //if( type == GazeJointType.Head )
-            {
-                if (rp < 0.5)
-                    curVelocity = rpmv * 0.75f / 0.5f + 0.25f * maxVelocity;
-                else
-                    curVelocity = (12f * rp2 * rp - 27f * rp2 + 18f * rp - 2.75f) * maxVelocity;
-            }
-            /*else
-            {
-                if (rp < 0.5)
-                    curVelocity = rpmv + 0.5f*maxVelocity;
-                else
-                    curVelocity = ( 8f*rp2*rp - 18f*rp2 + 12f*rp - 1.5f )*maxVelocity;
-            }*/
+            if (rp < 0.5)
+                curVelocity = rpmv * 0.75f / 0.5f + 0.25f * maxVelocity;
+            else
+                curVelocity = (12f * rp2 * rp - 27f * rp2 + 18f * rp - 2.75f) * maxVelocity;
         }
     }
 
@@ -718,11 +708,16 @@ public class GazeJoint : DirectableJoint
         if (this != gazeCtrl.GetLastGazeJointInChain(type))
             return;
 
-        /*Debug.Log(string.Format("{0}: curVelocity = {1} [maxVelocity = {2}], latencyTime = {3}, cur*OMR = ({4}, {5}, {6}, {7}), " +
-            "curAlign = {8}, srcRot = ({9}, {10}, {11}), trgRot = ({12}, {13}, {14}), trgRotAlign = ({15}, {16}, {17}), trgRotMR = ({18}, {19}, {20}), " +
-            "distRotAlign = {21}, distRotMR = {22}, rotParamAlign = {23}, rotParamMR = {24}, mrReached = {25}, trgReached = {26}, " +
-            "fixSrcRot = ({27}, {28}, {29}), fixTrgRot = ({30}, {31}, {32}), fixDistRotAlign = {33}, fixRotParamAlign = {34}", 
-            type.ToString(), curVelocity, maxVelocity, latencyTime, curUpMR, curDownMR, curInMR, curOutMR,
+        /*//
+        if (type != GazeJointType.Torso)
+            return;*/
+        //
+        /*Debug.Log(string.Format("{0}: rotation = ({1}, {2}, {3}), curVelocity = {4} [maxVelocity = {5}], latencyTime = {6}, cur*OMR = ({7}, {8}, {9}, {10}), " +
+            "curAlign = {11}, srcRot = ({12}, {13}, {14}), trgRot = ({15}, {16}, {17}), trgRotAlign = ({18}, {19}, {20}), trgRotMR = ({21}, {22}, {23}), " +
+            "distRotAlign = {24}, distRotMR = {25}, rotParamAlign = {26}, rotParamMR = {27}, mrReached = {28}, trgReached = {29}, " +
+            "fixSrcRot = ({30}, {31}, {32}), fixTrgRot = ({33}, {34}, {35}), fixDistRotAlign = {36}, fixRotParamAlign = {37}", 
+            type.ToString(), bone.localRotation.eulerAngles.x, bone.localRotation.eulerAngles.y, bone.localRotation.eulerAngles.z,
+            curVelocity, maxVelocity, latencyTime, curUpMR, curDownMR, curInMR, curOutMR,
             curAlign, srcRot.eulerAngles.x, srcRot.eulerAngles.y, srcRot.eulerAngles.z,
             trgRot.eulerAngles.x, trgRot.eulerAngles.y, trgRot.eulerAngles.z,
             trgRotAlign.eulerAngles.x, trgRotAlign.eulerAngles.y, trgRotAlign.eulerAngles.z,

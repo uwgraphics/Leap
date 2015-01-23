@@ -52,6 +52,22 @@ public static class ModelUtils
     public static string[] gazeHelperNames = { "GazeHelper", "Dummy" };
 
     /// <summary>
+    /// Show/hide character model.
+    /// </summary>
+    /// <param name="model">Model</param>
+    /// <param name="show">If true, the model will be shown, otherwise it will be hidden</param>
+    public static void ShowModel(GameObject model, bool show = true)
+    {
+        SkinnedMeshRenderer[] skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
+            skinnedMeshRenderer.enabled = show;
+
+        MeshRenderer[] meshRenderers = model.GetComponentsInChildren<MeshRenderer>();
+        foreach (var meshRenderer in meshRenderers)
+            meshRenderer.enabled = show;
+    }
+
+    /// <summary>
     /// Finds a bone in the model's skeleton by name.
     /// </summary>
     /// <param name="rootBone">
@@ -224,6 +240,21 @@ public static class ModelUtils
     }
 
     /// <summary>
+    /// Get a chain of bones between a start bone and one of its descendants.
+    /// Both start bone and end bone are included in the chain.
+    /// </summary>
+    /// <param name="startBone">Chain start bone</param>
+    /// <param name="endBone">Chain end bone, which is a descendant of the start bone</param>
+    /// <returns>Bone chain</returns>
+    public static Transform[] GetBoneChain(Transform startBone, Transform endBone)
+    {
+        List<Transform> _boneChain = new List<Transform>();
+        _GetBoneChain(startBone, endBone, _boneChain);
+
+        return _boneChain.ToArray();
+    }
+
+    /// <summary>
     /// Get path of the specified bone relative to the root.
     /// </summary>
     /// <param name="bone">Bone transform</param>
@@ -248,6 +279,28 @@ public static class ModelUtils
         {
             _GetAllBones(child, bones);
         }
+    }
+
+    // Traverse the bone subtree until you get to the end bone and add all the bones in between
+    private static bool _GetBoneChain(Transform startBone, Transform endBone, List<Transform> _boneChain)
+    {
+        if (startBone == endBone)
+        {
+            _boneChain.Add(startBone);
+            return true;
+        }
+
+        for (int childIndex = 0; childIndex < startBone.GetChildCount(); ++childIndex)
+        {
+            var child = startBone.GetChild(childIndex);
+            if (_GetBoneChain(child, endBone, _boneChain))
+            {
+                _boneChain.Add(startBone);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

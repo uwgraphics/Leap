@@ -446,110 +446,6 @@ ModelImporter:
         weight: 1
       maskType: 0
       maskSource: {instanceID: 0}
-    - serializedVersion: 16
-      name: WindowWashing
-      takeName: Take 001
-      firstFrame: 1
-      lastFrame: 562
-      wrapMode: 0
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      loopTime: 0
-      loopBlend: 0
-      loopBlendOrientation: 0
-      loopBlendPositionY: 0
-      loopBlendPositionXZ: 0
-      keepOriginalOrientation: 0
-      keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask:
-      - path: 
-        weight: 1
-      - path: srfBind_Cn_Pelvis
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/srfBind_Cn_Nose
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/srfBind_Lf_Ear
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/srfBind_Lf_Eye
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/srfBind_Rt_Ear
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Cn_Neck/srfBind_Cn_Head/srfBind_Rt_Eye
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC/srfBind_Lf_ArmD
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC/srfBind_Lf_ArmD/Hand_L
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC/srfBind_Rt_ArmD
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Cn_SpineA/srfBind_Cn_SpineB/srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC/srfBind_Rt_ArmD/Hand_L001
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD/srfBind_Lf_FootA
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD/srfBind_Lf_FootA/srfBind_Lf_FootB
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
-          1
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
-          2
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
-          3
-        weight: 1
-      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
-          5
-        weight: 1
-      maskType: 0
-      maskSource: {instanceID: 0}
     isReadable: 1
   meshes:
     lODScreenPercentages: []
@@ -571,7 +467,7 @@ ModelImporter:
     splitTangentsAcrossUV: 1
     normalImportMode: 0
     tangentImportMode: 1
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     human: []

@@ -40,6 +40,7 @@ public class AnimationEditGizmos : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        
         if (showGazeTargets)
         {
             _DrawGazeTargets();

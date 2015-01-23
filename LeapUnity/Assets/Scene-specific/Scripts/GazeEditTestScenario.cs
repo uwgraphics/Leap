@@ -3,7 +3,7 @@ using System.Collections;
 
 public class GazeEditTestScenario : Scenario
 {
-    public string characterName = "NormanMittens";
+    public string characterName = "Norman";
     public string editedAnimation = "";
 
     /// <see cref="Scenario._Init()"/>

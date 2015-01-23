@@ -50,11 +50,13 @@ public class EyeGazeInstance : AnimationControllerInstance
     protected struct _GazeControllerState
     {
         public float amplitude;
+        public GameObject currentGazeTarget;
         public _GazeJointState[] gazeJointStates;
 
         public _GazeControllerState(GazeController controller)
         {
             amplitude = controller.Amplitude;
+            currentGazeTarget = controller._CurrentGazeTarget;
             gazeJointStates = new _GazeJointState[controller.gazeJoints.Length];
             for (int jointIndex = 0; jointIndex < controller.gazeJoints.Length; ++jointIndex)
                 gazeJointStates[jointIndex] = new _GazeJointState(controller.gazeJoints[jointIndex]);
@@ -63,6 +65,7 @@ public class EyeGazeInstance : AnimationControllerInstance
         public void Apply(GazeController controller)
         {
             controller.Amplitude = amplitude;
+            controller._CurrentGazeTarget = currentGazeTarget;
             for (int jointIndex = 0; jointIndex < controller.gazeJoints.Length; ++jointIndex)
                 gazeJointStates[jointIndex].Apply(controller.gazeJoints[jointIndex]);
         }
@@ -201,6 +204,7 @@ public class EyeGazeInstance : AnimationControllerInstance
             GazeController.Torso.weight = 1f;
         }
         GazeController.GazeAt(Target);
+        GazeController.movingTargetPositionOffset = _ComputeMovingTargetPositionOffset();
     }
 
     /// <summary>
@@ -217,14 +221,6 @@ public class EyeGazeInstance : AnimationControllerInstance
                     // Make sure gaze remains fixated after gaze shift completion
                     GazeController.fixGaze = true;
                 }
-
-                if (_gazeShiftStarted)
-                {
-                    // Gaze shift just started, compute updated gaze parameters for anticipated body movement
-                    _AdjustGazeParamsForMovingBase();
-                }
-
-                _gazeShiftStarted = false;
             }
 
             if (Target == null)
@@ -260,7 +256,7 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     // Compute gaze shift parameters to account for anticipated body movement
-    protected virtual void _AdjustGazeParamsForMovingBase()
+    protected virtual Vector3 _ComputeMovingTargetPositionOffset()
     {
         // Store current model pose
         AnimationTimeline.Instance.StoreModelPose(Model.gameObject.name, AnimationClip.name + "Pose");
@@ -268,50 +264,50 @@ public class EyeGazeInstance : AnimationControllerInstance
         // Store current gaze controller state
         var curState = new _GazeControllerState(GazeController);
 
-        // Find the frame in base animation at which gaze shift amplitude is the greatest
+        // Get base position at the current frame
+        Vector3 currentBasePos = GazeController.gazeJoints[GazeController.gazeJoints.Length - 1].bone.position;
+
+        // Apply the base animation at a time in near future
         var baseAnimationInstance = AnimationTimeline.Instance.GetLayer("BaseAnimation").Animations[0].Animation;
         int curFrame = AnimationTimeline.Instance.CurrentFrame;
-        int endFrame = curFrame + LEAPCore.editFrameRate; // look 1s ahead
-        var maxAmpState = new _GazeControllerState(GazeController);
-        for (int frame = curFrame + 1; frame < endFrame; ++frame)
-        {
-            baseAnimationInstance.Apply(frame, AnimationLayerMode.Override);
+        //float lookAheadTime = 0;
+        float lookAheadTime = _ComputeEstGazeShiftTimeLength();
+        int endFrame = curFrame + Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * lookAheadTime); // look ahead to the estimated end of the current gaze shift
+        baseAnimationInstance.Apply(endFrame, AnimationLayerMode.Override);
 
-            // Recompute gaze shift parameters
-            GazeController._InitGazeParams();
-            GazeController._InitTargetRotations();
-            GazeController._InitLatencies();
-            GazeController._CalculateMaxVelocities();
-
-            if (GazeController.Amplitude > maxAmpState.amplitude)
-            {
-                // Gaze shift amplitude is higher at this frame
-                maxAmpState = new _GazeControllerState(GazeController);
-            }
-        }
+        // Get future base position at the current frame
+        Vector3 futureBasePos = GazeController.gazeJoints[GazeController.gazeJoints.Length - 1].bone.position;
         
-        // Reapply current gaze controller state 
-        curState.Apply(GazeController);
-
-        // Apply velocities and latencies from the max. amplitude state
-        for (int jointIndex = 0; jointIndex < GazeController.gazeJoints.Length; ++jointIndex)
-        {
-            GazeController.gazeJoints[jointIndex].maxVelocity = maxAmpState.gazeJointStates[jointIndex].maxVelocity;
-            GazeController.gazeJoints[jointIndex].latency = maxAmpState.gazeJointStates[jointIndex].latency;
-            GazeController.gazeJoints[jointIndex].latencyTime = maxAmpState.gazeJointStates[jointIndex].latencyTime;
-        }
-
         // Reapply current model pose
         AnimationTimeline.Instance.ApplyModelPose(Model.gameObject.name, AnimationClip.name + "Pose");
         AnimationTimeline.Instance.RemoveModelPose(AnimationClip.name + "Pose");
+
+        return currentBasePos - futureBasePos;
+    }
+
+    // Estimate the time duration of the current gaze shift
+    protected virtual float _ComputeEstGazeShiftTimeLength()
+    {
+        float eyeRotTime = 0f;
+        foreach (var eye in GazeController.eyes)
+        {
+            float edr = GazeJoint.DistanceToRotate(eye.bone.localRotation, eye._ComputeTargetRotation(Target.transform.position));
+            eyeRotTime = Mathf.Max(eyeRotTime, eye.velocity > 0f ? edr / eye.velocity : 0f);
+        }
+
+        float hdr = GazeJoint.DistanceToRotate(GazeController.Head.bone.localRotation,
+            GazeController.Head._ComputeTargetRotation(Target.transform.position));
+        float OMR = Mathf.Min(GazeController.LEye.inMR + GazeController.LEye.outMR,
+            GazeController.LEye.upMR + GazeController.LEye.downMR);
+        float hdrmin = Mathf.Clamp(hdr - OMR, 0f, float.MaxValue);
+        float hdra = (1f - HeadAlign) * hdrmin + HeadAlign * hdr;
+        float headRotTime = GazeController.Head.velocity > 0f ? hdra / GazeController.Head.velocity : 0f;
+
+        return Mathf.Max(headRotTime, eyeRotTime);
     }
 
     // Handler for gaze controller state changes
     protected virtual void GazeController_StateChange(AnimController sender, int  srcState, int trgState)
     {
-        if (trgState == (int)GazeState.Shifting)
-        {
-            _gazeShiftStarted = true;
-        }
     }
 }

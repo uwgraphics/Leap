@@ -43,7 +43,7 @@ public class LeapAnimationEditor : EditorWindow
             // Subscribe to events from the animation timeline
             Timeline.LayerApplied += new AnimationTimeline.LayerEvtH(AnimationTimeline_LayerApplied);
             Timeline.AnimationStarted += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
-            Timeline.AnimationFinished += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
+            Timeline.AnimationFinished += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationFinished);
 
             // Get component for drawing animation edit gizmos
             _animationEditGizmos = UnityEngine.Object.FindObjectOfType(typeof(AnimationEditGizmos)) as AnimationEditGizmos;
@@ -58,7 +58,7 @@ public class LeapAnimationEditor : EditorWindow
         Timeline.Update(deltaTime);
         if (Timeline.Playing)
         {
-            SceneView.RepaintAll();
+            //SceneView.RepaintAll();
             this.Repaint();
         }
     }
@@ -79,6 +79,12 @@ public class LeapAnimationEditor : EditorWindow
             if (!Timeline.Active)
             {
                 Timeline.ResetModelsToInitialPose();
+                
+                // Show all models
+                ModelController[] models = Timeline.GetAllModels();
+                foreach (var model in models)
+                    ModelUtils.ShowModel(model.gameObject, true);
+
                 SceneView.RepaintAll();
             }
         }
@@ -137,11 +143,20 @@ public class LeapAnimationEditor : EditorWindow
         }
 
         // Bake anim. controllers
-        if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "BC")
-            && Timeline.Active && !Timeline.Playing)
+        if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "BC"))
         {
-            Timeline.BakeInstances();
-            SceneView.RepaintAll();
+            if (!Timeline.IsBakingInstances)
+            {
+                if (Timeline.Active && !Timeline.Playing)
+                {
+                    Timeline.StartBakeInstances();
+                    SceneView.RepaintAll();
+                }
+            }
+            else
+            {
+                Timeline.FinalizeBakeInstances();
+            }
         }
 
         // Update the playback slider
@@ -202,10 +217,24 @@ public class LeapAnimationEditor : EditorWindow
 
     private void AnimationTimeline_AnimationStarted(int animationInstanceId)
     {
+        var animation = Timeline.GetAnimation(animationInstanceId);
+        var layer = Timeline.GetLayerForAnimation(animationInstanceId);
+        if (layer.LayerName == "BaseAnimation")
+        {
+            var model = animation.Model.gameObject;
+            ModelUtils.ShowModel(model);
+        }
     }
 
     private void AnimationTimeline_AnimationFinished(int animationInstanceId)
     {
+        var animation = Timeline.GetAnimation(animationInstanceId);
+        var layer = Timeline.GetLayerForAnimation(animationInstanceId);
+        if (layer.LayerName == "BaseAnimation")
+        {
+            var model = animation.Model.gameObject;
+            ModelUtils.ShowModel(model, false);
+        }
     }
 
     /// <summary>
