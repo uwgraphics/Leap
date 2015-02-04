@@ -20,6 +20,11 @@ public class IKGoal
     public Vector3 position;
 
     /// <summary>
+    /// Target world-space rotation of the end-effector.
+    /// </summary>
+    public Quaternion rotation;
+
+    /// <summary>
     /// Goal weight.
     /// </summary>
     public float weight;
@@ -34,12 +39,15 @@ public class IKGoal
     /// </summary>
     /// <param name="endEffector">End-effector bone</param>
     /// <param name="position">Target world-space position of the end-effector</param>
+    /// <param name="rotation">Target world-space rotation of the end-effector</param>
     /// <param name="weight">Goal weight</param>
     /// <param name="preserveAbsoluteRotation">Preserve aboslute orientation of the end-effector</param>
-    public IKGoal(Transform endEffector, Vector3 position, float weight, bool preserveAbsoluteRotation = false)
+    public IKGoal(Transform endEffector, Vector3 position, Quaternion rotation, float weight,
+        bool preserveAbsoluteRotation = false)
     {
         this.endEffector = endEffector;
         this.position = position;
+        this.rotation = rotation;
         this.weight = weight;
         this.preserveAbsoluteRotation = preserveAbsoluteRotation;
     }
@@ -87,7 +95,8 @@ public abstract class IKSolver : MonoBehaviour
 
         goals = new IKGoal[endEffectors.Length];
         for (int goalIndex = 0; goalIndex < goals.Length; ++goalIndex)
-            goals[goalIndex] = new IKGoal(ModelUtils.FindBoneWithTag(Model.Root, endEffectors[goalIndex]), Vector3.zero, 0f);
+            goals[goalIndex] = new IKGoal(ModelUtils.FindBoneWithTag(Model.Root, endEffectors[goalIndex]),
+                Vector3.zero, Quaternion.identity, 0f);
     }
 
     /// <summary>

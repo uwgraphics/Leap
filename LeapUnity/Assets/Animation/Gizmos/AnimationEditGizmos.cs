@@ -24,23 +24,8 @@ public class AnimationEditGizmos : MonoBehaviour
     /// </summary>
     public string[] endEffectorTypes = new string[0];
 
-    private Dictionary<Transform, Vector3> _endEffectorConstraints = new Dictionary<Transform, Vector3>();
-
-    // Editor objects use this method to specify end-effector constraints for visualization
-    public void _SetEndEffectorConstraint(Transform endEffector)
-    {
-        _endEffectorConstraints[endEffector] = endEffector.position;
-    }
-
-    // Editor objects use this method to unspecify end-effector constraints for visualization
-    public void _UnsetEndEffectorConstraint(Transform endEffector)
-    {
-        _endEffectorConstraints.Remove(endEffector);
-    }
-
     private void OnDrawGizmos()
     {
-        
         if (showGazeTargets)
         {
             _DrawGazeTargets();
@@ -81,15 +66,25 @@ public class AnimationEditGizmos : MonoBehaviour
         var model = ModelUtils.GetSelectedModel();
         if (model == null)
             return;
-        Transform[] bones = ModelUtils.GetAllBones(model);
 
-        foreach (var bone in bones)
+        IKSolver[] solvers = model.GetComponents<IKSolver>();
+        HashSet<Transform> endEffectorsShown = new HashSet<Transform>();
+        foreach (var solver in solvers)
         {
-            if (endEffectorTypes.Contains(bone.tag) && _endEffectorConstraints.ContainsKey(bone))
+            if (!solver.enabled)
+                continue;
+
+            foreach (var goal in solver.goals)
             {
-                // Show end-effector constraint
-                Vector3 wPos = _endEffectorConstraints[bone];
-                Gizmos.DrawIcon(wPos, "EndEffectorConstraintGizmo.png");
+                if (!endEffectorsShown.Contains(goal.endEffector))
+                {
+                    // Show end-effector constraint
+                    Gizmos.DrawIcon(goal.position, "EndEffectorConstraintGizmo.png");
+                    endEffectorsShown.Add(goal.endEffector);
+                    // TODO: if goal weight < 0, we shouldn't render the gizmo
+                    // however, for some idiotic reason OnDrawGizmos() gets called before
+                    // LeapAnimationEditor.Update(), so IK goals aren't updated yet
+                }
             }
         }
     }

@@ -11,6 +11,7 @@ using System.Linq;
 /// and other limbs.</remarks>
 public class LimbIKSolver : IKSolver
 {
+    protected bool _isLeg = false;
     protected Transform _shoulder, _elbow, _wrist;
     protected Vector3 _elbowAxis = new Vector3(0f, 1f, 0f);
 
@@ -27,6 +28,7 @@ public class LimbIKSolver : IKSolver
 
         base.Init();
 
+        _isLeg = endEffectors[0] == "LAnkle" || endEffectors[0] == "RAnkle";
         _shoulder = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 2));
         _elbow = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 1));
         _wrist = ModelUtils.FindBoneWithTag(Model.Root, endEffectors[0]);
@@ -46,7 +48,7 @@ public class LimbIKSolver : IKSolver
 	    Quaternion lcl_sq0 = _shoulder.localRotation;
         Quaternion sq0 = _shoulder.rotation;
         Quaternion lcl_eq0 = _elbow.localRotation;
-        Quaternion wq0 = _wrist.rotation;
+        Quaternion wq0 = goal.rotation;
 
 	    // Determine if goal is within reach
 	    Vector3 cur_n = _wrist.position - _shoulder.position;
@@ -72,6 +74,8 @@ public class LimbIKSolver : IKSolver
         // If elbow is completely extended or collapsed, we reuse previous rot. axis
 	    if (Mathf.Abs(Mathf.Abs(Vector3.Dot(cur_es, cur_ew)) - 1f) > 0.0001f)
 		    _elbowAxis = Vector3.Cross(cur_es, cur_ew).normalized;
+        if (_isLeg)
+            _elbowAxis = -_elbowAxis;
 
         // Flex elbow to make goal achievable
 	    float eth = Vector3.Angle(cur_es, cur_ew);

@@ -1,5 +1,26 @@
 Leap Animation Editor:
 
+#29 [] BodyIKSolver is slow when using finite differences for gradient estimation
+  - Objective function evaluation takes at most 4 ms
+  - However, there are as many as 100 evaluations on each run
+  - # of iterations is restricted to 10, but maybe that's more than needed
+  - Why does the solver sometimes do a huge number of objective evaluations (40+) even when the # of iterations is small (4-5)
+  - Temporary fix - set the gradient norm threshold to 0.05; execution time seldom exceeds 70 ms now
+  - Still slow in full-body mode (>300 ms), even though # of evaluations isn't high (16 or less)
+  - A single evaluation still takes only 5 ms - so where is all that slowness coming from?
+  - Using the default preconditioner yields a performance gain on the order of ~50ms
+
+#28 [X] BodyIKSolver gives discontinuous poses
+  - Seems to happen when a goal switches between reachable and unreachable
+  - Set basePoseWeight = 10, lWristEECTest.position = (-0.706, 3.345, 0.143), change rWristEECTest.position from (3.644, 2.983, 0.594) to (3.667, 2.983, 0.594)
+  - There is a sudden and large jump in goalTerm value - stuck in a local minimum?
+  - It was a bug that is now fixed
+
+#27 [X] BodyIKSolver causes Unity to freeze in some situations
+  - Doesn't always freeze, just becomes really slow (takes like 10 sec to solve)
+  - Seems to happen when goals become difficult or impossible to reach
+  - Restricting iteration count to 10 helps, but there are other problems, see #28
+
 #26 [X] In EyeGazeInstance._AdjustGazeParamsForMovingBase, even when look-ahead time is zero, recomputed gaze parameters are different:
   - In WindowWashing test case there are a ton of examples of gaze shifts where Head.maxVelocity is wildly different from original when lookAheadTime = 0
   - Solution will be to modify the gaze controller such that we can specify predicted position offset of the (relatively) moving target and the gaze controller will do the actual computation of gaze shift parameters

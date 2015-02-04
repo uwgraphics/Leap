@@ -1,0 +1,5 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target
+LWrist,0,702,false,LWristEECTest
+RWrist,0,702,false,RWristEECTest
+#LAnkle,0,702,false,LAnkleEECTest
+#RAnkle,0,702,false,RAnkleEECTest

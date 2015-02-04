@@ -212,18 +212,26 @@ public class AnimationTimeline
         public bool preserveAbsoluteRotation;
 
         /// <summary>
+        /// Scene object to which the end-effector should be aligned
+        /// </summary>
+        public GameObject target;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="endEffector">End-effector tag</param>
         /// <param name="startFrame">Constraint start frame</param>
         /// <param name="frameLength">Length of the constraint in frames</param>
         /// <param name="preserveAbsoluteRotation">If true, absolute rotation of the end-effector should be preserved</param>
-        public EndEffectorConstraint(string endEffector, int startFrame, int frameLength, bool preserveAbsoluteRotation)
+        /// <param name="target">Scene object to which the end-effector should be aligned</param>
+        public EndEffectorConstraint(string endEffector, int startFrame, int frameLength, bool preserveAbsoluteRotation,
+            GameObject target = null)
         {
             this.endEffector = endEffector;
             this.startFrame = startFrame;
             this.frameLength = frameLength;
             this.preserveAbsoluteRotation = preserveAbsoluteRotation;
+            this.target = target;
         }
     }
 
@@ -1163,11 +1171,13 @@ public class AnimationTimeline
                 {
                     for (int goalIndex = 0; goalIndex < solver.goals.Length; ++goalIndex)
                     {
-                        if (solver.goals[goalIndex].endEffector.tag == constraint.endEffector)
+                        var goal = solver.goals[goalIndex];
+                        if (goal.endEffector.tag == constraint.endEffector)
                         {
-                            solver.goals[goalIndex].position = solver.goals[goalIndex].endEffector.position;
-                            solver.goals[goalIndex].weight = Mathf.Max(solver.goals[goalIndex].weight, weight);
-                            solver.goals[goalIndex].preserveAbsoluteRotation = constraint.preserveAbsoluteRotation;
+                            goal.position = constraint.target == null ? goal.endEffector.position : constraint.target.transform.position;
+                            goal.rotation = constraint.target == null ? goal.endEffector.rotation : constraint.target.transform.rotation;
+                            goal.weight = Mathf.Max(goal.weight, weight);
+                            goal.preserveAbsoluteRotation = constraint.preserveAbsoluteRotation;
                         }
                     }
                 }
@@ -1194,10 +1204,15 @@ public class AnimationTimeline
         ModelController[] models = GetAllModels();
         foreach (var model in models)
         {
-            IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
-            foreach (var solver in solvers)
+            // First solve for body pose
+            var bodySolver = model.GetComponent<BodyIKSolver>();
+            bodySolver.Solve();
+
+            // Then solve for limb poses
+            LimbIKSolver[] limbSolvers = model.GetComponents<LimbIKSolver>();
+            foreach (var limbSolver in limbSolvers)
             {
-                solver.Solve();
+                limbSolver.Solve();
             }
         }
     }

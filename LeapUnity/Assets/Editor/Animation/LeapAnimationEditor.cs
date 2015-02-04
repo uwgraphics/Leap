@@ -142,8 +142,19 @@ public class LeapAnimationEditor : EditorWindow
             }
         }
 
-        // Bake anim. controllers
-        if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "BC"))
+        // Enable/disable IK on all layers
+        var baseLayer = Timeline.GetLayer("BaseAnimation");
+        if (baseLayer != null)
+        {
+            bool ikEnabled = GUI.Toggle(new Rect(20, layerToggleTop + 30, 140, 20), baseLayer.IKEnabled, "IK");
+            foreach (var layer in Timeline.Layers)
+            {
+                layer.IKEnabled = ikEnabled;
+            }
+        }
+
+        // Bake procedural anim. instances into clips
+        if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "Bake"))
         {
             if (!Timeline.IsBakingInstances)
             {
@@ -191,28 +202,6 @@ public class LeapAnimationEditor : EditorWindow
 
     private void AnimationTimeline_LayerApplied(string layerName)
     {
-        var model = ModelUtils.GetSelectedModel();
-        if (model == null)
-            return;
-
-        if (layerName == "BaseAnimation")
-        {
-            // TODO:
-            // 1) make the layer(s) for which constraints are shown configurable
-            // 2) check for which end-effectors there are active constraints and only show those
-            Transform[] lWrist = ModelUtils.GetAllBonesWithTag(model, "LWrist");
-            Transform[] rWrist = ModelUtils.GetAllBonesWithTag(model, "RWrist");
-            Transform[] lAnkle = ModelUtils.GetAllBonesWithTag(model, "LAnkle");
-            Transform[] rAnkle = ModelUtils.GetAllBonesWithTag(model, "RAnkle");
-            if (lWrist.Length > 0)
-                _animationEditGizmos._SetEndEffectorConstraint(lWrist[0]);
-            if (rWrist.Length > 0)
-                _animationEditGizmos._SetEndEffectorConstraint(rWrist[0]);
-            if (lAnkle.Length > 0)
-                _animationEditGizmos._SetEndEffectorConstraint(lAnkle[0]);
-            if (rAnkle.Length > 0)
-                _animationEditGizmos._SetEndEffectorConstraint(rAnkle[0]);
-        }
     }
 
     private void AnimationTimeline_AnimationStarted(int animationInstanceId)

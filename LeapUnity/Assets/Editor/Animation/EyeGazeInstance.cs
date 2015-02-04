@@ -193,14 +193,14 @@ public class EyeGazeInstance : AnimationControllerInstance
         // Initiate gaze shift to target
         if (GazeController.Head != null)
         {
-            //GazeController.Head.align = HeadAlign;
-            GazeController.Head.align = 0.3f;
+            GazeController.Head.align = HeadAlign;
+            //GazeController.Head.align = 0.3f;
             GazeController.Head.weight = 1f;
         }
         if (GazeController.Torso != null)
         {
-            //GazeController.Torso.align = TorsoAlign;
-            GazeController.Torso.align = 0.3f;
+            GazeController.Torso.align = TorsoAlign;
+            //GazeController.Torso.align = 0.3f;
             GazeController.Torso.weight = 1f;
         }
         GazeController.GazeAt(Target);

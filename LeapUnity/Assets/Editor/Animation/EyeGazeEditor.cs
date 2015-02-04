@@ -24,7 +24,7 @@ public static class EyeGazeEditor
         // Search the timeline for any overlapping instances:
         // 1) If the overlapping instance starts before the new instance:
         //   a) Shorten the overlapping one to end just before the new one, but only if the shortened instance is still longer than 0.5s (1s for gaze-back)
-        //        If the shortened instances is followed by a gaze-back instance, remove the gaze-back instance
+        //        If the shortened instance is followed by a gaze-back instance, remove the gaze-back instance
         //   b) Otherwise remove the overlapping instance
         //        If the removed instance was a gaze-back instance, extend the previous instance to end just before the new one
         // 2) If the overlapping instance starts at or after the new instance:
@@ -38,7 +38,8 @@ public static class EyeGazeEditor
         // Trim or remove overlapping eye gaze instances
         int newEndFrame = newStartFrame + newInstance.FrameLength - 1;
         List<AnimationTimeline.ScheduledInstance> overlappingInstances = timeline.GetLayer(layerName).Animations.Where(inst =>
-            !(inst.StartFrame + inst.Animation.FrameLength - 1 < newStartFrame || newEndFrame < inst.StartFrame)).ToList();
+            !(inst.StartFrame + inst.Animation.FrameLength - 1 < newStartFrame || newEndFrame < inst.StartFrame) &&
+            inst.Animation.Model.gameObject == newInstance.Model.gameObject).ToList();
         foreach (var overlappingInstance in overlappingInstances)
         {
             if (timeline.GetAnimation(overlappingInstance.InstanceId) == null)
@@ -101,7 +102,8 @@ public static class EyeGazeEditor
         }
 
         // Fill the gap to the next eye gaze instance
-        var nextInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(inst => inst.StartFrame > newEndFrame);
+        var nextInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(inst => inst.StartFrame > newEndFrame &&
+            inst.Animation.Model.gameObject == newInstance.Model.gameObject);
         if (nextInstance != null)
         {
             int nextStartFrame = nextInstance.StartFrame;
@@ -290,7 +292,7 @@ public static class EyeGazeEditor
     {
         bool timelineActive = timeline.Active;
         timeline.Active = true;
-        var gazeLayer = timeline.GetLayer("Gaze");
+        var gazeLayer = timeline.GetLayer(layerName);
         EyeGazeInstance prevInstance = null;
         int prevStartFrame = 0;
         foreach (var curScheduledInstance in gazeLayer.Animations)
@@ -329,7 +331,7 @@ public static class EyeGazeEditor
     {
         bool timelineActive = timeline.Active;
         timeline.Active = true;
-        var gazeLayer = timeline.GetLayer("Gaze");
+        var gazeLayer = timeline.GetLayer(layerName);
         foreach (var scheduledInstance in gazeLayer.Animations)
         {
             if (!(scheduledInstance.Animation is EyeGazeInstance))

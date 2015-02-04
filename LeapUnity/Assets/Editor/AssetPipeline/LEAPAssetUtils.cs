@@ -410,6 +410,7 @@ public static class LEAPAssetUtils
             string[] lineElements = null;
             Dictionary<string, int> attributeIndices = new Dictionary<string, int>();
             Dictionary<string, int> lastConstraintEndFrames = new Dictionary<string, int>();
+            GameObject[] endEffectorTargets = GameObject.FindGameObjectsWithTag("EndEffectorTarget");
             
             while (!reader.EndOfStream && (line = reader.ReadLine()) != "")
             {
@@ -438,6 +439,9 @@ public static class LEAPAssetUtils
                     int startFrame = int.Parse(lineElements[attributeIndices["StartFrame"]]);
                     int frameLength = int.Parse(lineElements[attributeIndices["EndFrame"]]) - startFrame + 1;
                     bool preserveAbsoluteRotation = bool.Parse(lineElements[attributeIndices["PreserveAbsoluteRotation"]]);
+                    string endEffectorTargetName = lineElements[attributeIndices["Target"]];
+                    var endEffectorTarget = endEffectorTargetName == "null" ? null :
+                        endEffectorTargets.FirstOrDefault(t => t.name == endEffectorTargetName);
 
                     if (lastConstraintEndFrames.ContainsKey(endEffector) && lastConstraintEndFrames[endEffector] >= startFrame)
                     {
@@ -447,7 +451,8 @@ public static class LEAPAssetUtils
                     else
                     {
                         // Add constraint
-                        constraints.Add(new AnimationTimeline.EndEffectorConstraint(endEffector, startFrame, frameLength, preserveAbsoluteRotation));
+                        constraints.Add(new AnimationTimeline.EndEffectorConstraint(
+                            endEffector, startFrame, frameLength, preserveAbsoluteRotation, endEffectorTarget));
                         lastConstraintEndFrames[endEffector] = startFrame + frameLength - 1;
                     }
                 }

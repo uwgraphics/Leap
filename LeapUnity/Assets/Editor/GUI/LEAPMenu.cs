@@ -60,6 +60,24 @@ public class LEAPMenu
         TestScene("Walking90deg");
     }
 
+    [MenuItem("LEAP/Animation/Test: InitialPose", true, 23)]
+    private static bool ValidateTestInitialPose()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: InitialPose", false, 23)]
+    private static void TestInitialPose()
+    {
+        TestScene("InitialPose");
+    }
+
     private static void TestScene(string sceneName)
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
@@ -145,6 +163,24 @@ public class LEAPMenu
             timeline.GetLayer("BaseAnimation").IKEnabled = true;
             timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "Walking90deg");
+            timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
+            // TODO: move eye gaze inference to separate menu items
+            EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
+            //
+            PrintEyeGaze();
+        }
+        else // if (sceneName == "InitialPose")
+        {
+            testScenes.modelNorman.SetActive(true);
+
+            // Create animation layers and instances
+            timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
+            timeline.GetLayer("BaseAnimation").IKEnabled = true;
+            timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
+            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "InitialPose");
             timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
 
             // Load eye gaze
