@@ -708,11 +708,12 @@ public class GazeJoint : DirectableJoint
         if (this != gazeCtrl.GetLastGazeJointInChain(type))
             return;
 
-        /*//
-        if (type != GazeJointType.Torso)
-            return;*/
         //
-        /*Debug.Log(string.Format("{0}: rotation = ({1}, {2}, {3}), curVelocity = {4} [maxVelocity = {5}], latencyTime = {6}, cur*OMR = ({7}, {8}, {9}, {10}), " +
+        //if (gazeCtrl.gameObject.name != "Norman")
+            return;
+        //
+
+        Debug.Log(string.Format("{0}: rotation = ({1}, {2}, {3}), curVelocity = {4} [maxVelocity = {5}], latencyTime = {6}, cur*OMR = ({7}, {8}, {9}, {10}), " +
             "curAlign = {11}, srcRot = ({12}, {13}, {14}), trgRot = ({15}, {16}, {17}), trgRotAlign = ({18}, {19}, {20}), trgRotMR = ({21}, {22}, {23}), " +
             "distRotAlign = {24}, distRotMR = {25}, rotParamAlign = {26}, rotParamMR = {27}, mrReached = {28}, trgReached = {29}, " +
             "fixSrcRot = ({30}, {31}, {32}), fixTrgRot = ({33}, {34}, {35}), fixDistRotAlign = {36}, fixRotParamAlign = {37}", 
@@ -726,6 +727,6 @@ public class GazeJoint : DirectableJoint
             fixSrcRot.eulerAngles.x, fixSrcRot.eulerAngles.y, fixSrcRot.eulerAngles.z,
             fixTrgRot.eulerAngles.x, fixTrgRot.eulerAngles.y, fixTrgRot.eulerAngles.z,
             fixTrgRotAlign.eulerAngles.x, fixTrgRotAlign.eulerAngles.y, fixTrgRotAlign.eulerAngles.z,
-            fixDistRotAlign, fixRotParamAlign));*/
+            fixDistRotAlign, fixRotParamAlign));
     }
 }

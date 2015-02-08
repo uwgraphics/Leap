@@ -51,7 +51,7 @@ public class AnimationClipInstance : AnimationInstance
         Animation.Sample();
         Animation[AnimationClip.name].enabled = false;
         //
-        /*Debug.Log(string.Format("Applied animation {0} at frame {1} in layer moder {2} at weight {3}",
+        /* Debug.Log(string.Format("Applied animation {0} at frame {1} in layer mode {2} at weight {3}",
             AnimationClip.name, frame, layerMode.ToString(), Weight));*/
         //
     }

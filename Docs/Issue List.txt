@@ -1,5 +1,63 @@
 Leap Animation Editor:
 
+#24 [] Inference of head and torso alignment values seems to be incorrect in EyeGazeEditor
+
+#33 [X] Last gaze instance on the timeline doesn't get properly extended to the end of the timeline when there is a small gap left
+
+#32 [] Torso sometimes jitters during a gaze shift
+  - Small discontinuities in pose
+  - See end of instance InitialPoseGaze2 in InitialPose test case
+  - It doesn't always happen - restarting Unity fixed the problem
+
+#31 [] Incorrect eye pose sometimes gets baked into a gaze instance clip for 1 frame
+  - See left eye at frame 38 in InitialPose test case
+
+#25 [] Sometimes the whole character snaps to wrong pose and gets rendered
+  - Seems to happen when switching between gaze instances, but unsure
+  - Affects the whole pose, even the feet - maybe resets to initial pose w/o even applying the body motion!
+  - Blatant example in WindowWashing around frame 90
+  - The problem is absent in baked clip
+  - Seems to happen less frequently after commenting out SceneView.RepaintAll() call in LeapAnimationEditor.Update()
+  - Completely baffling, it's like the scene gets repainted before animation is applied, but that should be impossible
+  - Removing _AdjustGazeParamsForMovingBase() seems to eliminate the problem
+  - Solution to #26 may also fix this issue, keep an eye on it
+  
+#20 [] Incongruent eye movements occasionally still happen
+  - In InitialPose test case, somewhere between frames 200-300, eye gaze directions become divergent over the course of the gaze shift, though they seem to correct themselves by the end
+  
+#15 [] Head joint rotations seem to snap/jitter between frames
+  - Should check to make sure this artifact is present in baked animation - otherwise the issue is that animation gets rendered before it's applied
+  - Doesn't seem to be present in baked animation
+  
+#17 [X] Pose sometimes snaps very briefly during animation playback
+  - Continued from #16
+  - Some snapping does happen over the span of a single frame - this seems to happen when a new gaze instance gets activated while there is an ongoing gaze shift from the previous instance
+  - There is always an active eye gaze instance on the timeline getting applied, so that's not the problem
+  - The problem is greatly reduced when we take out base.FinishBake() call from EyeGazeInstance.FinishBake() - could it be a timing issue, with writing out the clip being too slow?
+  - Problem reduced by delaying the saving of baked curves until after the whole animation has been played & applied - still happens occasionally, though (check that it's only during playback and not in baked animation)
+  - It seems to happen more in WindowWashing test case
+  - Seems to happen when switching between gaze instances - or more specifically when transition from NoGaze to  Shifting in the gaze controller
+  - The problem seems unrelated to latency
+  - Occasionally it doesn't happen at all
+  - Doesn't happen when there are no gaze instances
+  - It seems to affect the whole pose, not just the gaze joints? Maybe it affects the root?
+  - Base animation briefly gets rendered at a more advanced time - related to EyeGazeInstance._ComputeMovingTargetPositionOffset(), since taking out the line that applies baseAnimationInstance eliminates the problem!
+  - It seems that applying an animation clip causes the scene view to repaint - this seems impossible to prevent or diagnose for sure, since no repaint event appears to get sent!
+  - Absurdly, the problem occurs even when the animation clip is applied only at the *current* frame!
+  - Effectively, this means animation clip is applied twice in the same frame - why doesn't the scene repainting issue occur when the animation clip is applied once?
+  - GOT IT! It was none of the above - what actually happened was that EyeGazeInstance._ComputeMovingTargetPositionOffset() was applying the wrong base animation. It would apply the *first* base animation in the layer, rather than find the one for the *current model*!
+  
+#12 [X] Eyes still sometimes snap during gaze shifts
+ - Seems to be happening at gaze shift boundaries
+ - Happens often around WindowWashingGaze8 instance, about 210 frames into the WindowWashing animation
+ - Can't repro anymore, maybe it's fixed
+
+#11 [X] Gaze controller sometimes enters a broken state where eyes are snapping betwen targets rather than moving smoothly
+  - Happens in the final third of WindowWashing test case
+  - Can't repro anymore - may have been due to a bug in how gaze instances were added
+  
+#30 [X] Baking animation clips does not work correctly when a bone other than the skeleton root bone is tagged as RootBone
+
 #29 [] BodyIKSolver is slow when using finite differences for gradient estimation
   - Objective function evaluation takes at most 4 ms
   - However, there are as many as 100 evaluations on each run
@@ -25,18 +83,6 @@ Leap Animation Editor:
   - In WindowWashing test case there are a ton of examples of gaze shifts where Head.maxVelocity is wildly different from original when lookAheadTime = 0
   - Solution will be to modify the gaze controller such that we can specify predicted position offset of the (relatively) moving target and the gaze controller will do the actual computation of gaze shift parameters
 
-#25 [] Sometimes the whole characters snaps to wrong pose and gets rendered
-  - Seems to happen when switching between gaze instances, but unsure
-  - Affects the whole pose, even the feet - maybe resets to initial pose w/o even applying the body motion!
-  - Blatant example in WindowWashing around frame 90
-  - The problem is absent in baked clip
-  - Seems to happen less frequently after commenting out SceneView.RepaintAll() call in LeapAnimationEditor.Update()
-  - Completely baffling, it's like the scene gets repainted before animation is applied, but that should be impossible
-  - Removing _AdjustGazeParamsForMovingBase() seems to eliminate the problem
-  - Solution to #26 may also fix this issue, keep an eye on it
-
-#24 [] Inference of head and torso alignment values seems to be incorrect in EyeGazeEditor
-
 #23 [X] There is a small discontinuity in gaze joint rotations when a new gaze shift starts after a gap
 
 #22 [X] In WindowWashing example, the very first gaze shift starts in the wrong state, like VOR isn't correctly initialized
@@ -52,27 +98,13 @@ Leap Animation Editor:
   - Should have been taken care of with the changes to VOR when FixGazeTarget is null, yet the problem persists
   - Problem fixed
 
-#20 [] Incongruent eye movements occasionally still happen
-  - In InitialPose test case, somewhere between frames 200-300, eye gaze directions become divergent over the course of the gaze shift, though they seem to correct themselves by the end
-
 #18 [X] Head and torso get rotated with full alignment during gaze shifts even when alignment parameter is <1
   - Verified with Head.align and Torso.align both set to 0.5
   - The first gaze shift seems to be correct, but every subsequent one fully aligns the torso, no matter what the alignment value (also tried with Torso.align = 0)
   - All gaze controller state values correctly initialized at the start of the gaze shift
   - Mysteriously, in that first (correct) gaze shift, Torso.distRotAlign keeps decreasing over the course of the gaze instance, even when there is just one torso joint that's latent (not moving)
   - Fixed - the way VOR was implemented was incompatible with the way target pose was initialized at the start of the gaze shift
-  
-#17 [] Torso joints sometimes snap to wrong rotation values during gaze shifts
-  - Continued from #16
-  - Some snapping does happen over the span of a single frame - this seems to happen when a new gaze instance gets activated while there is an ongoing gaze shift from the previous instance
-  - There is always an active eye gaze instance on the timeline getting applied, so that's not the problem
-  - The problem is greatly reduced when we take out base.FinishBake() call from EyeGazeInstance.FinishBake() - could it be a timing issue, with writing out the clip being too slow?
-  - Problem reduced by delaying the saving of baked curves until after the whole animation has been played & applied - still happens occasionally, though (check that it's only during playback and not in baked animation)
-  - It seems to happen more in WindowWashing test case
-  - Seems to happen when switching between gaze instances - or more specifically when transition from NoGaze to  Shifting in the gaze controller
-  - The problem seems unrelated to latency
-  - Occasionally it doesn't happen at all
-  
+ 
 #16 [X] Torso joints sometimes snap to wrong rotation values during gaze shifts
   - They always seem to snap back to correct rotations, though
   - Also present in baked animation
@@ -81,10 +113,6 @@ Leap Animation Editor:
   - The problem is greatly reduced when the call to _AdjustGazeParamsForMovingBase() is removed from EyeGazeInstance.Apply()
   - There seem two separate issues here - see #17 for the other one
   - Fixed, the problem was that even inactive eye gaze instances would subscribe to events from the gaze controller, so their initial state would be wrong and _AdjustGazeParamsForMovingBase() would get called even while the gaze shift for the previous target is ongoing
-
-#15 [] Head joint rotations seem to snap/jitter between frames
-  - Should check to make sure this artifact is present in baked animation - otherwise the issue is that animation gets rendered before it's applied
-  - Doesn't seem to be present in baked animation
 
 #14 [X] Discontinuity in torso joint rotations when starting gaze shift to new target
   - Discontinuity seems to be just in the rotation that gets applied to the model - gaze model values appear to be correct and after a few frames the applied rotation also looks correct
@@ -96,14 +124,6 @@ Leap Animation Editor:
   - This is like bug #6 again, but now with multiple Head joints
   - Happens in the same place as #6 - WindowWashingGaze3, WindowCenterLeft doesn't get reached
   - Fixed by changing how target rotations for joints are updated to account for body movement - now we just do GazeJoint.UpdateTargerRotation() for the *current* joint, rather than all the subsequent joints; keep this change in mind in case it breaks something else
-
-#12 [] Eyes still sometimes snap during gaze shifts
-  - Seems to be happening at gaze shift boundaries
-  - Happens often around WindowWashingGaze8 instance, about 210 frames into the WindowWashing animation
-  - Can't repro anymore, maybe it's fixed?
-
-#11 [] Gaze controller sometimes enters a broken state where eyes are snapping betwen targets rather than moving smoothly
-  - Happens in the final third of InitialPose test case
 
 #10 [X] One or both eyes get stuck before reaching the target
   - Similar to what was going on in #5

@@ -190,6 +190,9 @@ public class LEAPMenu
             //
             PrintEyeGaze();
         }
+        //
+        timeline.GetLayer("BaseAnimation").IKEnabled = false;
+        //
 
         timeline.Init();
     }

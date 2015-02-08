@@ -21,6 +21,7 @@ public class LeapAnimationEditor : EditorWindow
     }
 
     private AnimationEditGizmos _animationEditGizmos = null;
+    private int _frameCounter = 0;
     private Stopwatch _frameTimer = new Stopwatch();
 
     private bool _guiInitialized = false;
@@ -33,6 +34,11 @@ public class LeapAnimationEditor : EditorWindow
 
     private void Update()
     {
+        // Only render frame at every 3rd update
+        _frameCounter = (_frameCounter + 1) % 3;
+        if (_frameCounter != 0)
+            return;
+
         if (Timeline == null)
         {
             // Initialize the animation timeline
@@ -56,9 +62,9 @@ public class LeapAnimationEditor : EditorWindow
         _frameTimer.Start();
 
         Timeline.Update(deltaTime);
-        if (Timeline.Playing)
+        if (Timeline.Active && Timeline.Playing)
         {
-            //SceneView.RepaintAll();
+            SceneView.RepaintAll();
             this.Repaint();
         }
     }
@@ -190,6 +196,7 @@ public class LeapAnimationEditor : EditorWindow
         if (_guiInitialized)
             return;
 
+        // Load animation editor icons
         _timelineActiveTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineActive");
         _timelineActiveDownTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineActiveDown");
         _timelinePlayTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelinePlay");
@@ -217,13 +224,13 @@ public class LeapAnimationEditor : EditorWindow
 
     private void AnimationTimeline_AnimationFinished(int animationInstanceId)
     {
-        var animation = Timeline.GetAnimation(animationInstanceId);
+        /*var animation = Timeline.GetAnimation(animationInstanceId);
         var layer = Timeline.GetLayerForAnimation(animationInstanceId);
         if (layer.LayerName == "BaseAnimation")
         {
             var model = animation.Model.gameObject;
             ModelUtils.ShowModel(model, false);
-        }
+        }*/
     }
 
     /// <summary>

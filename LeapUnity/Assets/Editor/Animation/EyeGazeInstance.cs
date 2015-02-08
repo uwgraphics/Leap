@@ -261,24 +261,22 @@ public class EyeGazeInstance : AnimationControllerInstance
         // Store current model pose
         AnimationTimeline.Instance.StoreModelPose(Model.gameObject.name, AnimationClip.name + "Pose");
 
-        // Store current gaze controller state
-        var curState = new _GazeControllerState(GazeController);
-
         // Get base position at the current frame
         Vector3 currentBasePos = GazeController.gazeJoints[GazeController.gazeJoints.Length - 1].bone.position;
 
         // Apply the base animation at a time in near future
-        var baseAnimationInstance = AnimationTimeline.Instance.GetLayer("BaseAnimation").Animations[0].Animation;
+        var baseAnimationInstance =
+            AnimationTimeline.Instance.GetLayer("BaseAnimation").Animations.FirstOrDefault(inst => inst.Animation.Model.gameObject == Model.gameObject);
         int curFrame = AnimationTimeline.Instance.CurrentFrame;
-        //float lookAheadTime = 0;
         float lookAheadTime = _ComputeEstGazeShiftTimeLength();
         int endFrame = curFrame + Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * lookAheadTime); // look ahead to the estimated end of the current gaze shift
-        baseAnimationInstance.Apply(endFrame, AnimationLayerMode.Override);
+        baseAnimationInstance.Animation.Apply(endFrame, AnimationLayerMode.Override);
 
         // Get future base position at the current frame
         Vector3 futureBasePos = GazeController.gazeJoints[GazeController.gazeJoints.Length - 1].bone.position;
         
         // Reapply current model pose
+        //baseAnimationInstance.Animation.Apply(AnimationTimeline.Instance.CurrentFrame - baseAnimationInstance.StartFrame, AnimationLayerMode.Override);
         AnimationTimeline.Instance.ApplyModelPose(Model.gameObject.name, AnimationClip.name + "Pose");
         AnimationTimeline.Instance.RemoveModelPose(AnimationClip.name + "Pose");
 

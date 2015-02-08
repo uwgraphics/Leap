@@ -122,9 +122,31 @@ public static class EyeGazeEditor
         }
         else if (timeline.FrameLength - newEndFrame - 1 >= Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate))
         {
-            var gazeBackInstance = new EyeGazeInstance(newInstance.Model.gameObject, newInstance.AnimationClip.name + LEAPCore.gazeBackSuffix,
+            // No follow-up gaze instance, but there is more animation left on the timeline, so add a gaze-back animation
+            var gazeBackInstance = new EyeGazeInstance(
+                newInstance.Model.gameObject, newInstance.AnimationClip.name + LEAPCore.gazeBackSuffix,
                     Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
             timeline.AddAnimation(layerName, gazeBackInstance, newEndFrame + 1);
+        }
+        else
+        {
+            // No follow-up gaze instance, extend current gaze instance to the end of the animation timeline
+            newInstance.SetFrameLength(timeline.FrameLength - newStartFrame + 1);
+        }
+
+        // Fill the gap to the previous eye gaze instance
+        var prevInstance = timeline.GetLayer(layerName).Animations.LastOrDefault(
+            inst => inst.StartFrame + inst.Animation.FrameLength - 1 < newStartFrame &&
+                inst.Animation.Model.gameObject == newInstance.Model.gameObject);
+        if (prevInstance != null && !prevInstance.Animation.AnimationClip.name.EndsWith(LEAPCore.gazeBackSuffix))
+        {
+            int prevStartFrame = prevInstance.StartFrame;
+            int prevEndFrame = prevInstance.StartFrame + prevInstance.Animation.FrameLength - 1;
+
+            if (newStartFrame - prevEndFrame - 1 < Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate))
+            {
+                (prevInstance.Animation as EyeGazeInstance).SetFrameLength(newStartFrame - prevStartFrame);
+            }
         }
 
         // Add the new eye gaze instance

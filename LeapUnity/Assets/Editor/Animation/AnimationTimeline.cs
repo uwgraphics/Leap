@@ -1036,6 +1036,7 @@ public class AnimationTimeline
                     }
 
                     animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
+                    
                     if (layer.IKEnabled)
                         // Set up IK goals for this animation
                         _SetIKGoals(animation.Animation.Model, animation.Animation.AnimationClip);

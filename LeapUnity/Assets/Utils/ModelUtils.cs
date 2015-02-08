@@ -261,10 +261,11 @@ public static class ModelUtils
     /// <returns>Relative path of the bone</returns>
     public static string GetBonePath(Transform bone)
     {
-        if (bone.tag == "RootBone")
-            return bone.name;
+        if (bone.tag == "Agent")
+            return "";
 
-        return GetBonePath(bone.parent) + "/" + bone.name;
+        string parentPath = GetBonePath(bone.parent);
+        return (parentPath != "" ? parentPath + "/" : "") + bone.name;
     }
 
     // Traverse a model's bone hierarchy and add all bones into a list
