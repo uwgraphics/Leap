@@ -31,7 +31,7 @@ public class LEAPCore : MonoBehaviour
     /// <summary>
     /// Eye gaze editor: minimal length of an eye gaze instance (gaze shift + fixation).
     /// </summary>
-    public static float minEyeGazeLength = 1f;
+    public static float minEyeGazeLength = 0.6f;
 
     /// <summary>
     /// Eye gaze editor: maximal length of gap between two neighboring eye gaze instances

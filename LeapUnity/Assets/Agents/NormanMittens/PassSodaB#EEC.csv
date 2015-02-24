@@ -1,0 +1,3 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target
+RWrist,68,73,true,PassSodaBHandoff
+RWrist,142,179,true,PassSodaBMouth

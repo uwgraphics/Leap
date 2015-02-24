@@ -128,7 +128,7 @@ public static class EyeGazeEditor
                     Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
             timeline.AddAnimation(layerName, gazeBackInstance, newEndFrame + 1);
         }
-        else
+        else if (timeline.FrameLength - newEndFrame - 1 > 0)
         {
             // No follow-up gaze instance, extend current gaze instance to the end of the animation timeline
             newInstance.SetFrameLength(timeline.FrameLength - newStartFrame + 1);
@@ -375,16 +375,10 @@ public static class EyeGazeEditor
             // Infer head and torso alignments
             _InferEyeGazeAlignments(timeline, scheduledInstance.InstanceId);*/
             // TODO: fix problems with eye gaze attribute inference
-            if (instance.Target != null)
-            {
-                instance.HeadAlign = 0f;
-                instance.TorsoAlign = 0f;
-            }
-            else
-            {
-                instance.HeadAlign = 1f;
-                instance.TorsoAlign = 1f;
-            }
+            if (instance.HeadAlign < 0f)
+                instance.HeadAlign = instance.Target != null ? 0f : 1f;
+            if (instance.TorsoAlign < 0f)
+                instance.TorsoAlign = instance.Target != null ? 0f : 1f;
             //
         }
         timeline.Active = timelineActive;

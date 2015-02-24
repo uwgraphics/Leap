@@ -66,9 +66,20 @@ public class GazeJoint : DirectableJoint
     public float maxVelocity = 50f;
 
     /// <summary>
-    /// Weight with which this joint's rotation is applied to the underlying body motion
+    /// Weight with which gaze overrides the component of body pose
+    /// not parallel to gaze trajectory.
+    /// 0 - body pose is adapted such that the joint rotates in the gaze direction,
+    /// while preserving as much original body motion as possible
+    /// 1 - body pose is completely overriden by gaze
     /// </summary>
-    public float weight = 1f;
+    public float gazeWeight = 0f;
+
+    /// <summary>
+    /// Weight with which gaze is applied to the underlying body pose.
+    /// 0 - base pose if completely preserved, gaze is not applied
+    /// 1 - gaze is fully applied, base pose preservation depends on gazeWeight
+    /// </summary>
+    public float baseWeight = 1f;
 
     // MR adjusted by initial conditions
     [HideInInspector]
@@ -156,6 +167,10 @@ public class GazeJoint : DirectableJoint
     [HideInInspector]
     public bool trgReached = false;
 
+    // true if joint is in VOR mode
+    [HideInInspector]
+    public bool isVOR = false;
+
     // Source rotation during VOR
     [HideInInspector]
     public Quaternion fixSrcRot;
@@ -176,9 +191,17 @@ public class GazeJoint : DirectableJoint
     [HideInInspector]
     public float fixRotParamAlign;
 
-    // Joint weight in the current gaze shift
+    // Base rotation (before gaze is applied)
     [HideInInspector]
-    public float curWeight = 1f;
+    public Quaternion baseRot;
+
+    // Joint gaze pose weight in the current gaze shift
+    [HideInInspector]
+    public float curGazeWeight = 0f;
+
+    // Joint base pose weight in the current gaze shift
+    [HideInInspector]
+    public float curBaseWeight = 1f;
 
     private MorphController morphCtrl;
     private GazeController gazeCtrl;
@@ -200,8 +223,38 @@ public class GazeJoint : DirectableJoint
     {
         get
         {
-            return !mrReached && rotParamAlign < 1f &&
+            return (IsEye && !mrReached || !IsEye) && rotParamAlign < 1f &&
                 latencyTime <= 0f;
+        }
+    }
+
+    /// <summary>
+    /// Axis about which the gaze joint is rotating over the course
+    /// of the gaze shift
+    /// </summary>
+    public virtual Vector3 RotationAxis
+    {
+        get
+        {
+            Quaternion currot = bone.localRotation;
+
+            Quaternion qs = isVOR ? fixSrcRot : srcRot;
+            Quaternion qt = isVOR ? fixTrgRot : trgRot;
+
+            Vector3 axis = Vector3.up.normalized;
+            if (qs != qt)
+            {
+                bone.localRotation = qs;
+                Vector3 vs = Direction.normalized;
+                bone.localRotation = qt;
+                Vector3 vt = Direction.normalized;
+                axis = Vector3.Cross(vs, vt).normalized;
+            }
+            // TODO: just to be sure, when in VOR mode use fixSrcRot and fixTrgRot
+
+            bone.localRotation = currot;
+
+            return axis;
         }
     }
 
@@ -328,6 +381,8 @@ public class GazeJoint : DirectableJoint
 
     public void _InitVOR()
     {
+        isVOR = true;
+
         if (gazeCtrl.FixGazeTarget != null)
         {
             fixSrcRot = srcRot;
@@ -353,6 +408,11 @@ public class GazeJoint : DirectableJoint
             fixSrcRot = fixTrgRot = fixTrgRotAlign = bone.localRotation;
             fixRotParamAlign = 0f;
         }
+    }
+
+    public void _StopVOR()
+    {
+        isVOR = false;
     }
 
     public void _ApplyVOR()
@@ -401,7 +461,8 @@ public class GazeJoint : DirectableJoint
         align = IsEye ? 1f : Mathf.Clamp01(align);
         curAlign = align;
         latencyTime = 0;
-        curWeight = weight;
+        curGazeWeight = gazeWeight;
+        curBaseWeight = baseWeight;
 
         // Initialize rotations
         srcRot = bone.localRotation;
@@ -583,10 +644,46 @@ public class GazeJoint : DirectableJoint
         return trgReached;
     }
 
+    //
+    Quaternion prevRot;
+    //
     public void _ApplyRotation(Quaternion q)
     {
         var last = gazeCtrl.GetLastGazeJointInChain(type);
-        bone.localRotation = Quaternion.Slerp(bone.localRotation, q, last.curWeight);
+
+        Quaternion qb = baseRot;
+        bone.localRotation = Quaternion.Slerp(qb, q, curBaseWeight);
+        /*if (IsEye || type != GazeJointType.Head || this != last)
+        {
+            bone.localRotation = Quaternion.Slerp(qb, q, curBaseWeight);
+        }
+        else
+        {
+            Vector3 vb = Direction.normalized;
+            bone.localRotation = q;
+            Vector3 v = Direction.normalized;
+
+            Vector3 n1 = RotationAxis;
+            Vector3 n2 = Vector3.Cross(n1, v).normalized;
+            Vector3 v1 = vb - Vector3.Dot(vb, n2) * n2;
+            v1.Normalize();
+            Quaternion q1 = q * Quaternion.FromToRotation(v, v1);
+            Quaternion q2 = Quaternion.Slerp(q1, q, last.curGazeWeight);
+            bone.localRotation = Quaternion.Slerp(qb, q2, last.curBaseWeight);
+            //bone.localRotation = q1;
+            bone.localRotation = Quaternion.Slerp(qb, q, curBaseWeight);
+
+            //
+            float dq = Quaternion.Angle(q1, prevRot);
+            prevRot = bone.localRotation;
+            if (type == GazeJointType.Head && last == this)
+            {
+                //Debug.LogWarning(string.Format("x = {0}, y = {1}, z = {2}", q1.eulerAngles.x, q1.eulerAngles.y, q1.eulerAngles.z));
+                //Debug.LogWarning(string.Format("dq = {0}", dq));
+            }
+            //
+        }*/
+
         if (IsEye || !IsEye && gazeCtrl.removeRoll)
             _RemoveRoll(); // gaze rotations should have no roll component
     }
@@ -658,7 +755,7 @@ public class GazeJoint : DirectableJoint
 
     public Quaternion _ComputeTargetRotation(Vector3 wTargetPos)
     {
-        Quaternion cur_rot = bone.localRotation;
+        Quaternion currot = bone.localRotation;
         Quaternion trgrot;
 
         // Compute target rotation of the joint
@@ -696,7 +793,7 @@ public class GazeJoint : DirectableJoint
             Quaternion l_drot = Quaternion.FromToRotation(l_trg1, l_dir1);
             trgrot *= l_drot; // final joint rotation
 
-            bone.localRotation = cur_rot; // restore original rotation
+            bone.localRotation = currot; // restore original rotation
         }
 
         return trgrot;
@@ -715,15 +812,15 @@ public class GazeJoint : DirectableJoint
 
         Debug.Log(string.Format("{0}: rotation = ({1}, {2}, {3}), curVelocity = {4} [maxVelocity = {5}], latencyTime = {6}, cur*OMR = ({7}, {8}, {9}, {10}), " +
             "curAlign = {11}, srcRot = ({12}, {13}, {14}), trgRot = ({15}, {16}, {17}), trgRotAlign = ({18}, {19}, {20}), trgRotMR = ({21}, {22}, {23}), " +
-            "distRotAlign = {24}, distRotMR = {25}, rotParamAlign = {26}, rotParamMR = {27}, mrReached = {28}, trgReached = {29}, " +
-            "fixSrcRot = ({30}, {31}, {32}), fixTrgRot = ({33}, {34}, {35}), fixDistRotAlign = {36}, fixRotParamAlign = {37}", 
+            "distRotAlign = {24}, distRotMR = {25}, rotParamAlign = {26}, rotParamMR = {27}, mrReached = {28}, trgReached = {29}, isVOR = {30}" +
+            "fixSrcRot = ({31}, {32}, {33}), fixTrgRot = ({34}, {35}, {36}), fixDistRotAlign = {37}, fixRotParamAlign = {38}",
             type.ToString(), bone.localRotation.eulerAngles.x, bone.localRotation.eulerAngles.y, bone.localRotation.eulerAngles.z,
             curVelocity, maxVelocity, latencyTime, curUpMR, curDownMR, curInMR, curOutMR,
             curAlign, srcRot.eulerAngles.x, srcRot.eulerAngles.y, srcRot.eulerAngles.z,
             trgRot.eulerAngles.x, trgRot.eulerAngles.y, trgRot.eulerAngles.z,
             trgRotAlign.eulerAngles.x, trgRotAlign.eulerAngles.y, trgRotAlign.eulerAngles.z,
             trgRotMR.eulerAngles.x, trgRotMR.eulerAngles.y, trgRotMR.eulerAngles.z,
-            distRotAlign, distRotMR, rotParamAlign, rotParamMR, mrReached, trgReached,
+            distRotAlign, distRotMR, rotParamAlign, rotParamMR, mrReached, trgReached, isVOR,
             fixSrcRot.eulerAngles.x, fixSrcRot.eulerAngles.y, fixSrcRot.eulerAngles.z,
             fixTrgRot.eulerAngles.x, fixTrgRot.eulerAngles.y, fixTrgRot.eulerAngles.z,
             fixTrgRotAlign.eulerAngles.x, fixTrgRotAlign.eulerAngles.y, fixTrgRotAlign.eulerAngles.z,

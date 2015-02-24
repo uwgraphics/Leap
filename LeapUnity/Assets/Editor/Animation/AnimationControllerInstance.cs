@@ -6,10 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 
 /// <summary>
+/// Snapshot of the runtime state of an animation controller.
+/// </summary>
+public interface IAnimationControllerState
+{
+    void Get(AnimController controller);
+    void Set(AnimController controller);
+}
+
+/// <summary>
 /// Animation instance corresponding to a dynamic animation controller
 /// on the character model.
 /// </summary>
-public class AnimationControllerInstance : AnimationInstance
+public abstract class AnimationControllerInstance : AnimationInstance
 {
     /// <summary>
     /// Animation controller activity duration.
@@ -39,6 +48,7 @@ public class AnimationControllerInstance : AnimationInstance
 
     protected AnimController _controller = null;
     protected float _timeLength = 1f;
+    protected List<IAnimationControllerState> _bakedControllerStates;
 
     /// <summary>
     /// Constructor.
@@ -60,6 +70,26 @@ public class AnimationControllerInstance : AnimationInstance
     }
 
     /// <summary>
+    /// Get a snapshot of the current runtime state of the animation controller.
+    /// </summary>
+    /// <returns>Controller state</returns>
+    public virtual IAnimationControllerState GetControllerState()
+    {
+        IAnimationControllerState state = _CreateControllerState();
+        state.Get(Controller);
+        return state;
+    }
+
+    /// <summary>
+    /// Set the current runtime state of the animation controller from a snapshot.
+    /// </summary>
+    /// <param name="state">Controller state</param>
+    public virtual void SetControllerState(IAnimationControllerState state)
+    {
+        state.Set(Controller);
+    }
+
+    /// <summary>
     /// Set animation controller activity duration.
     /// </summary>
     /// <param name="frameLength"></param>
@@ -74,6 +104,13 @@ public class AnimationControllerInstance : AnimationInstance
     public override void Start()
     {
         base.Start();
+
+        if (IsBaking)
+        {
+            _bakedControllerStates = new List<IAnimationControllerState>(FrameLength);
+            for (int frameIndex = 0; frameIndex < FrameLength; ++frameIndex)
+                _bakedControllerStates.Add(_CreateControllerState());
+        }
     }
 
     /// <summary>
@@ -88,6 +125,9 @@ public class AnimationControllerInstance : AnimationInstance
             // Update the controller to get new body pose
             Controller._UpdateTree();
             Controller._LateUpdateTree();
+
+            // Bake the current controller state
+            _bakedControllerStates[frame] = GetControllerState();
 
             // Bake that pose into the animation clip
             Transform[] bones = ModelUtils.GetAllBones(Model.gameObject);
@@ -148,6 +188,12 @@ public class AnimationControllerInstance : AnimationInstance
         }
         else
         {
+            if (_bakedControllerStates != null && frame < _bakedControllerStates.Count)
+            {
+                // Apply the baked controller state
+                SetControllerState(_bakedControllerStates[frame]);
+            }
+
             // Configure how the animation clip will be applied to the model
             Animation[AnimationClip.name].normalizedTime = ((float)frame) / FrameLength;
             Animation[AnimationClip.name].weight = Weight;
@@ -174,4 +220,10 @@ public class AnimationControllerInstance : AnimationInstance
     {
         base.Finish();
     }
+
+    /// <summary>
+    /// Create an uninitialized snapshot of the animation controller state.
+    /// </summary>
+    /// <returns>Uninitialized controller state</returns>
+    protected abstract IAnimationControllerState _CreateControllerState();
 }

@@ -11,12 +11,6 @@ using System.Linq;
 public class BodyIKSolver : IKSolver
 {
     /// <summary>
-    /// If true, the solver will only solve for upper body pose,
-    /// not affecting the pelvis or legs.
-    /// </summary>
-    public bool upperBodyOnly = false;
-
-    /// <summary>
     /// If true, solver performance characteristics will be logged.
     /// </summary>
     public bool logPerformance = false;
@@ -31,14 +25,25 @@ public class BodyIKSolver : IKSolver
     /// </summary>
     public float rootPositionWeight = 1f;
 
-    // Joints the IK solver will manipulate to achieve the goals
+    /// <summary>
+    /// Specifies how important it is to preserve accurate gaze direction towards the gaze target.
+    /// </summary>
+    public float gazeDirectionWeight = 0f;
+
+    // If true, the solver will only solve for upper body pose, not affecting the pelvis or legs.
+    protected bool _upperBodyOnly = false;
+
+    // Gaze animation stuff:
+    protected GazeController _gazeController = null;
+
+    // Joints the IK solver will manipulate to achieve the goals:
     protected List<Transform> _bodyJoints = new List<Transform>();
     protected Dictionary<Transform, int> _bodyJointIndexes = new Dictionary<Transform, int>();
+    protected Dictionary<Transform, int> _endEffectorIndexes = new Dictionary<Transform, int>();
     protected Transform _root = null;
-    protected Transform _lShoulder = null;
-    protected Transform _rShoulder = null;
-    protected Transform _lHip = null;
-    protected Transform _rHip = null;
+    protected List<Transform> _limbShoulderJoints = new List<Transform>();
+    protected List<Transform> _limbElbowJoints = new List<Transform>();
+    protected List<Transform> _limbWristJoints = new List<Transform>();
 
     // Solver data structures:
     protected double[] _x = null;
@@ -52,31 +57,66 @@ public class BodyIKSolver : IKSolver
     protected float _goalTermFinal, _basePoseTermFinal;
 
     /// <summary>
+    /// Set current character pose as the base pose for the IK solver.
+    /// </summary>
+    /// <remarks>Base pose should be set before solving for the final pose</remarks>
+    public virtual void InitBasePose()
+    {
+        _GetSolverPose(_xb);
+    }
+
+    /// <summary>
+    /// Initialize current set of parameters from the gaze controller.
+    /// </summary>
+    public virtual void InitGazeParams()
+    {
+        // TODO
+    }
+
+    /// <summary>
     /// <see cref="IKSolver.Init"/>
     /// </summary>
     public override void Init()
     {
         base.Init();
 
+        _upperBodyOnly = !endEffectors.Any(ee => ee == "LAnkle" || ee == "RAnkle");
         _CreateSolver();
     }
 
     /// <summary>
-    /// <see cref="IKSolver.Solve"/>
+    /// <see cref="IKSolver._Solve"/>
     /// </summary>
-    public override void Solve()
+    protected override void _Solve()
     {
-        if (!goals.Any(g => g.weight > 0f))
-        {
-            // No IK goals set
-            return;
-        }
-
         _RunSolver();
+
+        if (gazeDirectionWeight >= 0.005f && _gazeController._CurrentGazeTarget != null)
+        {
+            // Correct gaze direction
+            // TODO: this is the simplest, dumbest way to do it
+            // TODO: this won't work when playing back the animation with baked instances - should also bake gaze controller state
+            foreach (var eye in _gazeController.eyes)
+            {
+                Quaternion trgrot = eye._ComputeTargetRotation(_gazeController.EffGazeTargetPosition);
+                Quaternion rot = Quaternion.Slerp(eye.isVOR ? eye.fixSrcRot : eye.srcRot, trgrot,
+                    eye.isVOR ? eye.fixRotParamAlign : eye.rotParamAlign);
+                eye.bone.localRotation = Quaternion.Slerp(eye.bone.localRotation, rot, gazeDirectionWeight);
+                eye.ClampMR();
+            }
+        }
 
         if (logPerformance)
         {
-            UnityEngine.Debug.LogWarning(string.Format("Body IK solve: {0} ms, {1} iterations. {2} obj. evals",
+            //
+            for (int goalIndex = 0; goalIndex < _goals.Count; ++goalIndex)
+            {
+                IKGoal goal = _goals[goalIndex];
+                UnityEngine.Debug.LogWarning(string.Format("Body IK goal: endEffector = {0}, position = {1}, weight = {2}",
+                    goal.endEffector.tag, goal.position, goal.weight));
+            }
+            //
+            UnityEngine.Debug.LogWarning(string.Format("Body IK solve: {0} ms, {1} iterations, {2} obj. evals",
                 _timer.ElapsedMilliseconds, _rep.iterationscount, _rep.nfev));
             //
             UnityEngine.Debug.LogWarning(string.Format(
@@ -89,22 +129,40 @@ public class BodyIKSolver : IKSolver
     {
         // Get body joints
         _bodyJoints.Clear();
+        _limbWristJoints.Clear();
+        _limbElbowJoints.Clear();
+        _limbShoulderJoints.Clear();
         _root = ModelUtils.FindRootBone(gameObject);
-        _lShoulder = ModelUtils.FindBoneWithTag(_root, "LShoulder");
-        _rShoulder = ModelUtils.FindBoneWithTag(_root, "RShoulder");
-        var lShoulderBoneChain = ModelUtils.GetBoneChain(_root, _lShoulder.parent);
-        var rShoulderBoneChain = ModelUtils.GetBoneChain(_root, _rShoulder.parent);
-        IEnumerable<Transform> bodyJoints = lShoulderBoneChain.Union(rShoulderBoneChain);
-        if (!upperBodyOnly)
+        IEnumerable<Transform> bodyJoints = null;
+        for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
         {
-            _lHip = ModelUtils.FindBoneWithTag(_root, "LHip");
-            _rHip = ModelUtils.FindBoneWithTag(_root, "RHip");
-                var lHipBoneChain = ModelUtils.GetBoneChain(_root, _lHip.parent);
-            var rHipBoneChain = ModelUtils.GetBoneChain(_root, _rHip.parent);
-            bodyJoints = bodyJoints.Union(lHipBoneChain).Union(rHipBoneChain);
+            string endEffectorTag = endEffectors[endEffectorIndex];
+
+            var wrist = ModelUtils.FindBoneWithTag(_root, endEffectorTag);
+            _endEffectorIndexes[wrist] = endEffectorIndex;
+            _limbWristJoints.Add(wrist);
+            string elbowTag = LimbIKSolver.GetJointTagForLimb(endEffectorTag, 1);
+            _limbElbowJoints.Add(ModelUtils.FindBoneWithTag(_root, elbowTag));
+            string shoulderTag = LimbIKSolver.GetJointTagForLimb(endEffectorTag, 2);
+            _limbShoulderJoints.Add(ModelUtils.FindBoneWithTag(_root, shoulderTag));
+
+            var shoulderBoneChain = ModelUtils.GetBoneChain(_root, _limbShoulderJoints[_limbShoulderJoints.Count - 1].parent);
+            bodyJoints = bodyJoints == null ? shoulderBoneChain : bodyJoints.Union(shoulderBoneChain);
         }
 
-        if (!upperBodyOnly)
+        // Get gaze controller and joints
+        _gazeController = gameObject.GetComponent<GazeController>();
+        /*if (_gazeController != null)
+        {
+            Transform[] gazeJoints = new Transform[_gazeController.gazeJoints.Length];
+            for (int gazeJointIndex = 0; gazeJointIndex < _gazeController.gazeJoints.Length; ++gazeJointIndex)
+            {
+                gazeJoints[gazeJointIndex] = _gazeController.gazeJoints[gazeJointIndex].bone;
+            }
+            bodyJoints = bodyJoints.Union(gazeJoints);
+        }*/
+
+        if (!_upperBodyOnly)
         {
             // Add root to list of body joints
             _bodyJoints.Add(_root);
@@ -122,7 +180,7 @@ public class BodyIKSolver : IKSolver
         }
 
         // Create solver data structures
-        _x = upperBodyOnly ?
+        _x = _upperBodyOnly ?
             new double[_bodyJoints.Count * 3] :
             new double[_bodyJoints.Count * 3 + 3];
         _xb = new double[_x.Length];
@@ -131,7 +189,7 @@ public class BodyIKSolver : IKSolver
         // Set scaling coefficients
         for (int xi = 0; xi < _x.Length; ++xi)
         {
-            if (upperBodyOnly && xi < 3)
+            if (_upperBodyOnly && xi < 3)
                 _s[xi] = 1.0;
             else
                 _s[xi] = 1.0;
@@ -142,18 +200,21 @@ public class BodyIKSolver : IKSolver
         alglib.minlbfgssetscale(_state, _s);
         alglib.minlbfgssetcond(_state, 0.05, 0, 0, 10);
         alglib.minlbfgssetprecdefault(_state);
-        alglib.minlbfgsoptimize(_state, _ObjFunc, null, null); // dry run
+        alglib.minlbfgsoptimize(_state, _ObjFunc1, null, null); // dry run
         alglib.minlbfgsresults(_state, out _x, out _rep);
     }
 
     protected virtual void _RunSolver()
     {
-        // Initialize and run solver
+        // Initialize solver parameters
+        // TODO
+        
+        // Run solver
         _GetSolverPose(_x);
         alglib.minlbfgsrestartfrom(_state, _x);
         _timer.Reset();
         _timer.Start();
-        alglib.minlbfgsoptimize(_state, _ObjFunc, null, null);
+        alglib.minlbfgsoptimize(_state, _ObjFunc1, null, null);
         _timer.Stop();
         alglib.minlbfgsresults(_state, out _x, out _rep);
 
@@ -163,7 +224,7 @@ public class BodyIKSolver : IKSolver
 
     protected void _GetSolverPose(double[] x)
     {
-        if (!upperBodyOnly)
+        if (!_upperBodyOnly)
         {
             // Get root position
             Vector3 p = _bodyJoints[0].position;
@@ -182,7 +243,7 @@ public class BodyIKSolver : IKSolver
 
     protected void _ApplySolverPose(double[] x)
     {
-        if (!upperBodyOnly)
+        if (!_upperBodyOnly)
         {
             // Get root position
             Vector3 p = new Vector3((float)x[0], (float)x[1], (float)x[2]);
@@ -212,7 +273,7 @@ public class BodyIKSolver : IKSolver
 
     protected Vector3 _GetBodyJointRotation(double[] x, int jointIndex)
     {
-        int rotStartIndex = upperBodyOnly ? 0 : 3;
+        int rotStartIndex = _upperBodyOnly ? 0 : 3;
 
         Vector3 v = new Vector3((float)x[rotStartIndex + 3 * jointIndex],
             (float)x[rotStartIndex + 3 * jointIndex + 1],
@@ -223,20 +284,17 @@ public class BodyIKSolver : IKSolver
 
     protected void _SetBodyJointRotation(double[] x, int jointIndex, Vector3 v)
     {
-        int rotStartIndex = upperBodyOnly ? 0 : 3;
+        int rotStartIndex = _upperBodyOnly ? 0 : 3;
 
         x[rotStartIndex + 3 * jointIndex] = v.x;
         x[rotStartIndex + 3 * jointIndex + 1] = v.y;
         x[rotStartIndex + 3 * jointIndex + 2] = v.z;
     }
 
-    protected void _ObjFunc(double[] x, ref double func, object obj)
+    protected void _ObjFunc1(double[] x, ref double func, object obj)
     {
         float goalTerm = 0f;
         float basePoseTerm = 0f;
-
-        // Get base pose
-        _GetSolverPose(_xb);
 
         // Apply current pose
         _ApplySolverPose(x);
@@ -245,19 +303,18 @@ public class BodyIKSolver : IKSolver
         IKGoal goal;
         Transform wrist, shoulder, elbow;
         float limbLength = 0f, goalDistance = 0f, curGoalTerm = 0f;
-        for (int goalIndex = 0; goalIndex < goals.Length; ++goalIndex)
+        for (int goalIndex = 0; goalIndex < _goals.Count; ++goalIndex)
         {
-            goal = goals[goalIndex];
+            goal = _goals[goalIndex];
 
             if (goal.weight <= 0.005f)
                 continue;
 
             // Compute relaxed limb length
+            int endEffectorIndex = _endEffectorIndexes[goal.endEffector];
             wrist = goal.endEffector;
-            shoulder = ModelUtils.FindBoneWithTag(_root,
-                LimbIKSolver.GetJointTagForLimb(goal.endEffector.tag, 2));
-            elbow = ModelUtils.FindBoneWithTag(_root,
-                LimbIKSolver.GetJointTagForLimb(goal.endEffector.tag, 1));
+            shoulder = _limbShoulderJoints[endEffectorIndex];
+            elbow = _limbElbowJoints[endEffectorIndex];
             limbLength = (shoulder.position - elbow.position).magnitude +
                 (wrist.position - elbow.position).magnitude;
             limbLength /= goal.weight;
@@ -280,6 +337,11 @@ public class BodyIKSolver : IKSolver
         float curRotTerm = 0f;
         for (int bodyJointIndex = 0; bodyJointIndex < _bodyJoints.Count; ++bodyJointIndex)
         {
+            var bodyJoint = _bodyJoints[bodyJointIndex];
+            if (bodyJoint.tag == "LEye" || bodyJoint.tag == "REye")
+                // Eyes are not animated in the base motion
+                continue;
+
             // Compute body joint orientation term
             vb = _GetBodyJointRotation(_xb, bodyJointIndex);
             qb = QuaternionUtil.Exp(vb);
@@ -290,7 +352,7 @@ public class BodyIKSolver : IKSolver
             //float curRotTerm = (vb - v).sqrMagnitude;
             basePoseTerm += curRotTerm;
         }
-        if (!upperBodyOnly)
+        if (!_upperBodyOnly)
         {
             // Also add root position term
             Vector3 p0b = _GetRootPosition(_xb);
@@ -308,5 +370,14 @@ public class BodyIKSolver : IKSolver
         // Log objective values
         _goalTermFinal = goalTerm;
         _basePoseTermFinal = basePoseTerm * basePoseWeight;
+    }
+
+    protected void _ObjFunc2(double[] x, ref double func, object obj)
+    {
+        float goalTerm = 0f;
+        float basePoseTerm = 0f;
+        float gazeAlignTerm = 0f;
+
+        // TODO
     }
 }

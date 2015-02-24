@@ -1,0 +1,3 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target
+LWrist,19,30,true,PassSodaAMouth
+LWrist,68,73,true,PassSodaAHandoff

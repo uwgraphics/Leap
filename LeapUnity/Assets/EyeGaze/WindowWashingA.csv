@@ -1,11 +1,12 @@
 Character,AnimationClip,StartFrame,EndFrame,Target,HeadAlign,TorsoAlign
 Norman,WindowWashingAGaze1,1,29,WindowUpperRight,-1,-1
-Norman,WindowWashingAGaze2,47,78,WindowUpperLeft,-1,-1
+Norman,WindowWashingAGaze2,47,78,WindowUpperLeft,1.0,0.6
 Norman,WindowWashingAGaze3,91,102,WindowCenterLeft,-1,-1
 Norman,WindowWashingAGaze4,103,131,WindowCenterRight,-1,-1
-Norman,WindowWashingAGaze5,133,142,WindowLowerRight,-1,-1
+Norman,WindowWashingAGaze5,133,142,WindowLowerRight,0.8,-1
 Norman,WindowWashingAGaze6,165,187,WindowCenterLeft,-1,-1
-#Norman,WindowWashingAGaze6,190,225,NormanetteBack,1,-1
+#Norman,WindowWashingAGaze6,155,230,NormanetteFace,1,0.4
+#Norman,WindowWashingAGaze7,195,230,NormanetteBack,1,-1
 Norman,WindowWashingAGaze7,189,204,WindowLowerLeft,-1,-1
 Norman,WindowWashingAGaze8,210,220,AboveBucket,-1,-1
 Norman,WindowWashingAGaze9,237,248,WindowUpperCenter,-1,-1

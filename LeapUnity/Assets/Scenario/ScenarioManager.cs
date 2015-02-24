@@ -25,20 +25,10 @@ public class ScenarioManager : MonoBehaviour
 	/// <remarks>Set this to -1 to allow variable frame rate.</remarks>
 	public int frameRate = 30;
 	
-	/// <summary>
-	/// If true, main viewport will be recorded and saved to the subfolder .\Videos.
-	/// </summary>
-	public bool videoCapture = false;
-	
 	IEnumerator Start()
 	{
 		// Set frame rate and resolution
 		Application.targetFrameRate = frameRate;
-		
-		// Enable video capture
-		VideoCapture vidcap = GetComponent<VideoCapture>();
-		if( vidcap != null )
-			vidcap.enabled = videoCapture;
 		
 		if( scenarios == null )
 			yield break;

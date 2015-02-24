@@ -151,9 +151,27 @@ public class AnimationTimeline
         }
 
         /// <summary>
-        /// If true, end-effector constraints are enforced on this animation layer.
+        /// If true, end-effector constraints are defined and enforced on this animation layer.
         /// </summary>
-        public bool IKEnabled
+        public bool isIKEndEffectorConstr
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// If true, the current layer contains base animation for the body IK solver.
+        /// </summary>
+        public bool isIKBase
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// If true, the current layer contains gaze control for the body IK solver.
+        /// </summary>
+        public bool isIKGaze
         {
             get;
             set;
@@ -177,7 +195,9 @@ public class AnimationTimeline
 
             _animationInstances = new List<ScheduledInstance>();
             Active = true;
-            IKEnabled = false;
+            isIKEndEffectorConstr = false;
+            isIKBase = false;
+            isIKGaze = false;
         }
 
         public List<ScheduledInstance> _GetAnimations()
@@ -421,7 +441,7 @@ public class AnimationTimeline
     private float _currentTime = 0;
     private int _nextInstanceId = 0;
     private HashSet<int> _activeAnimationInstanceIds;
-    private Dictionary<string, ModelPose> _storedModelPoses;
+    private Dictionary<string, Dictionary<string, ModelPose>> _storedModelPoses;
 
     /// <summary>
     /// Constructor.
@@ -433,7 +453,7 @@ public class AnimationTimeline
         _animationInstancesById = new Dictionary<int, ScheduledInstance>();
         _endEffectorConstraints = new Dictionary<AnimationClip, EndEffectorConstraintContainer>();
         _activeAnimationInstanceIds = new HashSet<int>();
-        _storedModelPoses = new Dictionary<string, ModelPose>();
+        _storedModelPoses = new Dictionary<string, Dictionary<string, ModelPose>>();
 
         Active = false;
         Playing = false;
@@ -744,30 +764,35 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// Bake all animation on the timeline into an animation clip.
+    /// Bake all animation on the timeline into animation clips.
     /// </summary>
-    /// <param name="animationClipName">Animation clip name</param>
-    /// <returns>Animation clip</returns>
-    public void Bake(string animationClipName)
+    /// <param name="animationClipName">Animation clip names (one for each character model)</param>
+    public void Bake(string[] animationClipNames)
     {
-        BakeRange(animationClipName, 0, FrameLength);
+        BakeRange(animationClipNames, 0, FrameLength);
     }
 
     /// <summary>
-    /// Bake a range of frames on the timeline into an animation clip.
+    /// Bake a range of frames on the timeline into animation clip.
     /// </summary>
-    /// <param name="animationClipName">Animation clip name</param>
+    /// <param name="animationClipName">Animation clip names (one for each character model)</param>
     /// <param name="startFrame">Start frame index</param>
     /// <param name="length">Range length in frames</param>
     /// <returns>Animation clip</returns>
-    public void BakeRange(string animationClipName, int startFrame, int length)
+    public void BakeRange(string[] animationClipNames, int startFrame, int length)
     {
         ModelController[] models = GetAllModels();
 
-        // Ensure each model has an animation clip with the specified name
-        foreach (var model in models)
+        if (models.Length != animationClipNames.Length)
         {
-            LEAPAssetUtils.CreateAnimationClipOnModel(animationClipName, model.gameObject);
+            throw new Exception("Error baking the animation timeline: must specify an animation clip name for each model on the timeline");
+        }
+
+        // Ensure each model has an animation clip with the specified name
+        for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
+        {
+            var model = models[modelIndex];
+            LEAPAssetUtils.CreateAnimationClipOnModel(animationClipNames[modelIndex], model.gameObject);
         }
 
         // For each model, retrieve its nodes and create empty anim. curves for them
@@ -830,10 +855,20 @@ public class AnimationTimeline
         }
 
         // Set the curves to their animation clips on each model
-        foreach (var model in models)
+        for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
         {
-            AnimationClip newClip = LEAPAssetUtils.GetAnimationClipOnModel(animationClipName, model.gameObject);
+            var model = models[modelIndex];
+            AnimationClip newClip = LEAPAssetUtils.GetAnimationClipOnModel(animationClipNames[modelIndex], model.gameObject);
             LEAPAssetUtils.SetAnimationCurvesOnClip(model.gameObject, newClip, curvesPerModel[model.gameObject.name]);
+
+            // Write animation clip to file
+            string path = LEAPAssetUtils.GetModelDirectory(model.gameObject) + newClip.name + ".anim";
+            if (AssetDatabase.GetAssetPath(newClip) != path)
+            {
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(newClip, path);
+            }
+            AssetDatabase.SaveAssets();
         }
     }
 
@@ -909,14 +944,18 @@ public class AnimationTimeline
     public void StoreModelPose(string modelName, string poseName)
     {
         // Get model
-        ModelController[] models = GetAllModels();
-        ModelController model = models.FirstOrDefault(mc => mc.gameObject.name == modelName);
-        if (model == null)
+        var instKvp = _animationInstancesById.Where(kvp => kvp.Value.Animation.Model.gameObject.name == modelName)
+            .Select(kvp => (KeyValuePair<int, ScheduledInstance>?)kvp)
+            .FirstOrDefault();
+        if (instKvp == null)
         {
-            throw new Exception(string.Format("Cannot store pose {0} on model {1}, because the model does not exist", poseName, modelName));
+            throw new Exception(string.Format("Cannot store pose {0} on model {1}: model does not exist", poseName, modelName));
         }
 
-        _storedModelPoses[poseName] = new ModelPose(model.gameObject);
+        var model = instKvp.Value.Value.Animation.Model.gameObject;
+        if (!_storedModelPoses.ContainsKey(modelName))
+            _storedModelPoses[modelName] = new Dictionary<string, ModelPose>();
+        _storedModelPoses[modelName][poseName] = new ModelPose(model);
     }
 
     /// <summary>
@@ -927,28 +966,34 @@ public class AnimationTimeline
     public void ApplyModelPose(string modelName, string poseName)
     {
         // Get model
-        ModelController[] models = GetAllModels();
-        ModelController model = models.FirstOrDefault(mc => mc.gameObject.name == modelName);
-        if (model == null)
+        var instKvp = _animationInstancesById.Where(kvp => kvp.Value.Animation.Model.gameObject.name == modelName)
+            .Select(kvp => (KeyValuePair<int, ScheduledInstance>?)kvp)
+            .FirstOrDefault();
+        if (instKvp == null)
         {
             throw new Exception(string.Format("Cannot apply pose {0} to model {1}: model does not exist", poseName, modelName));
         }
 
-        if (!_storedModelPoses.ContainsKey(poseName))
+        if (!_storedModelPoses.ContainsKey(modelName) || !_storedModelPoses[modelName].ContainsKey(poseName))
         {
             throw new Exception(string.Format("Cannot apply pose {0} to model {1}: pose does not exist", poseName, modelName));
         }
 
-        _storedModelPoses[poseName].Apply(model.gameObject);
+        var model = instKvp.Value.Value.Animation.Model.gameObject;
+        _storedModelPoses[modelName][poseName].Apply(model);
     }
 
     /// <summary>
     /// Remove stored model pose.
     /// </summary>
+    /// <param name="model">Character model name</param>
     /// <param name="poseName">Pose nmae</param>
-    public void RemoveModelPose(string poseName)
+    public void RemoveModelPose(string modelName, string poseName)
     {
-        _storedModelPoses.Remove(poseName);
+        if (!_storedModelPoses.ContainsKey(modelName))
+            return;
+
+        _storedModelPoses[modelName].Remove(poseName);
     }
 
     /// <summary>
@@ -982,11 +1027,10 @@ public class AnimationTimeline
         _ApplyAnimation();
     }
 
-    // TODO: remove this
-    Quaternion[] prevRots = null;
-    //
     public void _ApplyAnimation()
     {
+        ModelController[] models = GetAllModels();
+
         ResetModelsToInitialPose();
 
         // Apply active animation instances in layers in correct order
@@ -1037,10 +1081,22 @@ public class AnimationTimeline
 
                     animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
                     
-                    if (layer.IKEnabled)
-                        // Set up IK goals for this animation
+                    // Set up IK goals for this layer
+                    if (layer.isIKEndEffectorConstr)
                         _SetIKGoals(animation.Animation.Model, animation.Animation.AnimationClip);
                 }
+            }
+
+            foreach (var model in models)
+            {
+                // Configure IK solver parameters for each model
+                if (layer.isIKBase)
+                    _SetIKBasePose(model);
+                if (layer.isIKGaze)
+                    _SetIKEyeGazeParams(model);
+            
+                // Store model poses after the current layer is applied
+                StoreModelPose(model.gameObject.name, layer.LayerName + "Pose");
             }
 
             // Notify listeners that the layer has finished applying
@@ -1052,19 +1108,6 @@ public class AnimationTimeline
         _ClearIKGoals();
 
         _StoreModelsCurrentPose();
-        // TODO: remove this
-        /*var gazeCtrl = GetAllModels().FirstOrDefault(mdl => mdl.gameObject.name == "Norman").GetComponent<GazeController>();
-        if (prevRots == null)
-            prevRots = new Quaternion[gazeCtrl.gazeJoints.Length];
-        string deltaRotStr = "";
-        for (int jointIndex = 0; jointIndex < gazeCtrl.gazeJoints.Length; ++jointIndex)
-        {
-            float deltaRot = GazeJoint.DistanceToRotate(prevRots[jointIndex], gazeCtrl.gazeJoints[jointIndex].bone.localRotation);
-            deltaRotStr += (gazeCtrl.gazeJoints[jointIndex].type.ToString() + ": " + deltaRot.ToString() + " ");
-            prevRots[jointIndex] = gazeCtrl.gazeJoints[jointIndex].bone.localRotation;
-        }
-        Debug.LogWarning(deltaRotStr);*/
-        //
     }
 
     private bool _AddTime(float deltaTime)
@@ -1154,8 +1197,11 @@ public class AnimationTimeline
             return;
         IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
 
+        // Set end-effector goals
         foreach (var constraint in activeConstraints)
         {
+            Transform endEffector = ModelUtils.FindBoneWithTag(model.gameObject.transform, constraint.endEffector);
+
             // Compute constraint weight
             float t = 1f;
             if (CurrentFrame < constraint.startFrame)
@@ -1163,25 +1209,58 @@ public class AnimationTimeline
             else if (CurrentFrame > (constraint.startFrame + constraint.frameLength - 1))
                 t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1))) / constraintFrameWindow);
             float t2 = t * t;
-            float weight = - 2f * t2 * t + 3f * t2;
+            float weight = -2f * t2 * t + 3f * t2;
+            //
+            /*if (model.gameObject.name == "Norman")
+            {
+                Debug.LogWarning(string.Format("frame = {0}: endEffector = {1}, target = {2}, weight = {3}", CurrentFrame,
+                    constraint.endEffector, constraint.target != null ? constraint.target.name : null, weight));
+            }*/
+            //
 
             // Set the constraint goal in relevant IK solvers
             foreach (var solver in solvers)
             {
                 if (solver.endEffectors.Contains(constraint.endEffector))
                 {
-                    for (int goalIndex = 0; goalIndex < solver.goals.Length; ++goalIndex)
-                    {
-                        var goal = solver.goals[goalIndex];
-                        if (goal.endEffector.tag == constraint.endEffector)
-                        {
-                            goal.position = constraint.target == null ? goal.endEffector.position : constraint.target.transform.position;
-                            goal.rotation = constraint.target == null ? goal.endEffector.rotation : constraint.target.transform.rotation;
-                            goal.weight = Mathf.Max(goal.weight, weight);
-                            goal.preserveAbsoluteRotation = constraint.preserveAbsoluteRotation;
-                        }
-                    }
+                    IKGoal goal = new IKGoal(endEffector,
+                        constraint.target == null ? endEffector.position : constraint.target.transform.position,
+                        constraint.target == null ? endEffector.rotation : constraint.target.transform.rotation,
+                        weight, constraint.preserveAbsoluteRotation);
+                    solver.AddGoal(goal);
                 }
+            }
+        }
+    }
+
+    private void _SetIKBasePose(ModelController model)
+    {
+        IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+
+        foreach (var solver in solvers)
+        {
+            if (solver is BodyIKSolver)
+            {
+                var bodySolver = solver as BodyIKSolver;
+
+                // Set current pose as base pose of the body IK solver
+                bodySolver.InitBasePose();
+            }
+        }
+    }
+
+    private void _SetIKEyeGazeParams(ModelController model)
+    {
+        IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+
+        foreach (var solver in solvers)
+        {
+            if (solver is BodyIKSolver)
+            {
+                var bodySolver = solver as BodyIKSolver;
+
+                // Set current gaze controller configuration as eye gaze parameters for the body IK solver
+                bodySolver.InitGazeParams();
             }
         }
     }
@@ -1194,26 +1273,30 @@ public class AnimationTimeline
             IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
             foreach (var solver in solvers)
             {
-                foreach (var goal in solver.goals)
-                    goal.weight = 0f;
+                solver.ClearGoals();
             }
         }
     }
 
     private void _SolveIK()
     {
+        //
+        //Debug.Log(string.Format("FRAME: {0}", AnimationTimeline.Instance.CurrentFrame));
+        //
         ModelController[] models = GetAllModels();
         foreach (var model in models)
         {
             // First solve for body pose
             var bodySolver = model.GetComponent<BodyIKSolver>();
-            bodySolver.Solve();
+            if (bodySolver.enabled)
+                bodySolver.Solve();
 
             // Then solve for limb poses
             LimbIKSolver[] limbSolvers = model.GetComponents<LimbIKSolver>();
             foreach (var limbSolver in limbSolvers)
             {
-                limbSolver.Solve();
+                if (limbSolver.enabled)
+                    limbSolver.Solve();
             }
         }
     }

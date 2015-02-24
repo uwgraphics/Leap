@@ -1,0 +1,1 @@
+ffmpeg -y -r 30 -i ./VideoCapture/frame%%05d.png -r 30 -c:v libx264 -preset slow -crf 12 -an -vf scale=%2:-1 %1.mp4

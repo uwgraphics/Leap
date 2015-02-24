@@ -23,11 +23,6 @@ public enum GazeJointType
 /// </summary>
 public class GazeController : AnimController
 {
-    public void TEST()
-    {
-        Debug.LogWarning("TEST");
-    }
-
     /// <summary>
     /// Next gaze target.
     /// </summary>
@@ -1073,6 +1068,8 @@ public class GazeController : AnimController
     {
         stopGazeShift = false;
 
+        _InitBaseRotations();
+
         if (fixGaze)
         {
             // Fixate gaze to the current target
@@ -1093,6 +1090,8 @@ public class GazeController : AnimController
 
     protected virtual void LateUpdate_Shifting()
     {
+        _InitBaseRotations();
+
         if (stopGazeShift)
         {
             // Interrupt ongoing gaze shift
@@ -1107,9 +1106,13 @@ public class GazeController : AnimController
         float dt = 0;
         for (float t = 0; t < DeltaTime; )
         {
+            // Compute delta time
             t += LEAPCore.eulerTimeStep;
             dt = (t <= DeltaTime) ? LEAPCore.eulerTimeStep :
                 DeltaTime - t + LEAPCore.eulerTimeStep;
+
+            _ApplyBaseRotations();
+
             if (_AdvanceGazeShift(dt))
             {
                 GoToState((int)GazeState.NoGaze);
@@ -1166,6 +1169,11 @@ public class GazeController : AnimController
             }
             else
             {
+                if (joint.isVOR)
+                {
+                    joint._StopVOR();
+                }
+
                 // Update target rotation of the current joint to account for movements of
                 // the preceding joints (or the whole body)
                 joint._UpdateTargetRotation();
@@ -1381,12 +1389,25 @@ public class GazeController : AnimController
         avSrc = Vector3.Angle(wd_src, wd_cam);
     }
 
+    // Store base rotations of gaze joints (before gaze is applied)
+    protected virtual void _InitBaseRotations()
+    {
+        foreach (var gazeJoint in gazeJoints)
+            gazeJoint.baseRot = gazeJoint.bone.localRotation;
+    }
+
+    // Apply base rotations of gaze joints (before gaze is applied)
+    protected virtual void _ApplyBaseRotations()
+    {
+        foreach (var gazeJoint in gazeJoints)
+            gazeJoint.bone.localRotation = gazeJoint.baseRot;
+    }
+
     // Compute target pose of the eyes (at the end of the gaze shift)
     protected virtual void _InitEyeTargetRotations()
     {
         if (stylizeGaze)
             _InitEyeTargetRotationsEffective();
-        //_CalculateVelocityScales();
         else
             _InitEyeTargetRotationsBase();
     }

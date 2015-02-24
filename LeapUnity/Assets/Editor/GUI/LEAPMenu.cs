@@ -83,6 +83,7 @@ public class LEAPMenu
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
 
+        var editTestScenario = GameObject.FindGameObjectWithTag("ScenarioManager").GetComponent<GazeEditTestScenario>();
         var testScenes = GameObject.Find("EyeGazeEditor").GetComponent<EyeGazeEditTestScenes>();
         timeline.RemoveAllLayers();
 
@@ -101,7 +102,19 @@ public class LEAPMenu
         testScenes.modelNormanette.SetActive(false);
         testScenes.modelRoman.SetActive(false);
         testScenes.modelWindowWashingRoom.SetActive(false);
+        testScenes.modelPassSodaRoom.SetActive(false);
         testScenes.modelWalking90degCones.SetActive(false);
+        testScenes.cameraWindowWashing.enabled = false;
+        testScenes.cameraPassSoda.enabled = false;
+        testScenes.cameraWalking90deg.enabled = false;
+
+        // Create and configure animation layers
+        timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
+        timeline.GetLayer("BaseAnimation").isIKEndEffectorConstr = true;
+        timeline.GetLayer("BaseAnimation").isIKBase = true;
+        timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
+        timeline.GetLayer("Gaze").isIKBase = true;
+        timeline.GetLayer("Gaze").isIKGaze = true;
 
         if (sceneName == "WindowWashing")
         {
@@ -109,11 +122,9 @@ public class LEAPMenu
             testScenes.modelNormanette.SetActive(true);
             testScenes.modelNormanette.transform.position = new Vector3(2.58f, 0f, -3.72f);
             testScenes.modelWindowWashingRoom.SetActive(true);
+            testScenes.cameraWindowWashing.enabled = true;
 
-            // Create animation layers and instances
-            timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
-            timeline.GetLayer("BaseAnimation").IKEnabled = true;
-            timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
+            // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "WindowWashingA");
             timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
             var bodyAnimationNormanette = new AnimationClipInstance(testScenes.modelNormanette, "WindowWashingB");
@@ -125,6 +136,14 @@ public class LEAPMenu
             EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
             //
             PrintEyeGaze();
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[2];
+            editTestScenario.models[0] = testScenes.modelNorman;
+            editTestScenario.models[1] = testScenes.modelNormanette;
+            editTestScenario.animations = new string[2];
+            editTestScenario.animations[0] = "WindowWashingAwEdits";
+            editTestScenario.animations[1] = "WindowWashingBwEdits";
         }
         else if (sceneName == "PassSoda")
         {
@@ -132,11 +151,10 @@ public class LEAPMenu
             testScenes.modelRoman.SetActive(true);
             testScenes.modelNormanette.SetActive(true);
             testScenes.modelNormanette.transform.position = new Vector3(0.36f, 0f, -3.72f);
+            testScenes.modelPassSodaRoom.SetActive(true);
+            testScenes.cameraPassSoda.enabled = true;
 
-            // Create animation layers and instances
-            timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
-            timeline.GetLayer("BaseAnimation").IKEnabled = true;
-            timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
+            // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "PassSodaA");
             timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
             var bodyAnimationRoman = new AnimationClipInstance(testScenes.modelRoman, "PassSodaB");
@@ -152,16 +170,24 @@ public class LEAPMenu
             EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationRoman.AnimationClip.name, "Gaze");
             //
             PrintEyeGaze();
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[3];
+            editTestScenario.models[0] = testScenes.modelNorman;
+            editTestScenario.models[1] = testScenes.modelRoman;
+            editTestScenario.models[2] = testScenes.modelNormanette;
+            editTestScenario.animations = new string[3];
+            editTestScenario.animations[0] = "PassSodaAwEdits";
+            editTestScenario.animations[1] = "PassSodaBwEdits";
+            editTestScenario.animations[2] = "PassSodaCwEdits";
         }
         else if (sceneName == "Walking90deg")
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.modelWalking90degCones.SetActive(true);
+            testScenes.cameraWalking90deg.enabled = true;
 
-            // Create animation layers and instances
-            timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
-            timeline.GetLayer("BaseAnimation").IKEnabled = true;
-            timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
+            // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "Walking90deg");
             timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
 
@@ -171,17 +197,31 @@ public class LEAPMenu
             EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
             //
             PrintEyeGaze();
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNorman;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "Walking90degwEdits";
         }
         else // if (sceneName == "InitialPose")
         {
             testScenes.modelNorman.SetActive(true);
+            testScenes.cameraWindowWashing.enabled = true;
 
-            // Create animation layers and instances
-            timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
-            timeline.GetLayer("BaseAnimation").IKEnabled = true;
-            timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
+            // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "InitialPose");
             timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+            //
+            timeline.AddLayer(AnimationLayerMode.Override, 1, "HeadAnimation");
+            var headAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "LookRight");
+            timeline.AddAnimation("HeadAnimation", headAnimationNorman, 0);
+            timeline.AddAnimation("HeadAnimation", headAnimationNorman, 30);
+            timeline.AddAnimation("HeadAnimation", headAnimationNorman, 60);
+            /*timeline.AddAnimation("HeadAnimation", headAnimationNorman, 90);
+            timeline.AddAnimation("HeadAnimation", headAnimationNorman, 100);
+            timeline.AddAnimation("HeadAnimation", headAnimationNorman, 125);*/
+            //
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
@@ -190,9 +230,6 @@ public class LEAPMenu
             //
             PrintEyeGaze();
         }
-        //
-        timeline.GetLayer("BaseAnimation").IKEnabled = false;
-        //
 
         timeline.Init();
     }
@@ -240,7 +277,17 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        timeline.Bake("SneakingWithAutoGaze");
+        var models = timeline.GetAllModels();
+        string[] baseAnimationClipNames = new string[models.Length];
+        
+        for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
+        {
+            var model = models[modelIndex];
+            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model).Animation;
+            baseAnimationClipNames[modelIndex] = baseAnimation.AnimationClip.name + "wEdits";
+        }
+        
+        timeline.Bake(baseAnimationClipNames);
     }
 
     [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true, 8)]

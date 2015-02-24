@@ -24,6 +24,8 @@ public class LeapAnimationEditor : EditorWindow
     private int _frameCounter = 0;
     private Stopwatch _frameTimer = new Stopwatch();
 
+    private bool _ikEnabled = true;
+
     private bool _guiInitialized = false;
     private Texture _timelineActiveTexture;
     private Texture _timelineActiveDownTexture;
@@ -85,7 +87,7 @@ public class LeapAnimationEditor : EditorWindow
             if (!Timeline.Active)
             {
                 Timeline.ResetModelsToInitialPose();
-                
+
                 // Show all models
                 ModelController[] models = Timeline.GetAllModels();
                 foreach (var model in models)
@@ -111,12 +113,14 @@ public class LeapAnimationEditor : EditorWindow
             && Timeline.Active && !Timeline.Playing)
         {
             Timeline.PreviousFrame();
+            Timeline.Update(0);
             SceneView.RepaintAll();
         }
         if (GUI.Button(new Rect(160, 10, 40, 40), _timelineNextFrameTexture)
             && Timeline.Active && !Timeline.Playing)
         {
             Timeline.NextFrame();
+            Timeline.Update(0);
             SceneView.RepaintAll();
         }
 
@@ -148,15 +152,21 @@ public class LeapAnimationEditor : EditorWindow
             }
         }
 
-        // Enable/disable IK on all layers
-        var baseLayer = Timeline.GetLayer("BaseAnimation");
-        if (baseLayer != null)
+        // Enable/disable IK on all models
         {
-            bool ikEnabled = GUI.Toggle(new Rect(20, layerToggleTop + 30, 140, 20), baseLayer.IKEnabled, "IK");
-            foreach (var layer in Timeline.Layers)
+            ModelController[] models = Timeline.GetAllModels();
+
+            bool prevIKEnabled = _ikEnabled;
+            _ikEnabled = GUI.Toggle(new Rect(20, layerToggleTop + 30, 140, 20), _ikEnabled, "IK");
+            foreach (var model in models)
             {
-                layer.IKEnabled = ikEnabled;
+                IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+                foreach (var solver in solvers)
+                    solver.enabled = _ikEnabled;
             }
+
+            if (_ikEnabled != prevIKEnabled)
+                SceneView.RepaintAll();
         }
 
         // Bake procedural anim. instances into clips
@@ -213,13 +223,13 @@ public class LeapAnimationEditor : EditorWindow
 
     private void AnimationTimeline_AnimationStarted(int animationInstanceId)
     {
-        var animation = Timeline.GetAnimation(animationInstanceId);
+        /*var animation = Timeline.GetAnimation(animationInstanceId);
         var layer = Timeline.GetLayerForAnimation(animationInstanceId);
         if (layer.LayerName == "BaseAnimation")
         {
             var model = animation.Model.gameObject;
             ModelUtils.ShowModel(model);
-        }
+        }*/
     }
 
     private void AnimationTimeline_AnimationFinished(int animationInstanceId)

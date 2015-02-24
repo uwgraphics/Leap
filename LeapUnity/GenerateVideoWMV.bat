@@ -1,0 +1,1 @@
+ffmpeg -y -r 30 -i ./VideoCapture/frame%%05d.png -r 30 -q:a 2 -q:v 2 -vcodec msmpeg4 -an -vf scale=%2:-1 %1.wmv

@@ -19,11 +19,6 @@ public class AnimationEditGizmos : MonoBehaviour
     /// </summary>
     public bool showEndEffectorConstraints = false;
 
-    /// <summary>
-    /// End-effectors for which constraints are shown.
-    /// </summary>
-    public string[] endEffectorTypes = new string[0];
-
     private void OnDrawGizmos()
     {
         if (showGazeTargets)
@@ -74,7 +69,7 @@ public class AnimationEditGizmos : MonoBehaviour
             if (!solver.enabled)
                 continue;
 
-            foreach (var goal in solver.goals)
+            foreach (var goal in solver.Goals)
             {
                 if (!endEffectorsShown.Contains(goal.endEffector))
                 {
