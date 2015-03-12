@@ -78,7 +78,7 @@ public class LEAPMenu
         TestScene("InitialPose");
     }
 
-    private static void TestScene(string sceneName)
+    private static void TestScene(string sceneName, bool loadEditedGaze = false)
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
@@ -132,9 +132,6 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            // TODO: move eye gaze inference to separate menu items
-            EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            //
             PrintEyeGaze();
 
             // Initialize test scenario
@@ -164,11 +161,6 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationRoman.AnimationClip.name, "Gaze");
-            // TODO: move eye gaze inference to separate menu items
-            EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationRoman.AnimationClip.name, "Gaze");
-            //
             PrintEyeGaze();
 
             // Initialize test scenario
@@ -193,9 +185,6 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            // TODO: move eye gaze inference to separate menu items
-            EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            //
             PrintEyeGaze();
 
             // Initialize test scenario
@@ -225,9 +214,6 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            // TODO: move eye gaze inference to separate menu items
-            EyeGazeEditor.InferEyeGazeAttributes(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            //
             PrintEyeGaze();
         }
 
@@ -241,11 +227,15 @@ public class LEAPMenu
 
         foreach (var instance in timeline.GetLayer("Gaze").Animations)
         {
-            Debug.Log(string.Format("EyeGazeInstance: model = {0}, animationClip = {1}, startFrame = {2}, endFrame = {3}, target = {4}, headAlign = {5}, torsoAlign = {6}",
+            Debug.Log(string.Format(
+                "EyeGazeInstance: model = {0}, animationClip = {1}, startFrame = {2}, fixationStartFrame = {3}, endFrame = {4}, target = {5}, headAlign = {6}, torsoAlign = {7}, isEdit = {8}",
                 instance.Animation.Model.gameObject.name, instance.Animation.AnimationClip.name,
-                instance.StartFrame, instance.StartFrame + instance.Animation.FrameLength - 1,
+                instance.StartFrame,
+                instance.StartFrame + (instance.Animation as EyeGazeInstance).FixationStartFrame,
+                instance.StartFrame + instance.Animation.FrameLength - 1,
                 (instance.Animation as EyeGazeInstance).Target != null ? (instance.Animation as EyeGazeInstance).Target.name : "null",
-                (instance.Animation as EyeGazeInstance).HeadAlign, (instance.Animation as EyeGazeInstance).TorsoAlign));
+                (instance.Animation as EyeGazeInstance).HeadAlign, (instance.Animation as EyeGazeInstance).TorsoAlign,
+                (instance.Animation as EyeGazeInstance).IsEdit));
         }
     }
 
@@ -290,7 +280,37 @@ public class LEAPMenu
         timeline.Bake(baseAnimationClipNames);
     }
 
-    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true, 8)]
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", true, 7)]
+    private static bool ValidateInferEyeGazeAlignments()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", false, 7)]
+    private static void InferEyeGazeAlignments()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+
+        // Disable IK and gaze layers
+        timeline.SetIKEnabled(false);
+        timeline.GetLayer("Gaze").Active = false;
+
+        var baseLayer = timeline.GetLayer("BaseAnimation");
+        foreach (var baseAnimation in baseLayer.Animations)
+        {
+            var baseAnimationClip = baseAnimation.Animation.AnimationClip;
+            EyeGazeEditor.InferEyeGazeAlignments(timeline, baseAnimationClip.name);
+
+            // Save and print inferred eye gaze
+            EyeGazeEditor.SaveEyeGazeForModel(timeline, baseAnimationClip.name);
+            PrintEyeGaze();
+        }
+        SceneView.RepaintAll();
+    }
+
+    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true, 9)]
     private static bool ValidateFixAnimationClipAssoc()
     {
         GameObject obj = Selection.activeGameObject;
@@ -302,7 +322,7 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", false, 8)]
+    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", false, 9)]
     private static void FixAnimationClipAssoc()
     {
         GameObject obj = Selection.activeGameObject;

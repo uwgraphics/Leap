@@ -167,6 +167,35 @@ public class EyeGazeInstance : AnimationControllerInstance
         set;
     }
 
+    /// <summary>
+    /// Time (relative to the start of the gaze instance) when the gaze shift
+    /// is expected to finish and the fixation start.
+    /// </summary>
+    public virtual float FixationStartTime
+    {
+        get;
+        protected set;
+    }
+
+    /// <summary>
+    /// Frame (relative to the start of the gaze instance) when the gaze shift
+    /// is expected to finish and the fixation start.
+    /// </summary>
+    public virtual float FixationStartFrame
+    {
+        get { return (int)(FixationStartTime * LEAPCore.editFrameRate + 0.5f); }
+    }
+
+    /// <summary>
+    /// If true, this eye gaze instance is an edit. If false, this eye gaze instance
+    /// represents an unmodified gaze shift from the original animation.
+    /// </summary>
+    public virtual bool IsEdit
+    {
+        get;
+        protected set;
+    }
+
     protected bool _gazeShiftStarted = false;
 
     /// <summary>
@@ -179,12 +208,15 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// <param name="headAlign">Head alignment</param>
     /// <param name="torsoAlign">Torso alignment</param>
     public EyeGazeInstance(GameObject model, string animationClipName,
-        int frameLength = 30, GameObject target = null, float headAlign = 0f, float torsoAlign = 0f)
+        int frameLength = 30, GameObject target = null, float headAlign = 0f, float torsoAlign = 0f,
+        int fixationStartFrame = -1, bool isEdit = true)
         : base(model, animationClipName, typeof(GazeController), frameLength)
     {
         Target = target;
         HeadAlign = headAlign;
         TorsoAlign = torsoAlign;
+        SetFixationStartFrame(fixationStartFrame);
+        IsEdit = isEdit;
 
         // Bake only animation curves for eyes, head, and torso
         BakeMask.SetAll(false);
@@ -197,6 +229,16 @@ public class EyeGazeInstance : AnimationControllerInstance
             BakeMask.Set(curveIndex++, true);
             BakeMask.Set(curveIndex, true);
         }
+    }
+
+    /// <summary>
+    /// Set the frame (relative to the start of the gaze instance) when
+    /// the gaze shift is expected to end and the fixation start.
+    /// </summary>
+    /// <param name="frame"></param>
+    public virtual void SetFixationStartFrame(int frame)
+    {
+        FixationStartTime = ((float)frame) / LEAPCore.editFrameRate;
     }
 
     /// <summary>
@@ -214,12 +256,12 @@ public class EyeGazeInstance : AnimationControllerInstance
             // Initiate gaze shift to target
             if (GazeController.Head != null)
             {
-                GazeController.Head.align = HeadAlign;
+                GazeController.Head.align = Mathf.Clamp01(HeadAlign);
                 GazeController.Head.baseWeight = 1f;
             }
             if (GazeController.Torso != null)
             {
-                GazeController.Torso.align = TorsoAlign;
+                GazeController.Torso.align = Mathf.Clamp01(TorsoAlign);
                 GazeController.Torso.baseWeight = 1f;
             }
             GazeController.GazeAt(Target);
@@ -283,6 +325,9 @@ public class EyeGazeInstance : AnimationControllerInstance
     // Compute gaze shift parameters to account for anticipated body movement
     protected virtual Vector3 _ComputeMovingTargetPositionOffset()
     {
+        // How far ahead do we need to look to anticipate the target?
+        float lookAheadTime = EyeGazeEditor.ComputeEstGazeShiftTimeLength(this);
+
         // Store current model pose
         AnimationTimeline.Instance.StoreModelPose(Model.gameObject.name, AnimationClip.name + "Pose");
 
@@ -293,7 +338,6 @@ public class EyeGazeInstance : AnimationControllerInstance
         var baseAnimationInstance =
             AnimationTimeline.Instance.GetLayer("BaseAnimation").Animations.FirstOrDefault(inst => inst.Animation.Model.gameObject == Model.gameObject);
         int curFrame = AnimationTimeline.Instance.CurrentFrame;
-        float lookAheadTime = _ComputeEstGazeShiftTimeLength();
         int endFrame = curFrame + Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * lookAheadTime); // look ahead to the estimated end of the current gaze shift
         baseAnimationInstance.Animation.Apply(endFrame, AnimationLayerMode.Override);
 
@@ -306,28 +350,6 @@ public class EyeGazeInstance : AnimationControllerInstance
         AnimationTimeline.Instance.RemoveModelPose(Model.gameObject.name, AnimationClip.name + "Pose");
 
         return currentBasePos - futureBasePos;
-    }
-
-    // Estimate the time duration of the current gaze shift
-    protected virtual float _ComputeEstGazeShiftTimeLength()
-    {
-        GameObject gazeTarget = GazeController.gazeTarget;
-        float eyeRotTime = 0f;
-        foreach (var eye in GazeController.eyes)
-        {
-            float edr = GazeJoint.DistanceToRotate(eye.bone.localRotation, eye._ComputeTargetRotation(gazeTarget.transform.position));
-            eyeRotTime = Mathf.Max(eyeRotTime, eye.velocity > 0f ? edr / eye.velocity : 0f);
-        }
-
-        float hdr = GazeJoint.DistanceToRotate(GazeController.Head.bone.localRotation,
-            GazeController.Head._ComputeTargetRotation(gazeTarget.transform.position));
-        float OMR = Mathf.Min(GazeController.LEye.inMR + GazeController.LEye.outMR,
-            GazeController.LEye.upMR + GazeController.LEye.downMR);
-        float hdrmin = Mathf.Clamp(hdr - OMR, 0f, float.MaxValue);
-        float hdra = (1f - HeadAlign) * hdrmin + HeadAlign * hdr;
-        float headRotTime = GazeController.Head.velocity > 0f ? hdra / GazeController.Head.velocity : 0f;
-
-        return Mathf.Max(headRotTime, eyeRotTime);
     }
 
     // Handler for gaze controller state changes

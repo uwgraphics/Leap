@@ -270,35 +270,6 @@ public class GazeController : AnimController
     }
 
     /// <summary>
-    /// Estimated time duration of the current gaze shift.
-    /// </summary>
-    public float EstTimeLength
-    {
-        get
-        {
-            if (StateId == (int)GazeState.Shifting)
-            {
-                float eyeRotTime = 0f;
-                foreach (var eye in eyes)
-                {
-                    float evm = 0.75f * eye.maxVelocity;
-                    float edr = Mathf.Min(eye.distRotAlign, eye.distRotMR);
-                    eyeRotTime = Mathf.Max(eyeRotTime, evm > 0f ? edr / evm : 0f);
-                }
-
-                float hvm = 0.625f * Head.maxVelocity;
-                float headRotTime = hvm > 0f ? Head.distRotAlign / hvm : 0f;
-
-                return Mathf.Max(headRotTime, eyeRotTime);
-            }
-            else
-            {
-                return 0f;
-            }
-        }
-    }
-
-    /// <summary>
     /// Measure of how cross-eyed the character is, as angle between
     /// eye direction vectors.
     /// </summary>
@@ -693,6 +664,15 @@ public class GazeController : AnimController
             gazeJoints[ji].bone.localRotation = curRots[ji];
     }
 
+    /// <summary>
+    /// Remove roll component from rotations of all the gaze joints.
+    /// </summary>
+    public virtual void RemoveRoll()
+    {
+        foreach (var gazeJoint in gazeJoints)
+            gazeJoint._RemoveRoll();
+    }
+
     // Initialize gaze parameters at the start of a gaze shift
     public virtual void _InitGazeParams()
     {
@@ -966,16 +946,15 @@ public class GazeController : AnimController
     }
 
     // Compute torso rotational amplitude from overall gaze shift amplitude
-    public virtual float _ComputeTorsoDistanceToRotate()
+    public virtual float _ComputeMinTorsoDistanceToRotate()
     {
         if (!enableAutoTorso)
             return 0;
 
-        float dreff = (1f - Torso.curAlign) * Amplitude + 120f * Torso.curAlign;
-        if (dreff >= 40f)
-            return 0.43f * Mathf.Exp(0.029f * dreff) + 0.186f;
-        else if (dreff >= 20f)
-            return 0.078f * dreff - 1.558f;
+        if (Amplitude >= 40f)
+            return 0.43f * Mathf.Exp(0.029f * Amplitude) + 0.186f;
+        else if (Amplitude >= 20f)
+            return 0.078f * Amplitude - 1.558f;
 
         return 0;
     }
@@ -1474,7 +1453,7 @@ public class GazeController : AnimController
             {
                 // Only the last torso joint needs the exact trgRotAlign value,
                 // because it drives the rest of the torso joints
-                float dr = _ComputeTorsoDistanceToRotate();
+                float dr = _ComputeMinTorsoDistanceToRotate();
                 float fdr = GazeJoint.DistanceToRotate(joint.srcRot, joint.trgRot);
                 float amin = joint.srcRot != joint.trgRot ? dr / fdr : 0f;
                 joint.trgRotAlign = Quaternion.Slerp(joint.srcRot, joint.trgRot, amin);

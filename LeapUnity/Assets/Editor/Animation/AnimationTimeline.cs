@@ -11,6 +11,7 @@ using System.Linq;
 public class AnimationTimeline
 {
     public delegate void TimelineControlEvtH(bool controlState);
+    public delegate void AllAnimationEvtH();
     public delegate void LayerEvtH(string layerName);
     public delegate void AnimationEvtH(int animationInstanceId);
 
@@ -23,6 +24,11 @@ public class AnimationTimeline
     /// Event triggered when animation timeline is deactivated.
     /// </summary>
     public event TimelineControlEvtH TimelineDeactivated;
+
+    /// <summary>
+    /// Event triggered when animation timeline is deactivated.
+    /// </summary>
+    public event AllAnimationEvtH AllAnimationApplied;
 
     /// <summary>
     /// Event triggered on every animation frame when a layer has been applied.
@@ -704,6 +710,21 @@ public class AnimationTimeline
     }
 
     /// <summary>
+    /// Enable/disable all IK solvers on all loaded models.
+    /// </summary>
+    /// <param name="enabled">If true, solvers will be enabled, otherwise they will be disabled</param>
+    public void SetIKEnabled(bool enabled = true)
+    {
+        ModelController[] models = GetAllModels();
+        foreach (var model in models)
+        {
+            IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+            foreach (var solver in solvers)
+                solver.enabled = enabled;
+        }
+    }
+
+    /// <summary>
     /// Initialize the animation timeline
     /// </summary>
     public void Init()
@@ -1031,6 +1052,8 @@ public class AnimationTimeline
     {
         ModelController[] models = GetAllModels();
 
+        // Reset models and IK solvers
+        _ClearIKGoals();
         ResetModelsToInitialPose();
 
         // Apply active animation instances in layers in correct order
@@ -1105,9 +1128,10 @@ public class AnimationTimeline
 
         // Apply any active end-effector constraints
         _SolveIK();
-        _ClearIKGoals();
 
+        // Store final pose and notify listeners that animation is applied
         _StoreModelsCurrentPose();
+        AllAnimationApplied();
     }
 
     private bool _AddTime(float deltaTime)

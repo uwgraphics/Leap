@@ -17,7 +17,29 @@ public class AnimationEditGizmos : MonoBehaviour
     /// <summary>
     /// If true, active end-effector constraints will be visually indicated in the scene view.
     /// </summary>
-    public bool showEndEffectorConstraints = false;
+    public bool showEndEffectorGoals = false;
+
+    private Dictionary<Transform, IKGoal> _endEffectorGoals = new Dictionary<Transform, IKGoal>();
+
+    /// <summary>
+    /// Set end-effector IK goals so that gizmos can be rendered.
+    /// </summary>
+    /// <param name="goals">End-effector IK goals</param>
+    public void _SetEndEffectorGoals(IKGoal[] goals)
+    {
+        for (int goalIndex = 0; goalIndex < goals.Length; ++goalIndex)
+        {
+            _endEffectorGoals[goals[goalIndex].endEffector] = goals[goalIndex];
+        }
+    }
+
+    /// <summary>
+    /// Clear end-effector IK goals so that gizmos are no longer rendered.
+    /// </summary>
+    public void _ClearEndEffectorGoals()
+    {
+        _endEffectorGoals.Clear();
+    }
 
     private void OnDrawGizmos()
     {
@@ -26,9 +48,9 @@ public class AnimationEditGizmos : MonoBehaviour
             _DrawGazeTargets();
         }
 
-        if (showEndEffectorConstraints)
+        if (showEndEffectorGoals)
         {
-            _DrawEndEffectorConstraints();
+            _DrawEndEffectorGoals();
         }
     }
 
@@ -56,31 +78,12 @@ public class AnimationEditGizmos : MonoBehaviour
         }
     }
 
-    private void _DrawEndEffectorConstraints()
+    private void _DrawEndEffectorGoals()
     {
-        var model = ModelUtils.GetSelectedModel();
-        if (model == null)
-            return;
-
-        IKSolver[] solvers = model.GetComponents<IKSolver>();
-        HashSet<Transform> endEffectorsShown = new HashSet<Transform>();
-        foreach (var solver in solvers)
+        foreach (KeyValuePair<Transform, IKGoal> kvp in _endEffectorGoals)
         {
-            if (!solver.enabled)
-                continue;
-
-            foreach (var goal in solver.Goals)
-            {
-                if (!endEffectorsShown.Contains(goal.endEffector))
-                {
-                    // Show end-effector constraint
-                    Gizmos.DrawIcon(goal.position, "EndEffectorConstraintGizmo.png");
-                    endEffectorsShown.Add(goal.endEffector);
-                    // TODO: if goal weight < 0, we shouldn't render the gizmo
-                    // however, for some idiotic reason OnDrawGizmos() gets called before
-                    // LeapAnimationEditor.Update(), so IK goals aren't updated yet
-                }
-            }
+            Gizmos.DrawIcon(kvp.Value.position, "EndEffectorConstraintGizmo.png");
+            // TODO: should also indicate goal orientation and weight
         }
     }
 }

@@ -49,6 +49,7 @@ public class LeapAnimationEditor : EditorWindow
             Timeline.Stop();
             
             // Subscribe to events from the animation timeline
+            Timeline.AllAnimationApplied += new AnimationTimeline.AllAnimationEvtH(AnimationTimeline_AllAnimationApplied);
             Timeline.LayerApplied += new AnimationTimeline.LayerEvtH(AnimationTimeline_LayerApplied);
             Timeline.AnimationStarted += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
             Timeline.AnimationFinished += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationFinished);
@@ -154,16 +155,9 @@ public class LeapAnimationEditor : EditorWindow
 
         // Enable/disable IK on all models
         {
-            ModelController[] models = Timeline.GetAllModels();
-
             bool prevIKEnabled = _ikEnabled;
             _ikEnabled = GUI.Toggle(new Rect(20, layerToggleTop + 30, 140, 20), _ikEnabled, "IK");
-            foreach (var model in models)
-            {
-                IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
-                foreach (var solver in solvers)
-                    solver.enabled = _ikEnabled;
-            }
+            Timeline.SetIKEnabled(_ikEnabled);
 
             if (_ikEnabled != prevIKEnabled)
                 SceneView.RepaintAll();
@@ -215,6 +209,20 @@ public class LeapAnimationEditor : EditorWindow
         _timelineNextFrameTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineNextFrame");
 
         _guiInitialized = true;
+    }
+
+    private void AnimationTimeline_AllAnimationApplied()
+    {
+        _animationEditGizmos._ClearEndEffectorGoals();
+        var selectedModel = Timeline.GetAllModels().FirstOrDefault(m => ModelUtils.GetSelectedModel());
+        if (selectedModel != null)
+        {
+            IKSolver[] solvers = selectedModel.gameObject.GetComponents<IKSolver>();
+            foreach (var solver in solvers)
+            {
+                _animationEditGizmos._SetEndEffectorGoals(solver.Goals.ToArray());
+            }
+        }
     }
 
     private void AnimationTimeline_LayerApplied(string layerName)

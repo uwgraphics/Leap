@@ -1,6 +1,10 @@
 Leap Animation Editor:
 
-#49 [] End-effector goals are not displayed in the scene view when the character is selected
+#51 [] Spine joints in body motions often have roll movement (around the z axis), which our gaze model does not use - this invalidates head and torso alignment inferences
+  - Related to #24
+  - When non-zero roll is applied to a torso joint, it can have substantial effect on alignments, so our old approach of just ignoring roll isn't going to cut it anymore
+
+#49 [X] End-effector goals are not displayed in the scene view when the character is selected
 
 #48 [X] Current approach for gazing back and blending into the original motion has a bug where the character's pose snaps to the original motion instead of blending smoothly
   - Happens with Roman in the PassSoda test case
@@ -41,6 +45,7 @@ Leap Animation Editor:
   - Doesn't seem to be present in baked animation
 
 #24 [] Inference of head and torso alignment values seems to be incorrect in EyeGazeEditor
+  - Appears to work now for some gaze shifts, but not so for others - possibly because the body motion encodes gaze shifts that are not possible with our gaze model
 
 #43 [X] Gaze annotations loading incorrectly - some get extended inordinately
   - See WindowWashingAGaze24, for instance
@@ -248,6 +253,13 @@ Leap Animation Editor:
 
 
 Character Models:
+
+#50 [] In some of our test animations, the character's torso rotates very little
+  - Confirmed for WindowWashing, should check others
+  - More specifically, rotation of the torso is accomplished through torso movement - this is the opposite of how our gaze model currently works
+  - Possible causes - 1) that's natural human movement; 2) idiosyncrasy of the actor; 3) weird artifact of retargeting
+  - This is a problem b/c we can't achieve this kind of motion with our current gaze model
+  - Will be addressed when we extend the gaze model to pelvis movement
 
 #39 [X] In a multicharacter scenario, when a shorter base animation finishes, the model is reset to initial pose, but still shown in the scene
   - The solution is to keyframe the position in all but the longest animation such that the character gets moved out of view, and hold this keyframe until the end of the longest animation

@@ -55,7 +55,7 @@ public class GazeJoint : DirectableJoint
     /// When the gaze joint will start moving relative to its immediate child
     /// in a gaze shift (in ms).
     /// </summary>
-    public float latency = 0f;
+    public float latency = 100f;
 
     // Current joint velocity
     [HideInInspector]
@@ -771,6 +771,7 @@ public class GazeJoint : DirectableJoint
             Quaternion.identity : Quaternion.FromToRotation(l_dir0, l_dir));
 
         // Strip roll out of the target rotation
+        // TODO: should this be conditional upon gazeCtrl.removeRoll?
         trgrot *= COBRot;
         Quaternion li_rot = mdlCtrl.GetInitRotation(bone) * COBRot;
         trgrot = Quaternion.Inverse(li_rot) * trgrot;
