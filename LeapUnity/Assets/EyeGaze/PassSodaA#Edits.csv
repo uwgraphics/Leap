@@ -1,3 +1,3 @@
 Character,AnimationClip,StartFrame,EndFrame,Target,HeadAlign,TorsoAlign
-Norman,PassSodaAGaze3,69,106,NormanetteFace,1,-1
-Norman,PassSodaAGaze6,152,190,NormanetteBack,1,-1
+Norman,PassSodaAGaze3,69,106,NormanetteFace,1,0
+Norman,PassSodaAGaze6,152,190,NormanetteBack,1,0

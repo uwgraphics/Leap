@@ -282,7 +282,7 @@ public static class EyeGazeEditor
                     int startFrame = int.Parse(lineElements[attributeIndices["StartFrame"]]);
                     int frameLength = int.Parse(lineElements[attributeIndices["EndFrame"]]) - startFrame + 1;
                     int fixationStartFrame = attributeIndices.ContainsKey("FixationStartFrame") ?
-                        int.Parse(lineElements[attributeIndices["FixationStartFrame"]]) : -1;
+                        int.Parse(lineElements[attributeIndices["FixationStartFrame"]]) : frameLength - 1;
                     
                     // Get gaze target
                     string gazeTargetName = lineElements[attributeIndices["Target"]];
@@ -402,6 +402,25 @@ public static class EyeGazeEditor
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Print eye gaze instances to the Unity console.
+    /// </summary>
+    public static void PrintEyeGaze(AnimationTimeline timeline)
+    {
+        foreach (var instance in timeline.GetLayer("Gaze").Animations)
+        {
+            UnityEngine.Debug.Log(string.Format(
+                "EyeGazeInstance: model = {0}, animationClip = {1}, startFrame = {2}, fixationStartFrame = {3}, endFrame = {4}, target = {5}, headAlign = {6}, torsoAlign = {7}, isEdit = {8}",
+                instance.Animation.Model.gameObject.name, instance.Animation.AnimationClip.name,
+                instance.StartFrame,
+                instance.StartFrame + (instance.Animation as EyeGazeInstance).FixationStartFrame,
+                instance.StartFrame + instance.Animation.FrameLength - 1,
+                (instance.Animation as EyeGazeInstance).Target != null ? (instance.Animation as EyeGazeInstance).Target.name : "null",
+                (instance.Animation as EyeGazeInstance).HeadAlign, (instance.Animation as EyeGazeInstance).TorsoAlign,
+                (instance.Animation as EyeGazeInstance).IsEdit));
+        }
     }
 
     /// <summary>

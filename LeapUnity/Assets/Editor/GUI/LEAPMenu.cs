@@ -132,7 +132,7 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            PrintEyeGaze();
+            EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[2];
@@ -161,7 +161,7 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            PrintEyeGaze();
+            EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[3];
@@ -185,7 +185,7 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            PrintEyeGaze();
+            EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[1];
@@ -214,29 +214,10 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGazeForModel(timeline, bodyAnimationNorman.AnimationClip.name, "Gaze");
-            PrintEyeGaze();
+            EyeGazeEditor.PrintEyeGaze(timeline);
         }
 
         timeline.Init();
-    }
-
-    private static void PrintEyeGaze()
-    {
-        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
-        var timeline = wnd.Timeline;
-
-        foreach (var instance in timeline.GetLayer("Gaze").Animations)
-        {
-            Debug.Log(string.Format(
-                "EyeGazeInstance: model = {0}, animationClip = {1}, startFrame = {2}, fixationStartFrame = {3}, endFrame = {4}, target = {5}, headAlign = {6}, torsoAlign = {7}, isEdit = {8}",
-                instance.Animation.Model.gameObject.name, instance.Animation.AnimationClip.name,
-                instance.StartFrame,
-                instance.StartFrame + (instance.Animation as EyeGazeInstance).FixationStartFrame,
-                instance.StartFrame + instance.Animation.FrameLength - 1,
-                (instance.Animation as EyeGazeInstance).Target != null ? (instance.Animation as EyeGazeInstance).Target.name : "null",
-                (instance.Animation as EyeGazeInstance).HeadAlign, (instance.Animation as EyeGazeInstance).TorsoAlign,
-                (instance.Animation as EyeGazeInstance).IsEdit));
-        }
     }
 
     [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 5)]
@@ -305,9 +286,34 @@ public class LEAPMenu
 
             // Save and print inferred eye gaze
             EyeGazeEditor.SaveEyeGazeForModel(timeline, baseAnimationClip.name);
-            PrintEyeGaze();
+            EyeGazeEditor.PrintEyeGaze(timeline);
         }
         SceneView.RepaintAll();
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze Edits", true, 8)]
+    private static bool ValidateLoadEyeGazeEdits()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        return wnd.Timeline != null;
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze Edits", false, 8)]
+    private static void LoadEyeGazeEdits()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+        var models = timeline.GetAllModels();
+        string[] baseAnimationClipNames = new string[models.Length];
+
+        for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
+        {
+            var model = models[modelIndex];
+            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model).Animation;
+
+            EyeGazeEditor.LoadEyeGazeForModel(timeline, baseAnimation.AnimationClip.name, "Gaze", true);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+        }
     }
 
     [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true, 9)]
