@@ -105,12 +105,12 @@ public class TorsoExperiment1 : Scenario
 	{
 		int action_id = -1;
 		GazeController gctrl = agents[agentName].GetComponent<GazeController>();
-		gctrl.enableAutoTorso = true;
+		gctrl.useTorso = true;
 		switch(gsType)
 		{
 			
 		case GazeShiftType.EyeHead:
-			gctrl.enableAutoTorso = false;
+                gctrl.useTorso = false;
 			action_id = GazeAt(agentName,targetName,0.3f,0f,0f,0f,1f );
 			break;
 			

@@ -49,6 +49,13 @@ public class GazeController : AnimController
     public GazeJoint[] gazeJoints = new GazeJoint[0];
 
     /// <summary>
+    /// If true and torso joints are defined, the gaze controller will recruit
+    /// them when performing the gaze shift; otherwise it will only
+    /// move the eyes and head.
+    /// </summary>
+    public bool useTorso = true;
+
+    /// <summary>
     /// Predictability of the gaze target (0-1). 
     /// </summary>
     public float predictability = 1f;
@@ -107,12 +114,6 @@ public class GazeController : AnimController
     public float maxCrossEyedness = 2f;
 
     /// <summary>
-    /// If true, some torso motion will be automatically introduced into
-    /// large gaze shifts.
-    /// </summary>
-    public bool enableAutoTorso = true;
-
-    /// <summary>
     /// If true, roll component of gaze joint rotations will be removed
     /// during animation.
     /// </summary>
@@ -135,6 +136,7 @@ public class GazeController : AnimController
 
     protected GameObject curGazeTarget = null; // Current gaze target
     protected Vector3 curMovingTargetPosOff = Vector3.zero; // Rel. position offset of the current target in near future
+    protected bool curUseTorso = true;
     protected float adjEyeAlign = 1f;
     protected float maxCrEyedView = 0f; // Maximum cross-eyedness allowed, adjusted by view angle
     protected Vector3 effGazeTrgPos; // Effective gaze target position
@@ -333,6 +335,15 @@ public class GazeController : AnimController
     {
         get { return curGazeTarget; }
         set { curGazeTarget = value; }
+    }
+
+    /// <summary>
+    /// Get the index of the last gaze joint recruited by the gaze controller
+    /// for the current gaze shift.
+    /// </summary>
+    public virtual int LastGazeJointIndex
+    {
+        get { return curUseTorso ? gazeJoints.Length - 1: torsoIndex - 1; }
     }
 
     /// <summary>
@@ -574,7 +585,7 @@ public class GazeController : AnimController
         }
 
         // Initialize target rotations of joints for the fixation target
-        for (int ji = gazeJoints.Length - 1; ji >= 0; --ji)
+        for (int ji = LastGazeJointIndex; ji >= 0; --ji)
         {
             GazeJoint joint = gazeJoints[ji];
             joint._InitVOR();
@@ -596,7 +607,7 @@ public class GazeController : AnimController
     /// </summary>
     public virtual void ApplyVOR()
     {
-        for (int ji = gazeJoints.Length - 1; ji >= 0; --ji)
+        for (int ji = LastGazeJointIndex; ji >= 0; --ji)
         {
             GazeJoint joint = gazeJoints[ji];
             joint._ApplyVOR();
@@ -619,7 +630,7 @@ public class GazeController : AnimController
     /// </summary>
     public virtual void ApplySourcePose()
     {
-        for (int ji = gazeJoints.Length - 1; ji >= 0; --ji)
+        for (int ji = LastGazeJointIndex; ji >= 0; --ji)
         {
             curRots[ji] = gazeJoints[ji].bone.localRotation;
             gazeJoints[ji].bone.localRotation = gazeJoints[ji].srcRot;
@@ -632,7 +643,7 @@ public class GazeController : AnimController
     /// </summary>
     public virtual void ApplyTargetPose()
     {
-        for (int ji = gazeJoints.Length - 1; ji >= 0; --ji)
+        for (int ji = LastGazeJointIndex; ji >= 0; --ji)
         {
             GazeJoint joint = gazeJoints[ji];
             curRots[ji] = joint.bone.localRotation;
@@ -660,7 +671,7 @@ public class GazeController : AnimController
     /// </summary>
     public virtual void ReapplyCurrentPose()
     {
-        for (int ji = gazeJoints.Length - 1; ji >= 0; --ji)
+        for (int ji = LastGazeJointIndex; ji >= 0; --ji)
             gazeJoints[ji].bone.localRotation = curRots[ji];
     }
 
@@ -669,8 +680,11 @@ public class GazeController : AnimController
     /// </summary>
     public virtual void RemoveRoll()
     {
-        foreach (var gazeJoint in gazeJoints)
+        for (int gji = 0; gji <= LastGazeJointIndex; ++gji)
+        {
+            var gazeJoint = gazeJoints[gji];
             gazeJoint._RemoveRoll();
+        }
     }
 
     // Initialize gaze parameters at the start of a gaze shift
@@ -678,13 +692,14 @@ public class GazeController : AnimController
     {
         _CurrentGazeTarget = gazeTarget;
         curMovingTargetPosOff = movingTargetPositionOffset;
+        curUseTorso = useTorso;
 
         // Eyes geometry parameters
         eyeSize = Mathf.Clamp(eyeSize, 1f, 5.8f); // eyes can't be larger than the head...
         eyeTorque = eyeTorque < 1f ? 1f : eyeTorque;
 
         // Initialize per-joint parameters
-        for (int gji = 0; gji < gazeJoints.Length; ++gji)
+        for (int gji = 0; gji <= LastGazeJointIndex; ++gji)
         {
             GazeJoint joint = gazeJoints[gji];
             joint._InitGazeParams();
@@ -718,8 +733,8 @@ public class GazeController : AnimController
         }
 
         // Compute torso joint latencies
-        for (int gji = gazeJoints.Length - 1;
-            torsoIndex > 0 && gji >= torsoIndex; --gji)
+        for (int gji = LastGazeJointIndex;
+            torsoIndex > 0 && curUseTorso && gji >= torsoIndex; --gji)
         {
             GazeJoint joint = gazeJoints[gji];
             joint.latency = _ComputeTorsoLatency();
@@ -728,7 +743,7 @@ public class GazeController : AnimController
         // Initialize per-joint parameters
         float st0 = 0;
         float stmin = float.MaxValue;
-        for (int i = 0; i < gazeJoints.Length; ++i)
+        for (int i = 0; i <= LastGazeJointIndex; ++i)
         {
             GazeJoint joint = gazeJoints[i];
             GazeJoint last = GetLastGazeJointInChain(joint.type);
@@ -741,8 +756,11 @@ public class GazeController : AnimController
         if (stmin < 0)
         {
             stmin = Mathf.Abs(stmin);
-            foreach (GazeJoint joint in gazeJoints)
+            for (int i = 0; i <= LastGazeJointIndex; ++i)
+            {
+                GazeJoint joint = gazeJoints[i];
                 joint.latencyTime += stmin;
+            }
         }
     }
 
@@ -757,7 +775,7 @@ public class GazeController : AnimController
                             Mathf.Max(Mathf.Max(eye.curUpMR, eye.curDownMR),
                                       Mathf.Max(eye.curInMR, eye.curOutMR)));*/
         
-        if (Torso != null)
+        if (Torso != null && curUseTorso)
         {
             // For the upper body joints
             float torsoDistRotAlign = _ComputeDistRotAlignForMovingTarget(Torso);
@@ -778,7 +796,7 @@ public class GazeController : AnimController
 
         // For the head joints
         float headDistRotAlign = _ComputeDistRotAlignForMovingTarget(Head);
-        for (int gji = headIndex; gji < torsoIndex; ++gji)
+        for (int gji = headIndex; torsoIndex > -1 ? gji < torsoIndex : gji <= LastGazeJointIndex; ++gji)
         {
             GazeJoint joint = gazeJoints[gji];
 
@@ -921,9 +939,12 @@ public class GazeController : AnimController
             q = (1f + 0.2f * rdt) * q;
 
             // Speed up or slow down joints depending on quickness
-            foreach (GazeJoint joint in gazeJoints)
+            for (int i = 0; i <= LastGazeJointIndex; ++i)
+            {
+                GazeJoint joint = gazeJoints[i];
                 if (stylizeGaze)
                     joint.maxVelocity *= q;
+            }
         }
     }
 
@@ -948,9 +969,6 @@ public class GazeController : AnimController
     // Compute torso rotational amplitude from overall gaze shift amplitude
     public virtual float _ComputeMinTorsoDistanceToRotate()
     {
-        if (!enableAutoTorso)
-            return 0;
-
         if (Amplitude >= 40f)
             return 0.43f * Mathf.Exp(0.029f * Amplitude) + 0.186f;
         else if (Amplitude >= 20f)
@@ -985,22 +1003,23 @@ public class GazeController : AnimController
 
         // Initialize every gaze joint
         List<GazeJoint> eye_list = new List<GazeJoint>();
-        List<GazeJoint> headneck_list = new List<GazeJoint>();
+        List<GazeJoint> head_list = new List<GazeJoint>();
         List<GazeJoint> torso_list = new List<GazeJoint>();
-        foreach (GazeJoint joint in gazeJoints)
+        for (int i = 0; i <= LastGazeJointIndex; ++i)
         {
+            GazeJoint joint = gazeJoints[i];
             joint.Init(gameObject);
 
             if (joint.type == GazeJointType.LEye || joint.type == GazeJointType.REye)
                 eye_list.Add(joint);
             else if (joint.type == GazeJointType.Head)
-                headneck_list.Add(joint);
+                head_list.Add(joint);
             else // if( joint.type == GazeJointType.Torso )
                 torso_list.Add(joint);
         }
         eyes = eye_list.ToArray();
-        headNeck = headneck_list.ToArray();
-        torso = headneck_list.ToArray();
+        headNeck = head_list.ToArray();
+        torso = head_list.ToArray();
 
         // Find/create helper gaze target
         string helperTargetName = gameObject.name + "GazeHelper";
@@ -1135,7 +1154,7 @@ public class GazeController : AnimController
         int eyes_blocked = 0; // Number of eye joints blocked by OMR limits
 
         // Rotate each joint
-        for (int ji = gazeJoints.Length - 1; ji >= 0; --ji)
+        for (int ji = LastGazeJointIndex; ji >= 0; --ji)
         {
             GazeJoint joint = gazeJoints[ji];
 
@@ -1208,7 +1227,7 @@ public class GazeController : AnimController
         if ((eyes_aligned + eyes_blocked >= eyes.Length
             || stylizeGaze && eyes_aligned > 0) && // TODO: This causes a minor error in target pose,
             // but could it become a problem in some circumstances?
-           body_aligned == gazeJoints.Length - eyes.Length)
+           body_aligned == LastGazeJointIndex + 1 - eyes.Length)
         {
             return true;
         }
@@ -1371,15 +1390,21 @@ public class GazeController : AnimController
     // Store base rotations of gaze joints (before gaze is applied)
     protected virtual void _InitBaseRotations()
     {
-        foreach (var gazeJoint in gazeJoints)
-            gazeJoint.baseRot = gazeJoint.bone.localRotation;
+        for (int i = 0; i <= LastGazeJointIndex; ++i)
+        {
+            GazeJoint joint = gazeJoints[i];
+            joint.baseRot = joint.bone.localRotation;
+        }
     }
 
     // Apply base rotations of gaze joints (before gaze is applied)
     protected virtual void _ApplyBaseRotations()
     {
-        foreach (var gazeJoint in gazeJoints)
-            gazeJoint.bone.localRotation = gazeJoint.baseRot;
+        for (int i = 0; i <= LastGazeJointIndex; ++i)
+        {
+            GazeJoint joint = gazeJoints[i];
+            joint.bone.localRotation = joint.baseRot;
+        }
     }
 
     // Compute target pose of the eyes (at the end of the gaze shift)
@@ -1440,10 +1465,10 @@ public class GazeController : AnimController
     // Compute base target pose of the torso joints
     protected virtual void _InitTorsoTargetRotations()
     {
-        if (torsoIndex < 0)
+        if (torsoIndex < 0 || !curUseTorso)
             return;
 
-        for (int gji = gazeJoints.Length - 1; gji >= torsoIndex; --gji)
+        for (int gji = LastGazeJointIndex; gji >= torsoIndex; --gji)
         {
             GazeJoint joint = gazeJoints[gji];
             joint.trgRot = joint._ComputeTargetRotation(EffGazeTargetPosition);
@@ -1515,7 +1540,7 @@ public class GazeController : AnimController
     protected virtual void _InitMinHeadTargetRotations()
     {
         // Initialize head target rotations
-        for (int gji = torsoIndex - 1; gji >= headIndex; --gji)
+        for (int gji = (torsoIndex > -1 ? torsoIndex - 1 : LastGazeJointIndex); gji >= headIndex; --gji)
         {
             GazeJoint joint = gazeJoints[gji];
             joint.trgRot = joint._ComputeTargetRotation(EffGazeTargetPosition);

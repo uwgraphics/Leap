@@ -644,9 +644,6 @@ public class GazeJoint : DirectableJoint
         return trgReached;
     }
 
-    //
-    Quaternion prevRot;
-    //
     public void _ApplyRotation(Quaternion q)
     {
         var last = gazeCtrl.GetLastGazeJointInChain(type);

@@ -202,12 +202,12 @@ public class LEAPMenu
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "InitialPose");
             timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
             //
-            timeline.AddLayer(AnimationLayerMode.Override, 1, "HeadAnimation");
+            /*timeline.AddLayer(AnimationLayerMode.Override, 1, "HeadAnimation");
             var headAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "LookRight");
             timeline.AddAnimation("HeadAnimation", headAnimationNorman, 0);
             timeline.AddAnimation("HeadAnimation", headAnimationNorman, 30);
             timeline.AddAnimation("HeadAnimation", headAnimationNorman, 60);
-            /*timeline.AddAnimation("HeadAnimation", headAnimationNorman, 90);
+            timeline.AddAnimation("HeadAnimation", headAnimationNorman, 90);
             timeline.AddAnimation("HeadAnimation", headAnimationNorman, 100);
             timeline.AddAnimation("HeadAnimation", headAnimationNorman, 125);*/
             //
@@ -310,10 +310,10 @@ public class LEAPMenu
         {
             var model = models[modelIndex];
             var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model).Animation;
-
             EyeGazeEditor.LoadEyeGazeForModel(timeline, baseAnimation.AnimationClip.name, "Gaze", true);
-            EyeGazeEditor.PrintEyeGaze(timeline);
         }
+
+        EyeGazeEditor.PrintEyeGaze(timeline);
     }
 
     [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true, 9)]

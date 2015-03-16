@@ -181,22 +181,39 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// Frame (relative to the start of the gaze instance) when the gaze shift
     /// is expected to finish and the fixation start.
     /// </summary>
-    public virtual float FixationStartFrame
+    public virtual int FixationStartFrame
     {
         get { return (int)(FixationStartTime * LEAPCore.editFrameRate + 0.5f); }
     }
 
     /// <summary>
-    /// If true, this eye gaze instance is an edit. If false, this eye gaze instance
-    /// represents an unmodified gaze shift from the original animation.
+    /// If true, the gaze controller will recruit the body when shifting the gaze
+    /// towards the target; otherwise, only the eyes and head will move.
     /// </summary>
-    public virtual bool IsEdit
+    public virtual bool TurnBody
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// If false, this eye gaze instance is an edit; otherwise,
+    /// represents a gaze shift from the base animation.
+    /// </summary>
+    public virtual bool IsBase
     {
         get;
         protected set;
     }
 
     protected bool _gazeShiftStarted = false;
+
+    protected float _baseStartTime = 0f;
+    protected float _baseFixationStartTime = 0f;
+    protected float _baseTimeLength = 0f;
+    protected Quaternion _baseStartRotation = Quaternion.identity;
+    protected Quaternion _baseFixationStartRotation = Quaternion.identity;
+    protected Quaternion _baseEndRotation = Quaternion.identity;
 
     /// <summary>
     /// Constructor.
@@ -207,16 +224,25 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// <param name="target">Gaze target (null will generate a random gaze aversion)</param>
     /// <param name="headAlign">Head alignment</param>
     /// <param name="torsoAlign">Torso alignment</param>
+    /// <param name="fixationStartFrame">Frame (relative to the start of the gaze instance) when the gaze shift
+    /// is expected to finish and the fixation start; only relevant when the gaze instance is not a novel edit</param>
+    /// <param name="turnBody">If true, the gaze controller will recruit the body when shifting the gaze
+    /// towards the target; otherwise, only the eyes and head will move</param>
+    /// <param name="isBase">If false, this eye gaze instance is an edit; otherwise, it
+    /// represents a gaze shift from the base animation.</param>
+    /// <param name="baseStartFrame">Start frame of the eye gaze instance starts in the base animation;
+    /// only relevant when the gaze instance is not a novel edit</param>
     public EyeGazeInstance(GameObject model, string animationClipName,
         int frameLength = 30, GameObject target = null, float headAlign = 0f, float torsoAlign = 0f,
-        int fixationStartFrame = -1, bool isEdit = true)
+        int fixationStartFrame = -1, bool turnBody = true, bool isBase = false, int baseStartFrame = 0)
         : base(model, animationClipName, typeof(GazeController), frameLength)
     {
         Target = target;
         HeadAlign = headAlign;
         TorsoAlign = torsoAlign;
         SetFixationStartFrame(fixationStartFrame);
-        IsEdit = isEdit;
+        TurnBody = turnBody;
+        IsBase = isBase;
 
         // Bake only animation curves for eyes, head, and torso
         BakeMask.SetAll(false);
@@ -228,6 +254,13 @@ public class EyeGazeInstance : AnimationControllerInstance
             BakeMask.Set(curveIndex++, true);
             BakeMask.Set(curveIndex++, true);
             BakeMask.Set(curveIndex, true);
+        }
+
+        if (isBase)
+        {
+            _baseStartTime = ((float)baseStartFrame) / LEAPCore.editFrameRate;
+            _baseFixationStartTime = ((float)fixationStartFrame) / LEAPCore.editFrameRate;
+            _baseTimeLength = ((float)frameLength) / LEAPCore.editFrameRate;
         }
     }
 
@@ -254,16 +287,14 @@ public class EyeGazeInstance : AnimationControllerInstance
         //if (Target != null)
         {
             // Initiate gaze shift to target
-            if (GazeController.Head != null)
-            {
-                GazeController.Head.align = Mathf.Clamp01(HeadAlign);
-                GazeController.Head.baseWeight = 1f;
-            }
+            GazeController.Head.align = Mathf.Clamp01(HeadAlign);
+            GazeController.Head.baseWeight = 1f;
             if (GazeController.Torso != null)
             {
                 GazeController.Torso.align = Mathf.Clamp01(TorsoAlign);
                 GazeController.Torso.baseWeight = 1f;
             }
+            GazeController.useTorso = TurnBody;
             GazeController.GazeAt(Target);
             GazeController.movingTargetPositionOffset = _ComputeMovingTargetPositionOffset();
         }

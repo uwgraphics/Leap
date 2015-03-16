@@ -1,5 +1,7 @@
 Leap Animation Editor:
 
+#52 [] Adding a gaze instance that overlaps multiple other gaze instances does not work correctly
+
 #51 [] Spine joints in body motions often have roll movement (around the z axis), which our gaze model does not use - this invalidates head and torso alignment inferences
   - Related to #24
   - When non-zero roll is applied to a torso joint, it can have substantial effect on alignments, so our old approach of just ignoring roll isn't going to cut it anymore

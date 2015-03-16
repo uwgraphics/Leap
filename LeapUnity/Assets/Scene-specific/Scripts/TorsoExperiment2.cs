@@ -244,7 +244,7 @@ public class TorsoExperiment2 : Scenario
 		float headAlign, float torsoAlign )
 	{
 		GazeController gctrl = agents[agentName].GetComponent<GazeController>();
-		gctrl.enableAutoTorso = true;//expCondition == ExperimentCondition.ReorientBody ? true : false;
+        gctrl.useTorso = true;//expCondition == ExperimentCondition.ReorientBody ? true : false;
 		
 		return GazeAt(agentName, partLocationsAssigned[part], headAlign, 0, torsoAlign, 0, 1);
 	}
@@ -570,7 +570,7 @@ public class TorsoExperiment2 : Scenario
 		// Initialize agent's gaze controller
 		gazeCtrl = agents[agentName].GetComponent<GazeController>();
 		gazeCtrl.gazeJoints[2].align = 0.6f;
-		gazeCtrl.enableAutoTorso = true;//expCondition == ExperimentCondition.ReorientBody ? true : false;
+        gazeCtrl.useTorso = true;//expCondition == ExperimentCondition.ReorientBody ? true : false;
 		
 		// Initialize agent's listen controller
 		listenCtrl = agents[agentName].GetComponent<SimpleListenController>();
