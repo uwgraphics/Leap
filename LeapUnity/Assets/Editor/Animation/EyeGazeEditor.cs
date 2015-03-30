@@ -1093,22 +1093,47 @@ public static class EyeGazeEditor
         }
 
         // Get gaze joint orientations at key points of the gaze shift/fixation
-        Dictionary<Transform, Quaternion> baseStartRots = new Dictionary<Transform, Quaternion>();
-        Dictionary<Transform, Quaternion> baseFixationStartRots = new Dictionary<Transform, Quaternion>();
+        Dictionary<Transform, Quaternion> startRots = new Dictionary<Transform, Quaternion>();
+        Dictionary<Transform, Quaternion> fixationStartRots = new Dictionary<Transform, Quaternion>();
         baseAnimationInstance.Apply(eyeGazeStartFrame, AnimationLayerMode.Override);
         for (int gazeJointIndex = gazeController.eyes.Length; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
         {
             var bone = gazeController.gazeJoints[gazeJointIndex].bone;
-            baseStartRots[bone] = bone.localRotation;
+            startRots[bone] = bone.localRotation;
         }
         baseAnimationInstance.Apply(eyeGazeFixationStartFrame, AnimationLayerMode.Override);
         for (int gazeJointIndex = gazeController.eyes.Length; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
         {
-            var bone = gazeController.gazeJoints[gazeJointIndex].bone;
-            baseFixationStartRots[bone] = bone.localRotation;
+            var gazeJoint = gazeController.gazeJoints[gazeJointIndex];
+
+            // Compute gaze directions for the current joint in the base motion and
+            // along the shortest-arc path to the target
+            Quaternion baseTrgRot = gazeJoint.bone.localRotation;
+            Vector3 vfb = gazeJoint.Direction;
+            Quaternion trgRot = gazeJoint._ComputeTargetRotation(eyeGazeInstance.Target.transform.position);
+            gazeJoint.bone.localRotation = trgRot;
+            Vector3 vt = gazeJoint.Direction;
+            Quaternion qs = startRots[gazeJoint.bone];
+            gazeJoint.bone.localRotation = qs;
+            Vector3 vs = gazeJoint.Direction;
+            gazeJoint.bone.localRotation = baseTrgRot;
+
+            // Project the joint's direction vector onto the gaze shift rotational plane
+            // to obtain the target rotation along the shortest-arc path to the target
+            Vector3 n = !GeomUtil.Equal(vs, vt) ? Vector3.Cross(vs, vt) : Vector3.Cross(vs, -gazeJoint.bone.right);
+            Vector3 vf = Mathf.Abs(Vector3.Dot(vfb, n)) <= 0.995 ? GeomUtil.ProjectVectorOntoPlane(vfb, n) : vs; // TODO: this could lead to errors and discontinuities
+            vf.Normalize();
+            Quaternion dqf = Quaternion.FromToRotation(vs, vf);
+            Quaternion qf = startRots[gazeJoint.bone] * dqf;
+            fixationStartRots[gazeJoint.bone] = qf;
+
+            // Store shortest-arc gaze shift rotation in the base motion
+            expressiveEyeGazeRotations[gazeJoint.bone] = QuaternionUtil.Log(Quaternion.Inverse(qs) * qf);
         }
 
         // Extract expressive displacement animation curve at each frame, for each gaze joint
+        var baseFixationStartRots = new Dictionary<Transform, Quaternion>();
+        var fixationStartExprRots = new Dictionary<Transform, Quaternion>();
         for (int frame = eyeGazeStartFrame; frame <= eyeGazeEndFrame; ++frame)
         {
             baseAnimationInstance.Apply(frame, AnimationLayerMode.Override);
@@ -1123,14 +1148,14 @@ public static class EyeGazeEditor
                 // between gaze start and end rotations
                 float time = 0f;
                 Quaternion q = bone.localRotation;
-                Quaternion qf = baseFixationStartRots[bone];
+                Quaternion qf = fixationStartRots[bone];
                 Quaternion dq = Quaternion.identity;
                 if (frame <= eyeGazeFixationStartFrame)
                 {
                     // Computing rotational difference for the gaze shift
 
-                    Quaternion qs = baseStartRots[bone];
                     Vector3 v = bone.forward;
+                    Quaternion qs = startRots[bone];
                     bone.localRotation = qs;
                     Vector3 vs = bone.forward;
                     bone.localRotation = qf;
@@ -1138,10 +1163,17 @@ public static class EyeGazeEditor
                     bone.localRotation = q;
 
                     // Project the joint's direction vector onto the gaze shift rotational plane
+                    // to obtain the expressive gaze rotation
                     Vector3 n = !GeomUtil.Equal(vs, vf) ? Vector3.Cross(vs, vf) : Vector3.Cross(vs, -bone.right);
                     Vector3 vp = Mathf.Abs(Vector3.Dot(v, n)) <= 0.995 ? GeomUtil.ProjectVectorOntoPlane(v, n) : vs; // TODO: this could lead to errors and discontinuities
                     vp.Normalize();
                     dq = Quaternion.FromToRotation(vp, v);
+
+                    if (frame == eyeGazeFixationStartFrame - 1)
+                    {
+                        baseFixationStartRots[bone] = q;
+                        fixationStartExprRots[bone] = dq;
+                    }
 
                     // Retime the animation based on gaze shift progress
                     float distRotAlign = Vector3.Angle(vs, vf);
@@ -1150,21 +1182,20 @@ public static class EyeGazeEditor
                         ((float)(frame - eyeGazeStartFrame)) / (eyeGazeFixationStartFrame - eyeGazeStartFrame);
                     rotProgress = Mathf.Clamp01(rotProgress);
                     time = rotProgress * ((float)(frame - eyeGazeStartFrame)) / LEAPCore.editFrameRate;
-
-                    if (!expressiveEyeGazeRotations.ContainsKey(bone))
-                        expressiveEyeGazeRotations[bone] = QuaternionUtil.Log(Quaternion.Inverse(qs) * qf);
                 }
                 else
                 {
                     // Computing rotational difference for the gaze fixation
-                    dq = Quaternion.Inverse(qf) * q;
+                    Quaternion qfb = baseFixationStartRots.ContainsKey(bone) ? baseFixationStartRots[bone] : startRots[bone];
+                    Quaternion dqef = fixationStartExprRots.ContainsKey(bone) ? fixationStartExprRots[bone] : Quaternion.identity;
+                    dq = dqef * (Quaternion.Inverse(qfb) * q);
                     
                     // Compute animation time
                     time = ((float)(frame - eyeGazeStartFrame)) / LEAPCore.editFrameRate;
                 }
 
-                /*
-                if (bone.name.EndsWith("Head"))
+                //
+                /*if (bone.name.EndsWith("Head"))
                 {
                     UnityEngine.Debug.LogWarning(string.Format("{0}{1}: {2}, t = {3}, disp = ({4}, {5}, {6})",
                         frame <= eyeGazeFixationStartFrame ? "s" : "f", frame, bone.name,
@@ -1172,8 +1203,8 @@ public static class EyeGazeEditor
                         dq.eulerAngles.x > 180f ? dq.eulerAngles.x - 360f : dq.eulerAngles.x,
                         dq.eulerAngles.y > 180f ? dq.eulerAngles.y - 360f : dq.eulerAngles.y,
                         dq.eulerAngles.z > 180f ? dq.eulerAngles.z - 360f : dq.eulerAngles.z));
-                }
-                */
+                }*/
+                //
 
                 // Keyframe the expressive rotation
                 var rotationKeyFrame = new Keyframe();
