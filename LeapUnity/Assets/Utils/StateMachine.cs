@@ -278,4 +278,10 @@ public class StateMachine
 		if( stateHandlersLate[state] != null )
 			stateHandlersLate[state]();
 	}
+
+    // Set the current state of the FSM.
+    public void _SetState(int stateId)
+    {
+        state = stateId;
+    }
 }

@@ -143,8 +143,8 @@ public class EyeLaserGizmo : MonoBehaviour
 
         Vector3 eyeCentroid = 0.5f*(gctrl.LEye.bone.position + gctrl.REye.bone.position);
         Vector3 gazeDir = (0.5f*(gctrl.LEye.Direction + gctrl.REye.Direction)).normalized;
-        float gazetargetDist = gctrl._CurrentGazeTarget != null ?
-            Vector3.Distance(eyeCentroid, gctrl._CurrentGazeTarget.transform.position) : 3f;
+        float gazetargetDist = gctrl.CurrentGazeTarget != null ?
+            Vector3.Distance(eyeCentroid, gctrl.CurrentGazeTarget.transform.position) : 3f;
 
         if (showGazeLaser)
         {

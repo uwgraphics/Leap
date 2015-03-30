@@ -49,6 +49,11 @@ public abstract class AnimController : MonoBehaviour
     public bool isEnabled = true;
 
     /// <summary>
+    /// Blend weight with which the controller's animation is applied.
+    /// </summary>
+    public float weight = 1f;
+
+    /// <summary>
     /// Animation controller states.
     /// </summary>
     public StateDef[] states = new StateDef[1];
@@ -341,6 +346,12 @@ public abstract class AnimController : MonoBehaviour
 
             ctrl._LateUpdateTree();
         }
+    }
+
+    // Get the underlying FSM of the current controller
+    public virtual StateMachine _GetFSM()
+    {
+        return _fsm;
     }
 
     /// <summary>

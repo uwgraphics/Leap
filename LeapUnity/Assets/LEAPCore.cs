@@ -48,4 +48,9 @@ public class LEAPCore : MonoBehaviour
     /// Suffix appended to names of gaze-back instances.
     /// </summary>
     public static string gazeBackSuffix = "-Back";
+
+    /// <summary>
+    /// Suffix appended to names of expressive gaze instances.
+    /// </summary>
+    public static string expressiveGazeSuffix = "-Expressive";
 }

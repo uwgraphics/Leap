@@ -1,0 +1,3 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,HeadAlign,TorsoAlign,TurnBody
+Norman,TestExpressiveGaze1,1,34,35,UpperRight,1,0,False
+Norman,TestExpressiveGaze2,36,37,97,LowerRight,1,0,False

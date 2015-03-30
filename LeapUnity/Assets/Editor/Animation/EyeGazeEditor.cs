@@ -312,7 +312,7 @@ public static class EyeGazeEditor
         // Changing the timing of an instance is equivalent to removing the instance and then re-adding it with new times
         string layerName = timeline.GetLayerForAnimation(instanceId).LayerName;
         var instance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
-        _RemoveEyeGaze(timeline, instanceId);
+        RemoveEyeGaze(timeline, instanceId, layerName);
         instance.SetFrameLength(endFrame - startFrame + 1);
         AddEyeGaze(timeline, instance, startFrame, layerName);
     }
@@ -342,17 +342,20 @@ public static class EyeGazeEditor
     /// Load eye gaze behavior specification for the specified base animation.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
-    /// <param name="baseAnimationName">Base animation name</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
     /// <param name="layerName">Animation layer holding eye gaze animations</param>
     /// <param name="edits">If true, loads annotations specifying eye gaze edits (i.e., gaze not encoded in the base animation)</param>
     /// <returns>true if eye gaze instances were loaded successfully, false otherwise</returns>
-    public static bool LoadEyeGazeForModel(AnimationTimeline timeline, string baseAnimationName, string layerName = "Gaze", bool edits = false)
+    public static bool LoadEyeGaze(AnimationTimeline timeline, int baseAnimationInstanceId, string layerName = "Gaze", bool edits = false)
     {
+        // Get base animation
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+
         // Get gaze behavior file path
         string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
             path += '/';
-        path += (baseAnimationName + (edits ? "#Edits.csv" : ".csv"));
+        path += (baseAnimation.AnimationClip.name + (edits ? "#Edits.csv" : ".csv"));
 
         // Load gaze behaviors
         try
@@ -424,9 +427,11 @@ public static class EyeGazeEditor
                     float torsoAlign = (float)double.Parse(lineElements[attributeIndices["TorsoAlign"]]);
                     bool turnBody = bool.Parse(lineElements[attributeIndices["TurnBody"]]);
 
-                    // Is it a gaze shift in the base animation?
+                    // Get gaze edit settings
                     EyeGazeEditType editType = edits ? (EyeGazeEditType)Enum.Parse(typeof(EyeGazeEditType), lineElements[attributeIndices["EditType"]]) :
                         EyeGazeEditType.Add;
+                    float exprGazeWeight = edits && attributeIndices.ContainsKey("ExpressiveGazeWeight") ?
+                        float.Parse(lineElements[attributeIndices["FixationStartFrame"]]) : 1f;
                     
                     if (!edits)
                     {
@@ -488,6 +493,8 @@ public static class EyeGazeEditor
                                     "Unrecognized edit operation {0} for eye gaze instance {1}", editType, animationClipName));
                                 break;
                         }
+
+                        (scheduledGazeInstance.Animation as EyeGazeInstance).ExpressiveGazeWeight = exprGazeWeight;
                     }
                 }
             }
@@ -502,24 +509,27 @@ public static class EyeGazeEditor
     }
 
     /// <summary>
-    /// Load eye gaze behavior specification for the specified base animation.
+    /// Save eye gaze behavior specification for the specified base animation.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
-    /// <param name="baseAnimationName">Base animation name</param>
-    /// <returns>true if eye gaze instances were loaded successfully, false otherwise</returns>
-    public static bool SaveEyeGazeForModel(AnimationTimeline timeline, string baseAnimationName)
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <returns>true if eye gaze instances were saved successfully, false otherwise</returns>
+    public static bool SaveEyeGaze(AnimationTimeline timeline, int baseAnimationInstanceId)
     {
+        // Get base animation
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+
         // Get gaze behavior file path
         string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
             path += '/';
-        path += (baseAnimationName + ".csv");
+        path += (baseAnimation.AnimationClip.name + ".csv");
 
         // Save gaze behaviors
         try
         {
             var writer = new StreamWriter(path);
-            writer.WriteLine("Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,HeadAlign,TorsoAlign,TurnBody,EditType");
+            writer.WriteLine("Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,HeadAlign,TorsoAlign,TurnBody");
 
             // Get all gaze instances, sorted by start time
             var gazeInstances = new List<AnimationTimeline.ScheduledInstance>();
@@ -527,7 +537,8 @@ public static class EyeGazeEditor
             {
                 foreach (var instance in layer.Animations)
                 {
-                    if (!(instance.Animation is EyeGazeInstance))
+                    if (!(instance.Animation is EyeGazeInstance) ||
+                        instance.Animation.Model.gameObject != baseAnimation.Model.gameObject)
                     {
                         continue;
                     }
@@ -611,7 +622,7 @@ public static class EyeGazeEditor
     /// artist annotations.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
-    /// <param name="baseAnimationName">Base animation name</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
     /// <param name="layerName">Animation layer holding eye gaze animations</param>
     public static void FixEyeGazeBetweenShifts(AnimationTimeline timeline, string layerName = "Gaze")
     {
@@ -649,39 +660,248 @@ public static class EyeGazeEditor
     /// eye gaze instances on the character model.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
-    /// <param name="baseAnimationName">Base animation name</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
     /// <param name="layerName">Animation layer holding eye gaze animations</param>
     /// <param name="createTargets">If gaze target could not be found for a gaze shift,
     /// a "dummy" gaze target object will be created in the scene</param>
-    public static void InferEyeGazeAlignments(AnimationTimeline timeline, string baseAnimationName, string layerName = "Gaze")
+    public static void InferEyeGazeAlignments(AnimationTimeline timeline, int baseAnimationInstanceId, string layerName = "Gaze")
     {
+        // Get base animation
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+
         bool timelineActive = timeline.Active;
         timeline.Active = true;
 
+        // Infer head and torso alignments
         var gazeLayer = timeline.GetLayer(layerName);
-        foreach (var scheduledInstance in gazeLayer.Animations)
+        foreach (var instance in gazeLayer.Animations)
         {
-            if (!(scheduledInstance.Animation is EyeGazeInstance) ||
-                !(scheduledInstance.Animation as EyeGazeInstance).IsBase)
+            if (!(instance.Animation is EyeGazeInstance) ||
+                !(instance.Animation as EyeGazeInstance).IsBase ||
+                instance.Animation.Model.gameObject != baseAnimation.Model.gameObject)
+            {
                 continue;
-            var instance = scheduledInstance.Animation as EyeGazeInstance;
+            }
 
-            // Infer head and torso alignments
-            _InferEyeGazeAlignments(timeline, scheduledInstance.InstanceId);
+            _InferEyeGazeAlignments(timeline, instance.InstanceId);
         }
 
         timeline.Active = timelineActive;
     }
 
     /// <summary>
-    /// Estimate gaze shift duration (from gaze shift start to fixation start) of
-    /// the specified eye gaze instance.
+    /// For all gaze shifts and fixations in the base animation, extract displacement maps
+    /// containing expressive motion.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <param name="layerName">Animation layer holding eye gaze animations</param>
+    /// <param name="createTargets">If gaze target could not be found for a gaze shift,
+    /// a "dummy" gaze target object will be created in the scene</param>
+    public static void ExtractExpressiveEyeGazeAnimations(AnimationTimeline timeline, int baseAnimationInstanceId, string layerName = "Gaze")
+    {
+        // Get base animation
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+
+        bool timelineActive = timeline.Active;
+        timeline.Active = true;
+
+        // Extract expressive motion
+        var gazeLayer = timeline.GetLayer(layerName);
+        foreach (var instance in gazeLayer.Animations)
+        {
+            if (!(instance.Animation is EyeGazeInstance) ||
+                !(instance.Animation as EyeGazeInstance).IsBase ||
+                instance.Animation.Model.gameObject != baseAnimation.Model.gameObject)
+            {
+                continue;
+            }
+
+            _ExtractExpressiveEyeGazeAnimations(timeline, baseAnimationInstanceId, instance.InstanceId);
+        }
+
+        timeline.Active = timelineActive;
+    }
+
+    /// <summary>
+    /// Load eye gaze expressive gaze animation descriptions for the eye gaze instance of the specified base animation.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <param name="layerName">Animation layer holding eye gaze animations</param>
+    /// <returns>true if eye gaze expressive animation descriptions were loaded successfully, false otherwise</returns>
+    public static bool LoadExpressiveEyeGazeAnimations(AnimationTimeline timeline, int baseAnimationInstanceId, string layerName = "Gaze")
+    {
+        // Get base animation
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+
+        // Get gaze behavior file path
+        string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
+        if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
+            path += '/';
+        path += (baseAnimation.AnimationClip.name + "#Expressive.csv");
+
+        try
+        {
+            var reader = new StreamReader(path);
+            bool firstLine = true;
+            string line = "";
+            string[] lineElements = null;
+            Dictionary<string, int> attributeIndices = new Dictionary<string, int>();
+            Dictionary<EyeGazeInstance, List<ExpressiveEyeGazeAnimation>> expressiveGazeAnimations =
+                new Dictionary<EyeGazeInstance,List<ExpressiveEyeGazeAnimation>>();
+
+            // Get layer with gaze instances
+            var gazeLayer = timeline.GetLayer(layerName);
+
+            while (!reader.EndOfStream && (line = reader.ReadLine()) != "")
+            {
+                if (line[0] == '#')
+                {
+                    // Comment line, skip
+                    continue;
+                }
+                else if (firstLine)
+                {
+                    // Load attribute names from first line
+                    firstLine = false;
+                    lineElements = line.Split(",".ToCharArray());
+                    for (int attributeIndex = 0; attributeIndex < lineElements.Length; ++attributeIndex)
+                    {
+                        attributeIndices[lineElements[attributeIndex]] = attributeIndex;
+                    }
+                }
+                else
+                {
+                    // Load expressive gaze description
+                    lineElements = line.Split(",".ToCharArray());
+
+                    // Get expressive gaze animation attributes
+                    string expressiveGazeAnimationName = lineElements[attributeIndices["ExpressiveGazeClip"]];
+                    string gazeInstanceName = lineElements[attributeIndices["GazeInstance"]];
+                    string gazeShiftRotationStr = lineElements[attributeIndices["GazeShiftRotation"]];
+                    gazeShiftRotationStr = gazeShiftRotationStr.Substring(1, gazeShiftRotationStr.Length - 2);
+                    var gazeShiftRotationStrElements = gazeShiftRotationStr.Split(" ".ToCharArray());
+                    Vector3 gazeShiftRotation = new Vector3(float.Parse(gazeShiftRotationStrElements[0]),
+                        float.Parse(gazeShiftRotationStrElements[1]),
+                        float.Parse(gazeShiftRotationStrElements[2]));
+
+                    // Get eye gaze instance
+                    var instance = gazeLayer.Animations.FirstOrDefault(inst => inst.Animation is EyeGazeInstance &&
+                        inst.Animation.AnimationClip.name == gazeInstanceName);
+                    if (instance == null)
+                    {
+                        UnityEngine.Debug.LogError(string.Format(
+                            "Unable to load expressive gaze animation description for non-existent gaze instance {0}", gazeInstanceName));
+                        continue;
+                    }
+                    var gazeInstance = instance.Animation as EyeGazeInstance;
+
+                    // Get expressive gaze animation clip
+                    var exprGazeAnimClip = gazeInstance.Animation.GetClip(expressiveGazeAnimationName);
+                    if (exprGazeAnimClip == null)
+                    {
+                        UnityEngine.Debug.LogError(string.Format(
+                            "Unable to load expressive gaze animation description because animation clip {0} does not exist", expressiveGazeAnimationName));
+                        continue;
+                    }
+
+                    // Create expressive gaze animation description
+                    ExpressiveEyeGazeAnimation exprGazeAnimDesc = new ExpressiveEyeGazeAnimation(exprGazeAnimClip, gazeShiftRotation);
+                    if (!expressiveGazeAnimations.ContainsKey(gazeInstance))
+                    {
+                        expressiveGazeAnimations[gazeInstance] = new List<ExpressiveEyeGazeAnimation>();
+                    }
+                    expressiveGazeAnimations[gazeInstance].Add(exprGazeAnimDesc);
+                }
+            }
+
+            // Set expressive gaze animations on their respective gaze instances
+            foreach (var kvp in expressiveGazeAnimations)
+            {
+                kvp.Key.SetExpressiveGazeAnimations(kvp.Value.ToArray());
+            }
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError(string.Format("Unable to load eye gaze from asset file {0}: {1}", path, ex.Message));
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// For all eye gaze instances for the specified base animation, save descriptions of their expressive
+    /// animation components to a file.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <param name="layerName">Animation layer holding eye gaze animations</param>
+    /// <returns>true if eye gaze expressive animation descriptions were saved successfully, false otherwise</returns>
+    public static bool SaveExpressiveEyeGazeAnimations(AnimationTimeline timeline, int baseAnimationInstanceId, string layerName = "Gaze")
+    {
+        // Get base animation
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+
+         // Get gaze behavior file path
+        string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
+        if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
+            path += '/';
+        path += (baseAnimation.AnimationClip.name + "#Expressive.csv");
+
+        try
+        {
+            var writer = new StreamWriter(path);
+            writer.WriteLine("ExpressiveGazeClip,GazeInstance,GazeShiftRotation");
+
+            // Save expressive gaze descriptions
+            var gazeLayer = timeline.GetLayer(layerName);
+            foreach (var instance in gazeLayer.Animations)
+            {
+                if (!(instance.Animation is EyeGazeInstance) ||
+                    instance.Animation.Model.gameObject != baseAnimation.Model.gameObject)
+                {
+                    continue;
+                }
+
+                var gazeInstance = instance.Animation as EyeGazeInstance;
+
+                // Write out the gaze instances
+                var lineBuilder = new StringBuilder();
+                foreach (ExpressiveEyeGazeAnimation exprGazeAnim in gazeInstance.ExpressiveGazeAnimations)
+                {
+                    lineBuilder.Append(exprGazeAnim.clip.name);
+                    lineBuilder.Append(",");
+                    lineBuilder.Append(gazeInstance.AnimationClip.name);
+                    lineBuilder.Append(",");
+                    lineBuilder.Append(string.Format("\"{0} {1} {2}\"",
+                        exprGazeAnim.gazeShiftRotation.x, exprGazeAnim.gazeShiftRotation.y, exprGazeAnim.gazeShiftRotation.z));
+
+                    writer.WriteLine(lineBuilder);
+                    lineBuilder.Length = 0;
+                }
+            }
+
+            writer.Close();
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError(string.Format("Unable to save eye gaze expressive animation descriptions to asset file {0}: {1}", path, ex.Message));
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Get initial state of the eye gaze controller at the start of the specified gaze shift.
     /// </summary>
     /// <param name="instance">Eye gaze instance</param>
-    /// <returns>Gaze shift duration in seconds</returns>
-    public static float ComputeEstGazeShiftTimeLength(EyeGazeInstance instance)
+    /// <returns>Gaze controller state</returns>
+    public static EyeGazeControllerState GetInitControllerForEyeGazeInstance(EyeGazeInstance instance)
     {
-        IAnimationControllerState state = instance.GetControllerState();
+        IAnimationControllerState curState = instance.GetControllerState();
 
         // Initialize gaze controller
         var gazeController = instance.GazeController;
@@ -693,6 +913,25 @@ public static class EyeGazeEditor
         gazeController._InitTargetRotations();
         gazeController._InitLatencies();
         gazeController._CalculateMaxVelocities();
+
+        EyeGazeControllerState state = (EyeGazeControllerState)instance.GetControllerState();
+        instance.SetControllerState(curState);
+
+        return state;
+    }
+
+    /// <summary>
+    /// Estimate gaze shift duration (from gaze shift start to fixation start) of
+    /// the specified eye gaze instance.
+    /// </summary>
+    /// <param name="instance">Eye gaze instance</param>
+    /// <param name="state">Eye gaze controller state at the start of the gaze shift</param>
+    /// <returns>Gaze shift duration in seconds</returns>
+    public static float ComputeEstGazeShiftTimeLength(EyeGazeInstance instance, EyeGazeControllerState state)
+    {
+        IAnimationControllerState curState = instance.GetControllerState();
+        instance.SetControllerState(state);
+        var gazeController = instance.GazeController;
 
         // Estimate eye rotation time
         float eyeRotTime = 0f;
@@ -718,9 +957,12 @@ public static class EyeGazeEditor
             torsoRotTime = torsoVelocity > 0f ? tdr / torsoVelocity : 0f;
         }
 
-        instance.SetControllerState(state);
+        instance.SetControllerState(curState);
 
-        return Mathf.Max(eyeRotTime, headRotTime, torsoRotTime);
+        float totalTime = Mathf.Max(eyeRotTime, headRotTime, torsoRotTime);
+        // TODO: this is a quick hack to fix the problem of underestimating gaze shift duration
+        return 2f * totalTime;
+        //return totalTime;
     }
 
     // Gaze editing helper operation; remove an eye gaze instance from the animation timeline
@@ -768,7 +1010,10 @@ public static class EyeGazeEditor
         }
 
         // Apply animation at the end of the gaze shift
-        float estTimeLength = EyeGazeEditor.ComputeEstGazeShiftTimeLength(instance);
+        instance.HeadAlign = 1f;
+        instance.TorsoAlign = 1f;
+        EyeGazeControllerState gazeControllerState = EyeGazeEditor.GetInitControllerForEyeGazeInstance(instance);
+        float estTimeLength = EyeGazeEditor.ComputeEstGazeShiftTimeLength(instance, gazeControllerState); // TODO: get rid of this once we have accurate gaze shift inference
         int endFrame = startFrame + Mathf.Min(instance.FrameLength - 1, Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * estTimeLength));
         timeline.GoToFrame(endFrame);
         timeline.Update(0);
@@ -813,10 +1058,169 @@ public static class EyeGazeEditor
         instance.HeadAlign = Mathf.Clamp01(instance.HeadAlign);
         gazeController.Head.align = gazeController.Head.curAlign  = instance.HeadAlign;
 
-        // Set fixation start time in the gaze instance
-        // TODO: this should be done as part of the timing inference (Danny's workin' on it)
+        // Compute fixation start time in the gaze instance
+        // TODO: get rid of this once we have accurate gaze shift inference
+        gazeControllerState = EyeGazeEditor.GetInitControllerForEyeGazeInstance(instance);
+        estTimeLength = EyeGazeEditor.ComputeEstGazeShiftTimeLength(instance, gazeControllerState);
+        endFrame = startFrame + Mathf.Min(instance.FrameLength - 1, Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * estTimeLength));
         int fixationStartFrame = endFrame - startFrame;
         instance.SetFixationStartFrame(fixationStartFrame);
     }
-}
 
+    // Extract expressive motion as a displacement map from the gaze shift and fixation in the base animation
+    private static void _ExtractExpressiveEyeGazeAnimations(AnimationTimeline timeline, int baseAnimationInstanceId, int eyeGazeInstanceId)
+    {
+        var baseAnimationInstance = timeline.GetAnimation(baseAnimationInstanceId);
+        var eyeGazeInstance = timeline.GetAnimation(eyeGazeInstanceId) as EyeGazeInstance;
+        int eyeGazeStartFrame = timeline.GetAnimationStartFrame(eyeGazeInstanceId);
+        int eyeGazeFixationStartFrame = eyeGazeStartFrame + eyeGazeInstance.FixationStartFrame;
+        int eyeGazeEndFrame = eyeGazeStartFrame + eyeGazeInstance.FrameLength - 1;
+        var gazeController = eyeGazeInstance.GazeController;
+        var model = eyeGazeInstance.Model.gameObject;
+        Transform[] bones = ModelUtils.GetAllBones(model);
+        string expressiveEyeGazeName = eyeGazeInstance.AnimationClip.name + LEAPCore.expressiveGazeSuffix;
+
+        // Create expressive displacement animation clips on the model for this gaze instance
+        var expressiveEyeGazeClips = new Dictionary<Transform, AnimationClip>();
+        var expressiveEyeGazeCurves = new Dictionary<Transform, AnimationCurve[]>();
+        var expressiveEyeGazeRotations = new Dictionary<Transform, Vector3>();
+        for (int gazeJointIndex = gazeController.eyes.Length; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
+        {
+            var gazeJoint = gazeController.gazeJoints[gazeJointIndex];
+            expressiveEyeGazeClips[gazeJoint.bone] = LEAPAssetUtils.CreateAnimationClipOnModel(
+                expressiveEyeGazeName + (gazeJointIndex - gazeController.eyes.Length).ToString(), model);
+            expressiveEyeGazeCurves[gazeJoint.bone] = LEAPAssetUtils.CreateAnimationCurvesForModel(model);
+        }
+
+        // Get gaze joint orientations at key points of the gaze shift/fixation
+        Dictionary<Transform, Quaternion> baseStartRots = new Dictionary<Transform, Quaternion>();
+        Dictionary<Transform, Quaternion> baseFixationStartRots = new Dictionary<Transform, Quaternion>();
+        baseAnimationInstance.Apply(eyeGazeStartFrame, AnimationLayerMode.Override);
+        for (int gazeJointIndex = gazeController.eyes.Length; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
+        {
+            var bone = gazeController.gazeJoints[gazeJointIndex].bone;
+            baseStartRots[bone] = bone.localRotation;
+        }
+        baseAnimationInstance.Apply(eyeGazeFixationStartFrame, AnimationLayerMode.Override);
+        for (int gazeJointIndex = gazeController.eyes.Length; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
+        {
+            var bone = gazeController.gazeJoints[gazeJointIndex].bone;
+            baseFixationStartRots[bone] = bone.localRotation;
+        }
+
+        // Extract expressive displacement animation curve at each frame, for each gaze joint
+        for (int frame = eyeGazeStartFrame; frame <= eyeGazeEndFrame; ++frame)
+        {
+            baseAnimationInstance.Apply(frame, AnimationLayerMode.Override);
+
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                var bone = bones[boneIndex];
+                if (bone.tag != "HeadBone" && bone.tag != "TorsoBone")
+                    continue;
+
+                // Compute key time and rotational difference between current joint rotation and the shortest arc
+                // between gaze start and end rotations
+                float time = 0f;
+                Quaternion q = bone.localRotation;
+                Quaternion qf = baseFixationStartRots[bone];
+                Quaternion dq = Quaternion.identity;
+                if (frame <= eyeGazeFixationStartFrame)
+                {
+                    // Computing rotational difference for the gaze shift
+
+                    Quaternion qs = baseStartRots[bone];
+                    Vector3 v = bone.forward;
+                    bone.localRotation = qs;
+                    Vector3 vs = bone.forward;
+                    bone.localRotation = qf;
+                    Vector3 vf = bone.forward;
+                    bone.localRotation = q;
+
+                    // Project the joint's direction vector onto the gaze shift rotational plane
+                    Vector3 n = !GeomUtil.Equal(vs, vf) ? Vector3.Cross(vs, vf) : Vector3.Cross(vs, -bone.right);
+                    Vector3 vp = Mathf.Abs(Vector3.Dot(v, n)) <= 0.995 ? GeomUtil.ProjectVectorOntoPlane(v, n) : vs; // TODO: this could lead to errors and discontinuities
+                    vp.Normalize();
+                    dq = Quaternion.FromToRotation(vp, v);
+
+                    // Retime the animation based on gaze shift progress
+                    float distRotAlign = Vector3.Angle(vs, vf);
+                    float rotProgress = !GeomUtil.Equal(vs, vf) ?
+                        Vector3.Angle(vs, vp) / distRotAlign :
+                        ((float)(frame - eyeGazeStartFrame)) / (eyeGazeFixationStartFrame - eyeGazeStartFrame);
+                    rotProgress = Mathf.Clamp01(rotProgress);
+                    time = rotProgress * ((float)(frame - eyeGazeStartFrame)) / LEAPCore.editFrameRate;
+
+                    if (!expressiveEyeGazeRotations.ContainsKey(bone))
+                        expressiveEyeGazeRotations[bone] = QuaternionUtil.Log(Quaternion.Inverse(qs) * qf);
+                }
+                else
+                {
+                    // Computing rotational difference for the gaze fixation
+                    dq = Quaternion.Inverse(qf) * q;
+                    
+                    // Compute animation time
+                    time = ((float)(frame - eyeGazeStartFrame)) / LEAPCore.editFrameRate;
+                }
+
+                /*
+                if (bone.name.EndsWith("Head"))
+                {
+                    UnityEngine.Debug.LogWarning(string.Format("{0}{1}: {2}, t = {3}, disp = ({4}, {5}, {6})",
+                        frame <= eyeGazeFixationStartFrame ? "s" : "f", frame, bone.name,
+                        time,
+                        dq.eulerAngles.x > 180f ? dq.eulerAngles.x - 360f : dq.eulerAngles.x,
+                        dq.eulerAngles.y > 180f ? dq.eulerAngles.y - 360f : dq.eulerAngles.y,
+                        dq.eulerAngles.z > 180f ? dq.eulerAngles.z - 360f : dq.eulerAngles.z));
+                }
+                */
+
+                // Keyframe the expressive rotation
+                var rotationKeyFrame = new Keyframe();
+                rotationKeyFrame.time = ((float)(frame - eyeGazeStartFrame)) / LEAPCore.editFrameRate;
+                rotationKeyFrame.value = dq.x;
+                expressiveEyeGazeCurves[bone][3 + boneIndex * 4].AddKey(rotationKeyFrame);
+                rotationKeyFrame.value = dq.y;
+                expressiveEyeGazeCurves[bone][3 + boneIndex * 4 + 1].AddKey(rotationKeyFrame);
+                rotationKeyFrame.value = dq.z;
+                expressiveEyeGazeCurves[bone][3 + boneIndex * 4 + 2].AddKey(rotationKeyFrame);
+                rotationKeyFrame.value = dq.w;
+                expressiveEyeGazeCurves[bone][3 + boneIndex * 4 + 3].AddKey(rotationKeyFrame);
+            }
+        }
+
+        for (int gazeJointIndex = gazeController.eyes.Length; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
+        {
+            // Set the curves on the expressive eye gaze clip
+            var gazeJoint = gazeController.gazeJoints[gazeJointIndex];
+            expressiveEyeGazeClips[gazeJoint.bone].ClearCurves();
+            LEAPAssetUtils.SetAnimationCurvesOnClip(model, expressiveEyeGazeClips[gazeJoint.bone], expressiveEyeGazeCurves[gazeJoint.bone]);
+        }
+
+        // Write the expressive eye gaze clips to file
+        foreach (var kvp in expressiveEyeGazeClips)
+        {
+            var expressiveEyeGazeClip = kvp.Value;
+            string path = LEAPAssetUtils.GetModelDirectory(model.gameObject) + expressiveEyeGazeClip.name + ".anim";
+            if (AssetDatabase.GetAssetPath(expressiveEyeGazeClip) != path)
+            {
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(expressiveEyeGazeClip, path);
+            }
+        }
+        AssetDatabase.SaveAssets();
+
+        // Set the expressive eye gaze clips on the gaze instance
+        ExpressiveEyeGazeAnimation[] exprGazeAnimations = new ExpressiveEyeGazeAnimation[gazeController.gazeJoints.Length - gazeController.eyes.Length];
+        for (int gazeJointIndex = gazeController.eyes.Length; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
+        {
+            // Set the curves on the expressive eye gaze clip
+            var gazeJoint = gazeController.gazeJoints[gazeJointIndex];
+            exprGazeAnimations[gazeJointIndex - gazeController.eyes.Length] = new ExpressiveEyeGazeAnimation(
+                expressiveEyeGazeClips[gazeJoint.bone],
+                expressiveEyeGazeRotations[gazeJoint.bone]
+                );
+        }
+        eyeGazeInstance.SetExpressiveGazeAnimations(exprGazeAnimations);
+    }
+}

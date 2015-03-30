@@ -1,6 +1,27 @@
 Leap Animation Editor:
 
-#52 [] Adding a gaze instance that overlaps multiple other gaze instances does not work correctly
+#57 [X] Expressive gaze displacement maps are incorrectly extracted - rotations are opposite of what they should be
+  - Just for the gaze shift phase
+
+#56 [X] Gaze alignment inference still inaccurate
+  - For example, on TestExpressiveGaze1 and TestExpressiveGaze2 it gives an underestimate (should be 1 for both)
+  - Caused by #55, accurate otherwise
+
+#55 [X] Gaze shift time length estimates in EyeGazeEditor.ComputeEstGazeShiftTimeLength() are way off mark
+  - See estimate for TestExpressiveGaze1
+  - It seems that estimated distance to rotate is much shorter than it should be
+  - Because trgRotAlign is way lower that it should be
+  - Because curAlign is set to 0 instead of its proper value for some reason!
+  - Because alignments haven't been inferred yet, duh
+  - Computing for worst case scenario (all alignments set to 1) also gives an underestimate
+  - Found a hacky "solution" by simply doubling the initial estimate - real fix will be having accurate gaze shift inference
+
+#54 [] When trying to remove an animation clip from an Animation component, Unity sometimes logs an error saying that the animation clip does not exist, even though it definitely does
+
+#53 [] Removing eye gaze in EyeGazeEditor.RemoveEyeGaze() results in some gaze instances having incorrect timings
+  - This may also break EyeGazeEditor.SetEyeGazeTiming()
+
+#52 [X] Adding a gaze instance that overlaps multiple other gaze instances does not work correctly
 
 #51 [] Spine joints in body motions often have roll movement (around the z axis), which our gaze model does not use - this invalidates head and torso alignment inferences
   - Related to #24

@@ -548,3 +548,7 @@ Some tips for configuring your import settings:
    
    - The first frame of your animation is typically the character's initial
    pose. Your actual animation starts at frame 1.
+
+Note: If your newly-imported animation won't play correctly on the Leap
+Animation Editor timeline, it could be that AnimationClipInstance isn't able
+to correctly access

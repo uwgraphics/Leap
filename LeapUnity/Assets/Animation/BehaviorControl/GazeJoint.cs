@@ -65,22 +65,6 @@ public class GazeJoint : DirectableJoint
     [HideInInspector]
     public float maxVelocity = 50f;
 
-    /// <summary>
-    /// Weight with which gaze overrides the component of body pose
-    /// not parallel to gaze trajectory.
-    /// 0 - body pose is adapted such that the joint rotates in the gaze direction,
-    /// while preserving as much original body motion as possible
-    /// 1 - body pose is completely overriden by gaze
-    /// </summary>
-    public float gazeWeight = 0f;
-
-    /// <summary>
-    /// Weight with which gaze is applied to the underlying body pose.
-    /// 0 - base pose if completely preserved, gaze is not applied
-    /// 1 - gaze is fully applied, base pose preservation depends on gazeWeight
-    /// </summary>
-    public float baseWeight = 1f;
-
     // MR adjusted by initial conditions
     [HideInInspector]
     public float adjUpMR;
@@ -190,18 +174,6 @@ public class GazeJoint : DirectableJoint
     // Rotation progress during VOR
     [HideInInspector]
     public float fixRotParamAlign;
-
-    // Base rotation (before gaze is applied)
-    [HideInInspector]
-    public Quaternion baseRot;
-
-    // Joint gaze pose weight in the current gaze shift
-    [HideInInspector]
-    public float curGazeWeight = 0f;
-
-    // Joint base pose weight in the current gaze shift
-    [HideInInspector]
-    public float curBaseWeight = 1f;
 
     private MorphController morphCtrl;
     private GazeController gazeCtrl;
@@ -461,8 +433,6 @@ public class GazeJoint : DirectableJoint
         align = IsEye ? 1f : Mathf.Clamp01(align);
         curAlign = align;
         latencyTime = 0;
-        curGazeWeight = gazeWeight;
-        curBaseWeight = baseWeight;
 
         // Initialize rotations
         srcRot = bone.localRotation;
@@ -646,11 +616,10 @@ public class GazeJoint : DirectableJoint
 
     public void _ApplyRotation(Quaternion q)
     {
-        var last = gazeCtrl.GetLastGazeJointInChain(type);
-
-        Quaternion qb = baseRot;
-        bone.localRotation = Quaternion.Slerp(qb, q, curBaseWeight);
-        /*if (IsEye || type != GazeJointType.Head || this != last)
+        bone.localRotation = Quaternion.Slerp(bone.localRotation, q, gazeCtrl.weight);
+        /*var last = gazeCtrl.GetLastGazeJointInChain(type);
+        
+        if (IsEye || type != GazeJointType.Head || this != last)
         {
             bone.localRotation = Quaternion.Slerp(qb, q, curBaseWeight);
         }
@@ -764,7 +733,7 @@ public class GazeJoint : DirectableJoint
             return bone.localRotation;
         }
 
-        trgrot = bone.localRotation * (QuaternionUtil.Equal(l_dir0, l_dir) ?
+        trgrot = bone.localRotation * (GeomUtil.Equal(l_dir0, l_dir) ?
             Quaternion.identity : Quaternion.FromToRotation(l_dir0, l_dir));
 
         // Strip roll out of the target rotation

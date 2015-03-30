@@ -124,7 +124,7 @@ public class GazeController : AnimController
     public GazeJoint[] eyes = new GazeJoint[0];
     // Shorthand for getting the neck joints
     [HideInInspector]
-    public GazeJoint[] headNeck = new GazeJoint[0];
+    public GazeJoint[] head = new GazeJoint[0];
     // Shorthand for getting the torso joints
     [HideInInspector]
     public GazeJoint[] torso = new GazeJoint[0];
@@ -211,6 +211,14 @@ public class GazeController : AnimController
 
             return torsoIndex >= 0 ? gazeJoints[torsoIndex] : null;
         }
+    }
+
+    /// <summary>
+    /// Current gaze shift/fixation target.
+    /// </summary>
+    public virtual GameObject CurrentGazeTarget
+    {
+        get { return curGazeTarget; }
     }
 
     /// <summary>
@@ -326,15 +334,6 @@ public class GazeController : AnimController
 
             return ed;
         }
-    }
-
-    /// <summary>
-    /// Current gaze shift/fixation target.
-    /// </summary>
-    public virtual GameObject _CurrentGazeTarget
-    {
-        get { return curGazeTarget; }
-        set { curGazeTarget = value; }
     }
 
     /// <summary>
@@ -564,7 +563,7 @@ public class GazeController : AnimController
     {
         stopGazeShift = true;
 
-        Debug.Log("StopGaze");
+        Debug.LogWarning("Stopping gaze shift towards target " + curGazeTarget.name);
     }
 
     /// <summary>
@@ -572,6 +571,9 @@ public class GazeController : AnimController
     /// </summary>
     public virtual void InitVOR()
     {
+        if (curGazeTarget == aheadHelperTarget)
+            curGazeTarget = null;
+
         // Set fixation target
         if (curGazeTarget != null)
         {
@@ -590,16 +592,6 @@ public class GazeController : AnimController
             GazeJoint joint = gazeJoints[ji];
             joint._InitVOR();
         }
-    }
-
-    /// <summary>
-    /// Initialize "fixation" without a specific target - the agent
-    /// will simply maintain current gaze direction while VOR is active.
-    /// </summary>
-    public virtual void InitVORNoTarget()
-    {
-        curGazeTarget = null;
-        InitVOR();
     }
 
     /// <summary>
@@ -690,7 +682,7 @@ public class GazeController : AnimController
     // Initialize gaze parameters at the start of a gaze shift
     public virtual void _InitGazeParams()
     {
-        _CurrentGazeTarget = gazeTarget;
+        curGazeTarget = gazeTarget;
         curMovingTargetPosOff = movingTargetPositionOffset;
         curUseTorso = useTorso;
 
@@ -993,6 +985,12 @@ public class GazeController : AnimController
         return -0.25f * amplitude * pred + 0.5f * amplitude - 57.5f * pred + 105f;
     }
 
+    // Set the gaze target in the ongoing gaze shift
+    public virtual void _SetCurrentGazeTarget(GameObject obj)
+    {
+        curGazeTarget = obj;
+    }
+
     protected override void _Init()
     {
         // Get joint chain indices
@@ -1018,7 +1016,7 @@ public class GazeController : AnimController
                 torso_list.Add(joint);
         }
         eyes = eye_list.ToArray();
-        headNeck = head_list.ToArray();
+        head = head_list.ToArray();
         torso = head_list.ToArray();
 
         // Find/create helper gaze target
@@ -1046,7 +1044,7 @@ public class GazeController : AnimController
         }
 
         // Initialize gaze targets
-        _CurrentGazeTarget = FixGazeTarget = null;
+        curGazeTarget = FixGazeTarget = null;
 
         // Get other relevant anim. controllers
         blinkCtrl = gameObject.GetComponent<BlinkController>();
@@ -1065,8 +1063,6 @@ public class GazeController : AnimController
     protected virtual void LateUpdate_NoGaze()
     {
         stopGazeShift = false;
-
-        _InitBaseRotations();
 
         if (fixGaze)
         {
@@ -1088,15 +1084,6 @@ public class GazeController : AnimController
 
     protected virtual void LateUpdate_Shifting()
     {
-        _InitBaseRotations();
-
-        if (stopGazeShift)
-        {
-            // Interrupt ongoing gaze shift
-            GoToState((int)GazeState.NoGaze);
-            return;
-        }
-
         // Interrupt whatever the face is doing
         _StopFace();
 
@@ -1109,13 +1096,18 @@ public class GazeController : AnimController
             dt = (t <= DeltaTime) ? LEAPCore.eulerTimeStep :
                 DeltaTime - t + LEAPCore.eulerTimeStep;
 
-            _ApplyBaseRotations();
-
             if (_AdvanceGazeShift(dt))
             {
                 GoToState((int)GazeState.NoGaze);
                 break;
             }
+        }
+
+        if (stopGazeShift)
+        {
+            // Interrupt ongoing gaze shift
+            GoToState((int)GazeState.NoGaze);
+            return;
         }
 
         if (logStateChange)
@@ -1385,26 +1377,6 @@ public class GazeController : AnimController
         Vector3 wd_cam = (cam.transform.position - wp_eyes).normalized;
         avTrg = Vector3.Angle(wd_trg, wd_cam);
         avSrc = Vector3.Angle(wd_src, wd_cam);
-    }
-
-    // Store base rotations of gaze joints (before gaze is applied)
-    protected virtual void _InitBaseRotations()
-    {
-        for (int i = 0; i <= LastGazeJointIndex; ++i)
-        {
-            GazeJoint joint = gazeJoints[i];
-            joint.baseRot = joint.bone.localRotation;
-        }
-    }
-
-    // Apply base rotations of gaze joints (before gaze is applied)
-    protected virtual void _ApplyBaseRotations()
-    {
-        for (int i = 0; i <= LastGazeJointIndex; ++i)
-        {
-            GazeJoint joint = gazeJoints[i];
-            joint.bone.localRotation = joint.baseRot;
-        }
     }
 
     // Compute target pose of the eyes (at the end of the gaze shift)

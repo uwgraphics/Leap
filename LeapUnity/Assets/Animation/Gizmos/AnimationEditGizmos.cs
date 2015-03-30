@@ -65,7 +65,7 @@ public class AnimationEditGizmos : MonoBehaviour
             string icon = "GazeTargetGizmo.png";
             if (gazeController != null)
             {
-                if (gazeController._CurrentGazeTarget == gazeTarget)
+                if (gazeController.CurrentGazeTarget == gazeTarget)
                     icon = "GazeTargetCurrentGizmo.png";
             }
 

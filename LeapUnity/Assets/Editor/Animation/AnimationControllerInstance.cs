@@ -123,6 +123,7 @@ public abstract class AnimationControllerInstance : AnimationInstance
         if (IsBaking)
         {
             // Update the controller to get new body pose
+            Controller.weight = Weight;
             Controller._UpdateTree();
             Controller._LateUpdateTree();
 
@@ -196,7 +197,7 @@ public abstract class AnimationControllerInstance : AnimationInstance
 
             // Configure how the animation clip will be applied to the model
             Animation[AnimationClip.name].normalizedTime = ((float)frame) / FrameLength;
-            Animation[AnimationClip.name].weight = Weight;
+            Animation[AnimationClip.name].weight = 1f;
             if (layerMode == AnimationLayerMode.Additive)
             {
                 Animation[AnimationClip.name].blendMode = AnimationBlendMode.Additive;

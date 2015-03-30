@@ -140,11 +140,4 @@ public static class QuaternionUtil
 
         return q;
     }
-
-    public static bool Equal(Vector3 v1, Vector3 v2)
-    {
-        return Mathf.Abs(v1.x - v2.x) < 0.001f &&
-            Mathf.Abs(v1.y - v2.y) < 0.001f &&
-                Mathf.Abs(v1.z - v2.z) < 0.001f;
-    }
 }

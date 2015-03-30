@@ -91,7 +91,7 @@ public class BodyIKSolver : IKSolver
     {
         _RunSolver();
 
-        if (gazeDirectionWeight >= 0.005f && _gazeController._CurrentGazeTarget != null)
+        if (gazeDirectionWeight >= 0.005f && _gazeController.CurrentGazeTarget != null)
         {
             // Correct gaze direction
             // TODO: this is the simplest, dumbest way to do it

@@ -901,15 +901,15 @@ public class AnimationTimeline
     {
         Debug.Log("Baking all animation instances...");
 
+        GoToFrame(0);
+        Update(0);
+
         // Initialize each model's animation tree
         _InitControllers();
 
         // Set all instance to bake
         foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
             kvp.Value.Animation.IsBaking = true;
-        
-        // Apply & bake instances
-        GoToFrame(0);
     }
 
     /// <summary>
@@ -1063,10 +1063,12 @@ public class AnimationTimeline
                 continue;
 
             var animationsInLayer = layer.Animations;
+
+            // Deactivate animations in the layer that have finished
             foreach (var animation in animationsInLayer)
             {
                 if (animation.StartFrame > CurrentFrame ||
-                    animation.StartFrame + animation.Animation.FrameLength <= CurrentFrame)
+                    animation.StartFrame + animation.Animation.FrameLength - 1 < CurrentFrame)
                 {
                     if (_activeAnimationInstanceIds.Contains(animation.InstanceId))
                     {
@@ -1084,7 +1086,13 @@ public class AnimationTimeline
 
                     continue;
                 }
-                else
+            }
+
+            // Apply animations in the layer that are active
+            foreach (var animation in animationsInLayer)
+            {
+                if (CurrentFrame >= animation.StartFrame &&
+                    CurrentFrame <= (animation.StartFrame + animation.Animation.FrameLength - 1))
                 {
                     // This animation instance is active, so apply it
 

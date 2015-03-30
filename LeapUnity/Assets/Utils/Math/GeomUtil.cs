@@ -6,6 +6,24 @@ using System.Collections;
 /// </summary>
 public class GeomUtil
 {
+    public static bool Equal(Vector3 v1, Vector3 v2)
+    {
+        return Mathf.Abs(v1.x - v2.x) < 0.001f &&
+            Mathf.Abs(v1.y - v2.y) < 0.001f &&
+                Mathf.Abs(v1.z - v2.z) < 0.001f;
+    }
+
+    /// <summary>
+    /// Project vector onto a plane.
+    /// </summary>
+    /// <param name="v">Vector to project</param>
+    /// <param name="n">Plane normal</param>
+    /// <returns>Projected vector</returns>
+    public static Vector3 ProjectVectorOntoPlane(Vector3 v, Vector3 n)
+    {
+        return v - (Vector3.Dot(v, n) / n.sqrMagnitude) * n;
+    }
+
 	/// <summary>
 	/// Find points on two lines where the lines are the closest
 	/// in 3D space.
