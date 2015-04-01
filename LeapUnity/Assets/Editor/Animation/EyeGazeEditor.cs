@@ -412,14 +412,18 @@ public static class EyeGazeEditor
                     // Get gaze target
                     string gazeTargetName = lineElements[attributeIndices["Target"]];
                     GameObject gazeTarget = null;
-                    if (gazeTargets != null)
-                        gazeTarget = gazeTargets.FirstOrDefault(obj => obj.name == gazeTargetName);
-                    if (gazeTarget == null)
+                    if (gazeTargetName != "null")
                     {
-                        UnityEngine.Debug.LogError(string.Format(
-                            "Trying to create EyeGazeInstance towards target {0} on model {1}, but the target does not exist!",
-                            gazeTargetName, modelController.gameObject.name));
-                        continue;
+                        if (gazeTargets != null)
+                            gazeTarget = gazeTargets.FirstOrDefault(obj => obj.name == gazeTargetName);
+
+                        if (gazeTarget == null)
+                        {
+                            UnityEngine.Debug.LogError(string.Format(
+                                "Trying to create EyeGazeInstance towards target {0} on model {1}, but the target does not exist!",
+                                gazeTargetName, modelController.gameObject.name));
+                            continue;
+                        }
                     }
                     
                     // Get head and body coordination parameters
@@ -498,6 +502,8 @@ public static class EyeGazeEditor
                     }
                 }
             }
+
+            reader.Close();
         }
         catch (Exception ex)
         {
@@ -573,7 +579,7 @@ public static class EyeGazeEditor
                 lineBuilder.Append(",");
                 lineBuilder.Append(instance.StartFrame + gazeInstance.FrameLength - 1);
                 lineBuilder.Append(",");
-                lineBuilder.Append(gazeInstance.Target.name);
+                lineBuilder.Append(gazeInstance.Target != null ? gazeInstance.Target.name : "null");
                 lineBuilder.Append(",");
                 lineBuilder.Append(gazeInstance.HeadAlign);
                 lineBuilder.Append(",");
@@ -816,6 +822,8 @@ public static class EyeGazeEditor
                 }
             }
 
+            reader.Close();
+
             // Set expressive gaze animations on their respective gaze instances
             foreach (var kvp in expressiveGazeAnimations)
             {
@@ -905,7 +913,7 @@ public static class EyeGazeEditor
 
         // Initialize gaze controller
         var gazeController = instance.GazeController;
-        gazeController.gazeTarget = instance.Target;
+        gazeController.GazeAt(instance.Target);
         gazeController.Head.align = instance.HeadAlign >= 0f ? instance.HeadAlign : 0f;
         if (gazeController.Torso != null)
             gazeController.Torso.align = instance.TorsoAlign >= 0f ? instance.HeadAlign : 0f;
@@ -994,8 +1002,9 @@ public static class EyeGazeEditor
         gazeController.RemoveRoll();
         //
 
-        // TODO: this implementation does not work correctly for stylized gaze
+        // TODO: this implementation does not work correctly for stylized gaze and when torso is disabled
         gazeController.stylizeGaze = false;
+        gazeController.useTorso = true;
         //
 
         // Set source rotations, alignments, and gaze target

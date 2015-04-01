@@ -61,7 +61,7 @@ public class LEAPMenu
     }
 
     [MenuItem("LEAP/Animation/Test: ExpressiveGaze", true, 33)]
-    private static bool ValidateTestInitialPose()
+    private static bool ValidateTestExpressiveGaze()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         if (wnd.Timeline == null)
@@ -73,9 +73,27 @@ public class LEAPMenu
     }
 
     [MenuItem("LEAP/Animation/Test: ExpressiveGaze", false, 33)]
-    private static void TestInitialPose()
+    private static void TestExpressiveGaze()
     {
         TestScene("TestExpressiveGaze");
+    }
+
+    [MenuItem("LEAP/Animation/Test: InitialPose", true, 34)]
+    private static bool ValidateTestInitialPose()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: InitialPose", false, 34)]
+    private static void TestInitialPose()
+    {
+        TestScene("InitialPose");
     }
 
     private static void TestScene(string sceneName, bool loadEditedGaze = false)
@@ -132,7 +150,8 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -163,8 +182,11 @@ public class LEAPMenu
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, "Gaze");
-            EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationRomanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+            {
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationRomanInstanceId, "Gaze");
+            }
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -189,7 +211,8 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -198,7 +221,7 @@ public class LEAPMenu
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "Walking90degwEdits";
         }
-        else // if (sceneName == "TestExpressiveGaze")
+        else if (sceneName == "TestExpressiveGaze")
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.cameraWindowWashing.enabled = true;
@@ -209,7 +232,23 @@ public class LEAPMenu
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.PrintEyeGaze(timeline);
+        }
+        else // if (sceneName == "InitialPose")
+        {
+            testScenes.modelNorman.SetActive(true);
+            testScenes.cameraWindowWashing.enabled = true;
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "InitialPose");
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
         }
 

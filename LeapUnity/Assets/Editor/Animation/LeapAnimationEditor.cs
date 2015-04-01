@@ -87,6 +87,7 @@ public class LeapAnimationEditor : EditorWindow
 
             if (!Timeline.Active)
             {
+                Timeline.Stop();
                 Timeline.ResetModelsToInitialPose();
 
                 // Show all models

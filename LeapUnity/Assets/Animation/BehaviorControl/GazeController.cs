@@ -255,6 +255,14 @@ public class GazeController : AnimController
     }
 
     /// <summary>
+    /// Helper gaze target for looking straight ahead.
+    /// </summary>
+    public virtual GameObject AheadHelperTarget
+    {
+        get { return aheadHelperTarget; }
+    }
+
+    /// <summary>
     /// Centroid of the eyes.
     /// </summary>
     public virtual Vector3 EyeCenter
@@ -452,11 +460,11 @@ public class GazeController : AnimController
     public virtual void GazeAhead()
     {
         // Position the helper gaze target in front of the agent
-        Vector3 bodyPos = ModelController.BodyPosition;
+        /*Vector3 bodyPos = ModelController.BodyPosition;
         Vector3 bodyDir = ModelController.BodyDirection;
         float height = ModelController.GetInitWorldPosition(Head.bone).y;
         Vector3 pos = (new Vector3(bodyPos.x, height, bodyPos.z)) + height * bodyDir;
-        aheadHelperTarget.transform.position = pos;
+        aheadHelperTarget.transform.position = pos;*/
 
         GazeAt(aheadHelperTarget);
     }
@@ -717,56 +725,42 @@ public class GazeController : AnimController
     public virtual void _InitLatencies()
     {
         // Compute head joint latencies
+        Head.latency = _ComputeHeadLatency();
         for (int gji = torsoIndex - 1;
             headIndex > 0 && gji >= headIndex; --gji)
         {
             GazeJoint joint = gazeJoints[gji];
-            joint.latency = _ComputeHeadLatency();
+            joint.latency = Head.latency;
         }
 
-        // Compute torso joint latencies
-        for (int gji = LastGazeJointIndex;
-            torsoIndex > 0 && curUseTorso && gji >= torsoIndex; --gji)
+        if (Torso != null)
         {
-            GazeJoint joint = gazeJoints[gji];
-            joint.latency = _ComputeTorsoLatency();
+            // Compute torso joint latencies
+            Torso.latency = _ComputeTorsoLatency();
+            for (int gji = LastGazeJointIndex;
+                torsoIndex > 0 && curUseTorso && gji >= torsoIndex; --gji)
+            {
+                GazeJoint joint = gazeJoints[gji];
+                joint.latency = Torso.latency;
+            }
         }
 
-        // Initialize per-joint parameters
-        float st0 = 0;
-        float stmin = float.MaxValue;
+        // What is the earliest latency time?
+        float minLatency = gazeJoints.Min(j => j.latency);
+
+        // Initialize latency times
         for (int i = 0; i <= LastGazeJointIndex; ++i)
         {
             GazeJoint joint = gazeJoints[i];
             GazeJoint last = GetLastGazeJointInChain(joint.type);
-            st0 += last.latency / 1000f;
-            joint.latencyTime = st0;
-            stmin = st0 < stmin ? st0 : stmin;
-        }
-
-        // Offset all latency times if needed
-        if (stmin < 0)
-        {
-            stmin = Mathf.Abs(stmin);
-            for (int i = 0; i <= LastGazeJointIndex; ++i)
-            {
-                GazeJoint joint = gazeJoints[i];
-                joint.latencyTime += stmin;
-            }
+            joint.latencyTime += (minLatency >= 0f ? last.latency : last.latency + Mathf.Abs(minLatency));
+            joint.latencyTime /= 1000f;
         }
     }
 
     // Calculate peak velocities in the gaze shift
     public virtual void _CalculateMaxVelocities()
     {
-        /*// Estimate max. OMR
-        // TODO: Should it be adjusted or original OMR?
-        float OMR = -float.MaxValue;
-        foreach (GazeJoint eye in eyes)
-            OMR = Mathf.Max(OMR,
-                            Mathf.Max(Mathf.Max(eye.curUpMR, eye.curDownMR),
-                                      Mathf.Max(eye.curInMR, eye.curOutMR)));*/
-        
         if (Torso != null && curUseTorso)
         {
             // For the upper body joints
@@ -1077,9 +1071,6 @@ public class GazeController : AnimController
 
             GoToState((int)GazeState.Shifting);
         }
-
-        if (logStateChange)
-            _LogState();
     }
 
     protected virtual void LateUpdate_Shifting()
@@ -1109,17 +1100,15 @@ public class GazeController : AnimController
             GoToState((int)GazeState.NoGaze);
             return;
         }
-
-        if (logStateChange)
-            _LogState();
     }
 
     protected virtual void Transition_NoGazeShifting()
     {
         doGazeShift = false;
 
-        // Set gaze targets
         if (FixGazeTarget == null)
+            // This is the first gaze shift, so there is no target set for VOR
+            // during latency period - set it now
             InitVOR();
         
         // Initialize new gaze shift
@@ -1155,6 +1144,11 @@ public class GazeController : AnimController
                 // Joint not ready to move yet, just VOR
                 joint._ApplyVOR();
                 joint.latencyTime -= deltaTime;
+
+                // Update the source rotation of the joint to account for
+                // VOR movement since gaze shift started
+                joint._UpdateRotationsOnVOR();
+
                 continue;
             }
             else
@@ -1708,12 +1702,5 @@ public class GazeController : AnimController
 
             gazeJoints[2 + headBones.Length + torsoBones.Length - torsoBoneIndex - 1] = torsoJoint;
         }
-    }
-
-    // Log gaze controller state
-    public virtual void _LogState()
-    {
-        foreach (var joint in gazeJoints)
-            joint._LogState();
     }
 }

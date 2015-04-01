@@ -53,4 +53,9 @@ public class LEAPCore : MonoBehaviour
     /// Suffix appended to names of expressive gaze instances.
     /// </summary>
     public static string expressiveGazeSuffix = "-Expressive";
+
+    /// <summary>
+    /// If true, expressive animation will be applied to gaze movements.
+    /// </summary>
+    public static bool useExpressiveGaze = false;
 }
