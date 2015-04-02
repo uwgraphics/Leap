@@ -91,9 +91,9 @@ public class LeapAnimationEditor : EditorWindow
                 Timeline.ResetModelsToInitialPose();
 
                 // Show all models
-                ModelController[] models = Timeline.GetAllModels();
+                var models = Timeline.Models;
                 foreach (var model in models)
-                    ModelUtils.ShowModel(model.gameObject, true);
+                    ModelUtils.ShowModel(model, true);
 
                 SceneView.RepaintAll();
             }
@@ -215,10 +215,10 @@ public class LeapAnimationEditor : EditorWindow
     private void AnimationTimeline_AllAnimationApplied()
     {
         _animationEditGizmos._ClearEndEffectorGoals();
-        var selectedModel = Timeline.GetAllModels().FirstOrDefault(m => ModelUtils.GetSelectedModel());
+        var selectedModel = Timeline.Models.FirstOrDefault(m => ModelUtils.GetSelectedModel());
         if (selectedModel != null)
         {
-            IKSolver[] solvers = selectedModel.gameObject.GetComponents<IKSolver>();
+            IKSolver[] solvers = selectedModel.GetComponents<IKSolver>();
             foreach (var solver in solvers)
             {
                 _animationEditGizmos._SetEndEffectorGoals(solver.Goals.ToArray());

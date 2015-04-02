@@ -1,5 +1,37 @@
 Leap Animation Editor:
 
+#64 [] InitialPose animation keeps getting corrupted
+  - Seems to be a Unity issue
+  - This is a *severe* problem that makes the system virtually unusable
+  - Restarting Unity seems to temporarily fix the problem
+
+#63 [] EyeGazeEditor.GetInitControllerForEyeGazeInstance() sets head and torso alignments to 1
+
+#62 [] Stopping a gaze shift causes a discontinuity in pose
+
+#61 [] Gaze alignment inference is broken again
+  - See WindowWashing example, inference gives alignment 1 for both head and torso in almost all gaze shifts
+  - Seems to be the most broken when GazeController.useTorso is set to false
+  - Even when using both head and torso, many values are obviously wrong
+  - It might be that our gaze model lacks the expressive power of real human gaze in this example
+  - Some issues: 1) lack of separation between horizontal and vertical alignment, 2) torso "overshoots" the target sometimes, e.g., in order to enable the hands to reach their targets
+
+#60 [X] VOR target rotation is discontinuous in the first frame of a gaze shift
+  - fixTrgRot computation is discontinuous between gaze instances for some reason, but *only* when there is expressive gaze and *only* for the first frame of the gaze shift
+  - Seems to be absent from the baked animation now
+  - Seems to be absent, period
+
+#58 [X] Source rotations and expressive rotation displacements do not get initialized correctly when starting a new gaze instance
+  - The problem is that some joints, like the head, must continue to VOR on the old gaze target, using the last expressive displacements from the previous gaze instance
+  - Then when they start shifting, their source rotations should be from the last VOR rotations, *not* from the source rotations set at the very start of the gaze shift
+  - This may also fix #35
+  - There is still a snap on the first frame of the new gaze instance, and it only occurs when there are expressive rotations
+  - Maybe it's because the head changes from VOR to rotating within the same frame, yet expressive rotations are not set yet!
+  - Now there is also a huge jump in head rotation at the start of the first gaze shift
+  - This is a separate issue now, see #60
+
+#59 [X] Bug in how gaze joint latency times are computed - latency times for child joints higher than for topmost joint in the body part
+  
 #57 [X] Expressive gaze displacement maps are incorrectly extracted - rotations are opposite of what they should be
   - Just for the gaze shift phase
 
@@ -44,13 +76,14 @@ Leap Animation Editor:
 #44 [] Eyes sometimes appear to violate OMR quite badly
   - See Roman's eyes in PassSoda example
 
-#35 [] Head snaps to wrong orientation when it begins to rotate at gaze shift start
+#35 [X] Head snaps to wrong orientation when it begins to rotate at gaze shift start
   - This looks like #34, but circumstances are different - snapping occurs when latency time expires and neck joint stops VOR and begins to rotate
   - Base rotations and gaze rotations are both continuous, so it's discontinuity of the neck normal that is the problem
   - Yet this same discontinuity causes no problem for the topmost head joint
   - Nope, with a different gaze shift sequence it happens for the topmost head joint also
   - Seems to briefly snap to wrong rotation (one or two frames) before going back to normal?
   - Might just be a manifestation of #15
+  - Fixed when fixing #58
   
 #32 [] Torso sometimes jitters during a gaze shift
   - Small discontinuities in pose
@@ -67,8 +100,8 @@ Leap Animation Editor:
   - Should check to make sure this artifact is present in baked animation - otherwise the issue is that animation gets rendered before it's applied
   - Doesn't seem to be present in baked animation
 
-#24 [] Inference of head and torso alignment values seems to be incorrect in EyeGazeEditor
-  - Appears to work now for some gaze shifts, but not so for others - possibly because the body motion encodes gaze shifts that are not possible with our gaze model
+#24 [X] Inference of head and torso alignment values sometimes incorrect in EyeGazeEditor
+  - Appears to work well for some gaze shifts, but not so for others - possibly because the body motion encodes gaze shifts that are not possible with our gaze model
 
 #43 [X] Gaze annotations loading incorrectly - some get extended inordinately
   - See WindowWashingAGaze24, for instance

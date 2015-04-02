@@ -104,6 +104,7 @@ public class LEAPMenu
         var editTestScenario = GameObject.FindGameObjectWithTag("ScenarioManager").GetComponent<GazeEditTestScenario>();
         var testScenes = GameObject.Find("EyeGazeEditor").GetComponent<EyeGazeEditTestScenes>();
         timeline.RemoveAllLayers();
+        timeline.RemoveAllModels();
 
         // Get all characters and props in the scene
         if (testScenes.modelNorman == null)
@@ -114,6 +115,11 @@ public class LEAPMenu
             testScenes.modelRoman = GameObject.Find("Roman");
         if (testScenes.modelWindowWashingRoom == null)
             testScenes.modelWindowWashingRoom = GameObject.Find("WindowWashingRoom");
+
+        // Add character models to the timeline
+        timeline.AddModel(testScenes.modelNorman);
+        timeline.AddModel(testScenes.modelNormanette);
+        timeline.AddModel(testScenes.modelRoman);
 
         // Deactivate all characters and props
         testScenes.modelNorman.SetActive(false);
@@ -283,10 +289,10 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        var models = timeline.GetAllModels();
-        string[] baseAnimationClipNames = new string[models.Length];
+        var models = timeline.Models;
+        string[] baseAnimationClipNames = new string[models.Count];
         
-        for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
+        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
         {
             var model = models[modelIndex];
             var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model).Animation;
@@ -343,10 +349,6 @@ public class LEAPMenu
         timeline.SetIKEnabled(false);
         timeline.GetLayer("Gaze").Active = false;
 
-        // Get all base eye gaze instances
-        var baseGazeInstances = timeline.GetLayer("Gaze").Animations.Where(
-            inst => inst.Animation is EyeGazeInstance && (inst.Animation as EyeGazeInstance).IsBase);
-
         // Extract expressive motion for all gaze shifts in the base animation
         var baseLayer = timeline.GetLayer("BaseAnimation");
         foreach (var baseAnimation in baseLayer.Animations)
@@ -369,10 +371,9 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        var models = timeline.GetAllModels();
-        string[] baseAnimationClipNames = new string[models.Length];
+        var models = timeline.Models;
 
-        for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
+        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
         {
             var model = models[modelIndex];
             var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);

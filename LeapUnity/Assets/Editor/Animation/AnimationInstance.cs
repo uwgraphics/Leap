@@ -25,7 +25,7 @@ public abstract class AnimationInstance
     /// <summary>
     /// Character model controller to which this animation instance is applied.
     /// </summary>
-    public virtual ModelController Model
+    public virtual GameObject Model
     {
         get;
         private set;
@@ -101,11 +101,11 @@ public abstract class AnimationInstance
     /// <param name="animationClipName">Animation clip name</param>
     public AnimationInstance(GameObject model, string animationClipName)
     {
-        Model = model.GetComponent<ModelController>();
+        Model = model;
         Animation = model.GetComponent<Animation>();
         if (Model == null)
         {
-            throw new Exception("Unable to create animation instance for a character model without a Model Controller");
+            throw new Exception("Must specify character model");
         }
         else if (Animation == null)
         {
@@ -147,7 +147,7 @@ public abstract class AnimationInstance
         }
 
         // Create empty animation curves for baking the animation instance
-        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model.gameObject);
+        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model);
 
         // Set default animation weight
         Weight = 1f;
@@ -185,10 +185,10 @@ public abstract class AnimationInstance
         IsBaking = false;
         AnimationClip.ClearCurves();
         LEAPAssetUtils.SetAnimationCurvesOnClip(Model.gameObject, AnimationClip, _AnimationCurves);
-        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model.gameObject);
+        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model);
 
         // Write animation clip to file
-        string path = LEAPAssetUtils.GetModelDirectory(Model.gameObject) + AnimationClip.name + ".anim";
+        string path = LEAPAssetUtils.GetModelDirectory(Model) + AnimationClip.name + ".anim";
         if (AssetDatabase.GetAssetPath(AnimationClip) != path)
         {
             AssetDatabase.DeleteAsset(path);

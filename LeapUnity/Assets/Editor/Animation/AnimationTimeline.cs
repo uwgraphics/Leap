@@ -329,6 +329,14 @@ public class AnimationTimeline
     }
 
     /// <summary>
+    /// List of character models animated by the current timeline.
+    /// </summary>
+    public IList<GameObject> Models
+    {
+        get { return _models.AsReadOnly();  }
+    }
+
+    /// <summary>
     /// List of layers in the current timeline.
     /// </summary>
     public IList<LayerContainer> Layers
@@ -440,7 +448,7 @@ public class AnimationTimeline
         }
     }
 
-    private Dictionary<string, AnimationInstance> _initialPoseAnimationInstances;
+    private List<GameObject> _models;
     private List<LayerContainer> _layerContainers;
     private Dictionary<int, ScheduledInstance> _animationInstancesById;
     private Dictionary<AnimationClip, EndEffectorConstraintContainer> _endEffectorConstraints;
@@ -454,7 +462,7 @@ public class AnimationTimeline
     /// </summary>
     private AnimationTimeline()
     {
-        _initialPoseAnimationInstances = new Dictionary<string, AnimationInstance>();
+        _models = new List<GameObject>();
         _layerContainers = new List<LayerContainer>();
         _animationInstancesById = new Dictionary<int, ScheduledInstance>();
         _endEffectorConstraints = new Dictionary<AnimationClip, EndEffectorConstraintContainer>();
@@ -467,19 +475,58 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// Get all character models animated on this animation timeline.
+    /// Add a character model to the timeline.
     /// </summary>
-    /// <returns>List of models</returns>
-    public ModelController[] GetAllModels()
+    /// <param name="model">Character model</param>
+    public void AddModel(GameObject model)
     {
-        var models = new HashSet<ModelController>();
-        foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
+        if (_models.Any(m => m == model))
         {
-            var instance = kvp.Value.Animation;
-            models.Add(instance.Model);
+            throw new Exception(string.Format("Character model {0} already added", model.name));
         }
 
-        return models.ToArray();
+        var modelController = model.GetComponent<ModelController>();
+        if (modelController == null)
+        {
+            throw new Exception(string.Format("Character model {0} does not have a ModelController", model.name));
+        }
+
+        // Apply & store initial pose for the model
+        var initialPoseClip = model.GetComponent<Animation>().GetClip("InitialPose");
+        if (initialPoseClip == null)
+        {
+            throw new Exception(string.Format("Character model {0} does not have an InitialPose animation defined", model.name));
+        }
+        var initialPoseInstance = new AnimationClipInstance(model, initialPoseClip.name);
+        initialPoseInstance.Apply(0, AnimationLayerMode.Override);
+        modelController.Init();
+
+        // Add the model to the timeline
+        _models.Add(model);
+    }
+
+    /// <summary>
+    /// Remove a character model from the timeline.
+    /// </summary>
+    /// <param name="modelName">Character model name</param>
+    public void RemoveModel(string modelName)
+    {
+        if (Layers.Any(l => l.Animations.Any(a => a.Animation.Model.name == modelName)))
+        {
+            throw new Exception(string.Format(
+                "Cannot remove character model {0} from the timeline, because it is references in at least one animation instance", modelName));
+        }
+
+        _models.RemoveAll(m => m.name == modelName);
+    }
+
+    /// <summary>
+    /// Remove all character models from the timeline.
+    /// </summary>
+    public void RemoveAllModels()
+    {
+        while (_models.Count > 0)
+            RemoveModel(_models[0].name);
     }
 
     /// <summary>
@@ -558,6 +605,13 @@ public class AnimationTimeline
         if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
         {
             throw new Exception(string.Format("There is no layer named {0}", layerName));
+        }
+
+        // Ensure character model for this animation instance has been added to this timeline
+        if (!_models.Any(m => m == animation.Model))
+        {
+            throw new Exception(string.Format("Character model {0} for animation {1} not defined on the current timeline",
+                animation.Model.name, animation.AnimationClip.name));
         }
 
         // Schedule the animation instance in the appropriate order (based on start frame)
@@ -715,10 +769,10 @@ public class AnimationTimeline
     /// <param name="enabled">If true, solvers will be enabled, otherwise they will be disabled</param>
     public void SetIKEnabled(bool enabled = true)
     {
-        ModelController[] models = GetAllModels();
+        var models = Models;
         foreach (var model in models)
         {
-            IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+            IKSolver[] solvers = model.GetComponents<IKSolver>();
             foreach (var solver in solvers)
                 solver.enabled = enabled;
         }
@@ -802,25 +856,25 @@ public class AnimationTimeline
     /// <returns>Animation clip</returns>
     public void BakeRange(string[] animationClipNames, int startFrame, int length)
     {
-        ModelController[] models = GetAllModels();
+        var models = Models;
 
-        if (models.Length != animationClipNames.Length)
+        if (models.Count != animationClipNames.Length)
         {
             throw new Exception("Error baking the animation timeline: must specify an animation clip name for each model on the timeline");
         }
 
         // Ensure each model has an animation clip with the specified name
-        for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
+        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
         {
             var model = models[modelIndex];
-            LEAPAssetUtils.CreateAnimationClipOnModel(animationClipNames[modelIndex], model.gameObject);
+            LEAPAssetUtils.CreateAnimationClipOnModel(animationClipNames[modelIndex], model);
         }
 
         // For each model, retrieve its nodes and create empty anim. curves for them
         var curvesPerModel = new Dictionary<string, AnimationCurve[]>();
         foreach (var model in models)
         {
-            curvesPerModel[model.gameObject.name] = LEAPAssetUtils.CreateAnimationCurvesForModel(model.gameObject);
+            curvesPerModel[model.gameObject.name] = LEAPAssetUtils.CreateAnimationCurvesForModel(model);
         }
 
         // Apply the animation at each frame in the range and bake the resulting frame to the curve on each model
@@ -831,7 +885,7 @@ public class AnimationTimeline
 
             foreach (var model in models)
             {
-                Transform[] bones = ModelUtils.GetAllBones(model.gameObject);
+                Transform[] bones = ModelUtils.GetAllBones(model);
                 for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
                 {
                     var bone = bones[boneIndex];
@@ -844,13 +898,13 @@ public class AnimationTimeline
                         positionKeyframe.time = ((float)(CurrentFrame - startFrame)) / LEAPCore.editFrameRate;
 
                         positionKeyframe.value = bone.localPosition.x;
-                        curvesPerModel[model.gameObject.name][0].AddKey(positionKeyframe);
+                        curvesPerModel[model.name][0].AddKey(positionKeyframe);
 
                         positionKeyframe.value = bone.localPosition.y;
-                        curvesPerModel[model.gameObject.name][1].AddKey(positionKeyframe);
+                        curvesPerModel[model.name][1].AddKey(positionKeyframe);
 
                         positionKeyframe.value = bone.localPosition.z;
-                        curvesPerModel[model.gameObject.name][2].AddKey(positionKeyframe);
+                        curvesPerModel[model.name][2].AddKey(positionKeyframe);
                     }
 
                     // Key rotation
@@ -876,14 +930,14 @@ public class AnimationTimeline
         }
 
         // Set the curves to their animation clips on each model
-        for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
+        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
         {
             var model = models[modelIndex];
-            AnimationClip newClip = LEAPAssetUtils.GetAnimationClipOnModel(animationClipNames[modelIndex], model.gameObject);
-            LEAPAssetUtils.SetAnimationCurvesOnClip(model.gameObject, newClip, curvesPerModel[model.gameObject.name]);
+            AnimationClip newClip = LEAPAssetUtils.GetAnimationClipOnModel(animationClipNames[modelIndex], model);
+            LEAPAssetUtils.SetAnimationCurvesOnClip(model.gameObject, newClip, curvesPerModel[model.name]);
 
             // Write animation clip to file
-            string path = LEAPAssetUtils.GetModelDirectory(model.gameObject) + newClip.name + ".anim";
+            string path = LEAPAssetUtils.GetModelDirectory(model) + newClip.name + ".anim";
             if (AssetDatabase.GetAssetPath(newClip) != path)
             {
                 AssetDatabase.DeleteAsset(path);
@@ -937,23 +991,10 @@ public class AnimationTimeline
     public void ResetModelsToInitialPose()
     {
         // Set all models to initial pose
-        ModelController[] models = GetAllModels();
+        var models = Models;
         foreach (var model in models)
         {
-            AnimationInstance initialPoseInstance = null;
-            if (!_initialPoseAnimationInstances.ContainsKey(model.gameObject.name))
-            {
-                initialPoseInstance = new AnimationClipInstance(model.gameObject, "InitialPose");
-                _initialPoseAnimationInstances[model.gameObject.name] = initialPoseInstance;
-            }
-            else
-            {
-                initialPoseInstance = _initialPoseAnimationInstances[model.gameObject.name];
-            }
-
-            initialPoseInstance.Apply(0, AnimationLayerMode.Override);
-
-            model.Init();
+            model.GetComponent<ModelController>()._ResetToInitialPose();
         }
     }
 
@@ -964,16 +1005,7 @@ public class AnimationTimeline
     /// <param name="poseName">Pose name</param>
     public void StoreModelPose(string modelName, string poseName)
     {
-        // Get model
-        var instKvp = _animationInstancesById.Where(kvp => kvp.Value.Animation.Model.gameObject.name == modelName)
-            .Select(kvp => (KeyValuePair<int, ScheduledInstance>?)kvp)
-            .FirstOrDefault();
-        if (instKvp == null)
-        {
-            throw new Exception(string.Format("Cannot store pose {0} on model {1}: model does not exist", poseName, modelName));
-        }
-
-        var model = instKvp.Value.Value.Animation.Model.gameObject;
+        var model = Models.FirstOrDefault(m => m.name == modelName);
         if (!_storedModelPoses.ContainsKey(modelName))
             _storedModelPoses[modelName] = new Dictionary<string, ModelPose>();
         _storedModelPoses[modelName][poseName] = new ModelPose(model);
@@ -987,7 +1019,7 @@ public class AnimationTimeline
     public void ApplyModelPose(string modelName, string poseName)
     {
         // Get model
-        var instKvp = _animationInstancesById.Where(kvp => kvp.Value.Animation.Model.gameObject.name == modelName)
+        var instKvp = _animationInstancesById.Where(kvp => kvp.Value.Animation.Model.name == modelName)
             .Select(kvp => (KeyValuePair<int, ScheduledInstance>?)kvp)
             .FirstOrDefault();
         if (instKvp == null)
@@ -1000,7 +1032,7 @@ public class AnimationTimeline
             throw new Exception(string.Format("Cannot apply pose {0} to model {1}: pose does not exist", poseName, modelName));
         }
 
-        var model = instKvp.Value.Value.Animation.Model.gameObject;
+        var model = instKvp.Value.Value.Animation.Model;
         _storedModelPoses[modelName][poseName].Apply(model);
     }
 
@@ -1050,7 +1082,7 @@ public class AnimationTimeline
 
     public void _ApplyAnimation()
     {
-        ModelController[] models = GetAllModels();
+        var models = Models;
 
         // Reset models and IK solvers
         _ClearIKGoals();
@@ -1078,7 +1110,7 @@ public class AnimationTimeline
                         _activeAnimationInstanceIds.Remove(animation.InstanceId);
 
                         Debug.Log(string.Format("{0}: Deactivating animation instance {1} on model {2}",
-                            CurrentFrame, animation.Animation.AnimationClip.name, animation.Animation.Model.gameObject.name));
+                            CurrentFrame, animation.Animation.AnimationClip.name, animation.Animation.Model.name));
 
                         // Notify listeners that the animation instance has just become inactive
                         AnimationFinished(animation.InstanceId);
@@ -1104,7 +1136,7 @@ public class AnimationTimeline
                         animation.Animation.Start();
 
                         Debug.Log(string.Format("{0}: Activating animation instance {1} on model {2}",
-                            CurrentFrame, animation.Animation.AnimationClip.name, animation.Animation.Model.gameObject.name));
+                            CurrentFrame, animation.Animation.AnimationClip.name, animation.Animation.Model.name));
 
                         // Notify listeners that the animation instance has just become active
                         AnimationStarted(animation.InstanceId);
@@ -1157,7 +1189,7 @@ public class AnimationTimeline
         }
 
         // Make sure controllers have access to the latest delta time
-        ModelController[] models = GetAllModels();
+        var models = Models;
         foreach (var model in models)
             model.GetComponent<AnimControllerTree>().DeltaTime = deltaTime;
 
@@ -1183,23 +1215,23 @@ public class AnimationTimeline
 
     private void _StoreModelsCurrentPose()
     {
-        ModelController[] models = GetAllModels();
+        var models = Models;
         foreach (var model in models)
         {
-            model._StoreCurrentPose();
+            model.GetComponent<ModelController>()._StoreCurrentPose();
         }
     }
 
     private void _InitControllers()
     {
-        ModelController[] models = GetAllModels();
+        var models = Models;
         foreach (var model in models)
         {
-            var animControllerTree = model.gameObject.GetComponent<AnimControllerTree>();
+            var animControllerTree = model.GetComponent<AnimControllerTree>();
             if (animControllerTree != null)
                 animControllerTree.Start();
 
-            var gazeController = model.gameObject.GetComponent<GazeController>();
+            var gazeController = model.GetComponent<GazeController>();
             if (gazeController != null)
             {
                 gazeController.fixGaze = false;
@@ -1209,16 +1241,16 @@ public class AnimationTimeline
 
     private void _InitIK()
     {
-        ModelController[] models = GetAllModels();
+        var models = Models;
         foreach (var model in models)
         {
-            IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+            IKSolver[] solvers = model.GetComponents<IKSolver>();
             foreach (var solver in solvers)
                 solver.Init();
         }
     }
 
-    private void _SetIKGoals(ModelController model, AnimationClip animationClip)
+    private void _SetIKGoals(GameObject model, AnimationClip animationClip)
     {
         if (!_endEffectorConstraints.ContainsKey(animationClip))
             return;
@@ -1227,12 +1259,12 @@ public class AnimationTimeline
         EndEffectorConstraint[] activeConstraints = _endEffectorConstraints[animationClip].GetConstraintsAtFrame(CurrentFrame, constraintFrameWindow);
         if (activeConstraints == null)
             return;
-        IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+        IKSolver[] solvers = model.GetComponents<IKSolver>();
 
         // Set end-effector goals
         foreach (var constraint in activeConstraints)
         {
-            Transform endEffector = ModelUtils.FindBoneWithTag(model.gameObject.transform, constraint.endEffector);
+            Transform endEffector = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
 
             // Compute constraint weight
             float t = 1f;
@@ -1243,7 +1275,7 @@ public class AnimationTimeline
             float t2 = t * t;
             float weight = -2f * t2 * t + 3f * t2;
             //
-            /*if (model.gameObject.name == "Norman")
+            /*if (model.name == "Norman")
             {
                 Debug.LogWarning(string.Format("frame = {0}: endEffector = {1}, target = {2}, weight = {3}", CurrentFrame,
                     constraint.endEffector, constraint.target != null ? constraint.target.name : null, weight));
@@ -1265,9 +1297,9 @@ public class AnimationTimeline
         }
     }
 
-    private void _SetIKBasePose(ModelController model)
+    private void _SetIKBasePose(GameObject model)
     {
-        IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+        IKSolver[] solvers = model.GetComponents<IKSolver>();
 
         foreach (var solver in solvers)
         {
@@ -1281,9 +1313,9 @@ public class AnimationTimeline
         }
     }
 
-    private void _SetIKEyeGazeParams(ModelController model)
+    private void _SetIKEyeGazeParams(GameObject model)
     {
-        IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+        IKSolver[] solvers = model.GetComponents<IKSolver>();
 
         foreach (var solver in solvers)
         {
@@ -1299,10 +1331,10 @@ public class AnimationTimeline
 
     private void _ClearIKGoals()
     {
-        ModelController[] models = GetAllModels();
+        var models = Models;
         foreach (var model in models)
         {
-            IKSolver[] solvers = model.gameObject.GetComponents<IKSolver>();
+            IKSolver[] solvers = model.GetComponents<IKSolver>();
             foreach (var solver in solvers)
             {
                 solver.ClearGoals();
@@ -1312,10 +1344,7 @@ public class AnimationTimeline
 
     private void _SolveIK()
     {
-        //
-        //Debug.Log(string.Format("FRAME: {0}", AnimationTimeline.Instance.CurrentFrame));
-        //
-        ModelController[] models = GetAllModels();
+        var models = Models;
         foreach (var model in models)
         {
             // First solve for body pose

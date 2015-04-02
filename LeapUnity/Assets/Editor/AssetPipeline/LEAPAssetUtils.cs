@@ -136,7 +136,6 @@ public static class LEAPAssetUtils
         // Refresh the morph controller
         MorphController base_mctrl = mdlBase.GetComponent<MorphController>();
         MorphController inst_mctrl = mdlInst.GetComponent<MorphController>();
-        ModelController inst_mdlctrl = mdlInst.GetComponent<ModelController>();
         if (base_mctrl != null && inst_mctrl != null)
         {
             // Refresh morph targets
@@ -336,9 +335,7 @@ public static class LEAPAssetUtils
     /// <param name="model">Character model</param>
     public static void FixModelAnimationClipAssoc(GameObject model)
     {
-        var animationComponent = model.GetComponent<Animation>();
         AnimationClip[] clips = GetAllAnimationClipsOnModel(model);
-        Transform[] bones = ModelUtils.GetAllBones(model);
         Transform rootBone = ModelUtils.FindRootBone(model);
 
         foreach (var clip in clips)
