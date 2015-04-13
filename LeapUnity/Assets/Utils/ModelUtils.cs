@@ -424,4 +424,35 @@ public static class ModelUtils
 
         return obj;
     }
+
+    /// <summary>
+    /// Project specified rotation onto a spherical arc around the specified bone.
+    /// </summary>
+    /// <param name="bone">Bone</param>
+    /// <param name="qs">Source rotation of the arc</param>
+    /// <param name="qt">Target rotation of the arc</param>
+    /// <param name="q">Rotation</param>
+    /// <returns>Projected rotation</returns>
+    public static Quaternion ProjectRotationOntoArc(Transform bone, Quaternion qs, Quaternion qt, Quaternion q)
+    {
+        Quaternion q0 = bone.localRotation;
+
+        // Get rotational plane for the shortest-arc gaze shift
+        bone.localRotation = qs;
+        Vector3 vs = bone.forward;
+        bone.localRotation = qt;
+        Vector3 vt = bone.forward;
+        Vector3 n = !GeomUtil.Equal(vs, vt) ? Vector3.Cross(vs, vt) : Vector3.Cross(vs, -bone.right);
+
+        // Project current rotation onto that plane
+        bone.localRotation = q;
+        Vector3 v = bone.forward;
+        Vector3 vp = GeomUtil.ProjectVectorOntoPlane(v, n);
+        vp.Normalize();
+        Quaternion qp = q * Quaternion.FromToRotation(v, vp);
+
+        bone.localRotation = q0;
+
+        return qp;
+    }
 }

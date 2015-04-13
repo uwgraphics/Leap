@@ -106,6 +106,9 @@ public class LEAPMenu
         timeline.RemoveAllLayers();
         timeline.RemoveAllModels();
 
+        // Reload Leap configuration
+        LEAPCore.LoadConfiguration();
+
         // Get all characters and props in the scene
         if (testScenes.modelNorman == null)
             testScenes.modelNorman = GameObject.Find("Norman");
@@ -137,7 +140,7 @@ public class LEAPMenu
         timeline.GetLayer("BaseAnimation").isIKEndEffectorConstr = true;
         timeline.GetLayer("BaseAnimation").isIKBase = true;
         timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
-        timeline.GetLayer("Gaze").isIKBase = true;
+        timeline.GetLayer("Gaze").isIKBase = false;
         timeline.GetLayer("Gaze").isIKGaze = true;
 
         if (sceneName == "WindowWashing")
@@ -274,6 +277,7 @@ public class LEAPMenu
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
         timeline.ResetModelsToInitialPose();
+        EyeGazeEditor.ResetEyeGazeControllers(timeline.Models.ToArray());
         SceneView.RepaintAll();
     }
 

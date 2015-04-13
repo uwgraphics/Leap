@@ -525,8 +525,9 @@ public class AnimationTimeline
     /// </summary>
     public void RemoveAllModels()
     {
-        while (_models.Count > 0)
-            RemoveModel(_models[0].name);
+        foreach (var layer in Layers)
+            RemoveAllAnimations(layer.LayerName);
+        _models.Clear();
     }
 
     /// <summary>

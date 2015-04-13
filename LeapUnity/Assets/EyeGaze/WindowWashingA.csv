@@ -1,20 +1,19 @@
-Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,HeadAlign,TorsoAlign,TurnBody
-Norman,WindowWashingAGaze1,6,27,47,WindowUpperRight,0.9110972,1,True
-Norman,WindowWashingAGaze2,48,33,114,WindowUpperLeft1,0.5076942,0.186076,True
-Norman,WindowWashingAGaze3,115,23,168,WindowCenterRight1,1,1,True
-Norman,WindowWashingAGaze4,169,40,209,WindowUpperLeft2,0.9691989,0.1960423,True
-Norman,WindowWashingAGaze5,210,33,243,AboveBucket,1,0.6789271,True
-Norman,WindowWashingAGaze6,244,35,279,WindowUpperRight,1,0.6102052,True
-Norman,WindowWashingAGaze7,280,30,310,WindowUpperLeft1,0.6129162,0.1383778,True
-Norman,WindowWashingAGaze8,311,30,359,WindowUpperRight,0.8792493,1,True
-Norman,WindowWashingAGaze9,360,36,409,AboveBucket,1,0.700542,True
-Norman,WindowWashingAGaze10,410,29,439,WindowUpperRight,0.7785916,1,True
-Norman,WindowWashingAGaze11,440,37,477,WindowUpperLeft2,1,0.1924774,True
-Norman,WindowWashingAGaze12,478,33,513,WindowCenterRight2,0.5210739,0.4737443,True
-Norman,WindowWashingAGaze13,514,21,535,AboveBucket,0.8141673,1,True
-Norman,WindowWashingAGaze14,536,13,549,WindowCenter,0.6072682,0.537323,True
-Norman,WindowWashingAGaze22,550,35,585,WindowCenterRight1,0.4864375,1,True
-Norman,WindowWashingAGaze15,586,31,617,WindowLowerLeft,1,0.4216149,True
-Norman,WindowWashingAGaze16,618,28,648,WindowLowerRight2,1,1,True
-Norman,WindowWashingAGaze17,649,29,679,AboveBucket,0.6416773,1,True
-Norman,WindowWashingAGaze18,680,23,703,WindowUpperCenter,1,0.1678468,True
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+Norman,WindowWashingAGaze1,6,39,47,WindowUpperRight,"0 0 0",0.1904954,0.1290751,True
+Norman,WindowWashingAGaze2,48,42,114,WindowUpperLeft1,"0 0 0",0.77494,0.08269023,True
+Norman,WindowWashingAGaze3,115,32,168,WindowCenterRight1,"0 0 0",1,0,True
+Norman,WindowWashingAGaze4,169,40,209,WindowUpperLeft2,"0 0 0",0.8027602,0.1030595,True
+Norman,WindowWashingAGaze5,210,33,243,AboveBucket,"0 0 0",0,0.1390662,True
+Norman,WindowWashingAGaze6,244,35,279,WindowUpperRight,"0 0 0",0.9999997,0.2723632,True
+Norman,WindowWashingAGaze7,280,30,310,WindowUpperLeft1,"0 0 0",0,0.1194823,True
+Norman,WindowWashingAGaze8,311,40,359,WindowUpperRight,"0 0 0",0,0.1354023,True
+Norman,WindowWashingAGaze9,360,44,409,AboveBucket,"0 0 0",0,0.1601077,True
+Norman,WindowWashingAGaze10,410,29,439,WindowUpperRight,"0 0 0",0.9999995,0.2305101,True
+Norman,WindowWashingAGaze11,440,37,477,WindowUpperLeft2,"0 0 0",0,0.1111242,True
+Norman,WindowWashingAGaze12,478,35,513,WindowCenterRight2,"0 0 0",1,0.004743758,True
+Norman,WindowWashingAGaze13,514,21,549,AboveBucket,"0 0 0",1,0.3458641,True
+Norman,WindowWashingAGaze15,550,35,585,WindowCenterRight1,"0 0 0",0.9382377,0.5105132,True
+Norman,WindowWashingAGaze16,586,31,617,WindowLowerLeft,"0 0 0",0,0.08892018,True
+Norman,WindowWashingAGaze17,618,30,648,WindowLowerRight2,"0 0 0",0,0,True
+Norman,WindowWashingAGaze18,649,30,679,AboveBucket,"0 0 0",1,0.309294,True
+Norman,WindowWashingAGaze19,680,23,703,WindowUpperCenter,"0 0 0",0.3543274,0.05638475,True

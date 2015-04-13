@@ -52,6 +52,21 @@ public class GazeJoint : DirectableJoint
     public float align = 1f;
 
     /// <summary>
+    /// How much the gaze joint aligns with the eyes horizontally when gazing at a target (0-1).
+    /// </summary>
+    public float hAlign = 1f;
+
+    /// <summary>
+    /// How much the gaze joint aligns with the eyes vertically when gazing at a target (0-1).
+    /// </summary>
+    public float vAlign = 1f;
+
+    /// <summary>
+    /// How much roll should be applied to the joint as it achieves target alignment.
+    /// </summary>
+    public float roll = 0f;
+
+    /// <summary>
     /// When the gaze joint will start moving relative to its immediate child
     /// in a gaze shift (in ms).
     /// </summary>
@@ -93,6 +108,18 @@ public class GazeJoint : DirectableJoint
     // Joint alignment in the current gaze shift
     [HideInInspector]
     public float curAlign = 1f;
+
+    // Horizontal joint alignment in the current gaze shift
+    [HideInInspector]
+    public float curHAlign = 1f;
+
+    // Vertical joint alignment in the current gaze shift
+    [HideInInspector]
+    public float curVAlign = 1f;
+
+    // Roll in the current gaze shift
+    [HideInInspector]
+    public float curRoll = 0f;
 
     // Source rotation (joint rotation at the start of gaze shift)
     [HideInInspector]
@@ -219,7 +246,7 @@ public class GazeJoint : DirectableJoint
             Quaternion currot = bone.localRotation;
 
             Quaternion qs = isVOR ? fixSrcRot : srcRot;
-            Quaternion qt = isVOR ? fixTrgRot : trgRot;
+            Quaternion qt = isVOR ? fixTrgRotAlign : trgRotAlign;
 
             Vector3 axis = Vector3.up.normalized;
             if (qs != qt)
@@ -230,12 +257,19 @@ public class GazeJoint : DirectableJoint
                 Vector3 vt = Direction.normalized;
                 axis = Vector3.Cross(vs, vt).normalized;
             }
-            // TODO: just to be sure, when in VOR mode use fixSrcRot and fixTrgRot
 
             bone.localRotation = currot;
 
             return axis;
         }
+    }
+
+    /// <summary>
+    /// Gaze controller that owns the current gaze joint.
+    /// </summary>
+    public virtual GazeController GazeController
+    {
+        get { return gazeCtrl; }
     }
 
     /// <summary>
@@ -268,7 +302,6 @@ public class GazeJoint : DirectableJoint
         float yaw = this.bone == mdlCtrl.REye ? (Yaw - InitYaw) : (-Yaw + InitYaw);
         float pitch = Pitch - InitPitch;
 
-        // TODO: elliptic OMR doesn't work as well as I expected
         float y2 = yaw*yaw;
         float p2 = pitch*pitch;
 		

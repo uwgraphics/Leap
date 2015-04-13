@@ -23,6 +23,7 @@ public class LeapAnimationEditor : EditorWindow
     private AnimationEditGizmos _animationEditGizmos = null;
     private int _frameCounter = 0;
     private Stopwatch _frameTimer = new Stopwatch();
+    private GameObject _loggedGazeControllerStateModel = null;
 
     private bool _ikEnabled = true;
 
@@ -64,11 +65,19 @@ public class LeapAnimationEditor : EditorWindow
         _frameTimer.Reset();
         _frameTimer.Start();
 
+        // Update animation and redraw the scene and timeline
         Timeline.Update(deltaTime);
         if (Timeline.Active && Timeline.Playing)
         {
             SceneView.RepaintAll();
             this.Repaint();
+        }
+
+        if (_loggedGazeControllerStateModel != null)
+        {
+            // Log gaze controller state for the specified character model
+            EyeGazeEditor.PrintEyeGazeControllerState(_loggedGazeControllerStateModel);
+            _loggedGazeControllerStateModel = null;
         }
     }
 
@@ -193,6 +202,28 @@ public class LeapAnimationEditor : EditorWindow
                 * Timeline.TimeLength
                 );
             SceneView.RepaintAll();
+        }
+
+        // Process keyboard input
+        var e = Event.current;
+        switch (e.type)
+        {
+            case EventType.KeyDown:
+
+                if (e.keyCode == KeyCode.G)
+                {
+                    var selectedModel = ModelUtils.GetSelectedModel();
+                    if (selectedModel != null && selectedModel.GetComponent<GazeController>() != null)
+                    {
+                        _loggedGazeControllerStateModel = selectedModel;
+                    }
+                }
+
+                break;
+
+            default:
+
+                break;
         }
     }
 

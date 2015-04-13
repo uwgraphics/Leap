@@ -56,6 +56,12 @@ public class GazeController : AnimController
     public bool useTorso = true;
 
     /// <summary>
+    /// If true, the gaze controller will employ the new parametrization
+    /// based on dual (horizontal and vertical) alignment parameters and roll.
+    /// </summary>
+    public bool useDualAlign = true;
+
+    /// <summary>
     /// Predictability of the gaze target (0-1). 
     /// </summary>
     public float predictability = 1f;
@@ -460,11 +466,11 @@ public class GazeController : AnimController
     public virtual void GazeAhead()
     {
         // Position the helper gaze target in front of the agent
-        /*Vector3 bodyPos = ModelController.BodyPosition;
+        Vector3 bodyPos = ModelController.BodyPosition;
         Vector3 bodyDir = ModelController.BodyDirection;
         float height = ModelController.GetInitWorldPosition(Head.bone).y;
         Vector3 pos = (new Vector3(bodyPos.x, height, bodyPos.z)) + height * bodyDir;
-        aheadHelperTarget.transform.position = pos;*/
+        aheadHelperTarget.transform.position = pos;
 
         GazeAt(aheadHelperTarget);
     }
@@ -1559,46 +1565,6 @@ public class GazeController : AnimController
         }
         
         return adjDistRotAlign;
-    }
-
-    // Adjust head target rotations so eyes can achieve alignment
-    protected virtual void _UpdateMinHeadTargetRotations()
-    {
-        Quaternion trgRotAlign = Head.trgRotAlign;
-        float distRotAlign = Head.distRotAlign;
-
-        _InitMinHeadTargetRotations();
-        if (Head.distRotAlign <= distRotAlign)
-        {
-            // Current head target rotations are sufficient for eyes to reach the target,
-            // so keep them as they are
-            Head.trgRotAlign = trgRotAlign;
-            Head.distRotAlign = distRotAlign;
-        }
-        else
-        {
-            //
-            /*Debug.LogWarning(string.Format("HEAD must rotate further towards the target, {0} > {1}",
-                Head.distRotAlign, distRotAlign));*/
-            //
-            // Head needs to rotate further towards the target
-            Head.trgRotAlign = Quaternion.Slerp(Head.trgRotAlign, Head.trgRot, Head.curAlign);
-            Head.distRotAlign = GazeJoint.DistanceToRotate(Head.srcRot, Head.trgRotAlign);
-        }
-    }
-
-    // Update target rotations of descendant joints
-    protected virtual void _UpdateTargetRotations(int jointIndex)
-    {
-        // Start from body joints towards the eyes
-        for (int ji = jointIndex; ji >= 0; --ji)
-        {
-            GazeJoint joint = gazeJoints[ji];
-            joint._UpdateTargetRotation();
-        }
-
-        /*if (jointIndex >= headIndex)
-            _UpdateMinHeadTargetRotations();*/
     }
 
     // Recalculate eye velocities as gaze shift progresses

@@ -198,6 +198,64 @@ public struct EyeGazeControllerState : IAnimationControllerState
                 eyeGazeJointStates[jointIndex].Set(gazeController.gazeJoints[jointIndex]);
         }
     }
+
+    /// <summary>
+    /// Get initial/zero state for the specified gaze controller
+    /// </summary>
+    /// <param name="gazeController"></param>
+    public static EyeGazeControllerState GetInitState(GazeController gazeController)
+    {
+        EyeGazeControllerState state = new EyeGazeControllerState();
+        state.Get(gazeController);
+
+        state.stateId = (int)GazeState.NoGaze;
+        state.gazeTarget = null;
+        state.doGazeShift = false;
+        state.stopGazeShift = false;
+        state.fixGaze = false;
+        state.useTorso = true;
+        state.predictability = 1f;
+        state.movingTargetPositionOffset = Vector3.zero;
+        state.amplitude = 0f;
+        state.currentGazeTarget = null;
+
+        for (int gazeJointIndex = 0; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
+        {
+            EyeGazeJointState gazeJointState = state.eyeGazeJointStates[gazeJointIndex];
+
+            gazeJointState.align = 1f;
+            gazeJointState.latency = 100f;
+            gazeJointState.rot = Quaternion.identity;
+            gazeJointState.srcRot = Quaternion.identity;
+            gazeJointState.trgRot = Quaternion.identity;
+            gazeJointState.trgRotAlign = Quaternion.identity;
+            gazeJointState.trgRotMR = Quaternion.identity;
+            gazeJointState.distRotAlign = 0f;
+            gazeJointState.distRotMR = 0f;
+            gazeJointState.rotParamAlign = 0f;
+            gazeJointState.rotParamMR = 0f;
+            gazeJointState.maxVelocity = 0f;
+            gazeJointState.curVelocity = 0f;
+            gazeJointState.latencyTime = 0f;
+            gazeJointState.mrReached = false;
+            gazeJointState.trgReached = false;
+            gazeJointState.adjUpMR = gazeJointState.adjDownMR = gazeJointState.adjInMR = gazeJointState.adjOutMR =
+                gazeJointState.curUpMR = gazeJointState.curDownMR = gazeJointState.curInMR = gazeJointState.curOutMR = 0f;
+            gazeJointState.curAlign = 1f;
+            gazeJointState.isVOR = false;
+            gazeJointState.fixSrcRot = Quaternion.identity;
+            gazeJointState.fixTrgRot = Quaternion.identity;
+            gazeJointState.fixTrgRotAlign = Quaternion.identity;
+            gazeJointState.fixDistRotAlign = 0f;
+            gazeJointState.fixRotParamAlign = 0f;
+            gazeJointState.expressiveRot = Quaternion.identity;
+            gazeJointState.fixExpressiveRot = Quaternion.identity;
+
+            state.eyeGazeJointStates[gazeJointIndex] = gazeJointState;
+        }
+
+        return state;
+    }
 }
 
 /// <summary>
@@ -298,6 +356,16 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     /// <summary>
+    /// Position towards which the character should gaze in order to gaze straight ahead.
+    /// </summary>
+    /// <remarks>This property is only used is gaze instances where Target is set to null</remarks>
+    public virtual Vector3 AheadTargetPosition
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
     /// Expressive gaze animations for the current gaze instance.
     /// </summary>
     public virtual ExpressiveEyeGazeAnimation[] ExpressiveGazeAnimations
@@ -317,16 +385,17 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     protected bool _gazeShiftStarted = false;
-    protected float _estGazeShiftTimeLength = 0f;
     protected int _curFixationStartFrame = -1;
+    protected int _lastAppliedFrame = -1;
+
     protected int _baseStartFrame = 0;
     protected int _baseFixationStartFrame = 0;
     protected int _baseFrameLength = 0;
+
     protected Vector3[] _expressiveGazeAnimationRotations = null;
     protected float[] _expressiveGazeAnimationWeights = null;
     protected Quaternion[] _baseGazeRotations = null;
     
-    protected int _lastAppliedFrame = -1;
 
     /// <summary>
     /// Constructor.
@@ -429,7 +498,10 @@ public class EyeGazeInstance : AnimationControllerInstance
             GazeController.Torso.align = Mathf.Clamp01(TorsoAlign);
         }
         GazeController.useTorso = TurnBody;
-        GazeController.GazeAt(Target);
+        if (Target != null)
+            GazeController.GazeAt(Target);
+        else
+            GazeController.GazeAt(AheadTargetPosition);
         _InitGazeParameters();
     }
 
@@ -459,7 +531,9 @@ public class EyeGazeInstance : AnimationControllerInstance
             if (Target == null)
             {
                 // This is a gaze shift ahead, blend it out
-                float t = FrameLength > 1 ? Mathf.Clamp01(((float)frame) / (FrameLength - 1)) : 0f;
+                int numFrames = Mathf.Min(FrameLength, Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.maxEyeGazeGapLength));
+                float t = numFrames > 1 ? Mathf.Clamp01(((float)frame) / (numFrames - 1)) : 0f;
+                t = Mathf.Clamp01(t);
                 float t2 = t * t;
                 Weight = 1f + 2f * t2 * t - 3f * t2;
             }
@@ -610,41 +684,11 @@ public class EyeGazeInstance : AnimationControllerInstance
     {
         // How far ahead do we need to look to anticipate the target?
         EyeGazeControllerState state = EyeGazeEditor.GetInitControllerForEyeGazeInstance(this);
-        _estGazeShiftTimeLength = EyeGazeEditor.ComputeEstGazeShiftTimeLength(this, state);
-        float lookAheadTime = _estGazeShiftTimeLength;
-
-        // Store current model pose
-        AnimationTimeline.Instance.StoreModelPose(Model.name, AnimationClip.name + "Pose");
-
-        // Get base position at the current frame
-        Vector3 currentBasePos = GazeController.gazeJoints[GazeController.gazeJoints.Length - 1].bone.position;
-
-        // Apply the base animation at a time in near future
-        var baseAnimationInstance =
-            AnimationTimeline.Instance.GetLayer("BaseAnimation").Animations.FirstOrDefault(inst => inst.Animation.Model == Model);
-        int curFrame = AnimationTimeline.Instance.CurrentFrame;
-        int endFrame = curFrame + Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * lookAheadTime); // look ahead to the estimated end of the current gaze shift
-        baseAnimationInstance.Animation.Apply(endFrame, AnimationLayerMode.Override);
-
-        // Get future base position at the current frame
-        Vector3 aheadBasePos = GazeController.gazeJoints[GazeController.LastGazeJointIndex].bone.position;
-
-        if (Target == null)
-        {
-            // Set position of the gaze-ahead target
-            GazeController.AheadHelperTarget.transform.position = GazeController.Head.bone.position + 5f * GazeController.Head.Direction;
-
-            // Compute torso alignment
-            // TODO
-        }
-        
-        // Reapply current model pose
-        //baseAnimationInstance.Animation.Apply(AnimationTimeline.Instance.CurrentFrame - baseAnimationInstance.StartFrame, AnimationLayerMode.Override);
-        AnimationTimeline.Instance.ApplyModelPose(Model.name, AnimationClip.name + "Pose");
-        AnimationTimeline.Instance.RemoveModelPose(Model.name, AnimationClip.name + "Pose");
-
-        // Set gaze target position offset
-        GazeController.movingTargetPositionOffset = currentBasePos - aheadBasePos;
+        var baseAnimationInstance = AnimationTimeline.Instance.GetLayer("BaseAnimation").Animations.FirstOrDefault(
+            inst => inst.Animation.Model == Model);
+        GazeController.movingTargetPositionOffset = EyeGazeEditor.ComputeMovingTargetPositionOffset(
+            AnimationTimeline.Instance, baseAnimationInstance.InstanceId, this, AnimationTimeline.Instance.CurrentFrame);
+        // TODO: base animation should be specified as a parameter of the eye gaze instance!
 
         if (ExpressiveGazeAnimations != null)
         {
@@ -716,40 +760,5 @@ public class EyeGazeInstance : AnimationControllerInstance
     protected override IAnimationControllerState _CreateControllerState()
     {
         return new EyeGazeControllerState();
-    }
-
-    // Write gaze controller state to log
-    public void _LogGazeControllerState()
-    {
-        /*_LogGazeJointState(GazeController.LEye);
-        _LogGazeJointState(GazeController.REye);*/
-        _LogGazeJointState(GazeController.Head);
-        /*if (GazeController.Torso != null)
-            _LogGazeJointState(GazeController.Torso);*/
-    }
-
-    // Write gaze joint state to log
-    public void _LogGazeJointState(GazeJoint joint)
-    {
-        Debug.Log(string.Format("{0}: state = {1}, rotation = ({2}, {3}, {4}), " +
-            "curVelocity = {5} [maxVelocity = {6}], latencyTime = {7}, cur*OMR = ({8}, {9}, {10}, {11}), curAlign = {12}, " +
-            "srcRot = ({13}, {14}, {15}), trgRot = ({16}, {17}, {18}), trgRotAlign = ({19}, {20}, {21}), trgRotMR = ({22}, {23}, {24}), " +
-            "distRotAlign = {25}, distRotMR = {26}, rotParamAlign = {27}, rotParamMR = {28}, mrReached = {29}, trgReached = {30}, isVOR = {31}, " +
-            "fixSrcRot = ({32}, {33}, {34}), fixTrgRot = ({35}, {36}, {37}), fixTrgRotAlign = ({38}, {39}, {40}), fixDistRotAlign = {41}, fixRotParamAlign = {42}, " +
-            "expressiveRot = ({43}, {44}, {45}), fixExpressiveRot = ({46}, {47}, {48})",
-            joint.type.ToString(), GazeController.State,
-            joint.bone.localRotation.eulerAngles.x, joint.bone.localRotation.eulerAngles.y, joint.bone.localRotation.eulerAngles.z,
-            joint.curVelocity, joint.maxVelocity, joint.latencyTime, joint.curUpMR, joint.curDownMR, joint.curInMR, joint.curOutMR,
-            joint.curAlign, joint.srcRot.eulerAngles.x, joint.srcRot.eulerAngles.y, joint.srcRot.eulerAngles.z,
-            joint.trgRot.eulerAngles.x, joint.trgRot.eulerAngles.y, joint.trgRot.eulerAngles.z,
-            joint.trgRotAlign.eulerAngles.x, joint.trgRotAlign.eulerAngles.y, joint.trgRotAlign.eulerAngles.z,
-            joint.trgRotMR.eulerAngles.x, joint.trgRotMR.eulerAngles.y, joint.trgRotMR.eulerAngles.z,
-            joint.distRotAlign, joint.distRotMR, joint.rotParamAlign, joint.rotParamMR, joint.mrReached, joint.trgReached, joint.isVOR,
-            joint.fixSrcRot.eulerAngles.x, joint.fixSrcRot.eulerAngles.y, joint.fixSrcRot.eulerAngles.z,
-            joint.fixTrgRot.eulerAngles.x, joint.fixTrgRot.eulerAngles.y, joint.fixTrgRot.eulerAngles.z,
-            joint.fixTrgRotAlign.eulerAngles.x, joint.fixTrgRotAlign.eulerAngles.y, joint.fixTrgRotAlign.eulerAngles.z,
-            joint.fixDistRotAlign, joint.fixRotParamAlign,
-            joint.expressiveRot.eulerAngles.x, joint.expressiveRot.eulerAngles.y, joint.expressiveRot.eulerAngles.z,
-            joint.fixExpressiveRot.eulerAngles.x, joint.fixExpressiveRot.eulerAngles.y, joint.fixExpressiveRot.eulerAngles.z));
     }
 }

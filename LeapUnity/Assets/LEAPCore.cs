@@ -1,5 +1,7 @@
 using UnityEngine;
+using System;
 using System.Collections;
+using System.IO;
 
 public class LEAPCore : MonoBehaviour
 {
@@ -47,7 +49,7 @@ public class LEAPCore : MonoBehaviour
     /// <summary>
     /// Suffix appended to names of gaze-back instances.
     /// </summary>
-    public static string gazeBackSuffix = "-Back";
+    public static string gazeAheadSuffix = "-Ahead";
 
     /// <summary>
     /// Suffix appended to names of expressive gaze instances.
@@ -57,5 +59,89 @@ public class LEAPCore : MonoBehaviour
     /// <summary>
     /// If true, expressive animation will be applied to gaze movements.
     /// </summary>
-    public static bool useExpressiveGaze = false;
+    public static bool useExpressiveGaze = true;
+
+    /// <summary>
+    /// If true, effective gaze target in a gaze shift will be adjusted for movement
+    /// in the base animation.
+    /// </summary>
+    public static bool adjustGazeTargetForMovingBase = false;
+
+    /// <summary>
+    /// Load Leap configuration from Leap.cfg file
+    /// </summary>
+    public static bool LoadConfiguration()
+    {
+        try
+        {
+            var reader = new StreamReader(Application.dataPath + "/Leap.cfg");
+            string line;
+            int lineIndex = -1;
+            while (!reader.EndOfStream)
+            {
+                line = reader.ReadLine().Trim();
+                ++lineIndex;
+                if (line == "")
+                    continue;
+
+                int commentStartIndex = line.IndexOf('#');
+                line = commentStartIndex >= 0 ? line.Substring(0, commentStartIndex) : line;
+                if (line.IndexOf('=') <= 0)
+                {
+                    Debug.LogError("Error reading Leap.cfg at line " + lineIndex);
+                    continue;
+                }
+
+                string[] lineElements = line.Split('=');
+                string keyStr = lineElements[0].Trim();
+                string valueStr = lineElements[1].Trim();
+                switch (keyStr)
+                {
+                    case "editFrameRate":
+
+                        editFrameRate = int.Parse(valueStr);
+                        break;
+
+                    case "endEffectorConstraintBlendTime":
+
+                        endEffectorConstraintBlendTime = float.Parse(valueStr);
+                        break;
+
+                    case "minEyeGazeLength":
+
+                        minEyeGazeLength = float.Parse(valueStr);
+                        break;
+
+                    case "maxEyeGazeGapLength":
+
+                        maxEyeGazeGapLength = float.Parse(valueStr);
+                        break;
+
+                    case "useExpressiveGaze":
+
+                        useExpressiveGaze = bool.Parse(valueStr);
+                        break;
+
+                    case "adjustGazeTargetForMovingBase":
+
+                        adjustGazeTargetForMovingBase = bool.Parse(valueStr);
+                        break;
+
+                    default:
+
+                        Debug.LogError("Unknown configuration option in Leap.cfg at line " + lineIndex);
+                        break;
+                }
+            }
+
+            reader.Close();
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError(string.Format("Unable to load Leap.cfg", ex.Message));
+            return false;
+        }
+
+        return true;
+    }
 }

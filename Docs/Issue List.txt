@@ -1,20 +1,38 @@
 Leap Animation Editor:
 
-#64 [] InitialPose animation keeps getting corrupted
+#66 [] Target gaze rotation computation in the gaze controller is slightly off
+  - GazeController.ApplyTargetPose() does not distribute trgRotAlign of the torso correctly among spine joints
+
+#65 [] Gaze controller goes into VOR state even though eyes haven't aligned with the target
+  - Eyes don't seem to VOR at all, even though they are in VOR mode
+  - See example WindowWashingAGaze8
+
+#64 [] Discontinuous pose when using expressive gaze animations
+  - Many examples in WindowWashing
+  - Snapping seems to happen when gaze controller goes from NoGaze to Shifting
+  - Might be #60 redux
+
+#63 [X] Ahead target position computation is off
+  - See example in second gaze shift in WindowWashing, the ahead target is clearly too low and far right (it should be closer to WindowUpperLeft1)
+  - Using better timing estimation now, but it's still quite off - need gaze shift timing inference!
+
+#62 [X] Gaze alignment inference is incorrect
+  - Seems to be totally broken when GazeController.useTorso is set to false
+  - Even when using both head and torso, many values are obviously wrong
+  - It might be that our gaze model lacks the expressive power of real human gaze in this example
+  - Some issues: 1) lack of separation between horizontal and vertical alignment, 2) torso "overshoots" the target sometimes, e.g., in order to enable the hands to reach their targets, 3) our model doesn't allow the torso to be rotated closer to the target than the head (note that head align can be lower than torso align, but head align is *relative* to torso align + min. head rotation)
+  - In some examples, we infer head align < 1 even though torso align = 1, which should be impossible
+  - Reimplemented and seems to be fixed now
+  
+#64 [X] InitialPose animation keeps getting corrupted
   - Seems to be a Unity issue
   - This is a *severe* problem that makes the system virtually unusable
   - Restarting Unity seems to temporarily fix the problem
+  - Rekeying all the joints seems to have fixed the problem
 
-#63 [] EyeGazeEditor.GetInitControllerForEyeGazeInstance() sets head and torso alignments to 1
+#63 [X] EyeGazeEditor.GetInitControllerForEyeGazeInstance() sets head and torso alignments to 1
 
 #62 [] Stopping a gaze shift causes a discontinuity in pose
-
-#61 [] Gaze alignment inference is broken again
-  - See WindowWashing example, inference gives alignment 1 for both head and torso in almost all gaze shifts
-  - Seems to be the most broken when GazeController.useTorso is set to false
-  - Even when using both head and torso, many values are obviously wrong
-  - It might be that our gaze model lacks the expressive power of real human gaze in this example
-  - Some issues: 1) lack of separation between horizontal and vertical alignment, 2) torso "overshoots" the target sometimes, e.g., in order to enable the hands to reach their targets
 
 #60 [X] VOR target rotation is discontinuous in the first frame of a gaze shift
   - fixTrgRot computation is discontinuous between gaze instances for some reason, but *only* when there is expressive gaze and *only* for the first frame of the gaze shift
@@ -308,8 +326,13 @@ Leap Animation Editor:
 #1 [X] Animation baking using AnimationTimeline.BakeRange() gives a completely messed up animation
 
 
-Character Models:
+Animation Assets:
 
+#65 [X] Base animations clips are getting corrupted - some joints have completely wrong orientations
+  - See Norman's right arm in WindowWashing and other examples
+  - It only happens on the version of Norman currently in GazeEdit1 scene
+  - The problem is that some bones, like the right arm, aren't keyed in all the animations, when they should be keyed to zero - instead they end up retaining the orientation from InitialPose, which isn't necessarily zero
+  
 #50 [] In some of our test animations, the character's torso rotates very little
   - Confirmed for WindowWashing, should check others
   - More specifically, rotation of the torso is accomplished through torso movement - this is the opposite of how our gaze model currently works
