@@ -62,6 +62,11 @@ public class LEAPCore : MonoBehaviour
     public static bool useExpressiveGaze = true;
 
     /// <summary>
+    /// If true, posture IK will incorporate gaze constraints.
+    /// </summary>
+    public static bool useGazeIK = true;
+
+    /// <summary>
     /// If true, effective gaze target in a gaze shift will be adjusted for movement
     /// in the base animation.
     /// </summary>
@@ -120,6 +125,11 @@ public class LEAPCore : MonoBehaviour
                     case "useExpressiveGaze":
 
                         useExpressiveGaze = bool.Parse(valueStr);
+                        break;
+
+                    case "useGazeIK":
+
+                        useGazeIK = bool.Parse(valueStr);
                         break;
 
                     case "adjustGazeTargetForMovingBase":

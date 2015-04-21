@@ -306,6 +306,36 @@ public class LEAPMenu
         timeline.Bake(baseAnimationClipNames);
     }
 
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", true, 7)]
+    private static bool ValidateInferEyeGazeInstances()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", false, 7)]
+    private static void InferEyeGazeInstances()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+
+        // Disable IK and gaze layers
+        timeline.SetIKEnabled(false);
+        timeline.GetLayer("Gaze").Active = false;
+
+        // Infer gaze shifts and fixations in the base animation
+        var baseLayer = timeline.GetLayer("BaseAnimation");
+        foreach (var baseAnimation in baseLayer.Animations)
+        {
+            EyeGazeEditor.InferEyeGazeInstances(timeline, baseAnimation.InstanceId);
+
+            // Save and print inferred eye gaze
+            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+        }
+        SceneView.RepaintAll();
+    }
+
     [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", true, 7)]
     private static bool ValidateInferEyeGazeAlignments()
     {

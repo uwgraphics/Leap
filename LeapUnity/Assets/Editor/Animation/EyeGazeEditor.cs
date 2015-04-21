@@ -756,7 +756,26 @@ public static class EyeGazeEditor
     }
 
     /// <summary>
-    /// Infer eye gaze target and alignment parameters for currently defined
+    /// Infer gaze shift and fixation timings and targets for the specified base animation.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <param name="layerName">Animation layer for eye gaze animations</param>
+    public static void InferEyeGazeInstances(AnimationTimeline  timeline, int baseAnimationInstanceId, string layerName = "Gaze")
+    {
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+        var gazeLayer = timeline.GetLayer(layerName);
+
+        // Clear all existing gaze instances from the timeline
+        timeline.RemoveAllAnimations(layerName);
+
+        // Infer gaze shift and fixation timings and targets
+        //var eyeGazeInstance = new EyeGazeInstance(model, ...);
+        //AddEyeGaze(timeline, eyeGazeInstance, newStartFrame);
+    }
+
+    /// <summary>
+    /// Infer eye gaze alignment parameters for currently defined
     /// eye gaze instances on the character model.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>

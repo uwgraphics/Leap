@@ -1,5 +1,9 @@
 Leap Animation Editor:
 
+#67 [] When using gaze IK lots of output poses from BodyIKSolver are wrong
+  - Output pose is equal to the original motion (+ hand contacts enforced), yet gaze direction term of the objective function is zero, like we have perfect alignment!
+  - Happens almost on every second frame after frames have been baked
+
 #66 [] Target gaze rotation computation in the gaze controller is slightly off
   - GazeController.ApplyTargetPose() does not distribute trgRotAlign of the torso correctly among spine joints
 

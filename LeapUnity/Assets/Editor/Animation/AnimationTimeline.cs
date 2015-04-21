@@ -1143,11 +1143,11 @@ public class AnimationTimeline
                         AnimationStarted(animation.InstanceId);
                     }
 
-                    animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
-                    
                     // Set up IK goals for this layer
                     if (layer.isIKEndEffectorConstr)
                         _SetIKGoals(animation.Animation.Model, animation.Animation.AnimationClip);
+
+                    animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
                 }
             }
 

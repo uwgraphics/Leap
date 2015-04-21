@@ -28,7 +28,12 @@ public class BodyIKSolver : IKSolver
     /// <summary>
     /// Specifies how important it is to preserve accurate gaze direction towards the gaze target.
     /// </summary>
-    public float gazeWeight = 1f;
+    public float gazeDirectionWeight = 1f;
+
+    /// <summary>
+    /// Specifies how important it is to preserve gaze velocity towards the gaze target.
+    /// </summary>
+    public float gazeVelocityWeight = 1f;
 
     // If true, the solver will only solve for upper body pose, not affecting the pelvis or legs.
     protected bool _upperBodyOnly = false;
@@ -44,6 +49,8 @@ public class BodyIKSolver : IKSolver
     protected List<Transform> _limbShoulderJoints = new List<Transform>();
     protected List<Transform> _limbElbowJoints = new List<Transform>();
     protected List<Transform> _limbWristJoints = new List<Transform>();
+    protected int _firstGazeJointIndex = 0;
+    protected Dictionary<GazeJoint, int> _gazeJointIndexes = new Dictionary<GazeJoint, int>();
 
     // Solver data structures:
     protected double[] _x = null;
@@ -51,10 +58,11 @@ public class BodyIKSolver : IKSolver
     protected alglib.minlbfgsstate _state = null;
     protected alglib.minlbfgsreport _rep = null;
     protected double[] _xb = null;
+    protected double[] _xp = null;
 
     // Solver results, timing & profiling
     protected Stopwatch _timer = new Stopwatch();
-    protected float _goalTermFinal, _basePoseTermFinal, _gazeTermFinal;
+    protected float _goalTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal;
 
     /// <summary>
     /// Set current character pose as the base pose for the IK solver.
@@ -91,21 +99,6 @@ public class BodyIKSolver : IKSolver
     {
         _RunSolver();
 
-        if (gazeWeight >= 0.005f && _gazeController.CurrentGazeTarget != null)
-        {
-            // Correct gaze direction
-            // TODO: this is the simplest, dumbest way to do it
-            // TODO: this won't work when playing back the animation with baked instances - should also bake gaze controller state
-            foreach (var eye in _gazeController.eyes)
-            {
-                Quaternion trgrot = eye._ComputeTargetRotation(_gazeController.EffGazeTargetPosition);
-                Quaternion rot = Quaternion.Slerp(eye.isVOR ? eye.fixSrcRot : eye.srcRot, trgrot,
-                    eye.isVOR ? eye.fixRotParamAlign : eye.rotParamAlign);
-                eye.bone.localRotation = Quaternion.Slerp(eye.bone.localRotation, rot, gazeWeight);
-                eye.ClampMR();
-            }
-        }
-
         if (logPerformance)
         {
             //
@@ -120,20 +113,29 @@ public class BodyIKSolver : IKSolver
                 _timer.ElapsedMilliseconds, _rep.iterationscount, _rep.nfev));
             //
             UnityEngine.Debug.LogWarning(string.Format(
-                "Objective function: goalTerm = {0}, basePoseTerm = {1}, gazeTerm = {2}", _goalTermFinal,
-                _basePoseTermFinal, _gazeTermFinal));
+                "Objective function: goalTerm = {0}, basePoseTerm = {1}, gazeDirectionTerm = {2}, gazeVelocityTerm = {3}",
+                _goalTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal));
             //
         }
     }
 
     protected virtual void _CreateSolver()
     {
-        // Get body joints
         _bodyJoints.Clear();
         _limbWristJoints.Clear();
         _limbElbowJoints.Clear();
         _limbShoulderJoints.Clear();
+
+        // Get root joint
         _root = ModelUtils.FindRootBone(gameObject);
+        if (!_upperBodyOnly)
+        {
+            // Add root to list of body joints
+            _bodyJoints.Add(_root);
+            _bodyJointIndexes[_root] = 0;
+        }
+
+        // Get all distinct body joints
         IEnumerable<Transform> bodyJoints = null;
         for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
         {
@@ -151,26 +153,7 @@ public class BodyIKSolver : IKSolver
             bodyJoints = bodyJoints == null ? shoulderBoneChain : bodyJoints.Union(shoulderBoneChain);
         }
 
-        // Get gaze controller and joints
-        _gazeController = gameObject.GetComponent<GazeController>();
-        /*if (_gazeController != null)
-        {
-            Transform[] gazeJoints = new Transform[_gazeController.gazeJoints.Length];
-            for (int gazeJointIndex = 0; gazeJointIndex < _gazeController.gazeJoints.Length; ++gazeJointIndex)
-            {
-                gazeJoints[gazeJointIndex] = _gazeController.gazeJoints[gazeJointIndex].bone;
-            }
-            bodyJoints = bodyJoints.Union(gazeJoints);
-        }*/
-
-        if (!_upperBodyOnly)
-        {
-            // Add root to list of body joints
-            _bodyJoints.Add(_root);
-            _bodyJointIndexes[_root] = 0;
-        }
-
-        // Add all body joints to list
+        // Add body joints to the list
         foreach (var joint in bodyJoints)
         {
             if (joint == _root)
@@ -180,11 +163,33 @@ public class BodyIKSolver : IKSolver
             _bodyJointIndexes[joint] = _bodyJoints.Count - 1;
         }
 
+        if (LEAPCore.useGazeIK)
+        {
+            // Get gaze controller and joints
+            _gazeController = gameObject.GetComponent<GazeController>();
+            if (_gazeController != null)
+            {
+                _firstGazeJointIndex = _bodyJoints.Count;
+
+                foreach (var gazeJoint in _gazeController.gazeJoints)
+                {
+                    if (gazeJoint.type != GazeJointType.Torso)
+                    {
+                        _bodyJoints.Add(gazeJoint.bone);
+                        _bodyJointIndexes[gazeJoint.bone] = _bodyJoints.Count - 1;
+                    }
+                    
+                    _gazeJointIndexes[gazeJoint] = _bodyJoints.IndexOf(gazeJoint.bone);
+                }
+            }
+        }
+        
         // Create solver data structures
         _x = _upperBodyOnly ?
             new double[_bodyJoints.Count * 3] :
             new double[_bodyJoints.Count * 3 + 3];
         _xb = new double[_x.Length];
+        _xp = new double[_x.Length];
         _s = new double[_x.Length];
         
         // Set scaling coefficients
@@ -201,26 +206,43 @@ public class BodyIKSolver : IKSolver
         alglib.minlbfgssetscale(_state, _s);
         alglib.minlbfgssetcond(_state, 0.05, 0, 0, 10);
         alglib.minlbfgssetprecdefault(_state);
-        alglib.minlbfgsoptimize(_state, _ObjFunc1, null, null); // dry run
+        if (LEAPCore.useGazeIK)
+            alglib.minlbfgsoptimize(_state, _ObjFunc2, null, null); // dry run
+        else
+            alglib.minlbfgsoptimize(_state, _ObjFunc1, null, null); // dry run
         alglib.minlbfgsresults(_state, out _x, out _rep);
     }
 
     protected virtual void _RunSolver()
     {
-        // Initialize solver parameters
-        // TODO
+        if (LEAPCore.useGazeIK)
+        {
+            // Set model to base pose - that's our initial solution
+            _ApplySolverPose(_xb);
+        }
+        else
+        {
+            // Output from the gaze controller *is* the base pose
+            _GetSolverPose(_xb);
+        }
         
         // Run solver
         _GetSolverPose(_x);
         alglib.minlbfgsrestartfrom(_state, _x);
         _timer.Reset();
         _timer.Start();
-        alglib.minlbfgsoptimize(_state, _ObjFunc1, null, null);
+        if (LEAPCore.useGazeIK)
+            alglib.minlbfgsoptimize(_state, _ObjFunc2, null, null);
+        else
+            alglib.minlbfgsoptimize(_state, _ObjFunc1, null, null);
         _timer.Stop();
         alglib.minlbfgsresults(_state, out _x, out _rep);
 
-        // Apply solution as the model pose
+        // Apply solution as the new model pose
         _ApplySolverPose(_x);
+
+        // Store the current pose as the previous pose for the next frame
+        _GetSolverPose(_xp);
     }
 
     protected void _GetSolverPose(double[] x)
@@ -372,9 +394,10 @@ public class BodyIKSolver : IKSolver
 
     protected void _ObjFunc2(double[] x, ref double func, object obj)
     {
-        float goalTerm = 0f;
-        float basePoseTerm = 0f;
-        float gazeTerm = 0f;
+        float goalTerm = 0f,
+            basePoseTerm = 0f,
+            gazeDirectionTerm = 0f,
+            gazeVelocityTerm = 0f;
 
         // Apply current pose
         _ApplySolverPose(x);
@@ -415,12 +438,9 @@ public class BodyIKSolver : IKSolver
         Vector3 vb, v;
         Quaternion qb, q, dq;
         float curRotTerm = 0f;
-        for (int bodyJointIndex = 0; bodyJointIndex < _bodyJoints.Count; ++bodyJointIndex)
+        for (int bodyJointIndex = 0; bodyJointIndex < _firstGazeJointIndex; ++bodyJointIndex)
         {
             var bodyJoint = _bodyJoints[bodyJointIndex];
-            if ( bodyJoint == _gazeController.LEye.bone || bodyJoint == _gazeController.REye.bone)
-                // Eyes are not animated in the base motion
-                continue;
 
             // Penalize difference between base and current rotation of the joint
             vb = _GetBodyJointRotation(_xb, bodyJointIndex);
@@ -441,53 +461,85 @@ public class BodyIKSolver : IKSolver
             basePoseTerm += (rootPositionWeight * rootPosTerm);
         }
 
-        // Compute gaze term
-        Vector3 ds, dt, d, dp;
+        // Compute gaze direction and velocity terms
         Quaternion qs, qt, qp, qr;
-        float curGazeTerm = 0f;
-        for (int bodyJointIndex = 0; bodyJointIndex < _bodyJoints.Count; ++bodyJointIndex)
+        float r = 0f;
+        float dt = _gazeController.DeltaTime;
+        Vector3 vp;
+        float rv = 0f;
+        float curGazeDirectionTerm = 0f, curGazeVelocityTerm = 0f;
+        for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
         {
-            var bodyJoint = _bodyJoints[bodyJointIndex];
-            var gazeJoint = _gazeController.gazeJoints.FirstOrDefault(j => j.bone == bodyJoint);
-            if (gazeJoint == null)
+            if (_gazeController.CurrentGazeTarget == null)
                 continue;
 
+            var gazeJoint = _gazeController.gazeJoints[gazeJointIndex];
+            int bodyJointIndex = _gazeJointIndexes[gazeJoint];
+            var bodyJoint = _bodyJoints[bodyJointIndex];
+
+            // TODO: try directly penalizing rotational difference from gaze output rotation
+            // w/ or w/o expressive displacement applied - might be OK
+
+            // Set source and target rotations and rotation progress from the gaze model
             if (gazeJoint.isVOR)
             {
+                
+                qs = gazeJoint.fixSrcRot;
+                //qt = gazeJoint.fixTrgRotAlign;
+                qt = gazeJoint._ComputeTargetRotation(_gazeController.EffGazeTargetPosition);
+                r = qs != gazeJoint.fixTrgRot ? GazeJoint.DistanceToRotate(qs, gazeJoint.fixTrgRotAlign) /
+                    GazeJoint.DistanceToRotate(qs, gazeJoint.fixTrgRot) : 0f;
+                qt = Quaternion.Slerp(qs, qt, r);
+                qt = Quaternion.Euler(qt.eulerAngles.x, qt.eulerAngles.y, 0);
+                r = gazeJoint.fixRotParamAlign;
             }
             else
             {
-                qb = gazeJoint.bone.localRotation;
-
-                // Compute gaze shift shortest-arc rotation
                 qs = gazeJoint.srcRot;
-                qt = gazeJoint.trgRotAlign;
-                float r = gazeJoint.rotParamAlign;
-                qr = Quaternion.Slerp(qs, qt, r);
-                
-                // Project current rotation onto that plane
-                v = _GetBodyJointRotation(x, bodyJointIndex);
-                q = QuaternionUtil.Exp(v);
-                qp = ModelUtils.ProjectRotationOntoArc(gazeJoint.bone, qs, qt, q);
-
-                gazeJoint.bone.localRotation = qb;
-
-                // Penalize difference between shortest-arc gaze shift rotation and projected current rotation
-                dq = Quaternion.Inverse(qr) * qp;
-                curGazeTerm = QuaternionUtil.Log(dq).sqrMagnitude;
-                gazeTerm += curGazeTerm;
+                //qt = gazeJoint.trgRotAlign;
+                qt = gazeJoint._ComputeTargetRotation(_gazeController.EffGazeTargetPosition);
+                r = qs != gazeJoint.trgRot ? GazeJoint.DistanceToRotate(qs, gazeJoint.trgRotAlign) /
+                    GazeJoint.DistanceToRotate(qs, gazeJoint.trgRot) : 0f;
+                qt = Quaternion.Slerp(qs, qt, r);
+                qt = Quaternion.Euler(qt.eulerAngles.x, qt.eulerAngles.y, 0);
+                r = gazeJoint.rotParamAlign;
             }
+
+            // Compute gaze shift shortest-arc rotation
+            qr = Quaternion.Slerp(qs, qt, r);
+
+            // Project current rotation onto that arc
+            v = _GetBodyJointRotation(x, bodyJointIndex);
+            q = QuaternionUtil.Exp(v);
+            //qp = ModelUtils.ProjectRotationOntoArc(gazeJoint.bone, qs, qt, q);
+
+            // Penalize difference between shortest-arc gaze shift rotation and projected current rotation
+            //dq = Quaternion.Inverse(qr) * qp;
+            dq = Quaternion.Inverse(qr) * q;
+            curGazeDirectionTerm = QuaternionUtil.Log(dq).sqrMagnitude;
+            gazeDirectionTerm += curGazeDirectionTerm;
+
+            // Compute gaze joint velocity
+            /*vp = _GetBodyJointRotation(_xp, bodyJointIndex);
+            rv = (v - vp).magnitude / dt;
+
+            // Penalize difference between gaze model velocity and actual velocity
+            curGazeVelocityTerm = rv - gazeJoint.curVelocity;
+            curGazeVelocityTerm *= curGazeVelocityTerm;
+            gazeVelocityTerm += curGazeVelocityTerm;*/
         }
 
         // Reapply base pose
         _ApplySolverPose(_xb);
 
         // Compute total objective value
-        func = goalTerm + basePoseWeight * basePoseTerm + gazeWeight * gazeTerm;
+        func = goalTerm + basePoseWeight * basePoseTerm + gazeDirectionWeight * gazeDirectionTerm
+            + gazeVelocityWeight * gazeVelocityTerm;
 
         // Log objective values
         _goalTermFinal = goalTerm;
         _basePoseTermFinal = basePoseTerm * basePoseWeight;
-        _gazeTermFinal = gazeTerm * gazeWeight;
+        _gazeDirectionTermFinal = gazeDirectionTerm * gazeDirectionWeight;
+        _gazeVelocityTermFinal = gazeVelocityTerm * gazeVelocityWeight;
     }
 }

@@ -120,6 +120,11 @@ public abstract class AnimationControllerInstance : AnimationInstance
     /// <param name="layerMode">Animation layering mode</param>
     public override void Apply(int frame, AnimationLayerMode layerMode)
     {
+        if (layerMode == AnimationLayerMode.Additive)
+        {
+            throw new Exception("Additive layering not supported for AnimationControllerInstance");
+        }
+
         if (IsBaking)
         {
             // Update the controller to get new body pose
@@ -198,14 +203,7 @@ public abstract class AnimationControllerInstance : AnimationInstance
             // Configure how the animation clip will be applied to the model
             Animation[AnimationClip.name].normalizedTime = ((float)frame) / FrameLength;
             Animation[AnimationClip.name].weight = 1f;
-            if (layerMode == AnimationLayerMode.Additive)
-            {
-                Animation[AnimationClip.name].blendMode = AnimationBlendMode.Additive;
-            }
-            else
-            {
-                Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
-            }
+            Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
 
             // Apply the animation clip to the model
             Animation[AnimationClip.name].enabled = true;
