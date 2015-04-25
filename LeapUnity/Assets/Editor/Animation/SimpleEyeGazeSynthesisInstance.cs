@@ -26,8 +26,6 @@ public class SimpleEyeGazeSynthesisInstance : AnimationInstance
         get { return BodyAnimation.TimeLength; }
     }
 
-    protected ModelController _modelController;
-
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -37,29 +35,26 @@ public class SimpleEyeGazeSynthesisInstance : AnimationInstance
         : base(model, animationClipName)
     {
         BodyAnimation = bodyAnimation;
-        _modelController = model.GetComponent<ModelController>();
-        if (_modelController == null)
+        if (ModelController == null)
         {
             throw new Exception("Cannot create SimpleEyeGazeSynthesisInstance on a character model without a ModelController");
         }
     }
 
     /// <summary>
-    /// Apply animation instance to the character model at specified frame.
+    /// <see cref="AnimationInstance._Apply"/>
     /// </summary>
-    /// <param name="frame">Frame index</param>
-    /// <param name="layerMode">Animation layering mode</param>
-    public override void Apply(int frame, AnimationLayerMode layerMode)
+    protected override void _Apply(int frame, AnimationLayerMode layerMode)
     {
-        _ApplyEye(frame, layerMode, _modelController.LEye);
-        _ApplyEye(frame, layerMode, _modelController.REye);
+        _ApplyEye(frame, layerMode, ModelController.LEye);
+        _ApplyEye(frame, layerMode, ModelController.REye);
     }
 
-    public virtual void _ApplyEye(int frame, AnimationLayerMode layerMode, Transform eye)
+    protected virtual void _ApplyEye(int frame, AnimationLayerMode layerMode, Transform eye)
     {
         // Get current head pose
-        float headYaw = _modelController.Head.localEulerAngles.y;
-        float headPitch = _modelController.Head.localEulerAngles.x;
+        float headYaw = ModelController.LEye.parent.localEulerAngles.y;
+        float headPitch = ModelController.LEye.parent.localEulerAngles.x;
 
         // Compute new eye pose
         float eyeYaw = headYaw / 65f * 45f;

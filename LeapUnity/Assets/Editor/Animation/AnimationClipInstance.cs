@@ -50,17 +50,29 @@ public class AnimationClipInstance : AnimationInstance
         Animation[AnimationClip.name].enabled = true;
         Animation.Sample();
         Animation[AnimationClip.name].enabled = false;
-        //
-        /* Debug.Log(string.Format("Applied animation {0} at frame {1} in layer mode {2} at weight {3}",
-            AnimationClip.name, frame, layerMode.ToString(), Weight));*/
-        //
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.FinalizeBake()"/>
+    /// <see cref="AnimationInstance.StartBake"/>
+    /// </summary>
+    public override void StartBake()
+    {
+        // Do nothing - AnimationClipInstance is "baked" by definition
+    }
+
+    /// <summary>
+    /// <see cref="AnimationInstance.FinalizeBake"/>
     /// </summary>
     public override void FinalizeBake()
     {
         // Do nothing - AnimationClipInstance is "baked" by definition
+    }
+
+    /// <summary>
+    /// <see cref="AnimationInstance._Apply"/>
+    /// </summary>
+    protected override void _Apply(int frame, AnimationLayerMode layerMode)
+    {
+        return;
     }
 }

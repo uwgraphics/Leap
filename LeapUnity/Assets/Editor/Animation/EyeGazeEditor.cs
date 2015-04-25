@@ -1014,9 +1014,9 @@ public static class EyeGazeEditor
     /// </summary>
     /// <param name="instance">Eye gaze instance</param>
     /// <returns>Gaze controller state</returns>
-    public static EyeGazeControllerState GetInitControllerForEyeGazeInstance(EyeGazeInstance instance)
+    public static GazeControllerState GetInitControllerForEyeGazeInstance(EyeGazeInstance instance)
     {
-        IAnimationControllerState curState = instance.GetControllerState();
+        IAnimControllerState curState = instance.Controller.GetRuntimeState();
 
         // Initialize gaze controller
         var gazeController = instance.GazeController;
@@ -1033,8 +1033,8 @@ public static class EyeGazeEditor
         gazeController._InitLatencies();
         gazeController._CalculateMaxVelocities();
 
-        EyeGazeControllerState state = (EyeGazeControllerState)instance.GetControllerState();
-        instance.SetControllerState(curState);
+        GazeControllerState state = (GazeControllerState)instance.Controller.GetRuntimeState();
+        instance.Controller.SetRuntimeState(curState);
 
         return state;
     }
@@ -1051,8 +1051,8 @@ public static class EyeGazeEditor
             if (gazeController == null)
                 continue;
 
-            EyeGazeControllerState initState = EyeGazeControllerState.GetInitState(gazeController);
-            initState.Set(gazeController);
+            GazeControllerState initState = gazeController.GetInitRuntimeState();
+            gazeController.SetRuntimeState(initState);
         }
     }
 
@@ -1063,10 +1063,10 @@ public static class EyeGazeEditor
     /// <param name="instance">Eye gaze instance</param>
     /// <param name="state">Eye gaze controller state at the start of the gaze shift</param>
     /// <returns>Gaze shift duration in seconds</returns>
-    public static float ComputeEstGazeShiftTimeLength(EyeGazeInstance instance, EyeGazeControllerState state)
+    public static float ComputeEstGazeShiftTimeLength(EyeGazeInstance instance, GazeControllerState state)
     {
-        IAnimationControllerState curState = instance.GetControllerState();
-        instance.SetControllerState(state);
+        IAnimControllerState curState = instance.Controller.GetRuntimeState();
+        instance.Controller.SetRuntimeState(state);
         var gazeController = instance.GazeController;
 
         // Estimate eye rotation time
@@ -1093,7 +1093,7 @@ public static class EyeGazeEditor
             torsoRotTime = torsoVelocity > 0f ? tdr / torsoVelocity : 0f;
         }
 
-        instance.SetControllerState(curState);
+        instance.Controller.SetRuntimeState(curState);
 
         float totalTime = Mathf.Max(eyeRotTime, headRotTime, torsoRotTime);
         // TODO: this is a quick hack to fix the problem of underestimating gaze shift duration
@@ -1158,11 +1158,22 @@ public static class EyeGazeEditor
         if (gazeController == null)
             throw new Exception(string.Format("Cannot log gaze controller state becase model {0} has no gaze controller", model.name));
 
-        _PrintEyeGazeJointState(gazeController.LEye);
-        _PrintEyeGazeJointState(gazeController.REye);
-        _PrintEyeGazeJointState(gazeController.Head);
-        if (gazeController.Torso != null)
-            _PrintEyeGazeJointState(gazeController.Torso);
+        UnityEngine.Debug.Log(string.Format("GazeController: state = {0}, gazeTarget = {1}, doGazeShift = {2}, stopGazeShift = {3}, " +
+            "fixGaze = {4}, useTorso = {5},  currentGazeTarget = {6}, fixGazeTarget = {7}",
+            gazeController.State, gazeController.gazeTarget != null ? gazeController.gazeTarget.name : "null",
+            gazeController.doGazeShift, gazeController.stopGazeShift, gazeController.fixGaze, gazeController.useTorso,
+            gazeController.CurrentGazeTarget != null ? gazeController.CurrentGazeTarget.name : "null",
+            gazeController.FixGazeTarget != null ? gazeController.FixGazeTarget.name : "null"));
+
+        for (int gazeJointIndex = 0; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
+        {
+            var gazeJoint = gazeController.gazeJoints[gazeJointIndex];
+            var last = gazeController.GetLastGazeJointInChain(gazeJoint.type);
+            int lastIndex = gazeController.FindGazeJointIndex(last);
+
+            if (gazeJoint == last || LEAPCore.printDetailedGazeControllerState)
+                _PrintEyeGazeJointState(gazeJoint, gazeJointIndex - lastIndex);
+        }
     }
 
     // Gaze editing helper operation; remove an eye gaze instance from the animation timeline
@@ -1202,7 +1213,7 @@ public static class EyeGazeEditor
             baseAnimation.Apply(startFrame, AnimationLayerMode.Override);
             gazeInstance.HeadAlign = 1f;
             gazeInstance.TorsoAlign = 1f;
-            EyeGazeControllerState gazeControllerState = EyeGazeEditor.GetInitControllerForEyeGazeInstance(gazeInstance);
+            GazeControllerState gazeControllerState = EyeGazeEditor.GetInitControllerForEyeGazeInstance(gazeInstance);
             float estTimeLength = EyeGazeEditor.ComputeEstGazeShiftTimeLength(gazeInstance, gazeControllerState);
             fixationStartFrame = startFrame +
                 Mathf.Min(gazeInstance.FrameLength - 1, Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * estTimeLength));
@@ -1226,8 +1237,8 @@ public static class EyeGazeEditor
         baseAnimation.Apply(startFrame, AnimationLayerMode.Override);
         gazeInstance.HeadAlign = 0f;
         gazeInstance.TorsoAlign = 0f;
-        EyeGazeControllerState gazeControllerStateStart = EyeGazeEditor.GetInitControllerForEyeGazeInstance(gazeInstance);
-        gazeControllerStateStart.Set(gazeController);
+        GazeControllerState gazeControllerStateStart = EyeGazeEditor.GetInitControllerForEyeGazeInstance(gazeInstance);
+        gazeController.SetRuntimeState(gazeControllerStateStart);
 
         // Key gaze joint rotations in the gaze instance
         Quaternion srcRotHead, trgRotHead, trgRotMinHead, trgRotAlignHead,
@@ -1581,15 +1592,17 @@ public static class EyeGazeEditor
     }
 
     // Print individual gaze joint state
-    private static void _PrintEyeGazeJointState(GazeJoint joint)
+    private static void _PrintEyeGazeJointState(GazeJoint joint, int index = 0)
     {
+        string jointName = joint.type + (index > 0 ? "-" + index.ToString() : "");
+
         UnityEngine.Debug.Log(string.Format("{0}: state = {1}, rotation = ({2}, {3}, {4}), " +
             "curVelocity = {5} [maxVelocity = {6}], latencyTime = {7}, cur*OMR = ({8}, {9}, {10}, {11}), curAlign = {12}, " +
             "srcRot = ({13}, {14}, {15}), trgRot = ({16}, {17}, {18}), trgRotAlign = ({19}, {20}, {21}), trgRotMR = ({22}, {23}, {24}), " +
             "distRotAlign = {25}, distRotMR = {26}, rotParamAlign = {27}, rotParamMR = {28}, mrReached = {29}, trgReached = {30}, isVOR = {31}, " +
-            "fixSrcRot = ({32}, {33}, {34}), fixTrgRot = ({35}, {36}, {37}), fixTrgRotAlign = ({38}, {39}, {40}), fixDistRotAlign = {41}, fixRotParamAlign = {42}, " +
-            "expressiveRot = ({43}, {44}, {45}), fixExpressiveRot = ({46}, {47}, {48})",
-            joint.type.ToString(), joint.GazeController.State,
+            "fixSrcRot = ({32}, {33}, {34}), fixTrgRot = ({35}, {36}, {37}), fixTrgRotAlign = ({38}, {39}, {40}), fixRotParamAlign = {41}, " +
+            "expressiveRot = ({42}, {43}, {44}), fixExpressiveRot = ({45}, {46}, {47})",
+            jointName, joint.GazeController.State,
             joint.bone.localRotation.eulerAngles.x, joint.bone.localRotation.eulerAngles.y, joint.bone.localRotation.eulerAngles.z,
             joint.curVelocity, joint.maxVelocity, joint.latencyTime, joint.curUpMR, joint.curDownMR, joint.curInMR, joint.curOutMR,
             joint.curAlign, joint.srcRot.eulerAngles.x, joint.srcRot.eulerAngles.y, joint.srcRot.eulerAngles.z,
@@ -1600,7 +1613,7 @@ public static class EyeGazeEditor
             joint.fixSrcRot.eulerAngles.x, joint.fixSrcRot.eulerAngles.y, joint.fixSrcRot.eulerAngles.z,
             joint.fixTrgRot.eulerAngles.x, joint.fixTrgRot.eulerAngles.y, joint.fixTrgRot.eulerAngles.z,
             joint.fixTrgRotAlign.eulerAngles.x, joint.fixTrgRotAlign.eulerAngles.y, joint.fixTrgRotAlign.eulerAngles.z,
-            joint.fixDistRotAlign, joint.fixRotParamAlign,
+            joint.fixRotParamAlign,
             joint.expressiveRot.eulerAngles.x, joint.expressiveRot.eulerAngles.y, joint.expressiveRot.eulerAngles.z,
             joint.fixExpressiveRot.eulerAngles.x, joint.fixExpressiveRot.eulerAngles.y, joint.fixExpressiveRot.eulerAngles.z));
     }

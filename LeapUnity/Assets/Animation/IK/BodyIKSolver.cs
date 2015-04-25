@@ -16,6 +16,13 @@ public class BodyIKSolver : IKSolver
     public bool logPerformance = false;
 
     /// <summary>
+    /// Set this to false and the solver will not try to enforce end-effector goals.
+    /// This can be done when end-effector goals are implicitly satisfied in
+    /// the original motion.
+    /// </summary>
+    public bool useGoalTerm = true;
+
+    /// <summary>
     /// Specifies how important it is to preserve the pose from the original motion.
     /// </summary>
     public float basePoseWeight = 1f;
@@ -58,7 +65,6 @@ public class BodyIKSolver : IKSolver
     protected alglib.minlbfgsstate _state = null;
     protected alglib.minlbfgsreport _rep = null;
     protected double[] _xb = null;
-    protected double[] _xp = null;
 
     // Solver results, timing & profiling
     protected Stopwatch _timer = new Stopwatch();
@@ -71,14 +77,6 @@ public class BodyIKSolver : IKSolver
     public virtual void InitBasePose()
     {
         _GetSolverPose(_xb);
-    }
-
-    /// <summary>
-    /// Initialize current set of parameters from the gaze controller.
-    /// </summary>
-    public virtual void InitGazeParams()
-    {
-        // TODO
     }
 
     /// <summary>
@@ -97,6 +95,7 @@ public class BodyIKSolver : IKSolver
     /// </summary>
     protected override void _Solve()
     {
+        // Solve for body posture
         _RunSolver();
 
         if (logPerformance)
@@ -175,8 +174,9 @@ public class BodyIKSolver : IKSolver
                 {
                     if (gazeJoint.type != GazeJointType.Torso)
                     {
-                        _bodyJoints.Add(gazeJoint.bone);
-                        _bodyJointIndexes[gazeJoint.bone] = _bodyJoints.Count - 1;
+                        /*_bodyJoints.Add(gazeJoint.bone);
+                        _bodyJointIndexes[gazeJoint.bone] = _bodyJoints.Count - 1;*/
+                        continue;
                     }
                     
                     _gazeJointIndexes[gazeJoint] = _bodyJoints.IndexOf(gazeJoint.bone);
@@ -189,7 +189,6 @@ public class BodyIKSolver : IKSolver
             new double[_bodyJoints.Count * 3] :
             new double[_bodyJoints.Count * 3 + 3];
         _xb = new double[_x.Length];
-        _xp = new double[_x.Length];
         _s = new double[_x.Length];
         
         // Set scaling coefficients
@@ -240,9 +239,6 @@ public class BodyIKSolver : IKSolver
 
         // Apply solution as the new model pose
         _ApplySolverPose(_x);
-
-        // Store the current pose as the previous pose for the next frame
-        _GetSolverPose(_xp);
     }
 
     protected void _GetSolverPose(double[] x)
@@ -322,35 +318,38 @@ public class BodyIKSolver : IKSolver
         // Apply current pose
         _ApplySolverPose(x);
 
-        // Compute goal term
-        IKGoal goal;
-        Transform wrist, shoulder, elbow;
-        float limbLength = 0f, goalDistance = 0f, curGoalTerm = 0f;
-        for (int goalIndex = 0; goalIndex < _goals.Count; ++goalIndex)
+        if (useGoalTerm)
         {
-            goal = _goals[goalIndex];
-
-            if (goal.weight <= 0.005f)
-                continue;
-
-            // Compute relaxed limb length
-            int endEffectorIndex = _endEffectorIndexes[goal.endEffector];
-            wrist = goal.endEffector;
-            shoulder = _limbShoulderJoints[endEffectorIndex];
-            elbow = _limbElbowJoints[endEffectorIndex];
-            limbLength = (shoulder.position - elbow.position).magnitude +
-                (wrist.position - elbow.position).magnitude;
-            limbLength /= goal.weight;
-
-            // Compute distance beween limb root and goal
-            goalDistance = (shoulder.position - goal.position).magnitude;
-
-            if (goalDistance > limbLength)
+            // Compute goal term
+            IKGoal goal;
+            Transform wrist, shoulder, elbow;
+            float limbLength = 0f, goalDistance = 0f, curGoalTerm = 0f;
+            for (int goalIndex = 0; goalIndex < _goals.Count; ++goalIndex)
             {
-                // Goal is out of reach, compute goal term
-                curGoalTerm = goalDistance - limbLength;
-                curGoalTerm *= curGoalTerm;
-                goalTerm += curGoalTerm;
+                goal = _goals[goalIndex];
+
+                if (goal.weight <= 0.005f)
+                    continue;
+
+                // Compute relaxed limb length
+                int endEffectorIndex = _endEffectorIndexes[goal.endEffector];
+                wrist = goal.endEffector;
+                shoulder = _limbShoulderJoints[endEffectorIndex];
+                elbow = _limbElbowJoints[endEffectorIndex];
+                limbLength = (shoulder.position - elbow.position).magnitude +
+                    (wrist.position - elbow.position).magnitude;
+                limbLength /= goal.weight;
+
+                // Compute distance beween limb root and goal
+                goalDistance = (shoulder.position - goal.position).magnitude;
+
+                if (goalDistance > limbLength)
+                {
+                    // Goal is out of reach, compute goal term
+                    curGoalTerm = goalDistance - limbLength;
+                    curGoalTerm *= curGoalTerm;
+                    goalTerm += curGoalTerm;
+                }
             }
         }
 
@@ -402,35 +401,38 @@ public class BodyIKSolver : IKSolver
         // Apply current pose
         _ApplySolverPose(x);
 
-        // Compute goal term
-        IKGoal goal;
-        Transform wrist, shoulder, elbow;
-        float limbLength = 0f, goalDistance = 0f, curGoalTerm = 0f;
-        for (int goalIndex = 0; goalIndex < _goals.Count; ++goalIndex)
+        if (useGoalTerm)
         {
-            goal = _goals[goalIndex];
-
-            if (goal.weight <= 0.005f)
-                continue;
-
-            // Compute relaxed limb length
-            int endEffectorIndex = _endEffectorIndexes[goal.endEffector];
-            wrist = goal.endEffector;
-            shoulder = _limbShoulderJoints[endEffectorIndex];
-            elbow = _limbElbowJoints[endEffectorIndex];
-            limbLength = (shoulder.position - elbow.position).magnitude +
-                (wrist.position - elbow.position).magnitude;
-            limbLength /= goal.weight;
-
-            // Compute distance beween limb root and goal
-            goalDistance = (shoulder.position - goal.position).magnitude;
-
-            if (goalDistance > limbLength)
+            // Compute goal term
+            IKGoal goal;
+            Transform wrist, shoulder, elbow;
+            float limbLength = 0f, goalDistance = 0f, curGoalTerm = 0f;
+            for (int goalIndex = 0; goalIndex < _goals.Count; ++goalIndex)
             {
-                // Goal is out of reach, compute goal term
-                curGoalTerm = goalDistance - limbLength;
-                curGoalTerm *= curGoalTerm;
-                goalTerm += curGoalTerm;
+                goal = _goals[goalIndex];
+
+                if (goal.weight <= 0.005f)
+                    continue;
+
+                // Compute relaxed limb length
+                int endEffectorIndex = _endEffectorIndexes[goal.endEffector];
+                wrist = goal.endEffector;
+                shoulder = _limbShoulderJoints[endEffectorIndex];
+                elbow = _limbElbowJoints[endEffectorIndex];
+                limbLength = (shoulder.position - elbow.position).magnitude +
+                    (wrist.position - elbow.position).magnitude;
+                limbLength /= goal.weight;
+
+                // Compute distance beween limb root and goal
+                goalDistance = (shoulder.position - goal.position).magnitude;
+
+                if (goalDistance > limbLength)
+                {
+                    // Goal is out of reach, compute goal term
+                    curGoalTerm = goalDistance - limbLength;
+                    curGoalTerm *= curGoalTerm;
+                    goalTerm += curGoalTerm;
+                }
             }
         }
 
@@ -471,62 +473,52 @@ public class BodyIKSolver : IKSolver
         for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
         {
             if (_gazeController.CurrentGazeTarget == null)
+                // No gaze constraint if there is no gaze target
                 continue;
 
             var gazeJoint = _gazeController.gazeJoints[gazeJointIndex];
-            int bodyJointIndex = _gazeJointIndexes[gazeJoint];
-            var bodyJoint = _bodyJoints[bodyJointIndex];
+            if (gazeJoint.type != GazeJointType.Torso)
+                // We only solve for body posture using IK
+                continue;
 
-            // TODO: try directly penalizing rotational difference from gaze output rotation
-            // w/ or w/o expressive displacement applied - might be OK
+            int bodyJointIndex = _gazeJointIndexes[gazeJoint];
+            var bodyJoint = _bodyJoints[bodyJointIndex];            
 
             // Set source and target rotations and rotation progress from the gaze model
             if (gazeJoint.isVOR)
             {
-                
                 qs = gazeJoint.fixSrcRot;
-                //qt = gazeJoint.fixTrgRotAlign;
-                qt = gazeJoint._ComputeTargetRotation(_gazeController.EffGazeTargetPosition);
-                r = qs != gazeJoint.fixTrgRot ? GazeJoint.DistanceToRotate(qs, gazeJoint.fixTrgRotAlign) /
-                    GazeJoint.DistanceToRotate(qs, gazeJoint.fixTrgRot) : 0f;
-                qt = Quaternion.Slerp(qs, qt, r);
-                qt = Quaternion.Euler(qt.eulerAngles.x, qt.eulerAngles.y, 0);
+                qt = gazeJoint.IsEye && _gazeController.FixGazeTarget != null ?
+                    gazeJoint._ComputeTargetRotation(_gazeController.FixGazeTarget.transform.position) :
+                    gazeJoint.fixTrgRotAlign;
                 r = gazeJoint.fixRotParamAlign;
             }
             else
             {
                 qs = gazeJoint.srcRot;
-                //qt = gazeJoint.trgRotAlign;
-                qt = gazeJoint._ComputeTargetRotation(_gazeController.EffGazeTargetPosition);
-                r = qs != gazeJoint.trgRot ? GazeJoint.DistanceToRotate(qs, gazeJoint.trgRotAlign) /
-                    GazeJoint.DistanceToRotate(qs, gazeJoint.trgRot) : 0f;
-                qt = Quaternion.Slerp(qs, qt, r);
-                qt = Quaternion.Euler(qt.eulerAngles.x, qt.eulerAngles.y, 0);
+                qt = gazeJoint.trgRotAlign;
                 r = gazeJoint.rotParamAlign;
             }
 
             // Compute gaze shift shortest-arc rotation
             qr = Quaternion.Slerp(qs, qt, r);
 
-            // Project current rotation onto that arc
+            // Get rotation in the base pose
             v = _GetBodyJointRotation(x, bodyJointIndex);
             q = QuaternionUtil.Exp(v);
-            //qp = ModelUtils.ProjectRotationOntoArc(gazeJoint.bone, qs, qt, q);
 
-            // Penalize difference between shortest-arc gaze shift rotation and projected current rotation
-            //dq = Quaternion.Inverse(qr) * qp;
+            // Penalize difference between shortest-arc gaze shift rotation and base rotation
             dq = Quaternion.Inverse(qr) * q;
             curGazeDirectionTerm = QuaternionUtil.Log(dq).sqrMagnitude;
             gazeDirectionTerm += curGazeDirectionTerm;
 
             // Compute gaze joint velocity
-            /*vp = _GetBodyJointRotation(_xp, bodyJointIndex);
-            rv = (v - vp).magnitude / dt;
+            // TODO
 
             // Penalize difference between gaze model velocity and actual velocity
-            curGazeVelocityTerm = rv - gazeJoint.curVelocity;
-            curGazeVelocityTerm *= curGazeVelocityTerm;
-            gazeVelocityTerm += curGazeVelocityTerm;*/
+            // TODO
+            curGazeVelocityTerm = 0f;
+            gazeVelocityTerm += curGazeVelocityTerm;
         }
 
         // Reapply base pose

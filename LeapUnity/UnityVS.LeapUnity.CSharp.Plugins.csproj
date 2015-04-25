@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{94F11995-5E14-0DB7-5D67-EBEBF77B067B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace></RootNamespace>
+    <AssemblyName>Assembly-CSharp-firstpass</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
+    <CompilerResponseFile></CompilerResponseFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\UnityVS_bin\Debug\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>DEBUG;TRACE;UNITY_4_5_5;UNITY_4_5;UNITY_STANDALONE_WIN;ENABLE_MICROPHONE;ENABLE_TEXTUREID_MAP;ENABLE_UNITYEVENTS;ENABLE_NEW_HIERARCHY ;ENABLE_AUDIO_FMOD;UNITY_STANDALONE;ENABLE_MONO;ENABLE_TERRAIN;ENABLE_SUBSTANCE;ENABLE_GENERICS;INCLUDE_WP8SUPPORT;ENABLE_MOVIES;ENABLE_WWW;ENABLE_IMAGEEFFECTS;INCLUDE_WP_BLUE_SUPPORT;ENABLE_WEBCAM;INCLUDE_METROSUPPORT;RENDER_SOFTWARE_CURSOR;ENABLE_NETWORK;ENABLE_PHYSICS;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_2D_PHYSICS;ENABLE_SHADOWS;ENABLE_AUDIO;ENABLE_NAVMESH_CARVING;ENABLE_DUCK_TYPING;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_PROFILER;UNITY_EDITOR;UNITY_EDITOR_WIN;UNITY_TEAM_LICENSE;UNITY_PRO_LICENSE;abdomenGazeHelper</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\UnityVS_bin\Release\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>TRACE;UNITY_4_5_5;UNITY_4_5;UNITY_STANDALONE_WIN;ENABLE_MICROPHONE;ENABLE_TEXTUREID_MAP;ENABLE_UNITYEVENTS;ENABLE_NEW_HIERARCHY ;ENABLE_AUDIO_FMOD;UNITY_STANDALONE;ENABLE_MONO;ENABLE_TERRAIN;ENABLE_SUBSTANCE;ENABLE_GENERICS;INCLUDE_WP8SUPPORT;ENABLE_MOVIES;ENABLE_WWW;ENABLE_IMAGEEFFECTS;INCLUDE_WP_BLUE_SUPPORT;ENABLE_WEBCAM;INCLUDE_METROSUPPORT;RENDER_SOFTWARE_CURSOR;ENABLE_NETWORK;ENABLE_PHYSICS;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_2D_PHYSICS;ENABLE_SHADOWS;ENABLE_AUDIO;ENABLE_NAVMESH_CARVING;ENABLE_DUCK_TYPING;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_PROFILER;UNITY_EDITOR;UNITY_EDITOR_WIN;UNITY_TEAM_LICENSE;UNITY_PRO_LICENSE;abdomenGazeHelper</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Core" />
+    <Reference Include="Boo.Lang" />
+    <Reference Include="UnityScript.Lang" />
+    <Reference Include="UnityEngine">
+      <HintPath>Library\UnityAssemblies\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="alglibnet2">
+      <HintPath>Assets\Extensions\alglibnet2.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Iridium">
+      <HintPath>Assets\Extensions\MathNet.Iridium.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\Standard Assets\Character Controllers\Sources\Scripts\MouseLook.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\BlurEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\ColorCorrectionEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\ContrastStretchEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\EdgeDetectEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\GlowEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\GrayscaleEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\ImageEffectBase.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\ImageEffects.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\MotionBlur.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\NoiseEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\SSAOEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\SepiaToneEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\TwirlEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Image Effects (Pro Only)\VortexEffect.cs" />
+    <Compile Include="Assets\Standard Assets\Scripts\General Scripts\ActivateTrigger.cs" />
+    <Compile Include="Assets\Standard Assets\Scripts\Utility Scripts\CombineChildren.cs" />
+    <Compile Include="Assets\Standard Assets\Scripts\Utility Scripts\MeshCombineUtility.cs" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coinsurance.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coverage.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_history.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\disclosure\ivy_disc1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\disclosure\ivy_disc2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\disclosure\ivy_disc3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\disclosure\ivy_disc4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\disclosure\ivy_disc5.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\ivy_notagain.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\ivy_repeat.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\ivy_transition.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\plan\ivy_copay.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\plan\ivy_deductible.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\plan\ivy_drug.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\plan\ivy_network.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\script\ivy_1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\script\ivy_2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\script\ivy_3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\script\ivy_4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\script\ivy_end1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\definitions\jasmin_claim.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\definitions\jasmin_history.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\definitions\jasmin_hmo.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\disclosure\jasmin_disc1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\disclosure\jasmin_disc2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\disclosure\jasmin_disc3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\disclosure\jasmin_disc4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\disclosure\jasmin_disc5.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\jasmin_notagain.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\jasmin_repeat.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\jasmin_transition.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\plan\jasmin_copay.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\plan\jasmin_deductible.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\plan\jasmin_drug.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\plan\jasmin_network.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\script\jasmin_1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\script\jasmin_2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\script\jasmin_3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\script\jasmin_4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\script\jasmin_5.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\script\jasmin_end1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\jasmin\script\jasmin_end2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\definitions\lily_feeforservice.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\definitions\lily_history.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\definitions\lily_outofpocket.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\disclosure\lily_disc1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\disclosure\lily_disc2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\disclosure\lily_disc3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\disclosure\lily_disc4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\disclosure\lily_disc5.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\lily_notagain.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\lily_repeat.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\lily_transition.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\plan\lily_copay.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\plan\lily_deductible.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\plan\lily_drug.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\plan\lily_network.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\script\lily_1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\script\lily_2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\script\lily_3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\script\lily_4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\script\lily_5.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\audio\lily\script\lily_end1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\jasminInputs.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\jasminResponses.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\answer1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\answer2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\answer3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\answer4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\answer5.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\prototype_1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\prototype_2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\prototype_3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\prototype_4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\question1.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\question2.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\question3.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\question4.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype4\question5.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype5\coinsurance.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype5\coverage.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype5\feeforservice.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype5\healthinsuranceclaim.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype5\hmo.txt" />
+    <None Include="Assets\Agents\JasminGazeAversion\prototype5\outofpocket.txt" />
+    <None Include="Assets\Agents\Shaders\Diffuse2Sided.shader" />
+    <None Include="Assets\Agents\Shaders\TransparentCutoutDiffuse2Sided.shader" />
+    <None Include="Assets\Agents\Shaders\TransparentDiffuse2Sided.shader" />
+    <None Include="Assets\Agents\Shaders\VertexColorUnlit.shader" />
+    <None Include="Assets\Scene-specific\Agents\GazeAversion\thinkingInputs.txt" />
+    <None Include="Assets\Scene-specific\Agents\GazeAversion\thinkingResponses.txt" />
+    <None Include="Assets\Scene-specific\Agents\GazeAversion\thoughtfulInputs.txt" />
+    <None Include="Assets\Scene-specific\Agents\GazeAversion\thoughtfulResponses.txt" />
+    <None Include="Assets\Scene-specific\Agents\GazeAversion\turntakingInputs.txt" />
+    <None Include="Assets\Scene-specific\Agents\GazeAversion\turntakingResponses.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story1.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story10.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story11.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story12.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story13.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story14.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story15.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story16.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story17.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story18.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story19.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story2.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story20.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story21.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story22.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story23.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story24.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story25.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story26.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story27.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story28.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story29.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story3.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story30.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story31.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story32.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story33.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story34.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story35.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story36.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story37.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story38.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story4.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story5.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story6.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story7.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story8.txt" />
+    <None Include="Assets\Scene-specific\Audio\CMStory\Story9.txt" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story1.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story10.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story11.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story12.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story13.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story14.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story15.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story16.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story17.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story18.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story19.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story2.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story20.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story21.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story22.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story23.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story24.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story25.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story26.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story27.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story28.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story29.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story3.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story30.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story31.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story32.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story33.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story34.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story35.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story36.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story37.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story38.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story4.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story5.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story6.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story7.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story8.xml" />
+    <None Include="Assets\Scene-specific\Behaviors\CMStory\Story9.xml" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Lightmap Shaders (Legacy)\Mobile Lightmap AlphaTest.shader" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Lightmap Shaders (Legacy)\Mobile Lightmap Only.shader" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Lightmap Shaders (Legacy)\Mobile Lightmap Reflective.shader" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Miscellaneous Shaders\Mobile Background.shader" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Miscellaneous Shaders\Mobile Detail.shader" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Particle Shaders\Mobile Multiply Culled.shader" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Particle Shaders\Mobile Particles Additive Culled.shader" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Vertex Colored Shaders\Mobile Transparent Vertex Color.shader" />
+    <None Include="Assets\Standard Assets (Mobile)\Shaders\Vertex Colored Shaders\Mobile Vertex Colored.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\addalphahack.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\AddStuff.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\BrightPassFilter.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\HollywoodFlareBlur.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\HollywoodFlareStretch.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\lensflarecreate.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\SeparableBlurPlus.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\VignetteShader.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\CopyDepthToRGBA.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\DepthOfField.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\DepthOfField31.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\DofForegroundBlur.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\PreDepthOfField.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\PreDepthOfFieldZRead.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\SeparableBlur.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\SeparableBlurDof.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\SeparableRGBADepthBlur.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\SeparableWeightedBlur.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\SeparableWeightedBlurDof.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ChromaticAberrationShader.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ClearExceptSkyboxShader.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ColorCorrectionCurves.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ColorCorrectionCurvesSimple.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ColorCorrectionEffect.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ColorCorrectionSelective.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\Contrast Stretch\Adaptation.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\Contrast Stretch\Apply.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\Contrast Stretch\Luminance.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\Contrast Stretch\MinMaxReduction.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ContrastComposite.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ConvertDepth.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\CreaseApply.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\DepthRGBA8RadialBlur.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\EdgeDetectNormals.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\EdgeDetectX.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ExtractSkyboxShader.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\FisheyeShader.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\frag_ao.cginc" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\GlowCompose.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\GlowConeTap.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\GlowEffectDownsample.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\GrayscaleEffect.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\Luminance2NormalsBlur.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\MotionBlur.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\NoiseEffectShaderRGB.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\NoiseEffectShaderYUV.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\SepiaToneEffect.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\ShowAlphaChannel.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\SimpleClear.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\SkyboxToRGBADepth.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\SSAOShader.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\SunShafts.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\TwirlEffect.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\VignettingShader.shader" />
+    <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\VortexEffect.shader" />
+    <None Include="Assets\Standard Assets\Particles\Sources\Shaders\Particle Alpha Blend (Queue +100).shader" />
+    <None Include="Assets\Standard Assets\Skyboxes\skybox info.txt" />
+    <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Basic.shader" />
+    <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-BasicOutline.shader" />
+    <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Lighted.shader" />
+    <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-LightedOutline.shader" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
+</Project>

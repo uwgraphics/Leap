@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// controller, so it can be directed by the gaze controller.
 /// </summary>
 [Serializable]
-public class GazeJoint : DirectableJoint
+public sealed class GazeJoint : DirectableJoint
 {
     /// <summary>
     /// Type of the gaze joint.
@@ -50,21 +50,6 @@ public class GazeJoint : DirectableJoint
     /// How much the gaze joint aligns with the eyes when gazing at a target (0-1).
     /// </summary>
     public float align = 1f;
-
-    /// <summary>
-    /// How much the gaze joint aligns with the eyes horizontally when gazing at a target (0-1).
-    /// </summary>
-    public float hAlign = 1f;
-
-    /// <summary>
-    /// How much the gaze joint aligns with the eyes vertically when gazing at a target (0-1).
-    /// </summary>
-    public float vAlign = 1f;
-
-    /// <summary>
-    /// How much roll should be applied to the joint as it achieves target alignment.
-    /// </summary>
-    public float roll = 0f;
 
     /// <summary>
     /// When the gaze joint will start moving relative to its immediate child
@@ -194,11 +179,8 @@ public class GazeJoint : DirectableJoint
     [HideInInspector]
     public Quaternion fixTrgRotAlign;
 
-    // Distance between source rotation and aligning target rotation during VOR
-    [HideInInspector]
-    public float fixDistRotAlign;
-
-    // Rotation progress during VOR
+    // Rotation progress (0-1, 0 corresponds to srcRot,
+    // and 1 corresponds to fixTrgRotAlign)
     [HideInInspector]
     public float fixRotParamAlign;
 
@@ -213,7 +195,7 @@ public class GazeJoint : DirectableJoint
     private MorphController morphCtrl;
     private GazeController gazeCtrl;
 
-    public virtual bool IsEye
+    public bool IsEye
     {
         get
         {
@@ -226,7 +208,7 @@ public class GazeJoint : DirectableJoint
     /// true if the joint is currently rotating, false
     /// if it is stationary.
     /// </summary>
-    public virtual bool IsRotating
+    public bool IsRotating
     {
         get
         {
@@ -239,7 +221,7 @@ public class GazeJoint : DirectableJoint
     /// Axis about which the gaze joint is rotating over the course
     /// of the gaze shift
     /// </summary>
-    public virtual Vector3 RotationAxis
+    public Vector3 RotationAxis
     {
         get
         {
@@ -265,9 +247,26 @@ public class GazeJoint : DirectableJoint
     }
 
     /// <summary>
+    /// How much this gaze joint contributes to the overall rotation of
+    /// its body part.
+    /// </summary>
+    public float RotationContribution
+    {
+        get
+        {
+            var last = gazeCtrl.GetLastGazeJointInChain(type);
+            int ji = gazeCtrl.FindGazeJointIndex(this) - gazeCtrl.FindGazeJointIndex(last);
+            int nj = gazeCtrl.GetNumGazeJointsInChain(type);
+            float c = 2f * (nj - ji) / (nj * (nj + 1f));
+
+            return c;
+        }
+    }
+
+    /// <summary>
     /// Gaze controller that owns the current gaze joint.
     /// </summary>
-    public virtual GazeController GazeController
+    public GazeController GazeController
     {
         get { return gazeCtrl; }
     }
@@ -297,7 +296,7 @@ public class GazeJoint : DirectableJoint
     /// <summary>
     /// true if MR limits are broken, otherwise false.
     /// </summary>
-    public virtual bool CheckMR()
+    public bool CheckMR()
     {
         float yaw = this.bone == mdlCtrl.REye ? (Yaw - InitYaw) : (-Yaw + InitYaw);
         float pitch = Pitch - InitPitch;
@@ -333,7 +332,7 @@ public class GazeJoint : DirectableJoint
     /// <summary>
     /// Clamp joint orientation to MR limits.
     /// </summary>
-    public virtual void ClampMR()
+    public void ClampMR()
     {
         // TODO: use a smarter/more efficient method here to determine OMR bound rotation
         // (e.g. adaptive sampling)
@@ -397,30 +396,17 @@ public class GazeJoint : DirectableJoint
     {
         isVOR = true;
 
+        fixSrcRot = srcRot;
         if (gazeCtrl.FixGazeTarget != null)
         {
-            fixSrcRot = srcRot;
-            fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
-
-            if (IsEye)
-            {
-                fixRotParamAlign = rotParamAlign;
-                fixTrgRotAlign = fixTrgRot;
-            }
-            else
-            {
-                Quaternion curRot = Quaternion.Slerp(srcRot, trgRotAlign, rotParamAlign);
-                float fixDistRot = DistanceToRotate(fixSrcRot, fixTrgRot);
-                float fixDistRotAlign = DistanceToRotate(fixSrcRot, curRot);
-                fixRotParamAlign = fixDistRot > 0.00001f ? fixDistRotAlign / fixDistRot : 0f;
-                fixTrgRotAlign = fixSrcRot != fixTrgRot ? Quaternion.Slerp(fixSrcRot, fixTrgRot, fixRotParamAlign) : fixSrcRot;
-                // TODO: there might be a small discontinuity here, keep an eye out for it
-            }
+            fixTrgRot = trgRot;
+            fixTrgRotAlign = IsEye ? trgRot : trgRotAlign;
+            fixRotParamAlign = rotParamAlign;
         }
         else
         {
-            fixSrcRot = fixTrgRot = fixTrgRotAlign = bone.localRotation;
-            fixRotParamAlign = 0f;
+            fixTrgRot = fixTrgRotAlign = bone.localRotation;
+            fixRotParamAlign = 1f;
         }
 
         fixExpressiveRot = expressiveRot;
@@ -435,35 +421,21 @@ public class GazeJoint : DirectableJoint
     // Apply VOR movement
     public void _ApplyVOR()
     {
+        // Update VOR rotation
         _UpdateVORTargetRotation();
 
-        _ApplyRotation(fixTrgRotAlign);
+        // Apply VOR rotation
+        Quaternion rot = Quaternion.Slerp(fixSrcRot, fixTrgRotAlign, fixRotParamAlign);
+        _ApplyRotation(rot);
         if (IsEye)
         {
-            // VOR fixation must not break OMR limits
+            // VOR must not break OMR limits
             if (mrReached = CheckMR())
             {
                 Quaternion curSrcRot = srcRot;
                 srcRot = fixSrcRot;
                 ClampMR();
                 srcRot = curSrcRot;
-            }
-        }
-    }
-
-    // Update target rotation for VOR movement
-    public void _UpdateVORTargetRotation()
-    {
-        if (gazeCtrl.FixGazeTarget != null)
-        {
-            if (IsEye)
-            {
-                fixTrgRotAlign = fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
-            }
-            else
-            {
-                fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTargetPosition);
-                fixTrgRotAlign = fixSrcRot != fixTrgRot ? Quaternion.Slerp(fixSrcRot, fixTrgRot, fixRotParamAlign) : fixSrcRot;
             }
         }
     }
@@ -581,14 +553,14 @@ public class GazeJoint : DirectableJoint
     public void _UpdateTargetRotation()
     {
         // How much will the joint rotate?
-        float prev_dra = distRotAlign;
-        float prev_drmr = distRotMR;
-        float prev_fdr = DistanceToRotate(srcRot, trgRot);
+        float prevDistRotAlign = distRotAlign;
+        float prevDistRotMR = distRotMR;
+        float prevDistRot = DistanceToRotate(srcRot, trgRot);
         trgRot = _ComputeTargetRotation(gazeCtrl.EffGazeTargetPosition);
         if (!IsEye)
         {
-            float arp = prev_fdr > 0.00001f ? prev_dra / prev_fdr : 1f;
-            trgRotAlign = Quaternion.Slerp(srcRot, trgRot, arp);
+            float prevRotParamAlign = prevDistRot > 0.0001f ? prevDistRotAlign / prevDistRot : 1f;
+            trgRotAlign = Quaternion.Slerp(srcRot, trgRot, prevRotParamAlign);
         }
         else
         {
@@ -601,13 +573,46 @@ public class GazeJoint : DirectableJoint
         distRotAlign = DistanceToRotate(srcRot, trgRotAlign);
 
         // Renormalize rotation progress
-        rotParamAlign *= (distRotAlign > 0.00001f ? prev_dra / distRotAlign : 1f);
+        rotParamAlign *= (distRotAlign > 0.00001f ? prevDistRotAlign / distRotAlign : 1f);
         rotParamAlign = Mathf.Clamp01(rotParamAlign);
         if (IsEye)
         {
-            rotParamMR *= (distRotMR > 0.00001f ? prev_drmr / distRotMR : 1f);
+            rotParamMR *= (distRotMR > 0.00001f ? prevDistRotMR / distRotMR : 1f);
             rotParamMR = Mathf.Clamp01(rotParamMR);
         }
+    }
+
+    // Update target rotations during VOR to account for movement of the parent joints
+    public void _UpdateVORTargetRotation()
+    {
+        // How much will the joint rotate?
+        /*float prevFixDistRotAlign = DistanceToRotate(fixSrcRot, fixTrgRotAlign);
+        float prevFixDistRot = DistanceToRotate(fixSrcRot, fixTrgRot);
+        if (gazeCtrl.FixGazeTarget != null)
+        {
+            fixTrgRot = _ComputeTargetRotation(gazeCtrl.EffGazeTargetPosition);
+            if (!IsEye)
+            {
+                float prevFixRotParamAlign = prevFixDistRot > 0.0001f ? prevFixDistRotAlign / prevFixDistRot : 1f;
+                fixTrgRotAlign = Quaternion.Slerp(fixSrcRot, fixTrgRot, prevFixRotParamAlign);
+            }
+            else
+            {
+                fixTrgRotAlign = fixTrgRot;
+            }
+        }
+        */
+
+        if (IsEye)
+        {
+            fixTrgRotAlign = fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTarget.transform.position);
+        }
+
+        // Renormalize rotation progress
+        /*
+        float fixDistRotAlign = DistanceToRotate(fixSrcRot, fixTrgRotAlign);
+        fixRotParamAlign *= (fixDistRotAlign > 0.00001f ? prevFixDistRotAlign / fixDistRotAlign : 1f);
+        fixRotParamAlign = Mathf.Clamp01(fixRotParamAlign);*/
     }
 
     // Rotate the joint towards the target over the course of the gaze shift
@@ -616,15 +621,17 @@ public class GazeJoint : DirectableJoint
         GazeJoint last = gazeCtrl.GetLastGazeJointInChain(type);
         bool isLast = last == this;
 
-        // Compute renormalized rotation from previous step
-        Quaternion currot = srcRot == trgRotAlign ? srcRot :
-            Quaternion.Slerp(srcRot, trgRotAlign, rotParamAlign);
-
         if (trgReached || // target reached in previous step, just VOR
             last.trgReached ||
             maxVelocity < 0.00001f || // joint has zero velocity
             distRotAlign < 0.00001f) // joint doesn't need to rotate at all
         {
+            // TODO: rotParam* values for the eyes fall away from 1 for some reason
+            if (IsEye)
+                rotParamAlign = rotParamMR = 1f;
+            /*else
+                rotParamAlign = 1f;*/
+
             if (gazeCtrl.stylizeGaze && gazeCtrl.enableED &&
                 IsEye && outMR > inMR + 0.00001f)
             {
@@ -636,21 +643,17 @@ public class GazeJoint : DirectableJoint
             }
             else
             {
-                _ApplyRotation(currot);
+                _ApplyRotation(srcRot == trgRotAlign ? srcRot :
+                    Quaternion.Slerp(srcRot, trgRotAlign, rotParamAlign));
             }
 
             if (IsEye && (mrReached = CheckMR()))
             {
                 // If MR has been reached, clamp the rotation
-                bone.localRotation = currot;
                 ClampMR();
             }
 
             trgReached = true;
-            // TODO: some snapping occurs if not for this hack
-            /*if(IsEye)
-                rotParamAlign = rotParamMR = 1f;*/
-
             return trgReached;
         }
 
@@ -698,8 +701,8 @@ public class GazeJoint : DirectableJoint
 
         // Eliminate roll component from the joint's rotation
         bone.localRotation = q;
-        if (IsEye || !IsEye && gazeCtrl.removeRoll)
-            _RemoveRoll();
+       /*if (IsEye || gazeCtrl.removeRoll)
+            _RemoveRoll();*/
         q = bone.localRotation;
 
         // Apply expressive displacement to the joint
@@ -795,11 +798,11 @@ public class GazeJoint : DirectableJoint
 
         // Strip roll out of the target rotation
         // TODO: should this be conditional upon gazeCtrl.removeRoll?
-        trgrot *= COBRot;
+        /*trgrot *= COBRot;
         Quaternion li_rot = mdlCtrl.GetInitRotation(bone) * COBRot;
         trgrot = Quaternion.Inverse(li_rot) * trgrot;
         trgrot = li_rot * trgrot;
-        trgrot *= Quaternion.Inverse(COBRot);
+        trgrot *= Quaternion.Inverse(COBRot);*/
 
         if (!IsEye)
         {
@@ -820,6 +823,98 @@ public class GazeJoint : DirectableJoint
             bone.localRotation = currot; // restore original rotation
         }
 
+        trgrot = Quaternion.Euler(trgrot.eulerAngles.x, trgrot.eulerAngles.y, 0f);
+
         return trgrot;
+    }
+
+    // Get snapshot of the gaze joint's state
+    public GazeControllerState.GazeJointState _GetRuntimeState()
+    {
+        GazeControllerState.GazeJointState state = new GazeControllerState.GazeJointState();
+        
+        state.gazeJointType = type;
+        state.velocity = velocity;
+        state.upMR = upMR;
+        state.downMR = downMR;
+        state.inMR = inMR;
+        state.outMR = outMR;
+        state.align = align;
+        state.latency = latency;
+        state.rot = bone.localRotation;
+        state.srcRot = srcRot;
+        state.trgRot = trgRot;
+        state.trgRotAlign = trgRotAlign;
+        state.trgRotMR = trgRotMR;
+        state.distRotAlign = distRotAlign;
+        state.distRotMR = distRotMR;
+        state.rotParamAlign = rotParamAlign;
+        state.rotParamMR = rotParamMR;
+        state.maxVelocity = maxVelocity;
+        state.curVelocity = curVelocity;
+        state.latency = latency;
+        state.latencyTime = latencyTime;
+        state.mrReached = mrReached;
+        state.trgReached = trgReached;
+        state.adjUpMR = adjUpMR;
+        state.adjDownMR = adjDownMR;
+        state.adjInMR = adjInMR;
+        state.adjOutMR = adjOutMR;
+        state.curUpMR = curUpMR;
+        state.curDownMR = curDownMR;
+        state.curInMR = curInMR;
+        state.curOutMR = curOutMR;
+        state.curAlign = curAlign;
+        state.isVOR = isVOR;
+        state.fixSrcRot = fixSrcRot;
+        state.fixTrgRotAlign = fixTrgRotAlign;
+        state.fixRotParamAlign = fixRotParamAlign;
+        state.expressiveRot = expressiveRot;
+        state.fixExpressiveRot = fixExpressiveRot;
+
+        return state;
+    }
+
+    // Set gaze joint's state from a snapshot
+    public void _SetRuntimeState(GazeControllerState.GazeJointState state)
+    {
+        type = state.gazeJointType;
+        velocity = state.velocity;
+        upMR = state.upMR;
+        downMR = state.downMR;
+        inMR = state.inMR;
+        outMR = state.outMR;
+        align = state.align;
+        latency = state.latency;
+        bone.localRotation = state.rot;
+        srcRot = state.srcRot;
+        trgRot = state.trgRot;
+        trgRotAlign = state.trgRotAlign;
+        trgRotMR = state.trgRotMR;
+        distRotAlign = state.distRotAlign;
+        distRotMR = state.distRotMR;
+        rotParamAlign = state.rotParamAlign;
+        rotParamMR = state.rotParamMR;
+        maxVelocity = state.maxVelocity;
+        curVelocity = state.curVelocity;
+        latency = state.latency;
+        latencyTime = state.latencyTime;
+        mrReached = state.mrReached;
+        trgReached = state.trgReached;
+        adjUpMR = state.adjUpMR;
+        adjDownMR = state.adjDownMR;
+        adjInMR = state.adjInMR;
+        adjOutMR = state.adjOutMR;
+        curUpMR = state.curUpMR;
+        curDownMR = state.curDownMR;
+        curInMR = state.curInMR;
+        curOutMR = state.curOutMR;
+        curAlign = state.curAlign;
+        isVOR = state.isVOR;
+        fixSrcRot = state.fixSrcRot;
+        fixTrgRotAlign = state.fixTrgRotAlign;
+        fixRotParamAlign = state.fixRotParamAlign;
+        expressiveRot = state.expressiveRot;
+        fixExpressiveRot = state.fixExpressiveRot;
     }
 }

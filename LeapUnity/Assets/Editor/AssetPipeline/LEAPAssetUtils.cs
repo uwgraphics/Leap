@@ -276,7 +276,7 @@ public static class LEAPAssetUtils
     }
 
     /// <summary>
-    /// Create an array of animation curves for specified character model.
+    /// Create an array of empty animation curves for specified character model.
     /// </summary>
     /// <param name="model">Character model</param>
     /// <returns>Animation curves</returns>
@@ -287,6 +287,96 @@ public static class LEAPAssetUtils
         AnimationCurve[] curves = new AnimationCurve[3 + bones.Length * 4];
         for (int curveIndex = 0; curveIndex < curves.Length; ++curveIndex)
             curves[curveIndex] = new AnimationCurve();
+
+        return curves;
+    }
+
+    /// <summary>
+    /// Get all animation curves from the specified animation clip.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="clip">Animation clip</param>
+    /// <returns>Animation curves</returns>
+    public static AnimationCurve[] GetAnimationCurvesFromClip(GameObject model, AnimationClip clip)
+    {
+        var modelController = model.GetComponent<ModelController>();
+        AnimationCurve[] curves = new AnimationCurve[3 + modelController.NumberOfBones * 4];
+        AnimationClipCurveData[] curveData = AnimationUtility.GetAllCurves(clip, true);
+
+        // Create empty curves for all bone properties
+        int curveIndex = 0;
+        for (curveIndex = 0; curveIndex < curves.Length; ++curveIndex)
+        {
+            curves[curveIndex] = new AnimationCurve();
+            curves[curveIndex].keys = null;
+        }
+
+        // Get curve data from the animation clip for each bone
+        curveIndex = 0;
+        for (int boneIndex = 0; boneIndex < modelController.NumberOfBones; ++boneIndex)
+        {
+            var bone = modelController[boneIndex];
+            string bonePath = ModelUtils.GetBonePath(bone);
+            var curveDataForBone = curveData.Where(cd => cd.path == bonePath);
+            curveIndex = 3 + boneIndex * 4;
+
+            foreach (var curveDataForBoneProperty in curveDataForBone)
+            {
+                switch (curveDataForBoneProperty.propertyName)
+                {
+                    case "m_LocalPosition.x":
+
+                        if (boneIndex == 0)
+                        {
+                            curves[0] = curveDataForBoneProperty.curve;
+                        }
+
+                        break;
+
+                    case "m_LocalPosition.y":
+
+                        if (boneIndex == 0)
+                        {
+                            curves[1] = curveDataForBoneProperty.curve;
+                        }
+
+                        break;
+
+                    case "m_LocalPosition.z":
+
+                        if (boneIndex == 0)
+                        {
+                            curves[2] = curveDataForBoneProperty.curve;
+                        }
+
+                        break;
+
+                    case "m_LocalRotation.x":
+
+                        curves[curveIndex] = curveDataForBoneProperty.curve;
+                        break;
+
+                    case "m_LocalRotation.y":
+
+                        curves[curveIndex + 1] = curveDataForBoneProperty.curve;
+                        break;
+
+                    case "m_LocalRotation.z":
+
+                        curves[curveIndex + 2] = curveDataForBoneProperty.curve;
+                        break;
+
+                    case "m_LocalRotation.w":
+
+                        curves[curveIndex + 3] = curveDataForBoneProperty.curve;
+                        break;
+
+                    default:
+
+                        break;
+                }
+            }
+        }
 
         return curves;
     }

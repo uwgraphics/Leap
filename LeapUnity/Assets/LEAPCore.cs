@@ -73,6 +73,11 @@ public class LEAPCore : MonoBehaviour
     public static bool adjustGazeTargetForMovingBase = false;
 
     /// <summary>
+    /// If true, gaze controller state log will contained detailed state of every gaze joint
+    /// </summary>
+    public static bool printDetailedGazeControllerState = false;
+
+    /// <summary>
     /// Load Leap configuration from Leap.cfg file
     /// </summary>
     public static bool LoadConfiguration()
@@ -135,6 +140,11 @@ public class LEAPCore : MonoBehaviour
                     case "adjustGazeTargetForMovingBase":
 
                         adjustGazeTargetForMovingBase = bool.Parse(valueStr);
+                        break;
+
+                    case "printDetailedGazeControllerState":
+
+                        printDetailedGazeControllerState = bool.Parse(valueStr);
                         break;
 
                     default:

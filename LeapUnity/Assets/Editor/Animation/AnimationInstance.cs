@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -29,6 +30,14 @@ public abstract class AnimationInstance
     {
         get;
         private set;
+    }
+
+    /// <summary>
+    /// Shorthand for getting the character model controller.
+    /// </summary>
+    public virtual ModelController ModelController
+    {
+        get { return Model.GetComponent<ModelController>(); }
     }
 
     /// <summary>
@@ -84,7 +93,17 @@ public abstract class AnimationInstance
     public virtual bool IsBaking
     {
         get;
-        set;
+        protected set;
+    }
+
+    /// <summary>
+    /// Specifies which animation curves are actually getting keyframed
+    /// when baking the instance.
+    /// </summary>
+    public virtual BitArray BakeMask
+    {
+        get;
+        protected set;
     }
 
     // Animation curves for baking the current instance
@@ -99,7 +118,9 @@ public abstract class AnimationInstance
     /// </summary>
     /// <param name="model">Character model</param>
     /// <param name="animationClipName">Animation clip name</param>
-    public AnimationInstance(GameObject model, string animationClipName)
+    /// <param name="bakeMask">Specifies which animation curves are actually getting keyframed
+    /// when baking the instance.</param>
+    public AnimationInstance(GameObject model, string animationClipName, BitArray bakeMask = null)
     {
         Model = model;
         Animation = model.GetComponent<Animation>();
@@ -144,10 +165,29 @@ public abstract class AnimationInstance
         {
             // No clip found for this animation instance, create an empty one
             AnimationClip = LEAPAssetUtils.CreateAnimationClipOnModel(animationClipName, model);
-        }
 
-        // Create empty animation curves for baking the animation instance
-        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model);
+            // Set bake mask
+            if (bakeMask != null)
+            {
+                BakeMask = bakeMask;
+            }
+            else
+            {
+                // Create bake mask for all animation curves
+                BakeMask = new BitArray(_AnimationCurves.Length);
+                BakeMask.SetAll(true);
+            }
+        }
+        else
+        {
+            // There is already an animation clip, so retrieve the curves from it
+            _AnimationCurves = LEAPAssetUtils.GetAnimationCurvesFromClip(model, AnimationClip);
+
+            // Create bake mask for the animation curves
+            BakeMask = new BitArray(_AnimationCurves.Length);
+            for (int curveIndex = 0; curveIndex < _AnimationCurves.Length; ++curveIndex)
+                BakeMask.Set(curveIndex, _AnimationCurves[curveIndex].keys != null);
+        }
 
         // Set default animation weight
         Weight = 1f;
@@ -166,7 +206,85 @@ public abstract class AnimationInstance
     /// </summary>
     /// <param name="frame">Frame index</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public abstract void Apply(int frame, AnimationLayerMode layerMode);
+    public virtual void Apply(int frame, AnimationLayerMode layerMode)
+    {
+        _Apply(frame, layerMode);
+
+        if (IsBaking)
+        {
+            // Bake the applied model pose into animation curves
+            int curveIndex = 0;
+            float time =  ((float)frame) / LEAPCore.editFrameRate;
+            float value = 0f;
+            Keyframe key;
+            for (int boneIndex = 0; boneIndex < ModelController.NumberOfBones; ++boneIndex)
+            {
+                var bone = ModelController[boneIndex];
+
+                if (boneIndex == 0)
+                {
+                    // Key position of the root bone:
+
+                    value = bone.localPosition.x;
+                    key = new Keyframe(time, value);
+                    if (BakeMask.Get(curveIndex))
+                        _AnimationCurves[curveIndex].AddKey(key);
+                    ++curveIndex;
+
+                    value = bone.localPosition.y;
+                    key = new Keyframe(time, value);
+                    if (BakeMask.Get(curveIndex))
+                        _AnimationCurves[curveIndex].AddKey(key);
+                    ++curveIndex;
+
+                    value = bone.localPosition.z;
+                    key = new Keyframe(time, value);
+                    if (BakeMask.Get(curveIndex))
+                        _AnimationCurves[curveIndex].AddKey(key);
+                    ++curveIndex;
+                }
+
+                // Key rotation:
+
+                value = bone.localRotation.x;
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
+                ++curveIndex;
+
+                value = bone.localRotation.y;
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
+                ++curveIndex;
+
+                value = bone.localRotation.z;
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
+                ++curveIndex;
+
+                value = bone.localRotation.w;
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
+                ++curveIndex;
+            }
+        }
+        else
+        {
+            // Configure how the animation clip will be applied to the model
+            Animation[AnimationClip.name].normalizedTime = ((float)frame) / FrameLength;
+            Animation[AnimationClip.name].weight = Weight;
+            Animation[AnimationClip.name].blendMode = layerMode == AnimationLayerMode.Override ?
+                AnimationBlendMode.Blend : AnimationBlendMode.Additive;
+
+            // Apply the animation clip to the model
+            Animation[AnimationClip.name].enabled = true;
+            Animation.Sample();
+            Animation[AnimationClip.name].enabled = false;
+        }
+    }
 
     /// <summary>
     /// Finish the application of the current animation instance.
@@ -174,6 +292,15 @@ public abstract class AnimationInstance
     /// <remarks>AnimationTimeline calls this function during playback, after the last frame of the current instance.</remarks>
     public virtual void Finish()
     {
+    }
+
+    /// <summary>
+    /// Start baking the animation instance.
+    /// </summary>
+    public virtual void StartBake()
+    {
+        IsBaking = true;
+        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model);
     }
 
     /// <summary>
@@ -185,7 +312,6 @@ public abstract class AnimationInstance
         IsBaking = false;
         AnimationClip.ClearCurves();
         LEAPAssetUtils.SetAnimationCurvesOnClip(Model.gameObject, AnimationClip, _AnimationCurves);
-        _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(Model);
 
         // Write animation clip to file
         string path = LEAPAssetUtils.GetModelDirectory(Model) + AnimationClip.name + ".anim";
@@ -196,6 +322,80 @@ public abstract class AnimationInstance
         }
         AssetDatabase.SaveAssets();
     }
+
+    /// <summary>
+    /// Sample root position baked in this animation instance.
+    /// </summary>
+    /// <param name="frame">Frame index</param>
+    /// <returns>Root position</returns>
+    public virtual Vector3 SampleRootPosition(int frame)
+    {
+        Vector3 pos = new Vector3(
+            BakeMask.Get(0) ? _AnimationCurves[0].keys[frame].value : 0f,
+            BakeMask.Get(1) ? _AnimationCurves[1].keys[frame].value : 0f,
+            BakeMask.Get(2) ? _AnimationCurves[2].keys[frame].value : 0f
+            );
+
+        return pos;
+    }
+
+    /// <summary>
+    /// Sample root velocity baked in this animation instance.
+    /// </summary>
+    /// <param name="frame">Frame index</param>
+    /// <returns>Root velocity</returns>
+    /// <remarks>Velocity is computed using backward finite difference method</remarks>
+    public virtual Vector3 SampleRootVelocity(int frame)
+    {
+        if (frame == 0)
+            return Vector3.zero;
+
+        Vector3 pm1 = SampleRootPosition(frame - 1);
+        Vector3 p = SampleRootPosition(frame);
+        return (-pm1 + p) * ((float)LEAPCore.editFrameRate);
+    }
+
+    /// <summary>
+    /// Sample bone rotation baked in this animation instance.
+    /// </summary>
+    /// <param name="frame">Frame index</param>
+    /// <param name="boneIndex">Bone index</param>
+    /// <returns>Bone rotation</returns>
+    public virtual Quaternion SampleRotation(int frame, int boneIndex)
+    {
+        int curveIndex = 3 + boneIndex * 4;
+        Quaternion rot = new Quaternion(
+            BakeMask.Get(curveIndex) ? _AnimationCurves[curveIndex].keys[frame].value : 0f,
+            BakeMask.Get(curveIndex + 1) ? _AnimationCurves[curveIndex + 1].keys[frame].value : 0f,
+            BakeMask.Get(curveIndex + 2) ? _AnimationCurves[curveIndex + 2].keys[frame].value : 0f,
+            BakeMask.Get(curveIndex + 3) ? _AnimationCurves[curveIndex + 3].keys[frame].value : 0f
+            );
+
+        return rot;
+    }
+
+    /// <summary>
+    /// Sample angular velocity baked in this animation instance.
+    /// </summary>
+    /// <param name="frame">Frame index</param>
+    /// <param name="boneIndex">Bone index</param>
+    /// <returns>Angular velocity</returns>
+    /// <remarks>Velocity is computed using backward finite difference method</remarks>
+    public virtual float SampleAngularVelocity(int frame, int boneIndex)
+    {
+        if (frame == 0)
+            return 0f;
+
+        Quaternion qm1 = SampleRotation(frame - 1, boneIndex);
+        Quaternion q = SampleRotation(frame, boneIndex);
+        Quaternion dq = Quaternion.Inverse(qm1) * q;
+        float av = QuaternionUtil.Log(dq).magnitude;
+
+        return av;
+    }
+
+    // Apply animation instance to the character model at specified frame
+    protected abstract void _Apply(int frame, AnimationLayerMode layerMode);
 
     /// <summary>
     /// Get frame index at specified time index of an animation.

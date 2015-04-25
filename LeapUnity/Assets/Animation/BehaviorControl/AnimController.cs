@@ -7,6 +7,13 @@ using System.Reflection;
 public delegate void StateChangeEvtH(AnimController sender, int srcState, int trgState);
 
 /// <summary>
+/// Snapshot of the runtime state of an animation controller.
+/// </summary>
+public interface IAnimControllerState
+{
+}
+
+/// <summary>
 /// Base class for agent
 /// animation controllers.
 /// </summary>
@@ -259,6 +266,23 @@ public abstract class AnimController : MonoBehaviour
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Get a snapshot of the current runtime state of the animation controller.
+    /// </summary>
+    /// <returns>Controller state</returns>
+    public virtual IAnimControllerState GetRuntimeState()
+    {
+        return null;
+    }
+
+    /// <summary>
+    /// Set the current runtime state of the animation controller from a snapshot.
+    /// </summary>
+    /// <param name="state">Controller state</param>
+    public virtual void SetRuntimeState(IAnimControllerState state)
+    {
     }
 
     /// <summary>

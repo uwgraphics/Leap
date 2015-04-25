@@ -7,12 +7,14 @@ using System.Collections.Generic;
 /// some helper functions which allow animation controllers
 /// to interact with the character model.
 /// </summary>
-public class ModelController : MonoBehaviour
+public sealed class ModelController : MonoBehaviour
 {
     private Transform rootBone = null; // Model skeleton root
     private Transform lEyeBone = null;
     private Transform rEyeBone = null;
-    private Transform headBone = null;
+
+    private Transform[] bones;
+    private Dictionary<Transform, int> boneIndexes = new Dictionary<Transform, int>();
 
     // Initial pose (both local and global)
     private Dictionary<int, Vector3> initLPos = new Dictionary<int, Vector3>();
@@ -29,7 +31,7 @@ public class ModelController : MonoBehaviour
     /// <summary>
     /// Shorthand for getting the model root. 
     /// </summary>
-    public virtual Transform Root
+    public Transform Root
     {
         get
         {
@@ -40,7 +42,7 @@ public class ModelController : MonoBehaviour
     /// <summary>
     /// Shorthand for getting the left eye.
     /// </summary>
-    public virtual Transform LEye
+    public Transform LEye
     {
         get
         {
@@ -51,7 +53,7 @@ public class ModelController : MonoBehaviour
     /// <summary>
     /// Shorthand for getting the right eye.
     /// </summary>
-    public virtual Transform REye
+    public Transform REye
     {
         get
         {
@@ -60,20 +62,47 @@ public class ModelController : MonoBehaviour
     }
 
     /// <summary>
-    /// Shorthand for getting the head.
+    /// Number of bones in the model.
     /// </summary>
-    public virtual Transform Head
+    public int NumberOfBones
     {
-        get
-        {
-            return headBone;
-        }
+        get { return bones.Length; }
+    }
+
+    /// <summary>
+    /// Indexer for getting the model bones.
+    /// </summary>
+    /// <param name="boneIndex">Bone index</param>
+    /// <returns>Bone</returns>
+    public Transform this[int boneIndex]
+    {
+        get { return bones[boneIndex]; }
+    }
+
+    /// <summary>
+    /// Get bone at the specified index.
+    /// </summary>
+    /// <param name="iboneIndexndex">Bone index</param>
+    /// <returns>Bone</returns>
+    public Transform GetBone(int boneIndex)
+    {
+        return bones[boneIndex];
+    }
+
+    /// <summary>
+    /// Get index of the specified bone.
+    /// </summary>
+    /// <param name="bone">Bone</param>
+    /// <returns>Bone index</returns>
+    public int GetBoneIndex(Transform bone)
+    {
+        return boneIndexes[bone];
     }
 
     /// <summary>
     /// Position of the character, computed as average of positions of both feet.
     /// </summary>
-    public virtual Vector3 BodyPosition
+    public Vector3 BodyPosition
     {
         get
         {
@@ -88,7 +117,7 @@ public class ModelController : MonoBehaviour
     /// Facing direction of the character's whole body,
     /// computed from positions of both feet.
     /// </summary>
-    public virtual Vector3 BodyDirection
+    public Vector3 BodyDirection
     {
         get
         {
@@ -261,8 +290,7 @@ public class ModelController : MonoBehaviour
     /// </summary>
     public void Init()
     {
-        if (rootBone == null)
-            _InitBones();
+        _InitBones();
 
         // Get initial skeletal pose
         _GetInitBoneTransforms(rootBone);
@@ -288,8 +316,12 @@ public class ModelController : MonoBehaviour
             lEyeBone = ModelUtils.FindBoneWithTag(rootBone, "LEyeBone");
         if (rEyeBone == null)
             rEyeBone = ModelUtils.FindBoneWithTag(rootBone, "REyeBone");
-        if (headBone == null)
-            headBone = ModelUtils.FindBoneWithTag(rootBone, "HeadBone");
+
+        // Get list of all bones and their indexes
+        bones = ModelUtils.GetAllBones(gameObject);
+        boneIndexes.Clear();
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            boneIndexes[bones[boneIndex]] = boneIndex;
     }
 
     private void _GetInitBoneTransforms(Transform bone)

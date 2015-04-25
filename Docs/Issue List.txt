@@ -1,8 +1,65 @@
 Leap Animation Editor:
 
-#67 [] When using gaze IK lots of output poses from BodyIKSolver are wrong
+#78 [] Large snap in torso pose when using gaze IK and starting a new gaze shift
+  - Happens when gaze shift starts, but torso is still in VOR mode due to latency
+
+#77 [X] Large snap in head and eye pose when using gaze IK and starting a new gaze shift
+  - This is prolly b/c gaze controller does not use the IK output pose when setting the source pose for the new gaze shift
+
+#76 [] Small discontinuities in gaze output pose when switching to VOR
+  - This seems to be the same issue as #71, not fixed when I fixed #75
+  - Torso joints seem to abruptly shift upward when VOR kicks in
+
+#75 [X] Discontinuities in gaze output pose when switching to VOR
+  - This seems to be the same issue as #71, brought back when I switched back to what was the original implementation
+  - Discontinuity seems to be in the lowermost Torso joint, which inexplicably rotates by a large amount
+  - Closer inspection reveals that lower-than-topmost gaze joints in a body part never achieve full alignment with the target during the gaze shift (which is OK - only the topmost joint is supposed to), but then they instantly snap to it during fixation (for some reason)
+  - Was using fixRotParamAlign wrong, fixed now
+
+#74 [X] Large discontinuities in output pose from BodyIKSolver when switching to VOR
+  - Because of changes made to VOR while fixing #71
+  - Rotation computation during VOR should be analogous to rotation computation during the gaze shift (with source and target rotations and whatnot), only difference being that rotation does not advance but remains static relative to the target
+
+#73 [] VOR won't work correctly when there is a sequence of gaze-ahead shifts
+  - B/c gaze-ahead is towards a helper target that moves around - scheduling a gaze shift ahead while VOR is active towards previous ahead target position will cause the helper target to move and break the VOR
+  - Implemented an untested fix
+
+#72 [X] Large discontinuities in output pose from BodyIKSolver
+  - TestExpressiveGaze example has a bunch
+  - See #77
+  
+#71 [X] More discontinuities in gaze output pose when switching to VOR
+  - Weirdly, discontinuities are not over a single frame, but over multiple frames
+  - See TestExpressiveGaze, 2nd gaze shift - torso does a sudden rotation around roll axis
+  - Might be related to roll removal (or lack thereof)?
+  - Reactivated removeRoll option, but there is still a discontinuity (though not in roll)
+  - Happens when switching from Shifting to NoGaze
+  - Less noticeable with IK off, but pretty severe with IK on
+  - Actually happens a couple of frames *after* starting VOR
+  - In GazeJoint._ApplyVOR(), disabling _UpdateVORTargetRotation() fixes the problem - not really a fix tho
+  - Happens for both head and torso joints
+  - Happens with the eyes too! - it seems that eyes actually overshoot the gaze target by a little bit during the gaze shift and then snap to it when VOR starts
+  - For some reason, rotParamAlign and rotParamMR for the eyes decrease down from 1 after alignment has been reached???
+  - Problem solved by bringing back an old hack in GazeJoint._AdvanceRotation()
+  - ... but now we have #74
+  
+#70 [X] Large discontinuities in output pose from BodyIKSolver when switching to VOR
+  - Because of misunderstanding of difference between rotParamAlign and fixRotParamAlign in BodyIKSolver.ObjFunc2()
+
+#69 [X] When using gaze IK output poses from BodyIKSolver during VOR are wrong
+  - FixGazeTarget is set to an old value and it isn't properly initialized
+  - FixGazeTarget wasn't part of the baked GazeController state
+
+#68 [X] Baked GazeController state is sometimes wrong
+  - State is NoGaze, CurrentGazeTarget and gazeTarget are both null...
+  - It seems that those states never get initialized - maybe we're dropping frames?
+  - Yes we are, fixed now - cannot advance time by more than 1f/LeapCore.editFrameRate
+
+#67 [X] When using gaze IK lots of output poses from BodyIKSolver are equal to the original motion
   - Output pose is equal to the original motion (+ hand contacts enforced), yet gaze direction term of the objective function is zero, like we have perfect alignment!
   - Happens almost on every second frame after frames have been baked
+  - It's because baked GazeController state is incorrect for some frames (among other things, CurrentGazeTarget is set to null) - see #68
+  - Fixed by fixing #68
 
 #66 [] Target gaze rotation computation in the gaze controller is slightly off
   - GazeController.ApplyTargetPose() does not distribute trgRotAlign of the torso correctly among spine joints

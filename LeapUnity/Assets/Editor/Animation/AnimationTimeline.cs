@@ -471,7 +471,7 @@ public class AnimationTimeline
 
         Active = false;
         Playing = false;
-        TimeScale = 0.25f;
+        TimeScale = 1f;
     }
 
     /// <summary>
@@ -490,6 +490,7 @@ public class AnimationTimeline
         {
             throw new Exception(string.Format("Character model {0} does not have a ModelController", model.name));
         }
+        modelController.Init();
 
         // Apply & store initial pose for the model
         var initialPoseClip = model.GetComponent<Animation>().GetClip("InitialPose");
@@ -849,7 +850,7 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// Bake a range of frames on the timeline into animation clip.
+    /// Bake a range of frames on the timeline into animation clips.
     /// </summary>
     /// <param name="animationClipName">Animation clip names (one for each character model)</param>
     /// <param name="startFrame">Start frame index</param>
@@ -882,7 +883,7 @@ public class AnimationTimeline
         GoToFrame(startFrame);
         while (CurrentFrame < startFrame + length - 1 && CurrentFrame < FrameLength - 1)
         {
-            _ApplyAnimation();
+            ApplyAnimation();
 
             foreach (var model in models)
             {
@@ -957,14 +958,14 @@ public class AnimationTimeline
         Debug.Log("Baking all animation instances...");
 
         GoToFrame(0);
-        Update(0);
+        Advance(0);
 
         // Initialize each model's animation tree
         _InitControllers();
 
-        // Set all instance to bake
+        // Set all instances to bake
         foreach (KeyValuePair<int, ScheduledInstance> kvp in _animationInstancesById)
-            kvp.Value.Animation.IsBaking = true;
+            kvp.Value.Animation.StartBake();
     }
 
     /// <summary>
@@ -974,7 +975,7 @@ public class AnimationTimeline
     {
         if (!IsBakingInstances)
         {
-            throw new Exception("Tried to finalize baking animation instances when no animation instance are baking");
+            throw new Exception("Tried to finalize baking animation instances when no animation instances are baking");
         }
 
         // Save any baked instances to animation clips
@@ -1051,10 +1052,10 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// Update the animation timeline.
+    /// Advance animation on the timeline.
     /// </summary>
     /// <param name="deltaTime">Elapsed time since last update</param>
-    public void Update(float deltaTime)
+    public void Advance(float deltaTime)
     {
         if (!Active)
         {
@@ -1078,10 +1079,13 @@ public class AnimationTimeline
             }
         }
 
-        _ApplyAnimation();
+        ApplyAnimation();
     }
 
-    public void _ApplyAnimation()
+    /// <summary>
+    /// Apply animation at the current time to all character models.
+    /// </summary>
+    public void ApplyAnimation()
     {
         var models = Models;
 
@@ -1156,8 +1160,6 @@ public class AnimationTimeline
                 // Configure IK solver parameters for each model
                 if (layer.isIKBase)
                     _SetIKBasePose(model);
-                if (layer.isIKGaze)
-                    _SetIKEyeGazeParams(model);
             
                 // Store model poses after the current layer is applied
                 StoreModelPose(model.gameObject.name, layer.LayerName + "Pose");
@@ -1175,10 +1177,12 @@ public class AnimationTimeline
         AllAnimationApplied();
     }
 
+    // Increment time on the timeline by the specified amount
     private bool _AddTime(float deltaTime)
     {
         bool loopedAround = false;
 
+        // Add time (and check if we're looping around to the start of the timeline)
         if (CurrentTime + deltaTime > TimeLength)
         {
             loopedAround = true;
@@ -1197,6 +1201,7 @@ public class AnimationTimeline
         return loopedAround;
     }
 
+    // Add animation to the specified layer container
     private void _AddAnimationToLayerContainer(ScheduledInstance newInstance, LayerContainer targetLayerContainer)
     {
         bool newInstanceAdded = false;
@@ -1214,6 +1219,7 @@ public class AnimationTimeline
             targetLayerContainer._GetAnimations().Add(newInstance);
     }
 
+    // Store the current pose of each model
     private void _StoreModelsCurrentPose()
     {
         var models = Models;
@@ -1223,6 +1229,7 @@ public class AnimationTimeline
         }
     }
 
+    // Initialize animation controllers on all models
     private void _InitControllers()
     {
         var models = Models;
@@ -1240,6 +1247,7 @@ public class AnimationTimeline
         }
     }
 
+    // Initialize IK solvers on all models
     private void _InitIK()
     {
         var models = Models;
@@ -1251,6 +1259,7 @@ public class AnimationTimeline
         }
     }
 
+    // Set end-effector goals for the IK solver on the specified model
     private void _SetIKGoals(GameObject model, AnimationClip animationClip)
     {
         if (!_endEffectorConstraints.ContainsKey(animationClip))
@@ -1298,38 +1307,21 @@ public class AnimationTimeline
         }
     }
 
+    // Set current model pose as base pose for the IK solver on the specified model
     private void _SetIKBasePose(GameObject model)
     {
         IKSolver[] solvers = model.GetComponents<IKSolver>();
-
         foreach (var solver in solvers)
         {
             if (solver is BodyIKSolver)
             {
                 var bodySolver = solver as BodyIKSolver;
-
-                // Set current pose as base pose of the body IK solver
                 bodySolver.InitBasePose();
             }
         }
     }
 
-    private void _SetIKEyeGazeParams(GameObject model)
-    {
-        IKSolver[] solvers = model.GetComponents<IKSolver>();
-
-        foreach (var solver in solvers)
-        {
-            if (solver is BodyIKSolver)
-            {
-                var bodySolver = solver as BodyIKSolver;
-
-                // Set current gaze controller configuration as eye gaze parameters for the body IK solver
-                bodySolver.InitGazeParams();
-            }
-        }
-    }
-
+    // Clear end-effector goals in all IK solvers on all models
     private void _ClearIKGoals()
     {
         var models = Models;
@@ -1343,15 +1335,19 @@ public class AnimationTimeline
         }
     }
 
+    // Solve for final model pose in all IK solvers on all models
     private void _SolveIK()
     {
         var models = Models;
         foreach (var model in models)
         {
-            // First solve for body pose
-            var bodySolver = model.GetComponent<BodyIKSolver>();
-            if (bodySolver.enabled)
-                bodySolver.Solve();
+            if (!LEAPCore.useGazeIK)
+            {
+                // First solve for body posture
+                var bodySolver = model.GetComponent<BodyIKSolver>();
+                if (bodySolver.enabled)
+                    bodySolver.Solve();
+            }
 
             // Then solve for limb poses
             LimbIKSolver[] limbSolvers = model.GetComponents<LimbIKSolver>();

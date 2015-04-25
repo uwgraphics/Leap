@@ -21,7 +21,6 @@ public class LeapAnimationEditor : EditorWindow
     }
 
     private AnimationEditGizmos _animationEditGizmos = null;
-    private int _frameCounter = 0;
     private Stopwatch _frameTimer = new Stopwatch();
     private GameObject _loggedGazeControllerStateModel = null;
 
@@ -37,36 +36,23 @@ public class LeapAnimationEditor : EditorWindow
 
     private void Update()
     {
-        // Only render frame at every 3rd update
-        _frameCounter = (_frameCounter + 1) % 3;
-        if (_frameCounter != 0)
+        // Update frame timing
+        if (!_frameTimer.IsRunning)
+            _frameTimer.Start();
+        float deltaTime = _frameTimer.ElapsedMilliseconds / 1000f;
+        if (deltaTime < 1f / LEAPCore.editFrameRate)
             return;
-
-        if (Timeline == null)
-        {
-            // Initialize the animation timeline
-            Timeline = AnimationTimeline.Instance;
-            Timeline.Active = false;
-            Timeline.Stop();
-            
-            // Subscribe to events from the animation timeline
-            Timeline.AllAnimationApplied += new AnimationTimeline.AllAnimationEvtH(AnimationTimeline_AllAnimationApplied);
-            Timeline.LayerApplied += new AnimationTimeline.LayerEvtH(AnimationTimeline_LayerApplied);
-            Timeline.AnimationStarted += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
-            Timeline.AnimationFinished += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationFinished);
-
-            // Get component for drawing animation edit gizmos
-            _animationEditGizmos = UnityEngine.Object.FindObjectOfType(typeof(AnimationEditGizmos)) as AnimationEditGizmos;
-        }
-
-        // Update timings
-        _frameTimer.Stop();
-        float deltaTime = _frameTimer.ElapsedMilliseconds/1000f;
+        deltaTime = Mathf.Min(deltaTime, 1f / LEAPCore.editFrameRate);
         _frameTimer.Reset();
         _frameTimer.Start();
 
+        if (Timeline == null)
+        {
+            _InitTimeline();
+        }
+
         // Update animation and redraw the scene and timeline
-        Timeline.Update(deltaTime);
+        Timeline.Advance(deltaTime);
         if (Timeline.Active && Timeline.Playing)
         {
             SceneView.RepaintAll();
@@ -124,14 +110,14 @@ public class LeapAnimationEditor : EditorWindow
             && Timeline.Active && !Timeline.Playing)
         {
             Timeline.PreviousFrame();
-            Timeline.Update(0);
+            Timeline.Advance(0);
             SceneView.RepaintAll();
         }
         if (GUI.Button(new Rect(160, 10, 40, 40), _timelineNextFrameTexture)
             && Timeline.Active && !Timeline.Playing)
         {
             Timeline.NextFrame();
-            Timeline.Update(0);
+            Timeline.Advance(0);
             SceneView.RepaintAll();
         }
 
@@ -221,10 +207,40 @@ public class LeapAnimationEditor : EditorWindow
 
                 break;
 
+            case EventType.MouseDown:
+
+                _RemoveFocus();
+                break;
+
             default:
 
                 break;
         }
+    }
+
+    // For removing focus from a control
+    private void _RemoveFocus()
+    {
+        GUI.SetNextControlName("_RemoveFocus");
+        GUI.TextField(new Rect(-100, -100, 1, 1), "");
+        GUI.FocusControl("_RemoveFocus");
+    }
+
+    private void _InitTimeline()
+    {
+        // Initialize the animation timeline
+        Timeline = AnimationTimeline.Instance;
+        Timeline.Active = false;
+        Timeline.Stop();
+
+        // Subscribe to events from the animation timeline
+        Timeline.AllAnimationApplied += new AnimationTimeline.AllAnimationEvtH(AnimationTimeline_AllAnimationApplied);
+        Timeline.LayerApplied += new AnimationTimeline.LayerEvtH(AnimationTimeline_LayerApplied);
+        Timeline.AnimationStarted += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
+        Timeline.AnimationFinished += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationFinished);
+
+        // Get component for drawing animation edit gizmos
+        _animationEditGizmos = UnityEngine.Object.FindObjectOfType(typeof(AnimationEditGizmos)) as AnimationEditGizmos;
     }
 
     private void _InitGUI()
