@@ -152,11 +152,13 @@ public class LeapAnimationEditor : EditorWindow
         // Enable/disable IK on all models
         {
             bool prevIKEnabled = _ikEnabled;
-            _ikEnabled = GUI.Toggle(new Rect(20, layerToggleTop + 30, 140, 20), _ikEnabled, "IK");
+            _ikEnabled = GUI.Toggle(new Rect(20, layerToggleTop + 30, 100, 20), _ikEnabled, "IK");
             Timeline.SetIKEnabled(_ikEnabled);
 
             if (_ikEnabled != prevIKEnabled)
                 SceneView.RepaintAll();
+
+            LEAPCore.useGazeIK = GUI.Toggle(new Rect(120, layerToggleTop + 30, 100, 20), LEAPCore.useGazeIK, "GazeIK");
         }
 
         // Bake procedural anim. instances into clips

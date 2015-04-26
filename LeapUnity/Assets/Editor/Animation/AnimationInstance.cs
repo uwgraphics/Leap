@@ -209,81 +209,7 @@ public abstract class AnimationInstance
     public virtual void Apply(int frame, AnimationLayerMode layerMode)
     {
         _Apply(frame, layerMode);
-
-        if (IsBaking)
-        {
-            // Bake the applied model pose into animation curves
-            int curveIndex = 0;
-            float time =  ((float)frame) / LEAPCore.editFrameRate;
-            float value = 0f;
-            Keyframe key;
-            for (int boneIndex = 0; boneIndex < ModelController.NumberOfBones; ++boneIndex)
-            {
-                var bone = ModelController[boneIndex];
-
-                if (boneIndex == 0)
-                {
-                    // Key position of the root bone:
-
-                    value = bone.localPosition.x;
-                    key = new Keyframe(time, value);
-                    if (BakeMask.Get(curveIndex))
-                        _AnimationCurves[curveIndex].AddKey(key);
-                    ++curveIndex;
-
-                    value = bone.localPosition.y;
-                    key = new Keyframe(time, value);
-                    if (BakeMask.Get(curveIndex))
-                        _AnimationCurves[curveIndex].AddKey(key);
-                    ++curveIndex;
-
-                    value = bone.localPosition.z;
-                    key = new Keyframe(time, value);
-                    if (BakeMask.Get(curveIndex))
-                        _AnimationCurves[curveIndex].AddKey(key);
-                    ++curveIndex;
-                }
-
-                // Key rotation:
-
-                value = bone.localRotation.x;
-                key = new Keyframe(time, value);
-                if (BakeMask.Get(curveIndex))
-                    _AnimationCurves[curveIndex].AddKey(key);
-                ++curveIndex;
-
-                value = bone.localRotation.y;
-                key = new Keyframe(time, value);
-                if (BakeMask.Get(curveIndex))
-                    _AnimationCurves[curveIndex].AddKey(key);
-                ++curveIndex;
-
-                value = bone.localRotation.z;
-                key = new Keyframe(time, value);
-                if (BakeMask.Get(curveIndex))
-                    _AnimationCurves[curveIndex].AddKey(key);
-                ++curveIndex;
-
-                value = bone.localRotation.w;
-                key = new Keyframe(time, value);
-                if (BakeMask.Get(curveIndex))
-                    _AnimationCurves[curveIndex].AddKey(key);
-                ++curveIndex;
-            }
-        }
-        else
-        {
-            // Configure how the animation clip will be applied to the model
-            Animation[AnimationClip.name].normalizedTime = ((float)frame) / FrameLength;
-            Animation[AnimationClip.name].weight = Weight;
-            Animation[AnimationClip.name].blendMode = layerMode == AnimationLayerMode.Override ?
-                AnimationBlendMode.Blend : AnimationBlendMode.Additive;
-
-            // Apply the animation clip to the model
-            Animation[AnimationClip.name].enabled = true;
-            Animation.Sample();
-            Animation[AnimationClip.name].enabled = false;
-        }
+        _ApplyBake(frame, layerMode);
     }
 
     /// <summary>
@@ -396,6 +322,85 @@ public abstract class AnimationInstance
 
     // Apply animation instance to the character model at specified frame
     protected abstract void _Apply(int frame, AnimationLayerMode layerMode);
+
+    // Bake applied animation or apply baked animation
+    protected virtual void _ApplyBake(int frame, AnimationLayerMode layerMode)
+    {
+        if (IsBaking)
+        {
+            // Bake the applied model pose into animation curves
+            int curveIndex = 0;
+            float time = ((float)frame) / LEAPCore.editFrameRate;
+            float value = 0f;
+            Keyframe key;
+            for (int boneIndex = 0; boneIndex < ModelController.NumberOfBones; ++boneIndex)
+            {
+                var bone = ModelController[boneIndex];
+
+                if (boneIndex == 0)
+                {
+                    // Key position of the root bone:
+
+                    value = bone.localPosition.x;
+                    key = new Keyframe(time, value);
+                    if (BakeMask.Get(curveIndex))
+                        _AnimationCurves[curveIndex].AddKey(key);
+                    ++curveIndex;
+
+                    value = bone.localPosition.y;
+                    key = new Keyframe(time, value);
+                    if (BakeMask.Get(curveIndex))
+                        _AnimationCurves[curveIndex].AddKey(key);
+                    ++curveIndex;
+
+                    value = bone.localPosition.z;
+                    key = new Keyframe(time, value);
+                    if (BakeMask.Get(curveIndex))
+                        _AnimationCurves[curveIndex].AddKey(key);
+                    ++curveIndex;
+                }
+
+                // Key rotation:
+
+                value = bone.localRotation.x;
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
+                ++curveIndex;
+
+                value = bone.localRotation.y;
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
+                ++curveIndex;
+
+                value = bone.localRotation.z;
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
+                ++curveIndex;
+
+                value = bone.localRotation.w;
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
+                ++curveIndex;
+            }
+        }
+        else
+        {
+            // Configure how the animation clip will be applied to the model
+            Animation[AnimationClip.name].normalizedTime = ((float)frame) / FrameLength;
+            Animation[AnimationClip.name].weight = Weight;
+            Animation[AnimationClip.name].blendMode = layerMode == AnimationLayerMode.Override ?
+                AnimationBlendMode.Blend : AnimationBlendMode.Additive;
+
+            // Apply the animation clip to the model
+            Animation[AnimationClip.name].enabled = true;
+            Animation.Sample();
+            Animation[AnimationClip.name].enabled = false;
+        }
+    }
 
     /// <summary>
     /// Get frame index at specified time index of an animation.

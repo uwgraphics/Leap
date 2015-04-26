@@ -64,6 +64,7 @@ public abstract class AnimationControllerInstance : AnimationInstance
 
         if (IsBaking)
         {
+            // Initialize list of baked controller states
             _bakedControllerStates = new List<IAnimControllerState>(FrameLength);
             for (int frameIndex = 0; frameIndex < FrameLength; ++frameIndex)
                 _bakedControllerStates.Add(Controller.GetRuntimeState());

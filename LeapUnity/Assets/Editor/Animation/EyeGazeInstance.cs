@@ -140,6 +140,9 @@ public class EyeGazeInstance : AnimationControllerInstance
     protected Vector3[] _expressiveGazeAnimationRotations = null;
     protected float[] _expressiveGazeAnimationWeights = null;
     protected Quaternion[] _baseGazeRotations = null;
+
+    protected List<IAnimControllerState> _bakedGazeControllerStates;
+    protected List<IAnimControllerState> _bakedGazeControllerStatesIK;
     
 
     /// <summary>
@@ -230,6 +233,23 @@ public class EyeGazeInstance : AnimationControllerInstance
     {
         base.Start();
 
+        if (IsBaking)
+        {
+            // Initialize list of baked gaze controller states
+            if (LEAPCore.useGazeIK)
+            {
+                _bakedGazeControllerStatesIK = new List<IAnimControllerState>(FrameLength);
+                for (int frameIndex = 0; frameIndex < FrameLength; ++frameIndex)
+                    _bakedGazeControllerStatesIK.Add(Controller.GetRuntimeState());
+            }
+            else
+            {
+                _bakedGazeControllerStates = new List<IAnimControllerState>(FrameLength);
+                for (int frameIndex = 0; frameIndex < FrameLength; ++frameIndex)
+                    _bakedGazeControllerStates.Add(Controller.GetRuntimeState());
+            }
+        }
+
         // Register handler for gaze controller state changes
         GazeController.StateChange += new StateChangeEvtH(GazeController_StateChange);
 
@@ -251,20 +271,9 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.Finish"/>
+    /// <see cref="AnimationInstance.Apply"/>
     /// </summary>
-    public override void Finish()
-    {
-        // Unregister handler for gaze controller state changes
-        GazeController.StateChange -= GazeController_StateChange;
-
-        base.Finish();
-    }
-
-    /// <summary>
-    /// <see cref="AnimationInstance._Apply"/>
-    /// </summary>
-    protected override void _Apply(int frame, AnimationLayerMode layerMode)
+    public override void Apply(int frame, AnimationLayerMode layerMode)
     {
         if (IsBaking)
         {
@@ -298,8 +307,42 @@ public class EyeGazeInstance : AnimationControllerInstance
         }
 
         base._Apply(frame, layerMode);
-
         _lastAppliedFrame = frame;
+        _ApplyBake(frame, layerMode);
+
+        List<IAnimControllerState> bakedControllerStates = LEAPCore.useGazeIK ?
+            _bakedGazeControllerStatesIK : _bakedGazeControllerStates;
+        if (IsBaking)
+        {
+            // Bake the current controller state
+            bakedControllerStates[frame] = Controller.GetRuntimeState();
+        }
+        else
+        {
+            if (bakedControllerStates != null && frame < bakedControllerStates.Count)
+            {
+                // Apply the baked controller state
+                Controller.SetRuntimeState(bakedControllerStates[frame]);
+
+                // Also apply gaze joint rotations
+                for (int gazeJointIndex = 0; gazeJointIndex < GazeController.gazeJoints.Length; ++gazeJointIndex)
+                {
+                    GazeController.gazeJoints[gazeJointIndex].bone.localRotation =
+                        ((GazeControllerState)bakedControllerStates[frame]).gazeJointStates[gazeJointIndex].rot;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// <see cref="AnimationInstance.Finish"/>
+    /// </summary>
+    public override void Finish()
+    {
+        // Unregister handler for gaze controller state changes
+        GazeController.StateChange -= GazeController_StateChange;
+
+        base.Finish();
     }
 
     // Compute and apply expressive rotational displacements to gaze joints
