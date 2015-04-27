@@ -1,6 +1,6 @@
 Leap Animation Editor:
 
-#82
+#83
 
 #78 [] Large snap in torso pose when using gaze IK and starting a new gaze shift
   - Happens when gaze shift starts, but torso is still in VOR mode due to latency
@@ -390,6 +390,8 @@ Leap Animation Editor:
 
 
 Animation Assets:
+
+#82 [] In WaitForBus example, texture the bus stop sign
 
 #81 [] In StealDiamond example, the diamond has a hole on top
 

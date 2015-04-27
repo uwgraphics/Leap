@@ -54,6 +54,7 @@ ModelImporter:
     100096: srfBind_Rt_LegB
     100098: srfBind_Rt_LegC
     100100: srfBind_Rt_LegD
+    100102: Cube
     400000: Bone_Eye2_R
     400002: Bone_Eye2_R 1
     400004: Bone_Eye_L
@@ -105,6 +106,7 @@ ModelImporter:
     400096: srfBind_Rt_LegB
     400098: srfBind_Rt_LegC
     400100: srfBind_Rt_LegD
+    400102: Cube
     2300000: Book1
     2300002: Book2
     2300004: Book3
@@ -144,6 +146,7 @@ ModelImporter:
     2300072: srfBind_Rt_LegB
     2300074: srfBind_Rt_LegC
     2300076: srfBind_Rt_LegD
+    2300078: Cube
     3300000: Book1
     3300002: Book2
     3300004: Book3
@@ -183,6 +186,7 @@ ModelImporter:
     3300072: srfBind_Rt_LegB
     3300074: srfBind_Rt_LegC
     3300076: srfBind_Rt_LegD
+    3300078: Cube
     4300000: srfBind_Cn_Pelvis
     4300002: srfBind_Cn_SpineA
     4300004: srfBind_Cn_SpineB
@@ -223,6 +227,7 @@ ModelImporter:
     4300074: Book1
     4300076: Book2
     4300078: Book3
+    4300080: Cube
     7400000: BookShelf
     9500000: //RootNode
     11100000: //RootNode
