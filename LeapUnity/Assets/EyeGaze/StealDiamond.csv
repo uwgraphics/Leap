@@ -1,0 +1,8 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,FixationEndFrame,Target,HeadAlign,TorsoAlign,TurnBody
+Norman,StealDiamondGaze1,72,110,111,RoomLeft,-1,-1,True
+Norman,StealDiamondGaze2,112,149,152,RoomRight,-1,-1,True
+Norman,StealDiamondGaze3,155,189,197,Diamond,-1,-1,True
+Norman,StealDiamondGaze4,206,245,247,RoomBack,-1,-1,True
+Norman,StealDiamondGaze5,248,257,259,RoomRight,-1,-1,True
+Norman,StealDiamondGaze6,260,268,269,RoomLeft,-1,-1,True
+Norman,StealDiamondGaze7,270,279,287,RoomBack,-1,-1,True

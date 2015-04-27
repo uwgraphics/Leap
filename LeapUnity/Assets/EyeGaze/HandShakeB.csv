@@ -1,0 +1,2 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,FixationEndFrame,Target,HeadAlign,TorsoAlign,TurnBody
+Roman,HandShakeBGaze1,1,1,65,NormanFace,-1,-1,True

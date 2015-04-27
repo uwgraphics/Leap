@@ -165,6 +165,7 @@ public abstract class AnimationInstance
         {
             // No clip found for this animation instance, create an empty one
             AnimationClip = LEAPAssetUtils.CreateAnimationClipOnModel(animationClipName, model);
+            _AnimationCurves = LEAPAssetUtils.GetAnimationCurvesFromClip(model, AnimationClip);
 
             // Set bake mask
             if (bakeMask != null)

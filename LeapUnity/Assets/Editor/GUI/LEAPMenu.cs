@@ -6,79 +6,13 @@ using System.Linq;
 
 public class LEAPMenu
 {
-    [MenuItem("LEAP/Animation/Test: WindowWashing", true, 30)]
-    private static bool ValidateTestWindowWashing()
-    {
-        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/Test: WindowWashing", false, 30)]
-    private static void TestWindowWashing()
-    {
-        TestScene("WindowWashing");
-    }
-
-    [MenuItem("LEAP/Animation/Test: PassSoda", true, 31)]
-    private static bool ValidateTestPassSoda()
-    {
-        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/Test: PassSoda", false, 31)]
-    private static void TestPassSoda()
-    {
-        TestScene("PassSoda");
-    }
-
-    [MenuItem("LEAP/Animation/Test: Walking90deg", true, 32)]
-    private static bool ValidateTestWalking90deg()
-    {
-        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/Test: Walking90deg", false, 32)]
-    private static void TestWalking90deg()
-    {
-        TestScene("Walking90deg");
-    }
-
-    [MenuItem("LEAP/Animation/Test: ExpressiveGaze", true, 33)]
-    private static bool ValidateTestExpressiveGaze()
-    {
-        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/Test: ExpressiveGaze", false, 33)]
+    [MenuItem("LEAP/Animation/Test: ExpressiveGaze", false, 30)]
     private static void TestExpressiveGaze()
     {
         TestScene("TestExpressiveGaze");
     }
 
-    [MenuItem("LEAP/Animation/Test: InitialPose", true, 34)]
+    [MenuItem("LEAP/Animation/Test: InitialPose", true, 30)]
     private static bool ValidateTestInitialPose()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
@@ -90,10 +24,130 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Animation/Test: InitialPose", false, 34)]
-    private static void TestInitialPose()
+    [MenuItem("LEAP/Animation/Test: WindowWashing", true, 31)]
+    private static bool ValidateTestWindowWashing()
     {
-        TestScene("InitialPose");
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: WindowWashing", false, 31)]
+    private static void TestWindowWashing()
+    {
+        TestScene("WindowWashing");
+    }
+
+    [MenuItem("LEAP/Animation/Test: PassSoda", true, 32)]
+    private static bool ValidateTestPassSoda()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: PassSoda", false, 32)]
+    private static void TestPassSoda()
+    {
+        TestScene("PassSoda");
+    }
+
+    [MenuItem("LEAP/Animation/Test: Walking90deg", true, 33)]
+    private static bool ValidateTestWalking90deg()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: Walking90deg", false, 33)]
+    private static void TestWalking90deg()
+    {
+        TestScene("Walking90deg");
+    }
+
+    [MenuItem("LEAP/Animation/Test: BookShelf", true, 34)]
+    private static bool ValidateTestBookShelf()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: BookShelf", false, 34)]
+    private static void TestBookShelf()
+    {
+        TestScene("BookShelf");
+    }
+
+    [MenuItem("LEAP/Animation/Test: HandShake", true, 35)]
+    private static bool ValidateTestHandShake()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: HandShake", false, 35)]
+    private static void TesHandShake()
+    {
+        TestScene("HandShake");
+    }
+
+    [MenuItem("LEAP/Animation/Test: StealDiamond", true, 36)]
+    private static bool ValidateTestStealDiamond()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: StealDiamond", false, 36)]
+    private static void TesStealDiamond()
+    {
+        TestScene("StealDiamond");
+    }
+
+    [MenuItem("LEAP/Animation/Test: WaitForBus", true, 37)]
+    private static bool ValidateTestWaitForBus()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Test: WaitForBus", false, 37)]
+    private static void TesWaitForBus()
+    {
+        TestScene("WaitForBus");
     }
 
     private static void TestScene(string sceneName, bool loadEditedGaze = false)
@@ -109,16 +163,6 @@ public class LEAPMenu
         // Reload Leap configuration
         LEAPCore.LoadConfiguration();
 
-        // Get all characters and props in the scene
-        if (testScenes.modelNorman == null)
-            testScenes.modelNorman = GameObject.Find("Norman");
-        if (testScenes.modelNormanette == null)
-            testScenes.modelNormanette = GameObject.Find("Normanette");
-        if (testScenes.modelRoman == null)
-            testScenes.modelRoman = GameObject.Find("Roman");
-        if (testScenes.modelWindowWashingRoom == null)
-            testScenes.modelWindowWashingRoom = GameObject.Find("WindowWashingRoom");
-
         // Add character models to the timeline
         timeline.AddModel(testScenes.modelNorman);
         timeline.AddModel(testScenes.modelNormanette);
@@ -128,9 +172,14 @@ public class LEAPMenu
         testScenes.modelNorman.SetActive(false);
         testScenes.modelNormanette.SetActive(false);
         testScenes.modelRoman.SetActive(false);
-        testScenes.modelWindowWashingRoom.SetActive(false);
-        testScenes.modelPassSodaRoom.SetActive(false);
-        testScenes.modelWalking90degCones.SetActive(false);
+        testScenes.modelFloor.SetActive(true);
+        testScenes.modelTestExpressiveGazeEnv.SetActive(false);
+        testScenes.modelWindowWashingEnv.SetActive(false);
+        testScenes.modelPassSodaEnv.SetActive(false);
+        testScenes.modelWalking90degEnv.SetActive(false);
+        testScenes.modelBookShelfEnv.SetActive(false);
+        testScenes.modelStealDiamondEnv.SetActive(false);
+        testScenes.modelWaitForBusEnv.SetActive(false);
         testScenes.cameraWindowWashing.enabled = false;
         testScenes.cameraPassSoda.enabled = false;
         testScenes.cameraWalking90deg.enabled = false;
@@ -143,12 +192,28 @@ public class LEAPMenu
         timeline.GetLayer("Gaze").isIKBase = false;
         timeline.GetLayer("Gaze").isIKGaze = true;
 
-        if (sceneName == "WindowWashing")
+        if (sceneName == "TestExpressiveGaze")
+        {
+            testScenes.modelNorman.SetActive(true);
+            testScenes.modelTestExpressiveGazeEnv.SetActive(true);
+            testScenes.cameraWindowWashing.enabled = true;
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "TestExpressiveGaze");
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.PrintEyeGaze(timeline);
+        }
+        else if (sceneName == "WindowWashing")
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.modelNormanette.SetActive(true);
             testScenes.modelNormanette.transform.position = new Vector3(2.58f, 0f, -3.72f);
-            testScenes.modelWindowWashingRoom.SetActive(true);
+            testScenes.modelWindowWashingEnv.SetActive(true);
             testScenes.cameraWindowWashing.enabled = true;
 
             // Create animation instances
@@ -177,7 +242,7 @@ public class LEAPMenu
             testScenes.modelRoman.SetActive(true);
             testScenes.modelNormanette.SetActive(true);
             testScenes.modelNormanette.transform.position = new Vector3(0.36f, 0f, -3.72f);
-            testScenes.modelPassSodaRoom.SetActive(true);
+            testScenes.modelPassSodaEnv.SetActive(true);
             testScenes.cameraPassSoda.enabled = true;
 
             // Create animation instances
@@ -211,7 +276,7 @@ public class LEAPMenu
         else if (sceneName == "Walking90deg")
         {
             testScenes.modelNorman.SetActive(true);
-            testScenes.modelWalking90degCones.SetActive(true);
+            testScenes.modelWalking90degEnv.SetActive(true);
             testScenes.cameraWalking90deg.enabled = true;
 
             // Create animation instances
@@ -230,13 +295,14 @@ public class LEAPMenu
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "Walking90degwEdits";
         }
-        else if (sceneName == "TestExpressiveGaze")
+        else if (sceneName == "BookShelf")
         {
             testScenes.modelNorman.SetActive(true);
-            testScenes.cameraWindowWashing.enabled = true;
+            testScenes.modelBookShelfEnv.SetActive(true);
+            //testScenes.cameraBookShelf.enabled = true;
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "TestExpressiveGaze");
+            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "BookShelf");
             int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
 
             // Load eye gaze
@@ -244,6 +310,87 @@ public class LEAPMenu
             if (LEAPCore.useExpressiveGaze)
                 EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNorman;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "BookShelfwEdits";
+        }
+        else if (sceneName == "HandShake")
+        {
+            testScenes.modelNorman.SetActive(true);
+            testScenes.modelRoman.SetActive(true);
+            //testScenes.cameraHandShake.enabled = true;
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "HandShakeA");
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+            var bodyAnimationRoman = new AnimationClipInstance(testScenes.modelRoman, "HandShakeB");
+            int bodyAnimationRomanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationRoman, 0, true);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+            {
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationRomanInstanceId, "Gaze");
+            }
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[2];
+            editTestScenario.models[0] = testScenes.modelNorman;
+            editTestScenario.models[1] = testScenes.modelRoman;
+            editTestScenario.animations = new string[2];
+            editTestScenario.animations[0] = "HandShakeAwEdits";
+            editTestScenario.animations[1] = "HandShakeBwEdits";
+        }
+        else if (sceneName == "StealDiamond")
+        {
+            testScenes.modelNorman.SetActive(true);
+            testScenes.modelStealDiamondEnv.SetActive(true);
+            //testScenes.cameraStealDiamond.enabled = true;
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "StealDiamond");
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNorman;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "StealDiamondwEdits";
+        }
+        else if (sceneName == "WaitForBus")
+        {
+            testScenes.modelNorman.SetActive(true);
+            testScenes.modelWaitForBusEnv.SetActive(true);
+            testScenes.modelFloor.SetActive(false);
+            //testScenes.cameraWaitForBus.enabled = true;
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "WaitForBus");
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            if (LEAPCore.useExpressiveGaze)
+                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNorman;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "WaitForBuswEdits";
         }
         else // if (sceneName == "InitialPose")
         {

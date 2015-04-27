@@ -1,0 +1,16 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,FixationEndFrame,Target,HeadAlign,TorsoAlign,TurnBody
+Norman,BookShelfGaze1,125,158,162,TopShelfLeft,-1,-1,True
+Norman,BookShelfGaze2,164,179,185,Book1,-1,-1,True
+Norman,BookShelfGaze3,310,331,400,BookShelf,-1,-1,True
+Norman,BookShelfGaze4,408,434,437,TopShelfLeft,-1,-1,True
+Norman,BookShelfGaze5,440,467,485,BookShelf,-1,-1,True
+Norman,BookShelfGaze6,581,603,670,BookShelf,-1,-1,True
+Norman,BookShelfGaze7,685,703,706,TopShelfMiddle,-1,-1,True
+Norman,BookShelfGaze8,709,720,730,Book2,-1,-1,True
+Norman,BookShelfGaze9,833,852,910,BookShelf,-1,-1,True
+Norman,BookShelfGaze10,918,950,952,TopShelfMiddle,-1,-1,True
+Norman,BookShelfGaze11,954,964,978,BookShelf,-1,-1,True
+Norman,BookShelfGaze12,1067,1085,1143,BookShelf,-1,-1,True
+Norman,BookShelfGaze13,1153,1177,1199,TopShelfRight,-1,-1,True
+Norman,BookShelfGaze14,1313,1328,1395,BookShelf,-1,-1,True
+Norman,BookShelfGaze15,1406,1431,1472,TopShelfRight,-1,-1,True

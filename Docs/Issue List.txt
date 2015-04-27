@@ -1,5 +1,7 @@
 Leap Animation Editor:
 
+#82
+
 #78 [] Large snap in torso pose when using gaze IK and starting a new gaze shift
   - Happens when gaze shift starts, but torso is still in VOR mode due to latency
 
@@ -388,6 +390,12 @@ Leap Animation Editor:
 
 
 Animation Assets:
+
+#81 [] In StealDiamond example, the diamond has a hole on top
+
+#80 [] Roman's left hand in HandShake example is twisted 180 degrees
+
+#79 [] Bookshelf and books in BookShelf example have shared vertices at edges with interpolated normals, so they have a rounded appearance
 
 #65 [X] Base animations clips are getting corrupted - some joints have completely wrong orientations
   - See Norman's right arm in WindowWashing and other examples
