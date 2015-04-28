@@ -67,6 +67,11 @@ public class LEAPCore : MonoBehaviour
     public static bool useGazeIK = true;
 
     /// <summary>
+    /// If true, gaze constraint weight will be dynamically computed based on importance.
+    /// </summary>
+    public static bool useDynamicGazeIKWeight = true;
+
+    /// <summary>
     /// If true, effective gaze target in a gaze shift will be adjusted for movement
     /// in the base animation.
     /// </summary>
@@ -135,6 +140,11 @@ public class LEAPCore : MonoBehaviour
                     case "useGazeIK":
 
                         useGazeIK = bool.Parse(valueStr);
+                        break;
+
+                    case "useDynamicGazeIKWeight":
+
+                        useDynamicGazeIKWeight = bool.Parse(valueStr);
                         break;
 
                     case "adjustGazeTargetForMovingBase":

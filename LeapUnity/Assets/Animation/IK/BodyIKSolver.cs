@@ -97,16 +97,23 @@ public class BodyIKSolver : IKSolver
     protected override void _Solve()
     {
         // Update gaze direction weight
-        _gazeDirectionWeight = 0f;
-        foreach (var goal in Goals)
+        if (LEAPCore.useDynamicGazeIKWeight)
         {
-            if (goal.endEffector.tag == "LWrist" || goal.endEffector.tag == "RWrist" &&
-                goal.weight > _gazeDirectionWeight)
+            _gazeDirectionWeight = 0f;
+            foreach (var goal in Goals)
             {
-                _gazeDirectionWeight = goal.weight;
+                if (goal.endEffector.tag == "LWrist" || goal.endEffector.tag == "RWrist" &&
+                    goal.weight > _gazeDirectionWeight)
+                {
+                    _gazeDirectionWeight = goal.weight;
+                }
             }
+            _gazeDirectionWeight = 1f - _gazeDirectionWeight;
         }
-        _gazeDirectionWeight = 1f - _gazeDirectionWeight;
+        else
+        {
+            _gazeDirectionWeight = 1f;
+        }
 
         // Solve for body posture
         _RunSolver();
