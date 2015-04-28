@@ -1,14 +1,23 @@
 Leap Animation Editor:
 
-#83
+#86 [] During VOR, we can't just keep the same orientation that was set when fixation started; alignment should approach 1 as body gets more aligned with the target or keep the original value as body rotates away from the target
 
-#78 [] Large snap in torso pose when using gaze IK and starting a new gaze shift
+#85 [] Degenerate gaze shifts - gaze controller enters fixation mode even though neither eyes nor head have yet aligned with the target
+  - StealDiamondGaze2 is a nasty example where for some reason neck is more aligned with the target than  the head!
+
+#84 [] Alignment inference still seems to have some issues
+  - Why are nearly all head alignments 0 in StealDiamond example?
+
+#83 [] Eyes sometimes snap when switching to a new gaze instance
+  - Example when switching from WindowWashingGaze12 to WindowWashingGaze13
+
+#78 [X] Large snap in torso pose when using gaze IK and starting a new gaze shift
   - Happens when gaze shift starts, but torso is still in VOR mode due to latency
 
 #77 [X] Large snap in head and eye pose when using gaze IK and starting a new gaze shift
   - This is prolly b/c gaze controller does not use the IK output pose when setting the source pose for the new gaze shift
 
-#76 [] Small discontinuities in gaze output pose when switching to VOR
+#76 [X] Small discontinuities in gaze output pose when switching to VOR
   - This seems to be the same issue as #71, not fixed when I fixed #75
   - Torso joints seem to abruptly shift upward when VOR kicks in
 

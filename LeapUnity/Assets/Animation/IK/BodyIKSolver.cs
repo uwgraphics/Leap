@@ -47,6 +47,7 @@ public class BodyIKSolver : IKSolver
 
     // Gaze animation stuff:
     protected GazeController _gazeController = null;
+    protected float _gazeDirectionWeight = 0f;
 
     // Joints the IK solver will manipulate to achieve the goals:
     protected List<Transform> _bodyJoints = new List<Transform>();
@@ -95,6 +96,18 @@ public class BodyIKSolver : IKSolver
     /// </summary>
     protected override void _Solve()
     {
+        // Update gaze direction weight
+        _gazeDirectionWeight = 0f;
+        foreach (var goal in Goals)
+        {
+            if (goal.endEffector.tag == "LWrist" || goal.endEffector.tag == "RWrist" &&
+                goal.weight > _gazeDirectionWeight)
+            {
+                _gazeDirectionWeight = goal.weight;
+            }
+        }
+        _gazeDirectionWeight = 1f - _gazeDirectionWeight;
+
         // Solve for body posture
         _RunSolver();
 
@@ -506,11 +519,24 @@ public class BodyIKSolver : IKSolver
             // Get rotation in the base pose
             v = _GetBodyJointRotation(x, bodyJointIndex);
             q = QuaternionUtil.Exp(v);
+            // TODO: trying sth else
+            qp = gazeJoint.bone.localRotation;
+            gazeJoint.bone.localRotation = q;
+            vp = gazeJoint.Direction;
+            vp = new Vector3(vp.x, 0f, vp.z);
+            vp.Normalize();
+            gazeJoint.bone.localRotation = qr;
+            Vector3 vp1 = gazeJoint.Direction;
+            vp1 = new Vector3(vp1.x, 0f, vp1.z);
+            vp1.Normalize();
+            curGazeDirectionTerm = Vector3.Angle(vp, vp1);
+            curGazeDirectionTerm *= curGazeDirectionTerm;
+            //
 
             // Penalize difference between shortest-arc gaze shift rotation and base rotation
-            dq = Quaternion.Inverse(qr) * q;
-            curGazeDirectionTerm = QuaternionUtil.Log(dq).sqrMagnitude;
-            gazeDirectionTerm += curGazeDirectionTerm;
+            /*dq = Quaternion.Inverse(qr) * q;
+            curGazeDirectionTerm = QuaternionUtil.Log(dq).sqrMagnitude;*/
+            gazeDirectionTerm += (_gazeDirectionWeight * curGazeDirectionTerm);
 
             // Compute gaze joint velocity
             // TODO

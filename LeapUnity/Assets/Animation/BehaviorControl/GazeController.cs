@@ -359,7 +359,7 @@ public class GazeController : AnimController
             {
                 // Is the character cross-eyed or eye-divergent?
                 float lt, rt;
-                GeomUtil.ClosestPoints2Lines(
+                GeomUtil.ClosestPointsOn2Lines(
                     LEye.bone.position, LEye.bone.position + LEye.Direction,
                     REye.bone.position, REye.bone.position + REye.Direction,
                     out lt, out rt);
@@ -387,7 +387,7 @@ public class GazeController : AnimController
             {
                 // Is the character cross-eyed or eye-divergent?
                 float lt, rt;
-                GeomUtil.ClosestPoints2Lines(
+                GeomUtil.ClosestPointsOn2Lines(
                     LEye.bone.position, LEye.bone.position + LEye.Direction,
                     REye.bone.position, REye.bone.position + REye.Direction,
                     out lt, out rt);
@@ -1270,7 +1270,7 @@ public class GazeController : AnimController
             Vector3 v2 = cam.transform.position;
             Vector3 v = v2 - v1;
             float s, t;
-            GeomUtil.ClosestPoints2Lines(e1, e2, v1, v2, out s, out t);
+            GeomUtil.ClosestPointsOn2Lines(e1, e2, v1, v2, out s, out t);
             Vector3 vpt = v1 + v * t;
             if (t > maxt)
                 effGazeTargetPos = vpt;

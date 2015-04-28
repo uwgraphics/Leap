@@ -215,7 +215,9 @@ public class EyesAliveController : AnimController
             UnityEngine.Quaternion savedRot2 = eye2.bone.localRotation;
             eye1.bone.localRotation = trgEyeRot[0];
             eye2.bone.localRotation = trgEyeRot[1];
-            parallelEyes = GeomUtil.ClosestPointsOnTwoLines(out p1, out p2, eye1.bone.position, (eye1.helper.position - eye1.bone.position), eye2.bone.position, (eye2.helper.position - eye2.bone.position));
+            parallelEyes = GeomUtil.ClosestPointsOn2Lines(
+                eye1.bone.position, (eye1.helper.position - eye1.bone.position),
+                eye2.bone.position, (eye2.helper.position - eye2.bone.position), out p1, out p2);
             targetPos = 0.5f * (p1 + p2);
             eye1.bone.localRotation = savedRot1;
             eye2.bone.localRotation = savedRot2;
@@ -266,7 +268,10 @@ public class EyesAliveController : AnimController
                 UnityEngine.Quaternion savedRot2 = eye2.bone.localRotation;
                 eye1.bone.localRotation = srcEyeRot[0];
                 eye2.bone.localRotation = srcEyeRot[1];
-                parallelEyes = GeomUtil.ClosestPointsOnTwoLines(out p1, out p2, eye1.bone.position, (eye1.helper.position - eye1.bone.position), eye2.bone.position, (eye2.helper.position - eye2.bone.position));
+                parallelEyes = GeomUtil.ClosestPointsOn2Lines(
+                    eye1.bone.position, (eye1.helper.position - eye1.bone.position),
+                    eye2.bone.position, (eye2.helper.position - eye2.bone.position),
+                    out p1, out p2);
                 targetPos = 0.5f * (p1 + p2);
                 eye1.bone.localRotation = savedRot1;
                 eye2.bone.localRotation = savedRot2;

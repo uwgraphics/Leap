@@ -28,9 +28,8 @@ public class GeomUtil
 	/// Find points on two lines where the lines are the closest
 	/// in 3D space.
 	/// </summary>
-	public static void ClosestPoints2Lines( Vector3 u1, Vector3 u2,
-	                                       Vector3 v1, Vector3 v2,
-	                                       out float ut, out float vt )
+	public static void ClosestPointsOn2Lines(Vector3 u1, Vector3 u2,
+        Vector3 v1, Vector3 v2, out float ut, out float vt )
 	{
 		Vector3 u = u2-u1;
 		Vector3 v = v2-v1;
@@ -46,37 +45,48 @@ public class GeomUtil
 		ut = float.IsNaN(ut) || float.IsInfinity(ut) ? 0 : ut;		
 	}
 	
-	//Two non-parallel lines which may or may not touch each other have a point on each line which are closest
-	//to each other. This function finds those two points. If the lines are parallel, the function 
-	//outputs true, otherwise false.
-	public static bool ClosestPointsOnTwoLines(out Vector3 closestPointLine1, out Vector3 closestPointLine2, Vector3 linePoint1, Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2){
+	/// <summary>
+    /// Two non-parallel lines which may or may not touch each other have a point on each line which are closest
+    /// to each other. This function finds those two points. If the lines are parallel, the function 
+    /// outputs true, otherwise false.
+	/// </summary>
+	/// <param name="p1"></param>
+	/// <param name="p2"></param>
+	/// <param name="u1"></param>
+	/// <param name="v1"></param>
+	/// <param name="u2"></param>
+	/// <param name="v2"></param>
+	/// <returns></returns>
+	public static bool ClosestPointsOn2Lines(Vector3 u1, Vector3 v1, Vector3 u2, Vector3 v2, out Vector3 p1, out Vector3 p2)
+    {
+		p1 = Vector3.zero;
+		p2 = Vector3.zero;
  
-		closestPointLine1 = Vector3.zero;
-		closestPointLine2 = Vector3.zero;
- 
-		float a = Vector3.Dot(lineVec1, lineVec1);
-		float b = Vector3.Dot(lineVec1, lineVec2);
-		float e = Vector3.Dot(lineVec2, lineVec2);
+		float a = Vector3.Dot(v1, v1);
+		float b = Vector3.Dot(v1, v2);
+		float e = Vector3.Dot(v2, v2);
  
 		float d = a*e - b*b;
  
 		//lines are not parallel
-		if(d != 0.0f){
+		if(d != 0.0f)
+        {
  
-			Vector3 r = linePoint1 - linePoint2;
-			float c = Vector3.Dot(lineVec1, r);
-			float f = Vector3.Dot(lineVec2, r);
+			Vector3 r = u1 - u2;
+			float c = Vector3.Dot(v1, r);
+			float f = Vector3.Dot(v2, r);
  
 			float s = (b*f - c*e) / d;
 			float t = (a*f - c*b) / d;
  
-			closestPointLine1 = linePoint1 + lineVec1 * s;
-			closestPointLine2 = linePoint2 + lineVec2 * t;
+			p1 = u1 + v1 * s;
+			p2 = u2 + v2 * t;
  
 			return false;
 		}
  
-		else{
+		else
+        {
 			return true;
 		}
 	}
