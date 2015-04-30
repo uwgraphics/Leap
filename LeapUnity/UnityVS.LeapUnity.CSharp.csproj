@@ -90,10 +90,8 @@
     <Compile Include="Assets\Animation\IK\IKSolver.cs" />
     <Compile Include="Assets\Animation\IK\LimbIKSolver.cs" />
     <Compile Include="Assets\Animation\ModelController.cs" />
-    <Compile Include="Assets\Animation\Morph\MorphAnimationLinker.cs" />
     <Compile Include="Assets\Animation\Morph\MorphChannel.cs" />
     <Compile Include="Assets\Animation\Morph\MorphController.cs" />
-    <Compile Include="Assets\Animation\Morph\MorphTarget.cs" />
     <Compile Include="Assets\Behavior\Behavior.cs" />
     <Compile Include="Assets\Behavior\BehaviorClient.cs" />
     <Compile Include="Assets\Behavior\BehaviorParser.cs" />

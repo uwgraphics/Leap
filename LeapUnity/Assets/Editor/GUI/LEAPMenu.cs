@@ -791,16 +791,19 @@ public class LEAPMenu
         AnimControllerTree atree = obj.AddComponent<AnimControllerTree>();
         RootController rootctr = obj.AddComponent<RootController>();
         GazeController gazectr = obj.AddComponent<GazeController>();
-        //BlinkController blinkctr = obj.AddComponent<BlinkController>();
+        BlinkController blinkctr = obj.AddComponent<BlinkController>();
 
         // Link the controllers into a hierarchy
         atree.rootController = obj.GetComponent<RootController>();
         rootctr.childControllers = new AnimController[1];
         rootctr.childControllers[0] = gazectr;
+        gazectr.childControllers = new AnimController[1];
+        gazectr.childControllers[0] = blinkctr;
 
         // Initialize controller states
         rootctr._CreateStates();
         gazectr._CreateStates();
+        blinkctr._CreateStates();
 
         // Add GUI helper components
         obj.AddComponent<EyeLaserGizmo>();

@@ -1,0 +1,7 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target
+RWrist,157,160,true,Book1RWrist
+RWrist,428,440,true,Book1RWrist
+RWrist,703,705,true,Book2RWrist
+RWrist,932,945,true,Book2RWrist
+RWrist,1172,1176,true,Book3RWrist
+RWrist,1428,1435,true,Book3RWrist

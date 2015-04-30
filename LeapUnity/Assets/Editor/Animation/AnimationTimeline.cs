@@ -243,6 +243,16 @@ public class AnimationTimeline
         public GameObject target;
 
         /// <summary>
+        /// Length of the frame window over which the constraint will become active.
+        /// </summary>
+        public int activationFrameLength;
+
+        /// <summary>
+        /// Length of the frame window over which the constraint will become inactive.
+        /// </summary>
+        public int deactivationFrameLength;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="endEffector">End-effector tag</param>
@@ -251,13 +261,15 @@ public class AnimationTimeline
         /// <param name="preserveAbsoluteRotation">If true, absolute rotation of the end-effector should be preserved</param>
         /// <param name="target">Scene object to which the end-effector should be aligned</param>
         public EndEffectorConstraint(string endEffector, int startFrame, int frameLength, bool preserveAbsoluteRotation,
-            GameObject target = null)
+            GameObject target = null, int activationFrameLength = -1, int deactivationFrameLength = -1)
         {
             this.endEffector = endEffector;
             this.startFrame = startFrame;
             this.frameLength = frameLength;
             this.preserveAbsoluteRotation = preserveAbsoluteRotation;
             this.target = target;
+            this.activationFrameLength = activationFrameLength > -1 ? activationFrameLength : LEAPCore.endEffectorConstraintActivationFrameLength;
+            this.deactivationFrameLength = deactivationFrameLength > -1 ? deactivationFrameLength : LEAPCore.endEffectorConstraintActivationFrameLength;
         }
     }
 
@@ -311,17 +323,15 @@ public class AnimationTimeline
         /// Get end-effector constraints active at the specified frame.
         /// </summary>
         /// <param name="frame">Frame index</param>
-        /// <param name="frameWindow">Defines neighborhood of frames on either side of the frame index
-        /// within to search for active constraints - this is used mainly for detecting onset of constraints
-        /// that need to be blended in.</param>
         /// <returns>Active end-effector constraints</returns>
-        public EndEffectorConstraint[] GetConstraintsAtFrame(int frame, int frameWindow = 0)
+        public EndEffectorConstraint[] GetConstraintsAtFrame(int frame)
         {
             List<EndEffectorConstraint> activeConstraints = new List<EndEffectorConstraint>();
             foreach (KeyValuePair<string, List<EndEffectorConstraint>> kvp in _constraints)
             {
                 activeConstraints.AddRange(
-                    kvp.Value.Where(eec => frame >= (eec.startFrame - frameWindow) && frame <= (eec.startFrame + eec.frameLength - 1 + frameWindow)));
+                    kvp.Value.Where(eec => frame >= (eec.startFrame - eec.activationFrameLength) &&
+                        frame <= (eec.startFrame + eec.frameLength - 1 + eec.deactivationFrameLength)));
             }
 
             return activeConstraints.Count > 0 ? activeConstraints.ToArray() : null;
@@ -485,12 +495,20 @@ public class AnimationTimeline
             throw new Exception(string.Format("Character model {0} already added", model.name));
         }
 
+        // Initialize the character's model controller
         var modelController = model.GetComponent<ModelController>();
         if (modelController == null)
         {
             throw new Exception(string.Format("Character model {0} does not have a ModelController", model.name));
         }
         modelController.Init();
+
+        // Initialize the character morph controller
+        var morphController = model.GetComponent<MorphController>();
+        if (morphController != null)
+        {
+            morphController.Init();
+        }
 
         // Apply & store initial pose for the model
         var initialPoseClip = model.GetComponent<Animation>().GetClip("InitialPose");
@@ -504,6 +522,13 @@ public class AnimationTimeline
 
         // Add the model to the timeline
         _models.Add(model);
+        //
+        SkinnedMeshRenderer mesh;
+        int blendShapeIndex;
+        modelController.GetBlendShape(0, out mesh, out blendShapeIndex);
+        if (mesh != null)
+            Debug.Log("Blend shape name: " + mesh.sharedMesh.GetBlendShapeName(blendShapeIndex));
+        //
     }
 
     /// <summary>
@@ -883,11 +908,15 @@ public class AnimationTimeline
         GoToFrame(startFrame);
         while (CurrentFrame < startFrame + length - 1 && CurrentFrame < FrameLength - 1)
         {
+            float time = ((float)(CurrentFrame - startFrame)) / LEAPCore.editFrameRate;
             ApplyAnimation();
 
             foreach (var model in models)
             {
                 Transform[] bones = ModelUtils.GetAllBones(model);
+                var modelController = model.GetComponent<ModelController>();
+
+                // First bake bone properties
                 for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
                 {
                     var bone = bones[boneIndex];
@@ -897,7 +926,7 @@ public class AnimationTimeline
                         // Key position on the root bone
 
                         var positionKeyframe = new Keyframe();
-                        positionKeyframe.time = ((float)(CurrentFrame - startFrame)) / LEAPCore.editFrameRate;
+                        positionKeyframe.time = time;
 
                         positionKeyframe.value = bone.localPosition.x;
                         curvesPerModel[model.name][0].AddKey(positionKeyframe);
@@ -912,7 +941,7 @@ public class AnimationTimeline
                     // Key rotation
 
                     var rotationKeyFrame = new Keyframe();
-                    rotationKeyFrame.time = ((float)(CurrentFrame - startFrame)) / LEAPCore.editFrameRate;
+                    rotationKeyFrame.time = time;
 
                     rotationKeyFrame.value = bone.localRotation.x;
                     curvesPerModel[model.gameObject.name][3 + boneIndex * 4].AddKey(rotationKeyFrame);
@@ -925,6 +954,16 @@ public class AnimationTimeline
 
                     rotationKeyFrame.value = bone.localRotation.w;
                     curvesPerModel[model.gameObject.name][3 + boneIndex * 4 + 3].AddKey(rotationKeyFrame);
+                }
+
+                // Next bake blend shape properties
+                int numBlendShapes = modelController.NumberOfBlendShapes;
+                for (int blendShapeIndex = 0; blendShapeIndex < numBlendShapes; ++blendShapeIndex)
+                {
+                    var keyFrame = new Keyframe();
+                    keyFrame.time = time;
+                    keyFrame.value = modelController.GetBlendShapeWeight(blendShapeIndex);
+                    curvesPerModel[model.gameObject.name][3 + modelController.NumberOfBones * 4 + blendShapeIndex].AddKey(keyFrame);
                 }
             }
 
@@ -997,6 +1036,9 @@ public class AnimationTimeline
         foreach (var model in models)
         {
             model.GetComponent<ModelController>()._ResetToInitialPose();
+            var morphController = model.GetComponent<MorphController>();
+            if (morphController != null)
+                morphController.ResetAllWeights();
         }
     }
 
@@ -1147,11 +1189,21 @@ public class AnimationTimeline
                         AnimationStarted(animation.InstanceId);
                     }
 
-                    animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
-
-                    // Set up IK goals for this layer
                     if (layer.isIKEndEffectorConstr)
+                    {
+                        // First apply animation without any scaling, so that end-effector goals can be initialized
+                        Vector3 modelScale = animation.Animation.Model.transform.localScale;
+                        animation.Animation.Model.transform.localScale = new Vector3(1, 1, 1);
+                        animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
+
+                        // Set up IK goals for this layer
                         _SetIKGoals(animation.Animation.Model, animation.Animation.AnimationClip);
+
+                        // Restore model scale
+                        animation.Animation.Model.transform.localScale = modelScale;
+                    }
+
+                    animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
                 }
             }
 
@@ -1171,6 +1223,10 @@ public class AnimationTimeline
 
         // Apply any active end-effector constraints
         _SolveIK();
+
+        if (IsBakingInstances)
+            // Apply morph deformations
+            _ApplyMorph();
 
         // Store final pose and notify listeners that animation is applied
         _StoreModelsCurrentPose();
@@ -1194,8 +1250,7 @@ public class AnimationTimeline
         }
 
         // Make sure controllers have access to the latest delta time
-        var models = Models;
-        foreach (var model in models)
+        foreach (var model in Models)
             model.GetComponent<AnimControllerTree>().DeltaTime = deltaTime;
 
         return loopedAround;
@@ -1222,8 +1277,7 @@ public class AnimationTimeline
     // Store the current pose of each model
     private void _StoreModelsCurrentPose()
     {
-        var models = Models;
-        foreach (var model in models)
+        foreach (var model in Models)
         {
             model.GetComponent<ModelController>()._StoreCurrentPose();
         }
@@ -1232,8 +1286,7 @@ public class AnimationTimeline
     // Initialize animation controllers on all models
     private void _InitControllers()
     {
-        var models = Models;
-        foreach (var model in models)
+        foreach (var model in Models)
         {
             var animControllerTree = model.GetComponent<AnimControllerTree>();
             if (animControllerTree != null)
@@ -1265,8 +1318,7 @@ public class AnimationTimeline
         if (!_endEffectorConstraints.ContainsKey(animationClip))
             return;
 
-        int constraintFrameWindow = Mathf.RoundToInt(LEAPCore.endEffectorConstraintBlendTime * LEAPCore.editFrameRate);
-        EndEffectorConstraint[] activeConstraints = _endEffectorConstraints[animationClip].GetConstraintsAtFrame(CurrentFrame, constraintFrameWindow);
+        EndEffectorConstraint[] activeConstraints = _endEffectorConstraints[animationClip].GetConstraintsAtFrame(CurrentFrame);
         if (activeConstraints == null)
             return;
         IKSolver[] solvers = model.GetComponents<IKSolver>();
@@ -1279,9 +1331,9 @@ public class AnimationTimeline
             // Compute constraint weight
             float t = 1f;
             if (CurrentFrame < constraint.startFrame)
-                t = Mathf.Clamp01(1f - ((float)(constraint.startFrame - CurrentFrame)) / constraintFrameWindow);
+                t = Mathf.Clamp01(1f - ((float)(constraint.startFrame - CurrentFrame)) / constraint.activationFrameLength);
             else if (CurrentFrame > (constraint.startFrame + constraint.frameLength - 1))
-                t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1))) / constraintFrameWindow);
+                t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1))) / constraint.deactivationFrameLength);
             float t2 = t * t;
             float weight = -2f * t2 * t + 3f * t2;
             //
@@ -1324,8 +1376,7 @@ public class AnimationTimeline
     // Clear end-effector goals in all IK solvers on all models
     private void _ClearIKGoals()
     {
-        var models = Models;
-        foreach (var model in models)
+        foreach (var model in Models)
         {
             IKSolver[] solvers = model.GetComponents<IKSolver>();
             foreach (var solver in solvers)
@@ -1338,8 +1389,7 @@ public class AnimationTimeline
     // Solve for final model pose in all IK solvers on all models
     private void _SolveIK()
     {
-        var models = Models;
-        foreach (var model in models)
+        foreach (var model in Models)
         {
             if (!LEAPCore.useGazeIK)
             {
@@ -1356,6 +1406,17 @@ public class AnimationTimeline
                 if (limbSolver.enabled)
                     limbSolver.Solve();
             }
+        }
+    }
+
+    // Apply morph deformations on all models
+    private void _ApplyMorph()
+    {
+        foreach (var model in Models)
+        {
+            var morphController = model.GetComponent<MorphController>();
+            if (morphController != null)
+                morphController.Apply();
         }
     }
 }

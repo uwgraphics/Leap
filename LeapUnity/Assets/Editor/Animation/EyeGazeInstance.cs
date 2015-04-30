@@ -187,6 +187,12 @@ public class EyeGazeInstance : AnimationControllerInstance
             BakeMask.Set(curveIndex++, true);
             BakeMask.Set(curveIndex, true);
         }
+        // Also bake blend shape weights for eye blinks
+        for (int curveIndex = 3 + ModelController.NumberOfBones * 4; curveIndex < BakeMask.Length; ++curveIndex)
+        {
+            BakeMask.Set(curveIndex, true);
+            // TODO: bake only eyeblink blend shapes, not all the blend shapes
+        }
 
         if (isBase)
         {

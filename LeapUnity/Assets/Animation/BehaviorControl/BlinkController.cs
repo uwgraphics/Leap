@@ -231,6 +231,7 @@ public class BlinkController : AnimController
 
     protected virtual void Update_NoBlink()
     {
+        _ResetEyelids();
         _DroopEyelids();
 
         if (gazeCtrl.StateId == (int)GazeState.NoGaze ||
@@ -241,6 +242,7 @@ public class BlinkController : AnimController
 
     protected virtual void Update_WaitForStart()
     {
+        _ResetEyelids();
         _DroopEyelids();
 
         if (!explBlink && gazeShiftStarted)
@@ -255,11 +257,14 @@ public class BlinkController : AnimController
 
     protected virtual void Update_Blinking()
     {
-        curBlinkTime += DeltaTime;
+        _ResetEyelids();
 
+        curBlinkTime += DeltaTime;
         bool finished = _UpdateBlink(lBlinkMTIndex, curBlinkTime);
         finished = _UpdateBlink(rBlinkMTIndex, curBlinkTime - blinkEyeOffTime) && finished;
+
         _DroopEyelids();
+
         if (finished)
             GoToState((int)BlinkState.NoBlink);
     }
@@ -300,6 +305,7 @@ public class BlinkController : AnimController
 
     protected virtual void Update_GazeBlink()
     {
+        _ResetEyelids();
         _DroopEyelids();
 
         // Compute rotation distance
@@ -464,6 +470,12 @@ public class BlinkController : AnimController
         nextBlinkTime = explNextBlinkTime;
         curBlinkLength = explBlinkLength;
         curBlinkMaxWeight = explBlinkMaxWeight;
+    }
+
+    protected virtual void _ResetEyelids()
+    {
+        _morphController.morphChannels[lBlinkMTIndex].weight = 0f;
+        _morphController.morphChannels[rBlinkMTIndex].weight = 0f;
     }
 
     protected virtual void _DroopEyelids()

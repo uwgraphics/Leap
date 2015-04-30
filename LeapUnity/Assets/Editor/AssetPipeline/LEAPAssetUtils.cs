@@ -138,25 +138,6 @@ public static class LEAPAssetUtils
         MorphController inst_mctrl = mdlInst.GetComponent<MorphController>();
         if (base_mctrl != null && inst_mctrl != null)
         {
-            // Refresh morph targets
-            inst_mctrl.morphTargets = new MorphTarget[base_mctrl.morphTargets.Length];
-            for (int mti = 0; mti < base_mctrl.morphTargets.Length; ++mti)
-            {
-                MorphTarget base_mt = base_mctrl.morphTargets[mti];
-                MorphTarget inst_mt = new MorphTarget(base_mt.name);
-                inst_mctrl.morphTargets[mti] = inst_mt;
-
-                inst_mt.vertexIndices = new int[base_mt.vertexIndices.Length];
-                inst_mt.relVertices = new Vector3[base_mt.relVertices.Length];
-                inst_mt.relNormals = new Vector3[base_mt.relNormals.Length];
-                for (int mtvi = 0; mtvi < inst_mt.vertexIndices.Length; ++mtvi)
-                {
-                    inst_mt.vertexIndices[mtvi] = base_mt.vertexIndices[mtvi];
-                    inst_mt.relVertices[mtvi] = base_mt.relVertices[mtvi];
-                    inst_mt.relNormals[mtvi] = base_mt.relNormals[mtvi];
-                }
-            }
-
             // Refresh morph channels
             inst_mctrl.morphChannels = new MorphChannel[base_mctrl.morphChannels.Length];
             for (int mci = 0; mci < base_mctrl.morphChannels.Length; ++mci)
@@ -282,9 +263,12 @@ public static class LEAPAssetUtils
     /// <returns>Animation curves</returns>
     public static AnimationCurve[] CreateAnimationCurvesForModel(GameObject model)
     {
-        Transform[] bones = ModelUtils.GetAllBones(model.gameObject);
-        // 3 properties for the root position, 4 for the rotation of each bone (incl. root)
-        AnimationCurve[] curves = new AnimationCurve[3 + bones.Length * 4];
+        Transform[] bones = ModelUtils.GetAllBones(model);
+        var modelController = model.GetComponent<ModelController>();
+        int numBlendShapes = modelController.NumberOfBlendShapes;
+
+        // 3 properties for the root position, 4 for the rotation of each bone (incl. root), 1 for each blend shape
+        AnimationCurve[] curves = new AnimationCurve[3 + bones.Length * 4 + numBlendShapes];
         for (int curveIndex = 0; curveIndex < curves.Length; ++curveIndex)
             curves[curveIndex] = new AnimationCurve();
 
@@ -300,7 +284,8 @@ public static class LEAPAssetUtils
     public static AnimationCurve[] GetAnimationCurvesFromClip(GameObject model, AnimationClip clip)
     {
         var modelController = model.GetComponent<ModelController>();
-        AnimationCurve[] curves = new AnimationCurve[3 + modelController.NumberOfBones * 4];
+        int numBlendShapes = modelController.NumberOfBlendShapes;
+        AnimationCurve[] curves = new AnimationCurve[3 + modelController.NumberOfBones * 4 + numBlendShapes];
         AnimationClipCurveData[] curveData = AnimationUtility.GetAllCurves(clip, true);
 
         // Create empty curves for all bone properties
@@ -312,7 +297,6 @@ public static class LEAPAssetUtils
         }
 
         // Get curve data from the animation clip for each bone
-        curveIndex = 0;
         for (int boneIndex = 0; boneIndex < modelController.NumberOfBones; ++boneIndex)
         {
             var bone = modelController[boneIndex];
@@ -378,6 +362,23 @@ public static class LEAPAssetUtils
             }
         }
 
+        // Get curve data from the animation clip for each blend shape
+        for (int blendShapeIndex = 0; blendShapeIndex < numBlendShapes; ++blendShapeIndex)
+        {
+            // Get blend shape info
+            SkinnedMeshRenderer meshWithBlendShape = null;
+            int blendShapeIndexWithinMesh = 0;
+            modelController.GetBlendShape(blendShapeIndex, out meshWithBlendShape, out blendShapeIndexWithinMesh);
+            string blendShapeName = "blendShape." + meshWithBlendShape.sharedMesh.GetBlendShapeName(blendShapeIndexWithinMesh);
+
+            // Get curve data for blend shapes
+            string blendShapePath = ModelUtils.GetBonePath(meshWithBlendShape.gameObject.transform);
+            var curveDataForMesh = curveData.Where(cd => cd.path == blendShapePath && cd.propertyName == blendShapeName);
+            curveIndex = 3 + modelController.NumberOfBones * 4 + blendShapeIndex;
+            if (curveDataForMesh != null & curveDataForMesh.Count() > 0)
+                curves[curveIndex] = curveDataForMesh.ToArray()[0].curve;
+        }
+
         return curves;
     }
 
@@ -390,6 +391,9 @@ public static class LEAPAssetUtils
     public static void SetAnimationCurvesOnClip(GameObject model, AnimationClip clip, AnimationCurve[] curves)
     {
         Transform[] bones = ModelUtils.GetAllBones(model);
+        var modelController = model.GetComponent<ModelController>();
+
+        // Set curves for bone properties
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
             var bone = bones[boneIndex];
@@ -415,6 +419,21 @@ public static class LEAPAssetUtils
                 clip.SetCurve(bonePath, typeof(Transform), "localRotation.z", curves[3 + boneIndex * 4 + 2]);
             if (curves[3 + boneIndex * 4 + 3].keys.Length > 0)
                 clip.SetCurve(bonePath, typeof(Transform), "localRotation.w", curves[3 + boneIndex * 4 + 3]);
+        }
+
+        // Set curves for blend shapes
+        int numBlendShapes = modelController.NumberOfBlendShapes;
+        for (int blendShapeIndex = 0; blendShapeIndex < numBlendShapes; ++blendShapeIndex)
+        {
+            // Get blend shape info
+            SkinnedMeshRenderer meshWithBlendShape = null;
+            int blendShapeIndexWithinMesh = 0;
+            modelController.GetBlendShape(blendShapeIndex, out meshWithBlendShape, out blendShapeIndexWithinMesh);
+            string blendShapeName = "blendShape." + meshWithBlendShape.sharedMesh.GetBlendShapeName(blendShapeIndexWithinMesh);
+            string blendShapePath = ModelUtils.GetBonePath(meshWithBlendShape.gameObject.transform);
+
+            if (curves[3 + bones.Length * 4 + blendShapeIndex].keys.Length > 0)
+                clip.SetCurve(blendShapePath, typeof(SkinnedMeshRenderer), blendShapeName, curves[3 + bones.Length * 4 + blendShapeIndex]);
         }
     }
 
@@ -529,6 +548,10 @@ public static class LEAPAssetUtils
                     string endEffectorTargetName = lineElements[attributeIndices["Target"]];
                     var endEffectorTarget = endEffectorTargetName == "null" ? null :
                         endEffectorTargets.FirstOrDefault(t => t.name == endEffectorTargetName);
+                    int activationFrameLength = attributeIndices.ContainsKey("ActivationFrameLength") ?
+                        int.Parse(lineElements[attributeIndices["ActivationFrameLength"]]) : LEAPCore.endEffectorConstraintActivationFrameLength;
+                    int deactivationFrameLength = attributeIndices.ContainsKey("DeactivationFrameLength") ?
+                        int.Parse(lineElements[attributeIndices["DeactivationFrameLength"]]) : LEAPCore.endEffectorConstraintActivationFrameLength;
 
                     if (lastConstraintEndFrames.ContainsKey(endEffector) && lastConstraintEndFrames[endEffector] >= startFrame)
                     {
@@ -539,7 +562,8 @@ public static class LEAPAssetUtils
                     {
                         // Add constraint
                         constraints.Add(new AnimationTimeline.EndEffectorConstraint(
-                            endEffector, startFrame, frameLength, preserveAbsoluteRotation, endEffectorTarget));
+                            endEffector, startFrame, frameLength, preserveAbsoluteRotation, endEffectorTarget,
+                            activationFrameLength, deactivationFrameLength));
                         lastConstraintEndFrames[endEffector] = startFrame + frameLength - 1;
                     }
                 }

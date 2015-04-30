@@ -6,8 +6,7 @@ using System;
 /// </summary>
 [Serializable]
 public class MorphChannel
-{
-	
+{	
 	/// <summary>
 	/// Class specifying all of current morph channel's
 	/// morph target meshes on a particular submesh.
@@ -15,7 +14,11 @@ public class MorphChannel
 	[Serializable]
 	public class MorphTargetMapping
 	{
-		
+        /// <summary>
+        /// Submesh on which the morph targets are defined.
+        /// </summary>
+        public GameObject sourceMesh;
+
 		/// <summary>
 		/// Indexes of morph targets applied by this morph channel
 		/// on the current submesh.
@@ -26,8 +29,7 @@ public class MorphChannel
 		/// Reference weight values of the morph targets.
 		/// </summary>
 		public float[] refValues;
-		
-	}
+    }
 	
 	/// <summary>
 	/// Class specifying all of current morph channel's
@@ -36,7 +38,6 @@ public class MorphChannel
 	[Serializable]
 	public class BoneMapping
 	{
-		
 		/// <summary>
 		/// Bone affected by the morph channel. 
 		/// </summary>
@@ -51,7 +52,6 @@ public class MorphChannel
 		/// Reference rotations of bones.
 		/// </summary>
 		public Quaternion refRotation;
-		
 	}
 	
 	/// <summary>
@@ -61,7 +61,6 @@ public class MorphChannel
 	[Serializable]
 	public class SubchannelMapping
 	{
-		
 		/// <summary>
 		/// Index of the child morph channel affected by the current morph channel.
 		/// </summary>
@@ -71,7 +70,6 @@ public class MorphChannel
 		/// Reference weight value of the subchannel.
 		/// </summary>
 		public float refValue;
-		
 	}
 	
 	/// <summary>

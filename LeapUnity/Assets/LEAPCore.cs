@@ -26,9 +26,9 @@ public class LEAPCore : MonoBehaviour
     public static int editFrameRate = 30;
 
     /// <summary>
-    /// Time (in seconds) over which end-effector constraints are blended in and out.
+    /// Default time (in frames) over which end-effector constraints become active or inactive.
     /// </summary>
-    public static float endEffectorConstraintBlendTime = 1.5f;
+    public static int endEffectorConstraintActivationFrameLength = 20;
 
     /// <summary>
     /// Eye gaze editor: minimal length of an eye gaze instance (gaze shift + fixation).
@@ -117,9 +117,9 @@ public class LEAPCore : MonoBehaviour
                         editFrameRate = int.Parse(valueStr);
                         break;
 
-                    case "endEffectorConstraintBlendTime":
+                    case "endEffectorConstraintActivationFrameLength":
 
-                        endEffectorConstraintBlendTime = float.Parse(valueStr);
+                        endEffectorConstraintActivationFrameLength = int.Parse(valueStr);
                         break;
 
                     case "minEyeGazeLength":

@@ -1,6 +1,4 @@
 EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target
-#LWrist,0,702,true,null
-#RWrist,0,702,true,null
 RWrist,19,211,true,null
 RWrist,227,244,true,null
 RWrist,266,368,true,null

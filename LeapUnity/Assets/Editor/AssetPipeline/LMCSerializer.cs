@@ -105,21 +105,6 @@ public class LMCSerializer
 			
 			return false;
         }
-        MorphAnimationLinker morphAnimMapper = gameObj.GetComponent<MorphAnimationLinker>();
-        if (morphAnimMapper == null)
-        {
-			UnityEngine.Debug.LogWarning( "Morph channels cannot be initialized. Missing MorphAnimationLinker component." );
-			
-			return false;
-        }
-		
-		// Get morph target indexes
-		Dictionary<string, int> mt_inds = new Dictionary<string, int>();
-		for( int mti = 0; mti < morphCtrl.morphTargets.Length; ++mti )
-			mt_inds[ morphCtrl.morphTargets[mti].name ] = mti;
-		
-		// Initialize morph animation settings
-		morphAnimMapper.enabled = lmc.animSettings.linkAnimations;
 		
 		// Reorder morph channels to account for subchannel dependencies
 		if( !_FixMorphChannelOrder(lmc.morphChannels) )
@@ -139,66 +124,8 @@ public class LMCSerializer
 			
 			mc.name = lmc_mc.name;
 			
-			// Initialize submeshes
-			if( morphCtrl.sourceMeshes != null )
-			{
-				mc.morphTargets = new MorphChannel.MorphTargetMapping[morphCtrl.sourceMeshes.Length];
-				
-				for( int smi = 0; smi < morphCtrl.sourceMeshes.Length; ++smi )
-				{
-					mc.morphTargets[smi] = new MorphChannel.MorphTargetMapping();
-					mc.morphTargets[smi].morphTargetIndexes = null;
-					mc.morphTargets[smi].refValues = null;
-					
-					// How many morph target meshes are mapped to this morph channel
-					// on the current submesh?
-					int num_sm = 0;
-					LMCSerializer.LMCSubmeshMapping lmc_sm = null;
-					for( int lmc_smi = 0; lmc_mc.submeshes != null &&
-					    lmc_smi < lmc_mc.submeshes.Length; ++lmc_smi )
-					{
-						lmc_sm = lmc_mc.submeshes[lmc_smi];
-						if( lmc_sm.name == morphCtrl.sourceMeshes[smi].name )
-							++num_sm;
-					}
-					
-					if( num_sm <= 0 )
-						// No morph target meshes mapped
-						continue;
-					
-					mc.morphTargets[smi].morphTargetIndexes = new int[num_sm];
-					mc.morphTargets[smi].refValues = new float[num_sm];
-					
-					// Map corresponding morph target meshes on this submesh
-					int sm_mti = 0;
-					for( int lmc_smi = 0; lmc_smi < lmc_mc.submeshes.Length; ++lmc_smi )
-					{
-						lmc_sm = lmc_mc.submeshes[lmc_smi];
-						if( lmc_sm.name != morphCtrl.sourceMeshes[smi].name )
-							continue;
-						
-						// This morph channel controls a morph target on the current source mesh,
-						// find the morph target
-						int mti = -1;
-						if( !mt_inds.ContainsKey(lmc_sm.mtName) )
-						{
-							UnityEngine.Debug.LogWarning( string.Format( "Morph target {0} not defined on model {1}",
-							                                            lmc_sm.mtName, gameObj.name ) );
-							
-							mc.morphTargets[smi].morphTargetIndexes = null;
-							mc.morphTargets[smi].refValues = null;
-							
-							break;
-						}
-						mti = mt_inds[lmc_sm.mtName];
-						
-						mc.morphTargets[smi].morphTargetIndexes[sm_mti] = mti;
-						mc.morphTargets[smi].refValues[sm_mti] = lmc_sm.refValue;
-						
-						++sm_mti;
-					}
-				}
-			}
+			// Initialize morph targets
+            // TODO
 
 			// Initialize bones
 			if( lmc_mc.bones != null )
@@ -285,31 +212,15 @@ public class LMCSerializer
 		
 		// Get morph animation scripts
 		MorphController morphCtrl = gameObj.GetComponent<MorphController>();
-		if( morphCtrl == null || morphCtrl.morphTargets == null ||
-		   morphCtrl.morphTargets.Length <= 0 )
+		if( morphCtrl == null)
 		{
 			UnityEngine.Debug.LogWarning( "Morph channels cannot be serialized. Missing or invalid MorphController component." );
 			
 			return false;
         }
-        MorphAnimationLinker morphAnimMapper = gameObj.GetComponent<MorphAnimationLinker>();
-        if (morphAnimMapper == null)
-        {
-			UnityEngine.Debug.LogWarning( "Morph channels cannot be serialized. Missing MorphAnimationLinker component." );
-			
-			return false;
-        }
-		
-		// Get morph target indexes
-		Dictionary<string, int> mt_inds = new Dictionary<string, int>();
-		for( int mti = 0; mti < morphCtrl.morphTargets.Length; ++mti )
-		{
-			mt_inds[ morphCtrl.morphTargets[mti].name ] = mti;
-		}
 		
 		// Initialize morph animation settings
 		lmc.animSettings = new LMCSerializer.LMCAnimSettings();
-		lmc.animSettings.linkAnimations = morphAnimMapper.enabled;
 		
 		// Initialize all morph channels
 		lmc.morphChannels = new LMCSerializer.LMCMorphChannel[morphCtrl.morphChannels.Length];
@@ -325,22 +236,7 @@ public class LMCSerializer
 			if( mc.morphTargets != null && mc.morphTargets.Length > 0 )
 			{
 				// Set morph target mappings
-				List<LMCSubmeshMapping> lmc_mtmlist = new List<LMCSubmeshMapping>();
-				for( int smi = 0; smi < morphCtrl.sourceMeshes.Length; ++smi )
-				{
-					MorphChannel.MorphTargetMapping mtm = mc.morphTargets[smi];
-					
-					for( int mti = 0; mti < mtm.morphTargetIndexes.Length; ++mti )
-					{
-						LMCSubmeshMapping lmc_sm = new LMCSubmeshMapping();
-						lmc_sm.name = morphCtrl.sourceMeshes[smi].name;
-						lmc_sm.mtName = morphCtrl.morphTargets[ mtm.morphTargetIndexes[mti] ].name;
-						lmc_sm.refValue = mtm.refValues[mti];
-						
-						lmc_mtmlist.Add(lmc_sm);
-					}
-				}
-				lmc_mc.submeshes = lmc_mtmlist.ToArray();
+				// TODO
 			}
 			
 			if( mc.bones != null && mc.bones.Length > 0 )

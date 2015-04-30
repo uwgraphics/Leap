@@ -9,10 +9,10 @@ using System.Collections.Generic;
 /// </summary>
 public sealed class ModelController : MonoBehaviour
 {
+    // Bones:
     private Transform rootBone = null; // Model skeleton root
     private Transform lEyeBone = null;
     private Transform rEyeBone = null;
-
     private Transform[] bones;
     private Dictionary<Transform, int> boneIndexes = new Dictionary<Transform, int>();
 
@@ -27,6 +27,9 @@ public sealed class ModelController : MonoBehaviour
     private Dictionary<int, Vector3> prevLPos = new Dictionary<int, Vector3>();
     private Dictionary<int, Quaternion> prevLRot = new Dictionary<int, Quaternion>();
     private Dictionary<int, Vector3> prevLScal = new Dictionary<int, Vector3>();
+
+    // Meshes with blend shapes:
+    private SkinnedMeshRenderer[] meshesWithBlendShapes;
 
     /// <summary>
     /// Shorthand for getting the model root. 
@@ -77,6 +80,21 @@ public sealed class ModelController : MonoBehaviour
     public Transform this[int boneIndex]
     {
         get { return bones[boneIndex]; }
+    }
+
+    /// <summary>
+    /// Number of blend shapes in the model.
+    /// </summary>
+    public int NumberOfBlendShapes
+    {
+        get
+        {
+            int numBlendShapes = 0;
+            foreach (var mesh in meshesWithBlendShapes)
+                numBlendShapes += mesh.sharedMesh.blendShapeCount;
+
+            return numBlendShapes;
+        }
     }
 
     /// <summary>
@@ -270,6 +288,74 @@ public sealed class ModelController : MonoBehaviour
     }
 
     /// <summary>
+    /// Get blend shape weight.
+    /// </summary>
+    /// <param name="blendShapeIndex">Blend shape index</param>
+    /// <returns>Blend shape weight</returns>
+    public float GetBlendShapeWeight(int blendShapeIndex)
+    {
+        int blendShapeIndexWithinMesh = blendShapeIndex;
+        foreach (var mesh in meshesWithBlendShapes)
+        {
+            if (blendShapeIndexWithinMesh < mesh.sharedMesh.blendShapeCount)
+            {
+                return mesh.GetBlendShapeWeight(blendShapeIndexWithinMesh);
+            }
+            else
+            {
+                blendShapeIndexWithinMesh -= mesh.sharedMesh.blendShapeCount;
+            }
+        }
+
+        return 0f;
+    }
+
+    /// <summary>
+    /// Set blend shape weight.
+    /// </summary>
+    /// <param name="blendShapeIndex">Blend shape index</param>
+    /// <param name="weight">Blend shape weight</param>
+    public void SetBlendShapeWeight(int blendShapeIndex, float weight)
+    {
+        int blendShapeIndexWithinMesh = blendShapeIndex;
+        foreach (var mesh in meshesWithBlendShapes)
+        {
+            if (blendShapeIndexWithinMesh < mesh.sharedMesh.blendShapeCount)
+            {
+                mesh.SetBlendShapeWeight(blendShapeIndexWithinMesh, weight);
+            }
+            else
+            {
+                blendShapeIndexWithinMesh -= mesh.sharedMesh.blendShapeCount;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Get blend shape mesh and index within mesh for the specified blend shape.
+    /// </summary>
+    /// <param name="blendShapeIndex">Blend shape index</param>
+    /// <param name="meshWithBlendShape">Mesh with blend shape</param>
+    /// <param name="blendShapeIndexWithinMesh">Blend shape index within mesh</param>
+    public void GetBlendShape(int blendShapeIndex, out SkinnedMeshRenderer meshWithBlendShape, out int blendShapeIndexWithinMesh)
+    {
+        blendShapeIndexWithinMesh = blendShapeIndex;
+        meshWithBlendShape = null;
+        foreach (var mesh in meshesWithBlendShapes)
+        {
+            if (blendShapeIndexWithinMesh < mesh.sharedMesh.blendShapeCount)
+            {
+                meshWithBlendShape = mesh;
+                break;
+            }
+            else
+            {
+                blendShapeIndexWithinMesh -= mesh.sharedMesh.blendShapeCount;
+            }
+        }
+    }
+
+    /// <summary>
     /// Resets the model to its initial pose. 
     /// </summary>
     public void _ResetToInitialPose()
@@ -291,9 +377,9 @@ public sealed class ModelController : MonoBehaviour
     public void Init()
     {
         _InitBones();
-
-        // Get initial skeletal pose
         _GetInitBoneTransforms(rootBone);
+
+        _InitBlendShapes();
     }
 
     void Awake()
@@ -360,6 +446,11 @@ public sealed class ModelController : MonoBehaviour
         {
             _StoreCurrentPose(child);
         }
+    }
+
+    private void _InitBlendShapes()
+    {
+        meshesWithBlendShapes = ModelUtils.GetAllMeshesWithBlendShapes(gameObject);
     }
 }
 

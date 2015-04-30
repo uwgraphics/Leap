@@ -268,7 +268,7 @@ public static class ModelUtils
         return (parentPath != "" ? parentPath + "/" : "") + bone.name;
     }
 
-    // Traverse a model's bone hierarchy and add all bones into a list
+    // Traverse a model's bone hierarchy and add all bones to the list
     private static void _GetAllBones(Transform rootBone, List<Transform> bones)
     {
         if (rootBone == null)
@@ -302,6 +302,31 @@ public static class ModelUtils
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Get all meshes with blend shapes in a character model.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <returns>Meshes with blend shapes</returns>
+    public static SkinnedMeshRenderer[] GetAllMeshesWithBlendShapes(GameObject model)
+    {
+        List<SkinnedMeshRenderer> meshesWithBlendShapes = new List<SkinnedMeshRenderer>();
+        _GetAllMeshesWithBlendShapes(model.transform, meshesWithBlendShapes);
+        return meshesWithBlendShapes.ToArray();
+    }
+
+    // Traverse a model's hierarchy and add all meshes with blend shapes to the list
+    private static void _GetAllMeshesWithBlendShapes(Transform bone, List<SkinnedMeshRenderer> meshesWithBlendShapes)
+    {
+        var mesh = bone.gameObject.GetComponent<SkinnedMeshRenderer>();
+        if (mesh != null && mesh.sharedMesh.blendShapeCount > 0)
+            meshesWithBlendShapes.Add(mesh);
+
+        for (int childIndex = 0; childIndex < bone.GetChildCount(); ++childIndex)
+        {
+            _GetAllMeshesWithBlendShapes(bone.GetChild(childIndex), meshesWithBlendShapes);
+        }
     }
 
     /// <summary>

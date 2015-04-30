@@ -334,6 +334,8 @@ public abstract class AnimationInstance
             float time = ((float)frame) / LEAPCore.editFrameRate;
             float value = 0f;
             Keyframe key;
+
+            // First bake bone properties
             for (int boneIndex = 0; boneIndex < ModelController.NumberOfBones; ++boneIndex)
             {
                 var bone = ModelController[boneIndex];
@@ -386,6 +388,17 @@ public abstract class AnimationInstance
                 if (BakeMask.Get(curveIndex))
                     _AnimationCurves[curveIndex].AddKey(key);
                 ++curveIndex;
+            }
+
+            // Next bake blend shape properties
+            int numBlendShapes = ModelController.NumberOfBlendShapes;
+            for (int blendShapeIndex = 0; blendShapeIndex < numBlendShapes; ++blendShapeIndex)
+            {
+                curveIndex = 3 + 4 * ModelController.NumberOfBones + blendShapeIndex;
+                value = ModelController.GetBlendShapeWeight(blendShapeIndex);
+                key = new Keyframe(time, value);
+                if (BakeMask.Get(curveIndex))
+                    _AnimationCurves[curveIndex].AddKey(key);
             }
         }
         else
