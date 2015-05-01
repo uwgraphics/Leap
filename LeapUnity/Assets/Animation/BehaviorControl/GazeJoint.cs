@@ -553,14 +553,16 @@ public sealed class GazeJoint : DirectableJoint
     public void _UpdateTargetRotation()
     {
         // How much will the joint rotate?
+        float prevRotParamMR = rotParamMR;
+        float prevRotParamAlign = rotParamAlign;
         float prevDistRotAlign = distRotAlign;
         float prevDistRotMR = distRotMR;
         float prevDistRot = DistanceToRotate(srcRot, trgRot);
         trgRot = _ComputeTargetRotation(gazeCtrl.EffGazeTargetPosition);
         if (!IsEye)
         {
-            float prevRotParamAlign = prevDistRot > 0.0001f ? prevDistRotAlign / prevDistRot : 1f;
-            trgRotAlign = Quaternion.Slerp(srcRot, trgRot, prevRotParamAlign);
+            float prevAlign = prevDistRot > 0.0001f ? prevDistRotAlign / prevDistRot : 1f;
+            trgRotAlign = Quaternion.Slerp(srcRot, trgRot, prevAlign);
         }
         else
         {
@@ -574,11 +576,11 @@ public sealed class GazeJoint : DirectableJoint
 
         // Renormalize rotation progress
         rotParamAlign *= (distRotAlign > 0.00001f ? prevDistRotAlign / distRotAlign : 1f);
-        rotParamAlign = Mathf.Clamp01(rotParamAlign);
+        rotParamAlign = Mathf.Max(Mathf.Clamp01(rotParamAlign), prevRotParamAlign);
         if (IsEye)
         {
             rotParamMR *= (distRotMR > 0.00001f ? prevDistRotMR / distRotMR : 1f);
-            rotParamMR = Mathf.Clamp01(rotParamMR);
+            rotParamMR = Mathf.Max(Mathf.Clamp01(rotParamMR), prevRotParamMR);
         }
     }
 
@@ -590,7 +592,7 @@ public sealed class GazeJoint : DirectableJoint
         float prevFixDistRot = DistanceToRotate(fixSrcRot, fixTrgRot);
         if (gazeCtrl.FixGazeTarget != null)
         {
-            fixTrgRot = _ComputeTargetRotation(gazeCtrl.EffGazeTargetPosition);
+            fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTarget.transform.position);
             if (!IsEye)
             {
                 float prevFixRotParamAlign = prevFixDistRot > 0.0001f ? prevFixDistRotAlign / prevFixDistRot : 1f;
@@ -600,8 +602,7 @@ public sealed class GazeJoint : DirectableJoint
             {
                 fixTrgRotAlign = fixTrgRot;
             }
-        }
-        */
+        }*/
 
         if (IsEye)
         {
@@ -629,8 +630,6 @@ public sealed class GazeJoint : DirectableJoint
             // TODO: rotParam* values for the eyes fall away from 1 for some reason
             if (IsEye)
                 rotParamAlign = rotParamMR = 1f;
-            /*else
-                rotParamAlign = 1f;*/
 
             if (gazeCtrl.stylizeGaze && gazeCtrl.enableED &&
                 IsEye && outMR > inMR + 0.00001f)

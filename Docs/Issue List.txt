@@ -1,14 +1,22 @@
 Leap Animation Editor:
 
+#88 [] The way gaze joint rotations are applied gives rise to unnatural spine configurations
+  - See StealDiamondGaze4 example - neck sticks out unnaturally
+
+#87 [X] When there is a lot of fast body motion, gaze controller fails to reach the target
+  - StealDiamondGaze1 is a good example where gaze is all over the place
+  - Fixed by preventing rotParam* renormalization from ever reducing its value below what it was on the previous step
+  
 #86 [] During VOR, we can't just keep the same orientation that was set when fixation started; alignment should approach 1 as body gets more aligned with the target or keep the original value as body rotates away from the target
+  - This is a problem when there is a lot of body motion, esp. in walking motions
 
 #85 [] Degenerate gaze shifts - gaze controller enters fixation mode even though neither eyes nor head have yet aligned with the target
   - StealDiamondGaze2 is a nasty example where for some reason neck is more aligned with the target than  the head!
 
 #84 [] Alignment inference still seems to have some issues
-  - Why are nearly all head alignments 0 in StealDiamond example?
+  - Check StealDiamond example
 
-#83 [] Eyes sometimes snap when switching to a new gaze instance
+#83 [] Eyes often snap when switching to a new gaze instance
   - Example when switching from WindowWashingGaze12 to WindowWashingGaze13
 
 #78 [X] Large snap in torso pose when using gaze IK and starting a new gaze shift
