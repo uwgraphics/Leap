@@ -1,7 +1,20 @@
 Leap Animation Editor:
 
-#88 [] The way gaze joint rotations are applied gives rise to unnatural spine configurations
+#91 [] When using redistribution of gaze joint rotations, torso rotations are slightly discontinuous when starting fixation
+
+#90 [X] Eyes snap apart when starting a new gaze shift
+  - Both eyes should start rotating from their VOR pose at the end of the previous gaze instance, where eye directions intersect at the fixation target, but instead they snap to a pose where eye directions are parallel
+  - This is likely the same problem as #83
+  - Fixed, the problem was that source rotations were always getting reset to identity when starting a new gaze shift
+
+#89 [X] Torso and head joints that aren't last/topmost in the chain may have incorrect values of aligning target rotations (trgRotAlign), which could affect BodyIKSolver results for the torso
+  - For example, in _InitTorsoTargetRotations() it seems that trgRotAlign only gets initialize correctly for last joint (GazeController.Torso)
+  - Yet trgRotAlign from other torso joints is used elsewhere, including in BodyIKSolver to solve for final torso pose
+
+#88 [X] The way gaze joint rotations are applied gives rise to unnatural spine configurations
   - See StealDiamondGaze4 example - neck sticks out unnaturally
+  - Proper fix would require a different parametrization of gaze (e.g., using gaze direction vectors) and solving for the pose of the gaze joint chain on every timestep
+  - Came up with a more hacky fix that redistributes rotation in a post-process, but it causes issue #91
 
 #87 [X] When there is a lot of fast body motion, gaze controller fails to reach the target
   - StealDiamondGaze1 is a good example where gaze is all over the place
@@ -16,8 +29,9 @@ Leap Animation Editor:
 #84 [] Alignment inference still seems to have some issues
   - Check StealDiamond example
 
-#83 [] Eyes often snap when switching to a new gaze instance
+#83 [X] Eyes often snap when switching to a new gaze instance
   - Example when switching from WindowWashingGaze12 to WindowWashingGaze13
+  - Fixed when fixing #90
 
 #78 [X] Large snap in torso pose when using gaze IK and starting a new gaze shift
   - Happens when gaze shift starts, but torso is still in VOR mode due to latency

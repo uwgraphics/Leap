@@ -587,9 +587,16 @@ public class GazeController : AnimController
             GazeJoint joint = gazeJoints[ji];
             joint._ApplyVOR();
 
+            // Solve for final body posture
             if (joint == Torso)
-                // Solve for final body posture
+            {
+                _ApplyRotation(joint);
                 _SolveBodyIK();
+            }
+            else if (joint == Head)
+            {
+                _ApplyRotation(joint);
+            }
         }
     }
 
@@ -663,6 +670,51 @@ public class GazeController : AnimController
         {
             var gazeJoint = gazeJoints[gji];
             gazeJoint._RemoveRoll();
+        }
+    }
+
+    // Apply rotation of the specified gaze joint such that it is distributed
+    // across all the joints of its chain
+    public virtual void _ApplyRotation(GazeJoint joint)
+    {
+        var last = GetLastGazeJointInChain(joint.type);
+        if (joint != last)
+            throw new Exception("Last gaze joint in a body part's chain must be specified when applying joint rotations");
+
+        int nj = GetNumGazeJointsInChain(joint.type);
+        if (nj <= 1)
+            // No need to redistribute rotation when there is only 1 joint in the chain
+            return;
+
+        Vector3 trgDirW = joint.Direction;
+        int jin = FindGazeJointIndex(joint);
+        int ji1 = jin + nj - 1;
+
+        Vector3 trgDir, srcDir;
+        Quaternion trgRot, trgRotAlign;
+        float cprev = 0f, c, c1;
+        int jic;
+        //
+        //Debug.LogWarning("Apply rotation for " + joint.type.ToString());
+        //
+        for (int ji = ji1; ji >= jin; --ji)
+        {
+            var curJoint = gazeJoints[ji];
+
+            jic = ji - jin + 1;
+            c = ((float)((nj - jic + 1) * (nj - jic + 2))) / (nj * (nj + 1));
+            c1 = (c - cprev) / (1f - cprev);
+            cprev = c;
+            //
+            //Debug.LogWarning(string.Format("ji = {0}, c = {1}, c1 = {2}", jic, c, c1));
+            //
+
+            curJoint.bone.localRotation = Quaternion.identity;
+            trgDir = curJoint.bone.InverseTransformDirection(trgDirW);
+            srcDir = curJoint.bone.InverseTransformDirection(curJoint.bone.forward);
+            trgRot = Quaternion.FromToRotation(srcDir, trgDir);
+            trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
+            curJoint.bone.localRotation = trgRotAlign;
         }
     }
 
@@ -1096,12 +1148,15 @@ public class GazeController : AnimController
             // This is the first gaze shift, so there is no target set for VOR
             // during latency period - set it now
             InitVOR();
-        
-        // Initialize new gaze shift
-        _InitGazeParams(); // initial rotations, alignments, latencies...
+
         if (fixGaze)
+        {
             // Fixate gaze onto the current target
             ApplyVOR();
+        }
+
+        // Initialize new gaze shift
+        _InitGazeParams(); // initial rotations, alignments, latencies...
         _ViewAlignTarget(); // if eyes don't need to align fully, then how much?
         _ViewAdjustOMR(); // correct asymmetric OMR if needed
         _InitTargetRotations(); // compute initial estimate of target pose
@@ -1119,9 +1174,9 @@ public class GazeController : AnimController
 
     protected virtual bool _AdvanceGazeShift(float deltaTime)
     {
-        int body_aligned = 0; // Number of fully aligned body joints
-        int eyes_aligned = 0; // Number of fully aligned eye joints
-        int eyes_blocked = 0; // Number of eye joints blocked by OMR limits
+        int bodyAligned = 0; // Number of fully aligned body joints
+        int eyesAligned = 0; // Number of fully aligned eye joints
+        int eyesBlocked = 0; // Number of eye joints blocked by OMR limits
 
         // Rotate each joint
         for (int ji = LastGazeJointIndex; ji >= 0; --ji)
@@ -1134,10 +1189,17 @@ public class GazeController : AnimController
                 // Joint not ready to move yet, just VOR
                 joint._ApplyVOR();
                 joint._UpdateRotationsOnVOR();
-                
+
+                // Solve for final body posture
                 if (joint == Torso)
-                    // Solve for final body posture
+                {
+                    _ApplyRotation(joint);
                     _SolveBodyIK();
+                }
+                else if (joint == Head)
+                {
+                    _ApplyRotation(joint);
+                }
 
                 // Update latency time
                 if (joint == last)
@@ -1185,22 +1247,29 @@ public class GazeController : AnimController
             if (!joint.IsEye)
             {
                 if (joint.trgReached)
-                    ++body_aligned;
+                    ++bodyAligned;
             }
             else
             {
                 if (joint.trgReached)
-                    ++eyes_aligned;
+                    ++eyesAligned;
                 else if (joint.mrReached)
-                    ++eyes_blocked;
+                    ++eyesBlocked;
             }
 
+            // Solve for final body posture
             if (joint == Torso)
-                // Solve for final body posture
+            {
+                _ApplyRotation(joint);
                 _SolveBodyIK();
+            }
+            else if (joint == Head)
+            {
+                _ApplyRotation(joint);
+            }
         }
 
-        if (stylizeGaze && eyes_aligned >= eyes.Length)
+        if (stylizeGaze && eyesAligned >= eyes.Length)
         {
             // When all eyes have aligned, only then allow VOR
             foreach (GazeJoint eye in eyes)
@@ -1208,10 +1277,10 @@ public class GazeController : AnimController
         }
 
         // Is the gaze shift finished?
-        if ((eyes_aligned + eyes_blocked >= eyes.Length
-            || stylizeGaze && eyes_aligned > 0) && // TODO: This causes a minor error in target pose,
+        if ((eyesAligned + eyesBlocked >= eyes.Length
+            || stylizeGaze && eyesAligned > 0) && // TODO: This causes a minor error in target pose,
             // but could it become a problem in some circumstances?
-           body_aligned == LastGazeJointIndex + 1 - eyes.Length)
+           bodyAligned == LastGazeJointIndex + 1 - eyes.Length)
         {
             return true;
         }
@@ -1432,21 +1501,23 @@ public class GazeController : AnimController
         if (torsoIndex < 0 || !curUseTorso)
             return;
 
+        float minDistRot = _ComputeMinTorsoDistanceToRotate();
         for (int gji = LastGazeJointIndex; gji >= torsoIndex; --gji)
         {
             GazeJoint joint = gazeJoints[gji];
+
             joint.trgRot = joint._ComputeTargetRotation(EffGazeTargetPosition);
-            joint.trgRotAlign = joint.trgRot;
-            joint.distRotAlign = GazeJoint.DistanceToRotate(joint.srcRot, joint.trgRot);
             if (gji == torsoIndex)
             {
-                // Only the last torso joint needs the exact trgRotAlign value,
-                // because it drives the rest of the torso joints
-                float dr = _ComputeMinTorsoDistanceToRotate();
-                float fdr = GazeJoint.DistanceToRotate(joint.srcRot, joint.trgRot);
-                float amin = joint.srcRot != joint.trgRot ? dr / fdr : 0f;
-                joint.trgRotAlign = Quaternion.Slerp(joint.srcRot, joint.trgRot, amin);
+                float distRot = GazeJoint.DistanceToRotate(joint.srcRot, joint.trgRot);
+                float rotParamMin = joint.srcRot != joint.trgRot ? minDistRot / distRot : 0f;
+                joint.trgRotAlign = Quaternion.Slerp(joint.srcRot, joint.trgRot, rotParamMin);
                 joint.trgRotAlign = Quaternion.Slerp(joint.trgRotAlign, joint.trgRot, joint.curAlign);
+                joint.distRotAlign = GazeJoint.DistanceToRotate(joint.srcRot, joint.trgRotAlign);
+            }
+            else
+            {
+                joint.trgRotAlign = joint.trgRot;
                 joint.distRotAlign = GazeJoint.DistanceToRotate(joint.srcRot, joint.trgRotAlign);
             }
         }
@@ -1574,7 +1645,10 @@ public class GazeController : AnimController
 
         var bodySolver = gameObject.GetComponent<BodyIKSolver>();
         if (bodySolver != null && bodySolver.enabled)
+        {
+            bodySolver.InitGazePose();
             bodySolver.Solve();
+        }
     }
 
     /// <summary>

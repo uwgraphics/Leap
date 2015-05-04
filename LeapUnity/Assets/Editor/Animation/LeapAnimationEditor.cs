@@ -65,6 +65,13 @@ public class LeapAnimationEditor : EditorWindow
             EyeGazeEditor.PrintEyeGazeControllerState(_loggedGazeControllerStateModel);
             _loggedGazeControllerStateModel = null;
         }
+        //
+        /*if (Timeline.Models.Count > 0)
+        {
+            var gazeController = Timeline.Models[0].GetComponent<GazeController>();
+            gazeController._ApplyRotation(gazeController.Torso);
+        }*/
+        //
     }
 
     private void OnGUI()

@@ -57,8 +57,8 @@ public class BodyIKSolver : IKSolver
     protected List<Transform> _limbShoulderJoints = new List<Transform>();
     protected List<Transform> _limbElbowJoints = new List<Transform>();
     protected List<Transform> _limbWristJoints = new List<Transform>();
-    protected int _firstGazeJointIndex = 0;
     protected Dictionary<GazeJoint, int> _gazeJointIndexes = new Dictionary<GazeJoint, int>();
+    protected int _numGazeJoints;
 
     // Solver data structures:
     protected double[] _x = null;
@@ -66,6 +66,7 @@ public class BodyIKSolver : IKSolver
     protected alglib.minlbfgsstate _state = null;
     protected alglib.minlbfgsreport _rep = null;
     protected double[] _xb = null;
+    protected Quaternion[] _qg = null;
 
     // Solver results, timing & profiling
     protected Stopwatch _timer = new Stopwatch();
@@ -78,6 +79,22 @@ public class BodyIKSolver : IKSolver
     public virtual void InitBasePose()
     {
         _GetSolverPose(_xb);
+    }
+
+    /// <summary>
+    /// Set current pose of gaze joint chain as the gaze pose for the IK solver.
+    /// </summary>
+    public virtual void InitGazePose()
+    {
+        for (int gazeJointIndex = _gazeController.gazeJoints.Length - 1; gazeJointIndex >= 0; --gazeJointIndex)
+        {
+            var gazeJoint = _gazeController.gazeJoints[gazeJointIndex];
+            if (gazeJoint.type != GazeJointType.Torso)
+                break;
+
+            _qg[gazeJointIndex - (_gazeController.gazeJoints.Length - _numGazeJoints)] =
+                gazeJoint.bone.localRotation;
+        }
     }
 
     /// <summary>
@@ -188,7 +205,8 @@ public class BodyIKSolver : IKSolver
             _gazeController = gameObject.GetComponent<GazeController>();
             if (_gazeController != null)
             {
-                _firstGazeJointIndex = _bodyJoints.Count;
+                _numGazeJoints = _gazeController.GetNumGazeJointsInChain(GazeJointType.Torso);
+                _qg = new Quaternion[_numGazeJoints];
 
                 foreach (var gazeJoint in _gazeController.gazeJoints)
                 {
@@ -460,7 +478,7 @@ public class BodyIKSolver : IKSolver
         Vector3 vb, v;
         Quaternion qb, q, dq;
         float curRotTerm = 0f;
-        for (int bodyJointIndex = 0; bodyJointIndex < _firstGazeJointIndex; ++bodyJointIndex)
+        for (int bodyJointIndex = 0; bodyJointIndex < _bodyJoints.Count; ++bodyJointIndex)
         {
             var bodyJoint = _bodyJoints[bodyJointIndex];
 
@@ -484,65 +502,48 @@ public class BodyIKSolver : IKSolver
         }
 
         // Compute gaze direction and velocity terms
-        Quaternion qs, qt, qp, qr;
+        Quaternion qp, qg;
         float r = 0f;
         float dt = _gazeController.DeltaTime;
         Vector3 vp;
-        float rv = 0f;
         float curGazeDirectionTerm = 0f, curGazeVelocityTerm = 0f;
         for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
         {
             if (_gazeController.CurrentGazeTarget == null)
                 // No gaze constraint if there is no gaze target
-                continue;
+                break;
 
             var gazeJoint = _gazeController.gazeJoints[gazeJointIndex];
             if (gazeJoint.type != GazeJointType.Torso)
                 // We only solve for body posture using IK
-                continue;
+                break;
 
             int bodyJointIndex = _gazeJointIndexes[gazeJoint];
-            var bodyJoint = _bodyJoints[bodyJointIndex];            
+            var bodyJoint = _bodyJoints[bodyJointIndex];
 
-            // Set source and target rotations and rotation progress from the gaze model
-            if (gazeJoint.isVOR)
-            {
-                qs = gazeJoint.fixSrcRot;
-                qt = gazeJoint.IsEye && _gazeController.FixGazeTarget != null ?
-                    gazeJoint._ComputeTargetRotation(_gazeController.FixGazeTarget.transform.position) :
-                    gazeJoint.fixTrgRotAlign;
-                r = gazeJoint.fixRotParamAlign;
-            }
-            else
-            {
-                qs = gazeJoint.srcRot;
-                qt = gazeJoint.trgRotAlign;
-                r = gazeJoint.rotParamAlign;
-            }
-
-            // Compute gaze shift shortest-arc rotation
-            qr = Quaternion.Slerp(qs, qt, r);
+            // Get rotation in the gaze pose
+            qg = _qg[gazeJointIndex - (_gazeController.gazeJoints.Length - _numGazeJoints)];
 
             // Get rotation in the base pose
             v = _GetBodyJointRotation(x, bodyJointIndex);
             q = QuaternionUtil.Exp(v);
             // TODO: trying sth else
-            qp = gazeJoint.bone.localRotation;
+            /*qp = gazeJoint.bone.localRotation;
             gazeJoint.bone.localRotation = q;
             vp = gazeJoint.Direction;
             vp = new Vector3(vp.x, 0f, vp.z);
             vp.Normalize();
-            gazeJoint.bone.localRotation = qr;
+            gazeJoint.bone.localRotation = qg;
             Vector3 vp1 = gazeJoint.Direction;
             vp1 = new Vector3(vp1.x, 0f, vp1.z);
             vp1.Normalize();
             curGazeDirectionTerm = Vector3.Angle(vp, vp1);
-            curGazeDirectionTerm *= curGazeDirectionTerm;
+            curGazeDirectionTerm *= curGazeDirectionTerm;*/
             //
 
             // Penalize difference between shortest-arc gaze shift rotation and base rotation
-            /*dq = Quaternion.Inverse(qr) * q;
-            curGazeDirectionTerm = QuaternionUtil.Log(dq).sqrMagnitude;*/
+            dq = Quaternion.Inverse(qg) * q;
+            curGazeDirectionTerm = QuaternionUtil.Log(dq).sqrMagnitude;
             gazeDirectionTerm += (_gazeDirectionWeight * curGazeDirectionTerm);
 
             // Compute gaze joint velocity

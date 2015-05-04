@@ -606,7 +606,8 @@ public sealed class GazeJoint : DirectableJoint
 
         if (IsEye)
         {
-            fixTrgRotAlign = fixTrgRot = _ComputeTargetRotation(gazeCtrl.FixGazeTarget.transform.position);
+            fixTrgRotAlign = fixTrgRot = gazeCtrl.FixGazeTarget != null ?
+                _ComputeTargetRotation(gazeCtrl.FixGazeTarget.transform.position) : bone.localRotation;
         }
 
         // Renormalize rotation progress
