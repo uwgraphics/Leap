@@ -588,7 +588,7 @@ public sealed class GazeJoint : DirectableJoint
     public void _UpdateVORTargetRotation()
     {
         // How much will the joint rotate?
-        /*float prevFixDistRotAlign = DistanceToRotate(fixSrcRot, fixTrgRotAlign);
+        float prevFixDistRotAlign = DistanceToRotate(fixSrcRot, fixTrgRotAlign);
         float prevFixDistRot = DistanceToRotate(fixSrcRot, fixTrgRot);
         if (gazeCtrl.FixGazeTarget != null)
         {
@@ -602,19 +602,13 @@ public sealed class GazeJoint : DirectableJoint
             {
                 fixTrgRotAlign = fixTrgRot;
             }
-        }*/
+        }
 
         if (IsEye)
         {
             fixTrgRotAlign = fixTrgRot = gazeCtrl.FixGazeTarget != null ?
                 _ComputeTargetRotation(gazeCtrl.FixGazeTarget.transform.position) : bone.localRotation;
         }
-
-        // Renormalize rotation progress
-        /*
-        float fixDistRotAlign = DistanceToRotate(fixSrcRot, fixTrgRotAlign);
-        fixRotParamAlign *= (fixDistRotAlign > 0.00001f ? prevFixDistRotAlign / fixDistRotAlign : 1f);
-        fixRotParamAlign = Mathf.Clamp01(fixRotParamAlign);*/
     }
 
     // Rotate the joint towards the target over the course of the gaze shift

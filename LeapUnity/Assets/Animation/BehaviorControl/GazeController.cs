@@ -551,10 +551,8 @@ public class GazeController : AnimController
         Debug.LogWarning("Stopping gaze shift towards target " + curGazeTarget.name);
     }
 
-    /// <summary>
-    /// Initialize fixation of the current gaze target.
-    /// </summary>
-    public virtual void InitVOR()
+    // Initialize fixation of the current gaze target
+    public virtual void _InitVOR()
     {
         // Set fixation target
         if (!IsGazingAhead)
@@ -576,45 +574,9 @@ public class GazeController : AnimController
         }
     }
 
-    /// <summary>
-    /// Apply fixation of the current gaze target.
-    /// </summary>
-    public virtual void ApplyVOR()
-    {
-        // Apply VOR rotations
-        for (int ji = LastGazeJointIndex; ji >= 0; --ji)
-        {
-            GazeJoint joint = gazeJoints[ji];
-            joint._ApplyVOR();
-
-            // Solve for final body posture
-            if (joint == Torso)
-            {
-                _ApplyRotation(joint);
-                _SolveBodyIK();
-            }
-            else if (joint == Head)
-            {
-                _ApplyRotation(joint);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Applies fixation of the current gaze target, but only
-    /// for the eyes.
-    /// </summary>
-    public virtual void ApplyVORForEyes()
-    {
-        foreach (GazeJoint eye in eyes)
-            eye._ApplyVOR();
-    }
-
-    /// <summary>
-    /// Orient the gaze joints to the source pose (agent gazing
-    /// at the current gaze target).
-    /// </summary>
-    public virtual void ApplySourcePose()
+    // Orient the gaze joints to the source pose (agent gazing
+    // at the current gaze target)
+    public virtual void _ApplySourcePose()
     {
         for (int ji = LastGazeJointIndex; ji >= 0; --ji)
         {
@@ -623,11 +585,9 @@ public class GazeController : AnimController
         }
     }
 
-    /// <summary>
-    /// Orient the gaze joints to the target pose (agent gazing
-    /// at the current gaze target).
-    /// </summary>
-    public virtual void ApplyTargetPose()
+    // Orient the gaze joints to the target pose (agent gazing
+    // at the current gaze target)
+    public virtual void _ApplyTargetPose()
     {
         for (int ji = LastGazeJointIndex; ji >= 0; --ji)
         {
@@ -652,19 +612,15 @@ public class GazeController : AnimController
         }
     }
 
-    /// <summary>
-    /// Orient the gaze joints to the original pose.
-    /// </summary>
-    public virtual void ReapplyCurrentPose()
+    // Orient the gaze joints to the original pose
+    public virtual void _ReapplyCurrentPose()
     {
         for (int ji = LastGazeJointIndex; ji >= 0; --ji)
             gazeJoints[ji].bone.localRotation = curRots[ji];
     }
 
-    /// <summary>
-    /// Remove roll component from rotations of all the gaze joints.
-    /// </summary>
-    public virtual void RemoveRoll()
+    // Remove roll component from rotations of all the gaze joints
+    public virtual void _RemoveRoll()
     {
         for (int gji = 0; gji <= LastGazeJointIndex; ++gji)
         {
@@ -1106,8 +1062,14 @@ public class GazeController : AnimController
         else
         {
             if (fixGaze)
+            {
                 // Fixate gaze onto the current target
-                ApplyVOR();
+                _ApplyVOR();
+                // TODO: hack - if we don't apply gaze at least twice in a frame,
+                // there is a discontinuity in torso rotations
+                _ApplyVOR();
+                //
+            }
         }
     }
 
@@ -1117,6 +1079,7 @@ public class GazeController : AnimController
         _StopFace();
 
         // Advance gaze shift
+        bool gazeShiftFinished = false;
         float dt = 0;
         for (float t = 0; t < DeltaTime; )
         {
@@ -1125,12 +1088,12 @@ public class GazeController : AnimController
             dt = (t <= DeltaTime) ? LEAPCore.eulerTimeStep :
                 DeltaTime - t + LEAPCore.eulerTimeStep;
 
-            if (_AdvanceGazeShift(dt))
-            {
-                GoToState((int)GazeState.NoGaze);
-                break;
-            }
+            gazeShiftFinished = _AdvanceGazeShift(dt);
         }
+
+        if (gazeShiftFinished)
+            // Gaze shift complete, start fixating the target
+            GoToState((int)GazeState.NoGaze);
 
         if (stopGazeShift)
         {
@@ -1147,12 +1110,16 @@ public class GazeController : AnimController
         if (FixGazeTarget == null)
             // This is the first gaze shift, so there is no target set for VOR
             // during latency period - set it now
-            InitVOR();
+            _InitVOR();
 
         if (fixGaze)
         {
             // Fixate gaze onto the current target
-            ApplyVOR();
+            _ApplyVOR();
+            // TODO: hack - if we don't apply gaze at least twice in a frame,
+            // there is a discontinuity in torso rotations
+            _ApplyVOR();
+            //
         }
 
         // Initialize new gaze shift
@@ -1168,10 +1135,11 @@ public class GazeController : AnimController
 
     protected virtual void Transition_ShiftingNoGaze()
     {
-        InitVOR();
+        _InitVOR();
         _RestartFace();
     }
 
+    // Update the rotations of all gaze joints based on gaze shift progress
     protected virtual bool _AdvanceGazeShift(float deltaTime)
     {
         int bodyAligned = 0; // Number of fully aligned body joints
@@ -1288,6 +1256,44 @@ public class GazeController : AnimController
         return false;
     }
 
+    // Apply fixation of the current gaze target
+    public virtual void _ApplyVOR()
+    {
+        // Rotate each joint
+        for (int ji = LastGazeJointIndex; ji >= 0; --ji)
+        {
+            GazeJoint joint = gazeJoints[ji];
+            joint._ApplyVOR();
+            // TODO: this causes the joints to keep moving at min. velocity until they all fully align
+            /*GazeJoint last = GetLastGazeJointInChain(joint.type);
+
+            // Update target rotation of the current joint to account for movements of
+            // the preceding joints (or the whole body)
+            joint._UpdateTargetRotation();
+
+            // Update joint rotations
+            joint._AdvanceRotation(0f);
+
+            // TODO: this is an ugly hack to keep everything from breaking
+            joint.fixSrcRot = joint.srcRot;
+            joint.fixTrgRot = joint.trgRot;
+            joint.fixTrgRotAlign = joint.trgRotAlign;
+            joint.fixRotParamAlign = joint.rotParamAlign;*/
+            //
+
+            // Solve for final body posture
+            if (joint == Torso)
+            {
+                _ApplyRotation(joint);
+                _SolveBodyIK();
+            }
+            else if (joint == Head)
+            {
+                _ApplyRotation(joint);
+            }
+        }
+    }
+
     // Find index of gaze joint with specified bone tag
     protected virtual int _FindGazeJointIndex(string boneTag)
     {
@@ -1387,7 +1393,7 @@ public class GazeController : AnimController
         maxCrEyedView = (1f - eap) * 110f + eap * maxCrossEyedness;
 
         // Move gaze joints to target pose
-        ApplyTargetPose();
+        _ApplyTargetPose();
 
         // How much cross-eyedness is allowed?
         float maxce = maxCrEyedView;
@@ -1418,7 +1424,7 @@ public class GazeController : AnimController
         }
 
         // Restore original pose
-        ReapplyCurrentPose();
+        _ReapplyCurrentPose();
     }
 
     protected virtual void _ComputeViewAngles(out float avSrc, out float avTrg)
@@ -1587,7 +1593,7 @@ public class GazeController : AnimController
             }
         }
 
-        ApplyTargetPose();
+        _ApplyTargetPose();
 
         // Find the maximum difference between the target orientation and the eyes' orientation at max. OMR
         float maxdl = -float.MaxValue;
@@ -1609,7 +1615,7 @@ public class GazeController : AnimController
         Head.trgRotAlign = trgrot;
         Head.distRotAlign = DirectableJoint.DistanceToRotate(Head.srcRot, trgrot);
 
-        ReapplyCurrentPose();
+        _ReapplyCurrentPose();
     }
 
     // Compute aligning rotational distance for specified joint, adjusted for

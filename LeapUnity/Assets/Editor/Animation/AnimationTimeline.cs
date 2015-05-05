@@ -522,13 +522,6 @@ public class AnimationTimeline
 
         // Add the model to the timeline
         _models.Add(model);
-        //
-        SkinnedMeshRenderer mesh;
-        int blendShapeIndex;
-        modelController.GetBlendShape(0, out mesh, out blendShapeIndex);
-        if (mesh != null)
-            Debug.Log("Blend shape name: " + mesh.sharedMesh.GetBlendShapeName(blendShapeIndex));
-        //
     }
 
     /// <summary>
@@ -1129,8 +1122,6 @@ public class AnimationTimeline
     /// </summary>
     public void ApplyAnimation()
     {
-        var models = Models;
-
         // Reset models and IK solvers
         _ClearIKGoals();
         ResetModelsToInitialPose();
@@ -1207,7 +1198,7 @@ public class AnimationTimeline
                 }
             }
 
-            foreach (var model in models)
+            foreach (var model in Models)
             {
                 // Configure IK solver parameters for each model
                 if (layer.isIKBase)

@@ -65,13 +65,6 @@ public class LeapAnimationEditor : EditorWindow
             EyeGazeEditor.PrintEyeGazeControllerState(_loggedGazeControllerStateModel);
             _loggedGazeControllerStateModel = null;
         }
-        //
-        /*if (Timeline.Models.Count > 0)
-        {
-            var gazeController = Timeline.Models[0].GetComponent<GazeController>();
-            gazeController._ApplyRotation(gazeController.Torso);
-        }*/
-        //
     }
 
     private void OnGUI()
@@ -199,6 +192,8 @@ public class LeapAnimationEditor : EditorWindow
             SceneView.RepaintAll();
         }
 
+        _UpdateSceneView();
+
         // Process keyboard input
         var e = Event.current;
         switch (e.type)
@@ -235,6 +230,7 @@ public class LeapAnimationEditor : EditorWindow
         GUI.FocusControl("_RemoveFocus");
     }
 
+    // Initialize animation timeline
     private void _InitTimeline()
     {
         // Initialize the animation timeline
@@ -252,6 +248,7 @@ public class LeapAnimationEditor : EditorWindow
         _animationEditGizmos = UnityEngine.Object.FindObjectOfType(typeof(AnimationEditGizmos)) as AnimationEditGizmos;
     }
 
+    // Initialize animation editor GUI
     private void _InitGUI()
     {
         if (_guiInitialized)
@@ -268,18 +265,56 @@ public class LeapAnimationEditor : EditorWindow
         _guiInitialized = true;
     }
 
-    private void AnimationTimeline_AllAnimationApplied()
+    // Update scene view GUI
+    private void _UpdateSceneView()
     {
+        _animationEditGizmos._ClearGazeSequence();
         _animationEditGizmos._ClearEndEffectorGoals();
         var selectedModel = Timeline.Models.FirstOrDefault(m => ModelUtils.GetSelectedModel());
+
         if (selectedModel != null)
         {
+            // Update end-effector goals list
             IKSolver[] solvers = selectedModel.GetComponents<IKSolver>();
             foreach (var solver in solvers)
             {
                 _animationEditGizmos._SetEndEffectorGoals(solver.Goals.ToArray());
             }
+
+            // Update gaze shift sequence
+            var gazeLayer = Timeline.GetLayer("Gaze");
+            if (gazeLayer != null)
+            {
+                List<Vector3> gazeTargetSequence = new List<Vector3>(gazeLayer.Animations.Count);
+                int gazeIndex = -1, currentGazeIndex = -1;
+                for (int gazeInstanceIndex = 0; gazeInstanceIndex < gazeLayer.Animations.Count; ++gazeInstanceIndex)
+                {
+                    var scheduledGazeInstance = gazeLayer.Animations[gazeInstanceIndex];
+                    if (scheduledGazeInstance.Animation.Model == selectedModel)
+                    {
+                        var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
+
+                        // Add gaze target position
+                        Vector3 targetPosition = gazeInstance.Target != null ? gazeInstance.Target.transform.position : gazeInstance.AheadTargetPosition;
+                        gazeTargetSequence.Add(targetPosition);
+                        ++gazeIndex;
+
+                        if (Timeline.CurrentFrame >= scheduledGazeInstance.StartFrame &&
+                            Timeline.CurrentFrame <= (scheduledGazeInstance.StartFrame + gazeInstance.FrameLength - 1))
+                        {
+                            // This is the current gaze instance
+                            currentGazeIndex = gazeIndex;
+                        }
+                    }
+                }
+
+                _animationEditGizmos._SetGazeSequence(gazeTargetSequence.ToArray(), currentGazeIndex);
+            }
         }
+    }
+
+    private void AnimationTimeline_AllAnimationApplied()
+    {
     }
 
     private void AnimationTimeline_LayerApplied(string layerName)

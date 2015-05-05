@@ -10,6 +10,11 @@ using System.Linq;
 public class AnimationEditGizmos : MonoBehaviour
 {
     /// <summary>
+    /// If true, sequence of gaze shifts will be visually indicated.
+    /// </summary>
+    public bool showGazeSequence = true;
+
+    /// <summary>
     /// If true, gaze targets will be visually indicated in the scene view.
     /// </summary>
     public bool showGazeTargets = true;
@@ -19,12 +24,26 @@ public class AnimationEditGizmos : MonoBehaviour
     /// </summary>
     public bool showEndEffectorGoals = false;
 
+    private List<Vector3> _gazeTargetSequence;
+    private int _currentGazeIndex = -1;
     private Dictionary<Transform, IKGoal> _endEffectorGoals = new Dictionary<Transform, IKGoal>();
 
-    /// <summary>
-    /// Set end-effector IK goals so that gizmos can be rendered.
-    /// </summary>
-    /// <param name="goals">End-effector IK goals</param>
+    // Set gaze target sequence so that gaze shifts can be visually indicated
+    public void _SetGazeSequence(Vector3[] gazeTargetSequence, int currentGazeIndex = -1)
+    {
+        _ClearGazeSequence();
+        _gazeTargetSequence.AddRange(gazeTargetSequence);
+        _currentGazeIndex = currentGazeIndex;
+    }
+
+    // Clear gaze target sequence so that gaze shifts are no longer visually indicated
+    public void _ClearGazeSequence()
+    {
+        _gazeTargetSequence.Clear();
+        _currentGazeIndex = -1;
+    }
+
+    // Set end-effector IK goals so that gizmos can be rendered
     public void _SetEndEffectorGoals(IKGoal[] goals)
     {
         for (int goalIndex = 0; goalIndex < goals.Length; ++goalIndex)
@@ -33,9 +52,7 @@ public class AnimationEditGizmos : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Clear end-effector IK goals so that gizmos are no longer rendered.
-    /// </summary>
+    // Clear end-effector IK goals so that gizmos are no longer rendered
     public void _ClearEndEffectorGoals()
     {
         _endEffectorGoals.Clear();
@@ -43,6 +60,11 @@ public class AnimationEditGizmos : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (showGazeSequence)
+        {
+            _DrawGazeSequence();
+        }
+
         if (showGazeTargets)
         {
             _DrawGazeTargets();
@@ -51,6 +73,15 @@ public class AnimationEditGizmos : MonoBehaviour
         if (showEndEffectorGoals)
         {
             _DrawEndEffectorGoals();
+        }
+    }
+
+    private void _DrawGazeSequence()
+    {
+        for (int gazeIndex = 1; gazeIndex < _gazeTargetSequence.Count; ++gazeIndex)
+        {
+            Gizmos.color = gazeIndex == _currentGazeIndex ? new Color(0.8f, 0f, 0f) : Color.black;
+            Gizmos.DrawLine(_gazeTargetSequence[gazeIndex - 1], _gazeTargetSequence[gazeIndex]);
         }
     }
 
