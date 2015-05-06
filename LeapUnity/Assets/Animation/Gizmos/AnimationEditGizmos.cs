@@ -9,6 +9,20 @@ using System.Linq;
 /// </summary>
 public class AnimationEditGizmos : MonoBehaviour
 {
+    public struct EyeGazeInstanceDesc
+    {
+        public Vector3 targetPosition;
+        public float headAlign;
+        public float torsoAlign;
+        
+        public EyeGazeInstanceDesc(Vector3 targetPosition, float headAlign, float torsoAlign)
+        {
+            this.targetPosition = targetPosition;
+            this.headAlign = headAlign;
+            this.torsoAlign = torsoAlign;
+        }
+    }
+
     /// <summary>
     /// If true, sequence of gaze shifts will be visually indicated.
     /// </summary>
@@ -27,7 +41,7 @@ public class AnimationEditGizmos : MonoBehaviour
     private List<GameObject> _gazeTargets = new List<GameObject>();
     private int _currentGazeTargetIndex = -1;
     private bool _currentIsFixated = false;
-    private List<Vector3> _gazeTargetSequence = new List<Vector3>();
+    private List<EyeGazeInstanceDesc> _gazeSequence = new List<EyeGazeInstanceDesc>();
     private int _currentGazeIndex = -1;
     private Dictionary<Transform, IKGoal> _endEffectorGoals = new Dictionary<Transform, IKGoal>();
 
@@ -47,19 +61,33 @@ public class AnimationEditGizmos : MonoBehaviour
         _currentGazeTargetIndex = -1;
     }
 
-    // Set gaze target sequence so that gaze shifts can be visually indicated
-    public void _SetGazeSequence(Vector3[] gazeTargetSequence, int currentGazeIndex = -1)
+    // Set gaze sequence so that gaze shifts can be visually indicated and edited
+    public void _SetGazeSequence(EyeGazeInstanceDesc[] gazeSequence, int currentGazeIndex = -1)
     {
         _ClearGazeSequence();
-        _gazeTargetSequence.AddRange(gazeTargetSequence);
+        _gazeSequence.AddRange(gazeSequence);
         _currentGazeIndex = currentGazeIndex;
     }
 
     // Clear gaze target sequence so that gaze shifts are no longer visually indicated
     public void _ClearGazeSequence()
     {
-        _gazeTargetSequence.Clear();
+        _gazeSequence.Clear();
         _currentGazeIndex = -1;
+    }
+
+    /// <summary>
+    /// Get the line connecting the previous and next gaze target in the current gaze shift.
+    /// </summary>
+    /// <param name="targetPos1">Previous gaze target position</param>
+    /// <param name="targetPos2">Next gaze target position</param>
+    public void _GetCurrentGazeTargetLine(out Vector3 targetPos1, out Vector3 targetPos2)
+    {
+        if (_currentGazeIndex <= 0)
+            throw new System.Exception("There is no previous gaze target");
+
+        targetPos1 = _gazeSequence[_currentGazeIndex - 1].targetPosition;
+        targetPos2 = _gazeSequence[_currentGazeIndex].targetPosition;
     }
 
     // Set end-effector IK goals so that gizmos can be rendered
@@ -73,12 +101,12 @@ public class AnimationEditGizmos : MonoBehaviour
 
     // Notify when mouse has been clicked in the scene view and detect which gaze target
     // has been selected (if any)
-    public GameObject _OnSelectGazeTarget(Camera camera, Vector3 mousePosition)
+    public GameObject _OnSelectGazeTarget(Vector3 mousePosition)
     {
         foreach (var gazeTarget in _gazeTargets)
         {
-            Vector3 gazeTargetPosition = camera.WorldToScreenPoint(gazeTarget.transform.position);
-            gazeTargetPosition = new Vector3(gazeTargetPosition.x, camera.pixelHeight - gazeTargetPosition.y, 0f);
+            Vector3 gazeTargetPosition = Camera.current.WorldToScreenPoint(gazeTarget.transform.position);
+            gazeTargetPosition = new Vector3(gazeTargetPosition.x, Camera.current.pixelHeight - gazeTargetPosition.y, 0f);
 
             if (Mathf.Abs(mousePosition.x - gazeTargetPosition.x) <= 8 &&
                 Mathf.Abs(mousePosition.y - gazeTargetPosition.y) <= 8)
@@ -88,6 +116,51 @@ public class AnimationEditGizmos : MonoBehaviour
         }
 
         return null;
+    }
+
+    // Notify when mouse has been clicked in the scene view and detect if
+    // head alignment marker is being manipulated
+    public bool _OnChangeGazeHeadAlign(Vector3 mousePosition)
+    {
+        if (_currentGazeIndex <= 0)
+            return false;
+
+        Vector3 p1 = _gazeSequence[_currentGazeIndex - 1].targetPosition;
+        Vector3 p2 = _gazeSequence[_currentGazeIndex].targetPosition;
+        Vector3 headAlignMarkerPos = p1 + (p2 - p1) * _gazeSequence[_currentGazeIndex].headAlign;
+        headAlignMarkerPos = Camera.current.WorldToScreenPoint(headAlignMarkerPos);
+        headAlignMarkerPos = new Vector3(headAlignMarkerPos.x, Camera.current.pixelHeight - headAlignMarkerPos.y, 0f);
+
+        if (Mathf.Abs(mousePosition.x - headAlignMarkerPos.x) <= 8 &&
+            Mathf.Abs(mousePosition.y - headAlignMarkerPos.y) <= 8)
+        {
+            Debug.LogWarning("Clicked on head align marker");
+            return true;
+        }
+
+        return false;
+    }
+
+    // Notify when mouse has been clicked in the scene view and detect if
+    // torso alignment marker is being manipulated
+    public bool _OnChangeGazeTorsoAlign(Vector3 mousePosition)
+    {
+        if (_currentGazeIndex <= 0)
+            return false;
+
+        Vector3 p1 = _gazeSequence[_currentGazeIndex - 1].targetPosition;
+        Vector3 p2 = _gazeSequence[_currentGazeIndex].targetPosition;
+        Vector3 torsoAlignMarkerPos = p1 + (p2 - p1) * _gazeSequence[_currentGazeIndex].torsoAlign;
+        torsoAlignMarkerPos = Camera.current.WorldToScreenPoint(torsoAlignMarkerPos);
+        torsoAlignMarkerPos = new Vector3(torsoAlignMarkerPos.x, Camera.current.pixelHeight - torsoAlignMarkerPos.y, 0f);
+
+        if (Mathf.Abs(mousePosition.x - torsoAlignMarkerPos.x) <= 8 &&
+            Mathf.Abs(mousePosition.y - torsoAlignMarkerPos.y) <= 8)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // Clear end-effector IK goals so that gizmos are no longer rendered
@@ -116,10 +189,10 @@ public class AnimationEditGizmos : MonoBehaviour
 
     private void _DrawGazeSequence()
     {
-        for (int gazeIndex = 1; gazeIndex < _gazeTargetSequence.Count; ++gazeIndex)
+        for (int gazeIndex = 1; gazeIndex < _gazeSequence.Count; ++gazeIndex)
         {
-            Vector3 p1 = _gazeTargetSequence[gazeIndex - 1];
-            Vector3 p2 = _gazeTargetSequence[gazeIndex];
+            Vector3 p1 = _gazeSequence[gazeIndex - 1].targetPosition;
+            Vector3 p2 = _gazeSequence[gazeIndex].targetPosition;
 
             // Draw gaze shift line
             Gizmos.color = gazeIndex == _currentGazeIndex ? new Color(0.8f, 0f, 0f) : Color.black;
@@ -132,6 +205,19 @@ public class AnimationEditGizmos : MonoBehaviour
                 Vector3.one);
             Gizmos.DrawFrustum(new Vector3(0f, 0f, 0f), 45f, 0.2f, 0f, 1f);
             Gizmos.matrix = curMat;
+
+            if (gazeIndex == _currentGazeIndex)
+            {
+                // Draw head alignment marker
+                float headAlign = Mathf.Clamp01(_gazeSequence[gazeIndex].headAlign);
+                Vector3 headAlignMarkerPos = p1 + (p2 - p1) * headAlign;
+                Gizmos.DrawIcon(headAlignMarkerPos, "GazeHeadAlignGizmo.png");
+
+                // Draw torso alignment marker
+                float torsoAlign = Mathf.Clamp01(_gazeSequence[gazeIndex].torsoAlign);
+                Vector3 torsoAlignMarkerPos = p1 + (p2 - p1) * torsoAlign;
+                Gizmos.DrawIcon(torsoAlignMarkerPos, "GazeTorsoAlignGizmo.png");
+            }
         }
     }
 

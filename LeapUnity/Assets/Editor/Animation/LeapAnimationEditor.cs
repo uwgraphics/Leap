@@ -48,6 +48,8 @@ public class LeapAnimationEditor : EditorWindow
     // Scene view rendering and interaction
     private AnimationEditGizmos _animationEditGizmos = null;
     private GameObject _newSelectedGazeTarget = null;
+    private bool _changeGazeHeadAlign = false;
+    private bool _changeGazeTorsoAlign = false;
 
     private void OnEnable()
     {
@@ -55,6 +57,11 @@ public class LeapAnimationEditor : EditorWindow
 
         // Initialize scene view
         SceneView.onSceneGUIDelegate = SceneView_GUI;
+        _animationEditGizmos._ClearGazeSequence();
+        _animationEditGizmos._ClearGazeTargets();
+        _animationEditGizmos._ClearEndEffectorGoals();
+        _newSelectedGazeTarget = null;
+        _changeGazeHeadAlign = _changeGazeTorsoAlign = false;
     }
 
     private void Update()
@@ -235,41 +242,6 @@ public class LeapAnimationEditor : EditorWindow
                 );
             SceneView.RepaintAll();
         }
-
-        // Process keyboard input
-        var e = Event.current;
-        switch (e.type)
-        {
-            case EventType.KeyDown:
-
-                if (e.shift && e.keyCode == KeyCode.G)
-                {
-                    _OnLogGazeControllerState();
-                }
-                else if (e.shift && e.keyCode == KeyCode.A)
-                {
-                    _OnAddEyeGaze();
-                }
-                else if (e.shift && e.keyCode == KeyCode.R)
-                {
-                    _OnRemoveEyeGaze();
-                }
-                else if (e.shift && e.keyCode == KeyCode.P)
-                {
-                    EyeGazeEditor.PrintEyeGaze(Timeline);
-                }
-
-                break;
-
-            case EventType.MouseDown:
-
-                _RemoveFocus();
-                break;
-
-            default:
-
-                break;
-        }
     }
 
     // Log gaze controller state on currently selected character model
@@ -339,14 +311,6 @@ public class LeapAnimationEditor : EditorWindow
         }
     }
 
-    // For removing focus from a control
-    private void _RemoveFocus()
-    {
-        GUI.SetNextControlName("_RemoveFocus");
-        GUI.TextField(new Rect(-100, -100, 1, 1), "");
-        GUI.FocusControl("_RemoveFocus");
-    }
-
     // Initialize animation timeline
     private void _InitTimeline()
     {
@@ -389,10 +353,7 @@ public class LeapAnimationEditor : EditorWindow
     {
         if (_animationEditGizmos == null)
             return;
-
-        _animationEditGizmos._ClearGazeSequence();
-        _animationEditGizmos._ClearEndEffectorGoals();
-
+        
         var gazeLayer = Timeline.GetLayer("Gaze");
         if (LastSelectedModel != null && gazeLayer != null)
         {
@@ -400,52 +361,135 @@ public class LeapAnimationEditor : EditorWindow
             var currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
             var currentGazeInstance = currentGazeInstanceId > -1 ?
                 Timeline.GetAnimation(currentGazeInstanceId) as EyeGazeInstance : null;
-            
-            if (gazeLayer != null)
+
+            // Handle mouse interaction in the scene view
+            if (_changeGazeHeadAlign || _changeGazeTorsoAlign)
             {
-                // Update gaze shift sequence
-                GameObject currentGazeTarget = null;
-                List<Vector3> gazeTargetSequence = new List<Vector3>(gazeLayer.Animations.Count);
-                int gazeIndex = -1, currentGazeIndex = -1;
-                bool currentIsFixated = false;
-                for (int gazeInstanceIndex = 0; gazeInstanceIndex < gazeLayer.Animations.Count; ++gazeInstanceIndex)
+                // Interaction mode is changing head or torso alignments
+
+                // Project mouse position onto the gaze shift line
+                Vector3 p1, p2;
+                _animationEditGizmos._GetCurrentGazeTargetLine(out p1, out p2);
+                p1 = Camera.current.WorldToScreenPoint(p1);
+                p1 = new Vector3(p1.x, Camera.current.pixelHeight - p1.y, 0f);
+                p2 = Camera.current.WorldToScreenPoint(p2);
+                p2 = new Vector3(p2.x, Camera.current.pixelHeight - p2.y, 0f);
+                Vector3 p = GeomUtil.ProjectPointOntoLine(p1, p2, Event.current.mousePosition);
+                float sign = Vector3.Dot(p2 - p1, p - p1);
+                float t = sign > 0f && (p2 - p1).magnitude >= 0.0001f ? (p - p1).magnitude / (p2 - p1).magnitude : 0f;
+                t = Mathf.Clamp01(t);
+
+                // Update gaze head and torso alignment parameters
+                if (_changeGazeHeadAlign)
+                    currentGazeInstance.HeadAlign = t;
+                else if (_changeGazeTorsoAlign)
+                    currentGazeInstance.TorsoAlign = t;
+
+                if (Event.current.button == 0 && Event.current.type == EventType.MouseDown)
                 {
-                    var scheduledGazeInstance = gazeLayer.Animations[gazeInstanceIndex];
-                    if (scheduledGazeInstance.Animation.Model == LastSelectedModel)
-                    {
-                        var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
-
-                        // Add gaze target position
-                        Vector3 targetPosition = gazeInstance.Target != null ? gazeInstance.Target.transform.position : gazeInstance.AheadTargetPosition;
-                        gazeTargetSequence.Add(targetPosition);
-                        ++gazeIndex;
-
-                        if (gazeInstance == currentGazeInstance)
-                        {
-                            // This is the current gaze instance
-                            currentGazeTarget = gazeInstance.Target;
-                            currentGazeIndex = gazeIndex;
-                            currentIsFixated = gazeController.StateId == (int)GazeState.NoGaze;
-                        }
-                    }
+                    _changeGazeHeadAlign = _changeGazeTorsoAlign = false;
                 }
-
-                // Get all gaze targets in the scene
-                var gazeTargets = GameObject.FindGameObjectsWithTag("GazeTarget");
-                int currentGazeTargetIndex = -1;
-                for (int gazeTargetIndex = 0; gazeTargetIndex < gazeTargets.Length; ++gazeTargetIndex)
-                {
-                    if (gazeTargets[gazeTargetIndex] == currentGazeTarget)
-                    {
-                        currentGazeTargetIndex = gazeTargetIndex;
-                        break;
-                    }
-                }
-
-                // Initialize animation editing gizmos
-                _animationEditGizmos._SetGazeTargets(gazeTargets, currentGazeTargetIndex, currentIsFixated);
-                _animationEditGizmos._SetGazeSequence(gazeTargetSequence.ToArray(), currentGazeIndex);
             }
+            else
+            {
+                // Interaction mode is free clicking
+                if (Event.current.button == 0 && Event.current.type == EventType.MouseDown)
+                {
+                    // Are we selecting a gaze target or changing head or torso alignments?
+                    _changeGazeHeadAlign = _animationEditGizmos._OnChangeGazeHeadAlign(Event.current.mousePosition);
+                    _changeGazeTorsoAlign = _changeGazeHeadAlign ? false : _animationEditGizmos._OnChangeGazeTorsoAlign(Event.current.mousePosition);
+                    if (!_changeGazeHeadAlign && !_changeGazeTorsoAlign)
+                    {
+                        _newSelectedGazeTarget = _animationEditGizmos._OnSelectGazeTarget(Event.current.mousePosition);
+                    }
+
+                    Repaint();
+                }
+            }
+
+            // Process keyboard commands
+            var e = Event.current;
+            switch (e.type)
+            {
+                case EventType.KeyDown:
+
+                    if (e.shift && e.keyCode == KeyCode.G)
+                    {
+                        _OnLogGazeControllerState();
+                    }
+                    else if (e.shift && e.keyCode == KeyCode.A)
+                    {
+                        _OnAddEyeGaze();
+                    }
+                    else if (e.shift && e.keyCode == KeyCode.R)
+                    {
+                        _OnRemoveEyeGaze();
+                    }
+                    else if (e.shift && e.keyCode == KeyCode.P)
+                    {
+                        EyeGazeEditor.PrintEyeGaze(Timeline);
+                    }
+                    else if (e.shift && e.keyCode == KeyCode.D)
+                    {
+                        bool show = !_animationEditGizmos.showGazeSequence;
+                        _animationEditGizmos.showGazeSequence =
+                            _animationEditGizmos.showGazeTargets =
+                            _animationEditGizmos.showEndEffectorGoals = show;
+                    }
+
+                    break;
+
+                default:
+
+                    break;
+            }
+
+            _animationEditGizmos._ClearGazeSequence();
+            _animationEditGizmos._ClearEndEffectorGoals();
+
+            // Update gaze shift sequence
+            GameObject currentGazeTarget = null;
+            List<AnimationEditGizmos.EyeGazeInstanceDesc> gazeSequence =
+                new List<AnimationEditGizmos.EyeGazeInstanceDesc>(gazeLayer.Animations.Count);
+            int gazeIndex = -1, currentGazeIndex = -1;
+            bool currentIsFixated = false;
+            for (int gazeInstanceIndex = 0; gazeInstanceIndex < gazeLayer.Animations.Count; ++gazeInstanceIndex)
+            {
+                var scheduledGazeInstance = gazeLayer.Animations[gazeInstanceIndex];
+                if (scheduledGazeInstance.Animation.Model == LastSelectedModel)
+                {
+                    var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
+
+                    // Add gaze instance description to the sequence
+                    Vector3 targetPosition = gazeInstance.Target != null ? gazeInstance.Target.transform.position : gazeInstance.AheadTargetPosition;
+                    gazeSequence.Add(new AnimationEditGizmos.EyeGazeInstanceDesc(targetPosition, gazeInstance.HeadAlign, gazeInstance.TorsoAlign));
+                    ++gazeIndex;
+
+                    if (gazeInstance == currentGazeInstance)
+                    {
+                        // This is the current gaze instance
+                        currentGazeTarget = gazeInstance.Target;
+                        currentGazeIndex = gazeIndex;
+                        currentIsFixated = gazeController.StateId == (int)GazeState.NoGaze;
+                    }
+                }
+            }
+
+            // Get all gaze targets in the scene
+            var gazeTargets = GameObject.FindGameObjectsWithTag("GazeTarget");
+            int currentGazeTargetIndex = -1;
+            for (int gazeTargetIndex = 0; gazeTargetIndex < gazeTargets.Length; ++gazeTargetIndex)
+            {
+                if (gazeTargets[gazeTargetIndex] == currentGazeTarget)
+                {
+                    currentGazeTargetIndex = gazeTargetIndex;
+                    break;
+                }
+            }
+
+            // Initialize animation editing gizmos
+            _animationEditGizmos._SetGazeTargets(gazeTargets, currentGazeTargetIndex, currentIsFixated);
+            _animationEditGizmos._SetGazeSequence(gazeSequence.ToArray(), currentGazeIndex);
 
             // Update end-effector goals list
             IKSolver[] solvers = LastSelectedModel.GetComponents<IKSolver>();
@@ -453,17 +497,6 @@ public class LeapAnimationEditor : EditorWindow
             {
                 _animationEditGizmos._SetEndEffectorGoals(solver.Goals.ToArray());
             }
-        }
-
-        // Handle gaze target selection
-        if (Event.current.button == 0 && Event.current.type == EventType.MouseDown)
-        {
-            _newSelectedGazeTarget = _animationEditGizmos._OnSelectGazeTarget(sceneView.camera, Event.current.mousePosition);
-            Repaint();
-        }
-        else if (Event.current.button == 0 && Event.current.type == EventType.MouseUp)
-        {
-            return;
         }
     }
 

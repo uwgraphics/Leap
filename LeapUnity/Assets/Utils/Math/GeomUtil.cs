@@ -14,6 +14,18 @@ public class GeomUtil
     }
 
     /// <summary>
+    /// Project point onto a line.
+    /// </summary>
+    /// <param name="p1">Line start point</param>
+    /// <param name="p2">Line end point</param>
+    /// <returns>Projected vector</returns>
+    public static Vector3 ProjectPointOntoLine(Vector3 p1, Vector3 p2, Vector3 p)
+    {
+        Vector3 p12 = p2 - p1;
+        return p1 + (Vector3.Dot(p - p1, p12) / Vector3.Dot(p12, p12)) * p12;
+    }
+
+    /// <summary>
     /// Project vector onto a plane.
     /// </summary>
     /// <param name="v">Vector to project</param>
