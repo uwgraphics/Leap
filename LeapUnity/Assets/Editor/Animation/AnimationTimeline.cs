@@ -762,6 +762,25 @@ public class AnimationTimeline
     }
 
     /// <summary>
+    /// Find animation instance by animation clip name.
+    /// </summary>
+    /// <param name="animationName">Animation clip name</param>
+    /// <returns>Animation instance ID</returns>
+    public int FindAnimationByName(string animationName)
+    {
+        foreach (var layer in Layers)
+        {
+            foreach (var instance in layer.Animations)
+            {
+                if (instance.Animation.AnimationClip.name == animationName)
+                    return instance.InstanceId;
+            }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
     /// Get constraints on the specific end-effector for specific animation.
     /// </summary>
     /// <param name="animationInstanceId">Animation instance ID</param>
@@ -856,6 +875,28 @@ public class AnimationTimeline
     public void GoToTime(float time)
     {
         CurrentTime = time;
+    }
+
+    /// <summary>
+    /// Get the ID of the animation instance at the current frame in the specified layer.
+    /// </summary>
+    /// <param name="layerName">Layer name</param>
+    /// <param name="modelName">Character model name</param>
+    /// <returns>Animation instance ID</returns>
+    public int GetCurrentAnimationInstanceId(string layerName, string modelName)
+    {
+        var layer = GetLayer(layerName);
+        foreach (var scheduledInstance in layer.Animations)
+        {
+            var instance = scheduledInstance.Animation;
+
+            if (CurrentFrame >= scheduledInstance.StartFrame &&
+                CurrentFrame <= (scheduledInstance.StartFrame + instance.FrameLength - 1) &&
+                scheduledInstance.Animation.Model.name == modelName)
+                return scheduledInstance.InstanceId;
+        }
+
+        return -1;
     }
 
     /// <summary>
@@ -1327,13 +1368,6 @@ public class AnimationTimeline
                 t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1))) / constraint.deactivationFrameLength);
             float t2 = t * t;
             float weight = -2f * t2 * t + 3f * t2;
-            //
-            /*if (model.name == "Norman")
-            {
-                Debug.LogWarning(string.Format("frame = {0}: endEffector = {1}, target = {2}, weight = {3}", CurrentFrame,
-                    constraint.endEffector, constraint.target != null ? constraint.target.name : null, weight));
-            }*/
-            //
 
             // Set the constraint goal in relevant IK solvers
             foreach (var solver in solvers)

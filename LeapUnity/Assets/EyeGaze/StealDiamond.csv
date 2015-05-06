@@ -2,7 +2,7 @@ Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTarge
 Norman,StealDiamondGaze1,1,10,71,RoomFront,"0 0 0",1,0.2937585,True
 Norman,StealDiamondGaze2,72,38,111,RoomLeft1,"0 0 0",0,0.5040635,True
 Norman,StealDiamondGaze3,112,37,154,RoomRight1,"0 0 0",0.7877787,0.08643964,True
-Norman,StealDiamondGaze4,155,34,205,Diamond,"0 0 0",0,0,True
+Norman,StealDiamondGaze4,155,34,205,RoomFront,"0 0 0",0.9486775,0,True
 Norman,StealDiamondGaze5,206,39,247,RoomBack,"0 0 0",0,0.1420626,True
 Norman,StealDiamondGaze6,248,9,259,RoomRight2,"0 0 0",0.08860913,0.1494917,True
 Norman,StealDiamondGaze7,260,8,269,RoomLeft2,"0 0 0",0.0994366,0.2637859,True

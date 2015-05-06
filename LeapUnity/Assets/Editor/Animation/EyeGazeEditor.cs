@@ -38,9 +38,7 @@ public static class EyeGazeEditor
         int minEyeGazeLength = Mathf.RoundToInt(LEAPCore.minEyeGazeLength * LEAPCore.editFrameRate);
 
         // Make sure the new instance isn't too short
-        int newInstanceMinLength = !newInstance.AnimationClip.name.EndsWith(LEAPCore.gazeAheadSuffix) ?
-            minEyeGazeLength : maxEyeGazeGapLength;
-        newInstance.SetFrameLength(newInstance.FrameLength >= newInstanceMinLength ? newInstance.FrameLength : newInstanceMinLength);
+        newInstance.SetFrameLength(newInstance.FrameLength >= minEyeGazeLength ? newInstance.FrameLength : minEyeGazeLength);
 
         // Trim or remove overlapping eye gaze instances
         int newEndFrame = newStartFrame + newInstance.FrameLength - 1;
@@ -56,25 +54,15 @@ public static class EyeGazeEditor
             }
 
             var overlappingGazeInstance = overlappingInstance.Animation as EyeGazeInstance;
-            
             int overlappingStartFrame = overlappingInstance.StartFrame;
             int overlappingEndFrame = overlappingInstance.StartFrame + overlappingInstance.Animation.FrameLength - 1;
             bool overlappingIsGazeAhead = overlappingInstance.Animation.AnimationClip.name.EndsWith(LEAPCore.gazeAheadSuffix);
-
-            // Compute minimal length of the overlapping instance
-            int overlappingMinLength = -1;
-            /*if (overlappingGazeInstance.FixationStartFrame >= 0)
-                overlappingMinLength = overlappingGazeInstance.FixationStartFrame;
-            else */if (overlappingIsGazeAhead)
-                overlappingMinLength = maxEyeGazeGapLength;
-            else
-                overlappingMinLength = minEyeGazeLength;
 
             if (overlappingStartFrame < newStartFrame)
             {
                 // Overlapping instance starts before the new instance
 
-                if (newStartFrame - overlappingStartFrame >= overlappingMinLength)
+                if (newStartFrame - overlappingStartFrame >= minEyeGazeLength)
                 {
                     // Overlapping instance reaches fixation before the start of the new instance,
                     // so we can just trim the fixation phase
@@ -125,7 +113,7 @@ public static class EyeGazeEditor
             {
                 // Overlapping instance starts after the new instance
 
-                if (overlappingEndFrame - newEndFrame >= overlappingMinLength)
+                if (overlappingEndFrame - newEndFrame >= minEyeGazeLength)
                 {
                     // We can delay the start of the overlapping instance after the end of the new instance,
                     // and there will still be time for gaze to reach the target in the overlapping instance
@@ -226,7 +214,7 @@ public static class EyeGazeEditor
                 var gazeAheadInstance = new EyeGazeInstance(
                     newInstance.Model, newInstance.AnimationClip.name + LEAPCore.gazeAheadSuffix,
                     //Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
-                    maxEyeGazeGapLength, null, 0f, 0f, maxEyeGazeGapLength, true, false);
+                    timeline.FrameLength - newEndFrame - 1, null, 0f, 0f, maxEyeGazeGapLength, true, false);
                 timeline.AddAnimation(layerName, gazeAheadInstance, newEndFrame + 1);
             }
             else
@@ -273,7 +261,7 @@ public static class EyeGazeEditor
                         var prevGazeAheadInstance = new EyeGazeInstance(
                             prevInstance.Animation.Model, prevInstance.Animation.AnimationClip.name + LEAPCore.gazeAheadSuffix,
                             //Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
-                            maxEyeGazeGapLength, null, 0f, 0f, maxEyeGazeGapLength, true, false);
+                            newStartFrame - prevEndFrame - 1, null, 0f, 0f, maxEyeGazeGapLength, true, false);
                         timeline.AddAnimation(layerName, prevGazeAheadInstance, prevEndFrame + 1);
                     }
                     else
@@ -331,10 +319,11 @@ public static class EyeGazeEditor
         int prevStartFrame = prevInstance.StartFrame;
         int prevEndFrame = prevStartFrame + prevInstance.Animation.FrameLength - 1;
 
-        // Get the start frame of the next eye gaze instance
+        // Get the start frame of the next eye gaze instance that is not the gaze-ahead instance for the instance being removed
         var nextInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(inst => inst.StartFrame > endFrame &&
+            inst.Animation.AnimationClip.name != instanceToRemove.AnimationClip.name + LEAPCore.gazeAheadSuffix &&
             inst.Animation.Model == instanceToRemove.Model);
-        int nextStartFrame = nextInstance != null ? nextInstance.StartFrame : timeline.FrameLength - 1;
+        int nextStartFrame = nextInstance != null ? nextInstance.StartFrame : timeline.FrameLength;
 
         // First remove the follow-up gaze-ahead instance, if one exists
         var gazeAheadInstanceToRemove = timeline.GetLayer(layerName).Animations.FirstOrDefault(inst =>
@@ -345,30 +334,39 @@ public static class EyeGazeEditor
         // Then remove the actual instance
         timeline.RemoveAnimation(instanceId);
 
-        if (prevInstance != null && !prevInstance.Animation.AnimationClip.name.EndsWith(LEAPCore.gazeAheadSuffix))
+        if (prevInstance != null)
         {
-            // There is a gaze instance preceding the one being removed, and it is not a gaze-ahead instance
-            // of another gaze instance
-
-            if (nextStartFrame - prevEndFrame - 1 < maxEyeGazeGapLength)
+            if (!prevInstance.Animation.AnimationClip.name.EndsWith(LEAPCore.gazeAheadSuffix))
             {
-                // The gap between the end of the previous instance and the start of the next instance is small,
-                // so we extend the instance so its end lines up with the start of the next instance
+                // There is a gaze instance preceding the one being removed, and it is not a gaze-ahead instance
+                // of another gaze instance
 
-                (prevInstance.Animation as EyeGazeInstance).SetFrameLength(nextStartFrame - prevStartFrame);
+                if (nextStartFrame - prevEndFrame - 1 < maxEyeGazeGapLength)
+                {
+                    // The gap between the end of the previous instance and the start of the next instance is small,
+                    // so we extend the instance so its end lines up with the start of the next instance
+
+                    (prevInstance.Animation as EyeGazeInstance).SetFrameLength(nextStartFrame - prevStartFrame);
+                }
+                else
+                {
+                    // The gap between the end of the previous instance and the start of the next instance is long,
+                    // so we add a gaze-ahead instance to follow the new instance
+
+                    var prevGazeAheadInstance = new EyeGazeInstance(
+                        prevInstance.Animation.Model, prevInstance.Animation.AnimationClip.name + LEAPCore.gazeAheadSuffix,
+                        //Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
+                        nextStartFrame - prevEndFrame - 1, null, 0f, 0f, maxEyeGazeGapLength, true, false);
+                    timeline.AddAnimation(layerName, prevGazeAheadInstance, prevEndFrame + 1);
+                }
             }
             else
             {
-                // The gap between the end of the previous instance and the start of the next instance is long,
-                // so we add a gaze-ahead instance to follow the new instance
-
-                var prevGazeAheadInstance = new EyeGazeInstance(
-                    prevInstance.Animation.Model, prevInstance.Animation.AnimationClip.name + LEAPCore.gazeAheadSuffix,
-                    //Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
-                    nextStartFrame - prevEndFrame - 1, null, 0f, 0f, maxEyeGazeGapLength, true, false);
-                timeline.AddAnimation(layerName, prevGazeAheadInstance, prevEndFrame + 1);
+                // The preceding gaze instance is a gaze-ahead instance of another gaze instance -
+                // we extend to the start of the next instance
+                (prevInstance.Animation as EyeGazeInstance).SetFrameLength(nextStartFrame - prevStartFrame);
             }
-        }   
+        }
     }
 
     /// <summary>
@@ -413,27 +411,6 @@ public static class EyeGazeEditor
         instance.HeadAlign = headAlign;
         instance.TorsoAlign = torsoAlign;
         instance.TurnBody = turnBody;
-    }
-    
-    /// <summary>
-    /// Get the eye gaze instance at the current franme on the animation timeline.
-    /// </summary>
-    /// <param name="timeline">Animation timeline</param>
-    /// <param name="layerName">Animation layer holding eye gaze animations</param>
-    /// <returns>Current eye gaze instance</returns>
-    public static EyeGazeInstance GetCurrentEyeGazeInstance(AnimationTimeline timeline, string layerName = "Gaze")
-    {
-        var gazeLayer = timeline.GetLayer(layerName);
-        foreach (var scheduledGazeInstance in gazeLayer.Animations)
-        {
-            var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
-
-            if (timeline.CurrentFrame >= scheduledGazeInstance.StartFrame &&
-                timeline.CurrentFrame <= (scheduledGazeInstance.StartFrame + gazeInstance.FrameLength - 1))
-                return gazeInstance;
-        }
-
-        return null;
     }
 
     /// <summary>

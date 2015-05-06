@@ -1,6 +1,12 @@
 Leap Animation Editor:
 
-#91 [] When using redistribution of gaze joint rotations, torso rotations are slightly discontinuous when starting fixation
+#92 [] Torso sometimes snaps when using gaze IK
+  - See frames 243-244 in StealDiamond example
+  - Also at some gaze instance boundaries in the same example, e.g., frames 154-155
+  - Discontinuous goal weights?
+
+#91 [X] When using redistribution of gaze joint rotations, torso rotations are slightly discontinuous when starting fixation
+  - Problem disappears when gaze is applied at least twice per frame - good enough for a temporary fix
 
 #90 [X] Eyes snap apart when starting a new gaze shift
   - Both eyes should start rotating from their VOR pose at the end of the previous gaze instance, where eye directions intersect at the fixation target, but instead they snap to a pose where eye directions are parallel
@@ -20,7 +26,7 @@ Leap Animation Editor:
   - StealDiamondGaze1 is a good example where gaze is all over the place
   - Fixed by preventing rotParam* renormalization from ever reducing its value below what it was on the previous step
   
-#86 [] During VOR, we can't just keep the same orientation that was set when fixation started; alignment should approach 1 as body gets more aligned with the target or keep the original value as body rotates away from the target
+#86 [X] During VOR, we can't just keep the same orientation that was set when fixation started; alignment should approach 1 as body gets more aligned with the target or keep the original value as body rotates away from the target
   - This is a problem when there is a lot of body motion, esp. in walking motions
 
 #85 [] Degenerate gaze shifts - gaze controller enters fixation mode even though neither eyes nor head have yet aligned with the target
