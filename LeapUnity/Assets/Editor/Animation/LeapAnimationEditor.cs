@@ -20,12 +20,21 @@ public class LeapAnimationEditor : EditorWindow
         private set;
     }
 
-    private AnimationEditGizmos _animationEditGizmos = null;
+    /// <summary>
+    /// Last selected character model in the scene.
+    /// </summary>
+    public GameObject LastSelectedModel
+    {
+        get;
+        private set;
+    }
+
+    // Animation timeline stuff
     private Stopwatch _frameTimer = new Stopwatch();
     private GameObject _loggedGazeControllerStateModel = null;
-
     private bool _ikEnabled = true;
 
+    // Editor window GUI
     private bool _guiInitialized = false;
     private Texture _timelineActiveTexture;
     private Texture _timelineActiveDownTexture;
@@ -33,6 +42,18 @@ public class LeapAnimationEditor : EditorWindow
     private Texture _timelinePlayDownTexture;
     private Texture _timelinePrevFrameTexture;
     private Texture _timelineNextFrameTexture;
+
+    // Scene view rendering and interaction
+    private AnimationEditGizmos _animationEditGizmos = null;
+    private GameObject _newSelectedGazeTarget = null;
+
+    private void OnEnable()
+    {
+        _InitTimeline();
+
+        // Initialize scene view
+        SceneView.onSceneGUIDelegate = _UpdateSceneView;
+    }
 
     private void Update()
     {
@@ -46,11 +67,6 @@ public class LeapAnimationEditor : EditorWindow
         _frameTimer.Reset();
         _frameTimer.Start();
 
-        if (Timeline == null)
-        {
-            _InitTimeline();
-        }
-
         // Update animation and redraw the scene and timeline
         Timeline.Advance(deltaTime);
         if (Timeline.Active && Timeline.Playing)
@@ -59,6 +75,18 @@ public class LeapAnimationEditor : EditorWindow
             this.Repaint();
         }
 
+        // Update last selected character model
+        var selectedModel = ModelUtils.GetSelectedModel();
+        LastSelectedModel = selectedModel != null ? selectedModel : LastSelectedModel;
+        LastSelectedModel = Timeline.Models.Contains(LastSelectedModel) ? LastSelectedModel : null;
+
+        // Select gaze target (if one has been clicked in the scene view)
+        // TODO: this is a hacky solution that prevents Unity from overriding the object selection
+        if (_newSelectedGazeTarget != null && _newSelectedGazeTarget != Selection.activeGameObject)
+        {
+            Selection.activeGameObject = _newSelectedGazeTarget;
+        }
+        
         if (_loggedGazeControllerStateModel != null)
         {
             // Log gaze controller state for the specified character model
@@ -192,8 +220,6 @@ public class LeapAnimationEditor : EditorWindow
             SceneView.RepaintAll();
         }
 
-        _UpdateSceneView();
-
         // Process keyboard input
         var e = Event.current;
         switch (e.type)
@@ -202,10 +228,9 @@ public class LeapAnimationEditor : EditorWindow
 
                 if (e.keyCode == KeyCode.G)
                 {
-                    var selectedModel = ModelUtils.GetSelectedModel();
-                    if (selectedModel != null && selectedModel.GetComponent<GazeController>() != null)
+                    if (LastSelectedModel != null && LastSelectedModel.GetComponent<GazeController>() != null)
                     {
-                        _loggedGazeControllerStateModel = selectedModel;
+                        _loggedGazeControllerStateModel = LastSelectedModel;
                     }
                 }
 
@@ -266,33 +291,34 @@ public class LeapAnimationEditor : EditorWindow
     }
 
     // Update scene view GUI
-    private void _UpdateSceneView()
+    private void _UpdateSceneView(SceneView sceneView)
     {
         _animationEditGizmos._ClearGazeSequence();
         _animationEditGizmos._ClearEndEffectorGoals();
-        var selectedModel = Timeline.Models.FirstOrDefault(m => ModelUtils.GetSelectedModel());
 
-        if (selectedModel != null)
+        if (LastSelectedModel != null)
         {
-            // Update end-effector goals list
-            IKSolver[] solvers = selectedModel.GetComponents<IKSolver>();
-            foreach (var solver in solvers)
-            {
-                _animationEditGizmos._SetEndEffectorGoals(solver.Goals.ToArray());
-            }
-
-            // Update gaze shift sequence
+            var gazeController = LastSelectedModel.GetComponent<GazeController>();
             var gazeLayer = Timeline.GetLayer("Gaze");
+            
             if (gazeLayer != null)
             {
+                // Update gaze target set and gaze shift sequence
+                GameObject currentGazeTarget = null;
+                HashSet<GameObject> gazeTargetSet = new HashSet<GameObject>();
                 List<Vector3> gazeTargetSequence = new List<Vector3>(gazeLayer.Animations.Count);
                 int gazeIndex = -1, currentGazeIndex = -1;
+                bool currentIsFixated = false;
                 for (int gazeInstanceIndex = 0; gazeInstanceIndex < gazeLayer.Animations.Count; ++gazeInstanceIndex)
                 {
                     var scheduledGazeInstance = gazeLayer.Animations[gazeInstanceIndex];
-                    if (scheduledGazeInstance.Animation.Model == selectedModel)
+                    if (scheduledGazeInstance.Animation.Model == LastSelectedModel)
                     {
                         var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
+
+                        // Add gaze target
+                        if (gazeInstance.Target != null)
+                            gazeTargetSet.Add(gazeInstance.Target);
 
                         // Add gaze target position
                         Vector3 targetPosition = gazeInstance.Target != null ? gazeInstance.Target.transform.position : gazeInstance.AheadTargetPosition;
@@ -303,13 +329,39 @@ public class LeapAnimationEditor : EditorWindow
                             Timeline.CurrentFrame <= (scheduledGazeInstance.StartFrame + gazeInstance.FrameLength - 1))
                         {
                             // This is the current gaze instance
+                            currentGazeTarget = gazeInstance.Target;
                             currentGazeIndex = gazeIndex;
+                            currentIsFixated = gazeController.StateId == (int)GazeState.NoGaze;
                         }
                     }
                 }
 
+                // Get list of gaze targets
+                var gazeTargets = gazeTargetSet.ToList();
+                int currentGazeTargetIndex = gazeTargets.IndexOf(currentGazeTarget);
+
+                // Initialize animation editing gizmos
+                _animationEditGizmos._SetGazeTargets(gazeTargets.ToArray(), currentGazeTargetIndex, currentIsFixated);
                 _animationEditGizmos._SetGazeSequence(gazeTargetSequence.ToArray(), currentGazeIndex);
             }
+
+            // Update end-effector goals list
+            IKSolver[] solvers = LastSelectedModel.GetComponents<IKSolver>();
+            foreach (var solver in solvers)
+            {
+                _animationEditGizmos._SetEndEffectorGoals(solver.Goals.ToArray());
+            }
+        }
+
+        // Handle gaze target selection
+        if (Event.current.button == 0 && Event.current.type == EventType.MouseDown)
+        {
+            _newSelectedGazeTarget = _animationEditGizmos._OnSelectGazeTarget(sceneView.camera, Event.current.mousePosition);
+            Repaint();
+        }
+        else if (Event.current.button == 0 && Event.current.type == EventType.MouseUp)
+        {
+            return;
         }
     }
 

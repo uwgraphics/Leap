@@ -414,6 +414,27 @@ public static class EyeGazeEditor
         instance.TorsoAlign = torsoAlign;
         instance.TurnBody = turnBody;
     }
+    
+    /// <summary>
+    /// Get the eye gaze instance at the current franme on the animation timeline.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="layerName">Animation layer holding eye gaze animations</param>
+    /// <returns>Current eye gaze instance</returns>
+    public static EyeGazeInstance GetCurrentEyeGazeInstance(AnimationTimeline timeline, string layerName = "Gaze")
+    {
+        var gazeLayer = timeline.GetLayer(layerName);
+        foreach (var scheduledGazeInstance in gazeLayer.Animations)
+        {
+            var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
+
+            if (timeline.CurrentFrame >= scheduledGazeInstance.StartFrame &&
+                timeline.CurrentFrame <= (scheduledGazeInstance.StartFrame + gazeInstance.FrameLength - 1))
+                return gazeInstance;
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Load eye gaze behavior specification for the specified base animation.
