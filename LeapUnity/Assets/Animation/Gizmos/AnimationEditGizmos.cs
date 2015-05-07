@@ -14,12 +14,14 @@ public class AnimationEditGizmos : MonoBehaviour
         public Vector3 targetPosition;
         public float headAlign;
         public float torsoAlign;
+        public bool turnBody;
         
-        public EyeGazeInstanceDesc(Vector3 targetPosition, float headAlign, float torsoAlign)
+        public EyeGazeInstanceDesc(Vector3 targetPosition, float headAlign, float torsoAlign, bool turnBody = true)
         {
             this.targetPosition = targetPosition;
             this.headAlign = headAlign;
             this.torsoAlign = torsoAlign;
+            this.turnBody = turnBody;
         }
     }
 
@@ -216,7 +218,8 @@ public class AnimationEditGizmos : MonoBehaviour
                 // Draw torso alignment marker
                 float torsoAlign = Mathf.Clamp01(_gazeSequence[gazeIndex].torsoAlign);
                 Vector3 torsoAlignMarkerPos = p1 + (p2 - p1) * torsoAlign;
-                Gizmos.DrawIcon(torsoAlignMarkerPos, "GazeTorsoAlignGizmo.png");
+                bool turnBody = _gazeSequence[gazeIndex].turnBody;
+                Gizmos.DrawIcon(torsoAlignMarkerPos, turnBody ? "GazeTorsoAlignGizmo.png" : "GazeTorsoAlign0Gizmo.png");
             }
         }
     }

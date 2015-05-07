@@ -1060,6 +1060,20 @@ public class AnimationTimeline
     }
 
     /// <summary>
+    /// Go through the entire animation and bake the outputs of all animation
+    /// instances into animation clips.
+    /// </summary>
+    public void BakeInstances()
+    {
+        StartBakeInstances();
+        Play();
+        for (int frameIndex = 0; frameIndex < FrameLength; ++frameIndex)
+            Advance(1f / LEAPCore.editFrameRate);
+        Stop();
+        FinalizeBakeInstances();
+    }
+
+    /// <summary>
     /// Reset all character models to initial pose, encoded in
     /// InitialPose animation clip.
     /// </summary>
@@ -1142,17 +1156,7 @@ public class AnimationTimeline
         if (Playing)
         {
             // Animation is playing, so advance time
-            bool loopedAround = _AddTime(deltaTime * TimeScale);
-
-            if (loopedAround)
-            {
-                if (IsBakingInstances)
-                {
-                    FinalizeBakeInstances();
-                    Playing = false;
-                    return;
-                }
-            }
+            _AddTime(deltaTime * TimeScale);
         }
 
         ApplyAnimation();

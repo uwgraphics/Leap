@@ -215,18 +215,7 @@ public class LeapAnimationEditor : EditorWindow
         // Bake procedural anim. instances into clips
         if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "Bake"))
         {
-            if (!Timeline.IsBakingInstances)
-            {
-                if (Timeline.Active && !Timeline.Playing)
-                {
-                    Timeline.StartBakeInstances();
-                    SceneView.RepaintAll();
-                }
-            }
-            else
-            {
-                Timeline.FinalizeBakeInstances();
-            }
+             Timeline.BakeInstances();
         }
 
         // Update the playback slider
@@ -381,9 +370,14 @@ public class LeapAnimationEditor : EditorWindow
 
                 // Update gaze head and torso alignment parameters
                 if (_changeGazeHeadAlign)
+                {
                     currentGazeInstance.HeadAlign = t;
+                }
                 else if (_changeGazeTorsoAlign)
+                {
                     currentGazeInstance.TorsoAlign = t;
+                    currentGazeInstance.TurnBody = t <= 0f ? false : true;
+                }
 
                 if (Event.current.button == 0 && Event.current.type == EventType.MouseDown)
                 {
@@ -425,6 +419,10 @@ public class LeapAnimationEditor : EditorWindow
                     {
                         _OnRemoveEyeGaze();
                     }
+                    else if (e.shift && e.keyCode == KeyCode.B)
+                    {
+                        Timeline.BakeInstances();
+                    }
                     else if (e.shift && e.keyCode == KeyCode.P)
                     {
                         EyeGazeEditor.PrintEyeGaze(Timeline);
@@ -462,7 +460,8 @@ public class LeapAnimationEditor : EditorWindow
 
                     // Add gaze instance description to the sequence
                     Vector3 targetPosition = gazeInstance.Target != null ? gazeInstance.Target.transform.position : gazeInstance.AheadTargetPosition;
-                    gazeSequence.Add(new AnimationEditGizmos.EyeGazeInstanceDesc(targetPosition, gazeInstance.HeadAlign, gazeInstance.TorsoAlign));
+                    gazeSequence.Add(new AnimationEditGizmos.EyeGazeInstanceDesc(targetPosition,
+                        gazeInstance.HeadAlign, gazeInstance.TorsoAlign, gazeInstance.TurnBody));
                     ++gazeIndex;
 
                     if (gazeInstance == currentGazeInstance)
