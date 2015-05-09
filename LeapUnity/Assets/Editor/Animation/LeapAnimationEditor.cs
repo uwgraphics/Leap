@@ -55,13 +55,20 @@ public class LeapAnimationEditor : EditorWindow
     {
         _InitTimeline();
 
-        // Initialize scene view
-        SceneView.onSceneGUIDelegate = SceneView_GUI;
+        // Get component for drawing animation edit gizmos
+        _animationEditGizmos = UnityEngine.Object.FindObjectOfType(typeof(AnimationEditGizmos)) as AnimationEditGizmos;
+        if (_animationEditGizmos == null)
+            throw new Exception("Unable to find object AnimationEditGizmos in the scene");
         _animationEditGizmos._ClearGazeSequence();
         _animationEditGizmos._ClearGazeTargets();
         _animationEditGizmos._ClearEndEffectorGoals();
+
+        // Initialize scene view
+        SceneView.onSceneGUIDelegate = SceneView_GUI;
         _newSelectedGazeTarget = null;
         _changeGazeHeadAlign = _changeGazeTorsoAlign = false;
+
+        UnityEngine.Debug.Log("LeapAnimationEditor successfully initialized");
     }
 
     private void Update()
@@ -102,6 +109,17 @@ public class LeapAnimationEditor : EditorWindow
             EyeGazeEditor.PrintEyeGazeControllerState(_loggedGazeControllerStateModel);
             _loggedGazeControllerStateModel = null;
         }
+
+        // TODO: remove this
+        /*if (LastSelectedModel != null)
+        {
+            //Timeline.ResetModelsToInitialPose();
+            var gazeController = LastSelectedModel.GetComponent<GazeController>();
+            var target = GameObject.Find("UpperLeft");
+            gazeController.Torso.bone.localRotation = gazeController.Torso._ComputeTargetRotation(target.transform.position);
+            gazeController._ApplyRotation(gazeController.Torso);
+        }*/
+        //
     }
 
     private void OnGUI()
@@ -120,7 +138,7 @@ public class LeapAnimationEditor : EditorWindow
             if (!Timeline.Active)
             {
                 Timeline.Stop();
-                Timeline.ResetModelsToInitialPose();
+                Timeline.ResetModelsAndEnvironment();
 
                 // Show all models
                 var models = Timeline.Models;
@@ -313,9 +331,6 @@ public class LeapAnimationEditor : EditorWindow
         Timeline.LayerApplied += new AnimationTimeline.LayerEvtH(AnimationTimeline_LayerApplied);
         Timeline.AnimationStarted += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
         Timeline.AnimationFinished += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationFinished);
-
-        // Get component for drawing animation edit gizmos
-        _animationEditGizmos = UnityEngine.Object.FindObjectOfType(typeof(AnimationEditGizmos)) as AnimationEditGizmos;
     }
 
     // Initialize animation editor GUI
@@ -350,6 +365,12 @@ public class LeapAnimationEditor : EditorWindow
             var currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
             var currentGazeInstance = currentGazeInstanceId > -1 ?
                 Timeline.GetAnimation(currentGazeInstanceId) as EyeGazeInstance : null;
+
+            if (currentGazeInstance == null && (_changeGazeHeadAlign || _changeGazeTorsoAlign))
+            {
+                UnityEngine.Debug.LogError("Somehow we are in head or torso alignment editing mode, even though there is no gaze instance at the current frame");
+                _changeGazeHeadAlign = _changeGazeTorsoAlign = false;
+            }
 
             // Handle mouse interaction in the scene view
             if (_changeGazeHeadAlign || _changeGazeTorsoAlign)

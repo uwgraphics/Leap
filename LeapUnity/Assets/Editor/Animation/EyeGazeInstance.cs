@@ -48,8 +48,8 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// </summary>
     public virtual float HeadAlign
     {
-        get;
-        set;
+        get { return _headAlign; }
+        set { _headAlign = Mathf.Clamp01(value); }
     }
 
     /// <summary>
@@ -57,8 +57,8 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// </summary>
     public virtual float TorsoAlign
     {
-        get;
-        set;
+        get { return _torsoAlign; }
+        set { _torsoAlign = Mathf.Clamp01(value); }
     }
 
     /// <summary>
@@ -128,6 +128,8 @@ public class EyeGazeInstance : AnimationControllerInstance
         get;
         set;
     }
+
+    protected float _headAlign, _torsoAlign;
 
     protected bool _gazeShiftStarted = false;
     protected int _curFixationStartFrame = -1;

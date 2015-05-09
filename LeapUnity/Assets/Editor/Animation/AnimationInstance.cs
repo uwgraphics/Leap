@@ -29,7 +29,7 @@ public abstract class AnimationInstance
     public virtual GameObject Model
     {
         get;
-        private set;
+        protected set;
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public abstract class AnimationInstance
     public virtual Animation Animation
     {
         get;
-        private set;
+        protected set;
     }
 
     /// <summary>
@@ -111,6 +111,18 @@ public abstract class AnimationInstance
     {
         get;
         set;
+    }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    public AnimationInstance()
+    {
+        Model = null;
+        Animation = null;
+        AnimationClip = null;
+        BakeMask = null;
+        _AnimationCurves = null;
     }
 
     /// <summary>

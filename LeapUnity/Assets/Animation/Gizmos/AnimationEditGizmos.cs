@@ -136,7 +136,6 @@ public class AnimationEditGizmos : MonoBehaviour
         if (Mathf.Abs(mousePosition.x - headAlignMarkerPos.x) <= 8 &&
             Mathf.Abs(mousePosition.y - headAlignMarkerPos.y) <= 8)
         {
-            Debug.LogWarning("Clicked on head align marker");
             return true;
         }
 

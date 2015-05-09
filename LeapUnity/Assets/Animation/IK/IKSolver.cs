@@ -130,12 +130,6 @@ public abstract class IKSolver : MonoBehaviour
             return;
         }
 
-        if (!_goals.Any(g => g.weight > 0f))
-        {
-            // No IK goals set
-            return;
-        }
-
         _ConsolidateGoals();
         _Solve();
     }

@@ -515,7 +515,9 @@ public static class EyeGazeEditor
                     
                     // Get head and body coordination parameters
                     float headAlign = (float)double.Parse(lineElements[attributeIndices["HeadAlign"]]);
+                    headAlign = Mathf.Clamp01(headAlign);
                     float torsoAlign = (float)double.Parse(lineElements[attributeIndices["TorsoAlign"]]);
+                    torsoAlign = Mathf.Clamp01(torsoAlign);
                     bool turnBody = bool.Parse(lineElements[attributeIndices["TurnBody"]]);
 
                     // Get gaze edit settings
@@ -1197,7 +1199,7 @@ public static class EyeGazeEditor
         int startFrame = timeline.GetAnimationStartFrame(instanceId);
         var gazeController = gazeInstance.GazeController;
         
-        timeline.ResetModelsToInitialPose();
+        timeline.ResetModelsAndEnvironment();
 
         // Disable stylized gaze, enable/disable torso
         gazeController.stylizeGaze = false;
@@ -1423,7 +1425,7 @@ public static class EyeGazeEditor
         var expressiveEyeGazeCurves = new Dictionary<Transform, AnimationCurve[]>();
         var expressiveEyeGazeRotations = new Dictionary<Transform, Vector3>();
 
-        timeline.ResetModelsToInitialPose();
+        timeline.ResetModelsAndEnvironment();
 
         // Create expressive displacement animation clips on the model for this gaze instance
         for (int gazeJointIndex = gazeController.eyes.Length; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)

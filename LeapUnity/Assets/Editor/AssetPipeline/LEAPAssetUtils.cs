@@ -490,7 +490,7 @@ public static class LEAPAssetUtils
     /// Load end-effector constraint annotations for the specified animation clip.
     /// </summary>
     /// <param name="clip"></param>
-    public static AnimationTimeline.EndEffectorConstraint[] LoadEndEffectorConstraintsForClip(AnimationClip clip)
+    public static EndEffectorConstraint[] LoadEndEffectorConstraintsForClip(AnimationClip clip)
     {
         string clipPath = AssetDatabase.GetAssetPath(clip);
         if (clipPath == "")
@@ -500,7 +500,7 @@ public static class LEAPAssetUtils
         }
 
         string eecPath = clipPath.Substring(0, clipPath.LastIndexOf('.')) + "#EEC.csv";
-        List<AnimationTimeline.EndEffectorConstraint> constraints = new List<AnimationTimeline.EndEffectorConstraint>();
+        List<EndEffectorConstraint> constraints = new List<EndEffectorConstraint>();
         
         if (!File.Exists(eecPath))
         {
@@ -517,6 +517,7 @@ public static class LEAPAssetUtils
             Dictionary<string, int> attributeIndices = new Dictionary<string, int>();
             Dictionary<string, int> lastConstraintEndFrames = new Dictionary<string, int>();
             GameObject[] endEffectorTargets = GameObject.FindGameObjectsWithTag("EndEffectorTarget");
+            GameObject[] manipulatedObjectHandles = GameObject.FindGameObjectsWithTag("ManipulatedObjectHandle");
             
             while (!reader.EndOfStream && (line = reader.ReadLine()) != "")
             {
@@ -548,22 +549,29 @@ public static class LEAPAssetUtils
                     string endEffectorTargetName = lineElements[attributeIndices["Target"]];
                     var endEffectorTarget = endEffectorTargetName == "null" ? null :
                         endEffectorTargets.FirstOrDefault(t => t.name == endEffectorTargetName);
+                    string manipulatedObjectHandleName = attributeIndices.ContainsKey("ManipulatedObjectHandle") ?
+                        lineElements[attributeIndices["ManipulatedObjectHandle"]] : "null";
+                    var manipulatedObjectHandle = manipulatedObjectHandleName == "null" ? null :
+                        manipulatedObjectHandles.FirstOrDefault(t => t.name == manipulatedObjectHandleName);
+                    int manipulationEndFrame = manipulatedObjectHandle != null && attributeIndices.ContainsKey("ManipulationEndFrame") ?
+                        int.Parse(lineElements[attributeIndices["ManipulationEndFrame"]]) : -1;
+                    int manipulationFrameLength = manipulationEndFrame >= 0 ? manipulationEndFrame - startFrame + 1 : -1;
                     int activationFrameLength = attributeIndices.ContainsKey("ActivationFrameLength") ?
                         int.Parse(lineElements[attributeIndices["ActivationFrameLength"]]) : LEAPCore.endEffectorConstraintActivationFrameLength;
                     int deactivationFrameLength = attributeIndices.ContainsKey("DeactivationFrameLength") ?
                         int.Parse(lineElements[attributeIndices["DeactivationFrameLength"]]) : LEAPCore.endEffectorConstraintActivationFrameLength;
 
-                    if (lastConstraintEndFrames.ContainsKey(endEffector) && lastConstraintEndFrames[endEffector] >= startFrame)
+                    /*if (lastConstraintEndFrames.ContainsKey(endEffector) && lastConstraintEndFrames[endEffector] >= startFrame)
                     {
                         UnityEngine.Debug.LogWarning(string.Format("Error in end-effector constraint asset file {0}: constraint ({1}, {2}, {3}) precedes or  overlaps another constraint on the same end-effector",
                             eecPath, endEffector, startFrame, startFrame + frameLength - 1));
                     }
-                    else
+                    else*/
                     {
                         // Add constraint
-                        constraints.Add(new AnimationTimeline.EndEffectorConstraint(
+                        constraints.Add(new EndEffectorConstraint(
                             endEffector, startFrame, frameLength, preserveAbsoluteRotation, endEffectorTarget,
-                            activationFrameLength, deactivationFrameLength));
+                            manipulatedObjectHandle, manipulationFrameLength, activationFrameLength, deactivationFrameLength));
                         lastConstraintEndFrames[endEffector] = startFrame + frameLength - 1;
                     }
                 }

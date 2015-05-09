@@ -184,6 +184,10 @@ public sealed class GazeJoint : DirectableJoint
     [HideInInspector]
     public float fixRotParamAlign;
 
+    // Rotation of the gaze joint before gaze is applied
+    [HideInInspector]
+    public Quaternion baseRot = Quaternion.identity;
+
     // Rotational displacement applied to the joint as it rotates towards the target
     [HideInInspector]
     public Quaternion expressiveRot = Quaternion.identity;
@@ -780,15 +784,7 @@ public sealed class GazeJoint : DirectableJoint
         Quaternion trgrot;
 
         // Compute target rotation of the joint
-        Vector3 l_dir0 = bone.InverseTransformDirection(Direction);
-        Vector3 l_dir = bone.InverseTransformDirection((wTargetPos - bone.position).normalized);
-        if (GeomUtil.Equal(l_dir0, l_dir))
-        {
-            // No need to adjust target rotation
-            return bone.localRotation;
-        }
-
-        trgrot = bone.localRotation * Quaternion.FromToRotation(l_dir0, l_dir);
+        trgrot = ModelUtils.LookAtRotation(bone, wTargetPos);
 
         // Strip roll out of the target rotation
         // TODO: should this be conditional upon gazeCtrl.removeRoll?
@@ -800,7 +796,7 @@ public sealed class GazeJoint : DirectableJoint
 
         if (!IsEye)
         {
-            // Adjust pitch (otherwise chain would overshoot the target)
+            // Adjust pitch downward (otherwise chain would overshoot the target)
             bone.localRotation = trgrot;
             Vector3 l_lre = bone.InverseTransformDirection((gazeCtrl.LEye.bone.position -
                 gazeCtrl.REye.bone.position).normalized);
@@ -817,7 +813,13 @@ public sealed class GazeJoint : DirectableJoint
             bone.localRotation = currot; // restore original rotation
         }
 
-        trgrot = Quaternion.Euler(trgrot.eulerAngles.x, trgrot.eulerAngles.y, 0f);
+        if (type == GazeJointType.Torso)
+        {
+            // For the torso, target rotation should align the joint with the target only in the horizontal plane
+            trgrot = ModelUtils.LookAtRotationInHorizontalPlane(bone, wTargetPos);
+        }
+
+        //trgrot = Quaternion.Euler(trgrot.eulerAngles.x, trgrot.eulerAngles.y, 0f);
 
         return trgrot;
     }
@@ -863,6 +865,7 @@ public sealed class GazeJoint : DirectableJoint
         state.fixSrcRot = fixSrcRot;
         state.fixTrgRotAlign = fixTrgRotAlign;
         state.fixRotParamAlign = fixRotParamAlign;
+        state.baseRot = baseRot;
         state.expressiveRot = expressiveRot;
         state.fixExpressiveRot = fixExpressiveRot;
 
@@ -905,6 +908,7 @@ public sealed class GazeJoint : DirectableJoint
         curOutMR = state.curOutMR;
         curAlign = state.curAlign;
         isVOR = state.isVOR;
+        baseRot = state.baseRot;
         fixSrcRot = state.fixSrcRot;
         fixTrgRotAlign = state.fixTrgRotAlign;
         fixRotParamAlign = state.fixRotParamAlign;

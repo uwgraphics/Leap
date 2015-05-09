@@ -382,12 +382,12 @@ public sealed class ModelController : MonoBehaviour
         _InitBlendShapes();
     }
 
-    void Awake()
+    public void Awake()
     {
         _InitBones();
     }
 
-    void Update()
+    public void Update()
     {
     }
 
@@ -426,9 +426,9 @@ public sealed class ModelController : MonoBehaviour
 
     private void _ResetToInitPose(Transform root)
     {
-        root.localPosition = GetInitPosition(root);
-        root.localRotation = GetInitRotation(root);
-        root.localScale = GetInitScale(root);
+        root.localPosition = initLPos.ContainsKey(root.GetInstanceID()) ? GetInitPosition(root) : root.localPosition;
+        root.localRotation = initLRot.ContainsKey(root.GetInstanceID()) ? GetInitRotation(root) : root.localRotation;
+        root.localScale = initLScal.ContainsKey(root.GetInstanceID()) ? GetInitScale(root) : root.localScale;
 
         foreach (Transform child in root)
         {

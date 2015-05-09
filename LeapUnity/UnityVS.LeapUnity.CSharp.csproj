@@ -84,6 +84,7 @@
     <Compile Include="Assets\Animation\BehaviorControl\RootController.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\SimpleListenController.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\SpeechController.cs" />
+    <Compile Include="Assets\Animation\EnvironmentController.cs" />
     <Compile Include="Assets\Animation\Gizmos\AnimationEditGizmos.cs" />
     <Compile Include="Assets\Animation\Gizmos\EyeLaserGizmo.cs" />
     <Compile Include="Assets\Animation\IK\BodyIKSolver.cs" />

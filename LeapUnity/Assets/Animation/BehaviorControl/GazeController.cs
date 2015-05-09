@@ -39,7 +39,7 @@ public struct GazeControllerState : IAnimControllerState
         public bool isVOR;
         public Quaternion fixSrcRot, fixTrgRot, fixTrgRotAlign;
         public float fixRotParamAlign;
-        public Quaternion expressiveRot, fixExpressiveRot;
+        public Quaternion baseRot, expressiveRot, fixExpressiveRot;
     }
 
     public int stateId;
@@ -595,20 +595,23 @@ public class GazeController : AnimController
             curRots[ji] = joint.bone.localRotation;
             Quaternion trgrot = joint._ComputeTargetRotation(EffGazeTargetPosition);
 
-            if (torsoIndex > 0 && ji >= torsoIndex)
+            if (ji == torsoIndex)
             {
                 // Torso joint
-                float pdr = Torso.distRotAlign / GetNumGazeJointsInChain(GazeJointType.Torso);
-                float fdr = GazeJoint.DistanceToRotate(joint.srcRot, trgrot);
-                joint.bone.localRotation = joint.srcRot == trgrot ? trgrot :
-                    Quaternion.Slerp(joint.srcRot, trgrot, pdr / fdr);
+                joint.bone.localRotation = joint.trgRotAlign;
+                _ApplyRotation(joint);
+                _SolveBodyIK();
             }
             else if (headIndex > 0 && ji >= headIndex)
+            {
                 // Head joint
                 joint.bone.localRotation = joint.srcRot;
+            }
             else if (joint.IsEye)
+            {
                 // Eye
                 joint.bone.localRotation = trgrot;
+            }
         }
     }
 
@@ -643,16 +646,14 @@ public class GazeController : AnimController
             return;
 
         Vector3 trgDirW = joint.Direction;
+        Vector3 trgDir, trgDirAlign, srcDir, baseDir;
+        Quaternion trgRot, trgRotAlign;
+
         int jin = FindGazeJointIndex(joint);
         int ji1 = jin + nj - 1;
-
-        Vector3 trgDir, srcDir;
-        Quaternion trgRot, trgRotAlign;
         float cprev = 0f, c, c1;
         int jic;
-        //
-        //Debug.LogWarning("Apply rotation for " + joint.type.ToString());
-        //
+
         for (int ji = ji1; ji >= jin; --ji)
         {
             var curJoint = gazeJoints[ji];
@@ -661,16 +662,39 @@ public class GazeController : AnimController
             c = ((float)((nj - jic + 1) * (nj - jic + 2))) / (nj * (nj + 1));
             c1 = (c - cprev) / (1f - cprev);
             cprev = c;
-            //
-            //Debug.LogWarning(string.Format("ji = {0}, c = {1}, c1 = {2}", jic, c, c1));
-            //
 
-            curJoint.bone.localRotation = Quaternion.identity;
-            trgDir = curJoint.bone.InverseTransformDirection(trgDirW);
-            srcDir = curJoint.bone.InverseTransformDirection(curJoint.bone.forward);
-            trgRot = Quaternion.FromToRotation(srcDir, trgDir);
-            trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
-            curJoint.bone.localRotation = trgRotAlign;
+            if (joint.type != GazeJointType.Torso)
+            {
+                // Get current joint's source and target gaze directions in local space
+                curJoint.bone.localRotation = Quaternion.identity;
+                srcDir = curJoint.bone.InverseTransformDirection(curJoint.bone.forward);
+                trgDir = curJoint.bone.InverseTransformDirection(trgDirW);
+                
+                // Compute current joint's contribution to the overall rotation
+                trgRot = Quaternion.FromToRotation(srcDir, trgDir);
+                trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
+                curJoint.bone.localRotation = trgRotAlign;
+            }
+            else
+            {
+                // Get current joint's base gaze direction in horizontal plane
+                curJoint.bone.localRotation = curJoint.baseRot;
+                baseDir = curJoint.bone.forward;
+                baseDir = new Vector3(baseDir.x, 0f, baseDir.z);
+
+                // Get current joint's source and target gaze directions in horizontal plane
+                curJoint.bone.localRotation = Quaternion.identity;
+                srcDir = curJoint.bone.forward;
+                srcDir = new Vector3(srcDir.x, 0f, srcDir.z);
+                trgDir = new Vector3(trgDirW.x, 0f, trgDirW.z);
+
+                // Compute current joint's contribution to the overall rotation
+                trgRot = Quaternion.FromToRotation(srcDir, trgDir);
+                trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
+                trgDirAlign = trgRotAlign * srcDir;
+                trgRotAlign = Quaternion.FromToRotation(baseDir, trgDirAlign);
+                curJoint.bone.localRotation = curJoint.baseRot * trgRotAlign;
+            }
         }
     }
 
@@ -1050,7 +1074,7 @@ public class GazeController : AnimController
 
     protected virtual void LateUpdate_NoGaze()
     {
-        stopGazeShift = false;
+        _InitBaseRotations();
 
         if (doGazeShift && gazeTarget != null)
         {
@@ -1075,6 +1099,8 @@ public class GazeController : AnimController
 
     protected virtual void LateUpdate_Shifting()
     {
+        _InitBaseRotations();
+
         // Interrupt whatever the face is doing
         _StopFace();
 
@@ -1135,6 +1161,7 @@ public class GazeController : AnimController
 
     protected virtual void Transition_ShiftingNoGaze()
     {
+        stopGazeShift = false;
         _InitVOR();
         _RestartFace();
     }
@@ -1264,22 +1291,6 @@ public class GazeController : AnimController
         {
             GazeJoint joint = gazeJoints[ji];
             joint._ApplyVOR();
-            // TODO: this causes the joints to keep moving at min. velocity until they all fully align
-            /*GazeJoint last = GetLastGazeJointInChain(joint.type);
-
-            // Update target rotation of the current joint to account for movements of
-            // the preceding joints (or the whole body)
-            joint._UpdateTargetRotation();
-
-            // Update joint rotations
-            joint._AdvanceRotation(0f);
-
-            // TODO: this is an ugly hack to keep everything from breaking
-            joint.fixSrcRot = joint.srcRot;
-            joint.fixTrgRot = joint.trgRot;
-            joint.fixTrgRotAlign = joint.trgRotAlign;
-            joint.fixRotParamAlign = joint.rotParamAlign;*/
-            //
 
             // Solve for final body posture
             if (joint == Torso)
@@ -1427,6 +1438,7 @@ public class GazeController : AnimController
         _ReapplyCurrentPose();
     }
 
+    // Compute view direction angles
     protected virtual void _ComputeViewAngles(out float avSrc, out float avTrg)
     {
         // Compute view direction angles
@@ -1444,6 +1456,13 @@ public class GazeController : AnimController
         Vector3 wd_cam = (cam.transform.position - wp_eyes).normalized;
         avTrg = Vector3.Angle(wd_trg, wd_cam);
         avSrc = Vector3.Angle(wd_src, wd_cam);
+    }
+
+    // Store current gaze joint rotations as base rotations
+    protected virtual void _InitBaseRotations()
+    {
+        foreach (var gazeJoint in gazeJoints)
+            gazeJoint.baseRot = gazeJoint.bone.localRotation;
     }
 
     // Compute target pose of the eyes (at the end of the gaze shift)

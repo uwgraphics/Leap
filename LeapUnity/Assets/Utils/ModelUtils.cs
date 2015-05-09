@@ -68,6 +68,26 @@ public static class ModelUtils
     }
 
     /// <summary>
+    /// Get world scale of the specified bone.
+    /// </summary>
+    /// <param name="bone">Bone</param>
+    /// <returns>World scale</returns>
+    public static Vector3 GetBoneScale(Transform bone)
+    {
+        if (bone.parent == null)
+        {
+            return bone.localScale;
+        }
+        else
+        {
+            Vector3 parentScale = GetBoneScale(bone.parent);
+            return new Vector3(bone.localScale.x * parentScale.x,
+                bone.localScale.y * parentScale.y,
+                bone.localScale.z * parentScale.z);
+        }
+    }
+
+    /// <summary>
     /// Finds a bone in the model's skeleton by name.
     /// </summary>
     /// <param name="rootBone">
@@ -479,5 +499,43 @@ public static class ModelUtils
         bone.localRotation = q0;
 
         return qp;
+    }
+
+    /// <summary>
+    /// Get rotation that aligns the forward vector of the specified bone with a point in world space.
+    /// </summary>
+    /// <param name="bone">Bone that is being aligned</param>
+    /// <param name="wTargetPos">Target position in world space</param>
+    /// <returns></returns>
+    public static Quaternion LookAtRotation(Transform bone, Vector3 wTargetPos)
+    {
+        Quaternion curRot = bone.localRotation;
+        bone.LookAt(wTargetPos);
+        Quaternion trgRot = bone.localRotation;
+        bone.localRotation = curRot;
+
+        return trgRot;
+    }
+
+    /// <summary>
+    /// Get rotation that aligns the forward vector of the specified bone with a point in world space,
+    /// projected into the horizontal x-z plane.
+    /// </summary>
+    /// <param name="bone">Bone that is being aligned</param>
+    /// <param name="wTargetPos">Target position in world space</param>
+    /// <returns></returns>
+    public static Quaternion LookAtRotationInHorizontalPlane(Transform bone, Vector3 wTargetPos)
+    {
+        Quaternion curRot = bone.localRotation;
+        Vector3 curDir = new Vector3(bone.forward.x, 0f, bone.forward.z);
+        
+        Quaternion trgRot = LookAtRotation(bone, wTargetPos);
+        bone.localRotation = trgRot;
+        Vector3 trgDir = new Vector3(bone.forward.x, 0f, bone.forward.z);
+
+        bone.localRotation = curRot;
+
+        trgRot = curRot * Quaternion.FromToRotation(curDir, trgDir);
+        return trgRot;
     }
 }

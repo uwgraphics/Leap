@@ -31,6 +31,16 @@ public class LEAPCore : MonoBehaviour
     public static int endEffectorConstraintActivationFrameLength = 20;
 
     /// <summary>
+    /// Asset subdirectory for environment object models.
+    /// </summary>
+    public static string environmentModelsDirectory = "Assets/Environment/Models";
+
+    /// <summary>
+    /// If true, agents can manipulate objects in the environment.
+    /// </summary>
+    public static bool enableObjectManipulation = true;
+
+    /// <summary>
     /// Eye gaze editor: minimal length of an eye gaze instance (gaze shift + fixation).
     /// </summary>
     public static float minEyeGazeLength = 0.6f;
@@ -120,6 +130,11 @@ public class LEAPCore : MonoBehaviour
                     case "endEffectorConstraintActivationFrameLength":
 
                         endEffectorConstraintActivationFrameLength = int.Parse(valueStr);
+                        break;
+
+                    case "enableObjectManipulation":
+
+                        enableObjectManipulation = bool.Parse(valueStr);
                         break;
 
                     case "minEyeGazeLength":

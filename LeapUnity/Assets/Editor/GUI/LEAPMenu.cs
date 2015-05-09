@@ -191,12 +191,18 @@ public class LEAPMenu
         timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
         timeline.GetLayer("Gaze").isIKBase = false;
         timeline.GetLayer("Gaze").isIKGaze = true;
+        timeline.AddLayer(AnimationLayerMode.Override, 2, "Environment");
+        timeline.GetLayer("Environment").isIKEndEffectorConstr = false;
+        timeline.GetLayer("Environment").isIKBase = false;
 
         if (sceneName == "TestExpressiveGaze")
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.modelTestExpressiveGazeEnv.SetActive(true);
             testScenes.cameraWindowWashing.enabled = true;
+
+            // Set environment in the timeline
+            timeline.SetEnvironment(testScenes.modelTestExpressiveGazeEnv);
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "TestExpressiveGaze");
@@ -215,6 +221,9 @@ public class LEAPMenu
             testScenes.modelNormanette.transform.position = new Vector3(2.58f, 0f, -3.72f);
             testScenes.modelWindowWashingEnv.SetActive(true);
             testScenes.cameraWindowWashing.enabled = true;
+
+            // Set environment in the timeline
+            timeline.SetEnvironment(testScenes.modelWindowWashingEnv);
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "WindowWashingA");
@@ -244,6 +253,9 @@ public class LEAPMenu
             testScenes.modelNormanette.transform.position = new Vector3(0.36f, 0f, -3.72f);
             testScenes.modelPassSodaEnv.SetActive(true);
             testScenes.cameraPassSoda.enabled = true;
+
+            // Set environment in the timeline
+            timeline.SetEnvironment(testScenes.modelPassSodaEnv);
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "PassSodaA");
@@ -279,6 +291,9 @@ public class LEAPMenu
             testScenes.modelWalking90degEnv.SetActive(true);
             testScenes.cameraWalking90deg.enabled = true;
 
+            // Set environment in the timeline
+            timeline.SetEnvironment(testScenes.modelWalking90degEnv);
+
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "Walking90deg");
             int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
@@ -301,6 +316,9 @@ public class LEAPMenu
             testScenes.modelBookShelfEnv.SetActive(true);
             //testScenes.cameraBookShelf.enabled = true;
 
+            // Set environment in the timeline
+            timeline.SetEnvironment(testScenes.modelBookShelfEnv);
+
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "BookShelf");
             int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
@@ -322,6 +340,9 @@ public class LEAPMenu
             testScenes.modelNorman.SetActive(true);
             testScenes.modelRoman.SetActive(true);
             //testScenes.cameraHandShake.enabled = true;
+
+            // Set environment in the timeline
+            timeline.SetEnvironment(null);
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "HandShakeA");
@@ -353,9 +374,18 @@ public class LEAPMenu
             testScenes.modelStealDiamondEnv.SetActive(true);
             //testScenes.cameraStealDiamond.enabled = true;
 
+            // Set environment in the timeline
+            timeline.SetEnvironment(testScenes.modelStealDiamondEnv);
+
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "StealDiamond");
             int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+
+            // Create environment animations
+            var envController = testScenes.modelStealDiamondEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentObjectAnimation("Environment",
+                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Gem"),
+                    "StealDiamondGem", timeline.FrameLength));
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -375,6 +405,9 @@ public class LEAPMenu
             testScenes.modelWaitForBusEnv.SetActive(true);
             testScenes.modelFloor.SetActive(false);
             //testScenes.cameraWaitForBus.enabled = true;
+
+            // Set environment in the timeline
+            timeline.SetEnvironment(testScenes.modelWaitForBusEnv);
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "WaitForBus");
@@ -396,6 +429,9 @@ public class LEAPMenu
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.cameraWindowWashing.enabled = true;
+
+            // Set environment in the timeline
+            timeline.SetEnvironment(null);
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "InitialPose");
@@ -423,7 +459,7 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        timeline.ResetModelsToInitialPose();
+        timeline.ResetModelsAndEnvironment();
         EyeGazeEditor.ResetEyeGazeControllers(timeline.Models.ToArray());
         SceneView.RepaintAll();
     }

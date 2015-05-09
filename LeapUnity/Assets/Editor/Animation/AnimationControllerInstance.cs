@@ -37,7 +37,7 @@ public abstract class AnimationControllerInstance : AnimationInstance
     /// <param name="model">Character model</param>
     /// <param name="animationClipName">Animation clip name</param>
     /// <param name="controllerType">AnimController type</param>
-    /// <param name="timeLength">Animation controller activity duration.</param>
+    /// <param name="frameLength">Animation controller activity duration.</param>
     public AnimationControllerInstance(GameObject model, string animationClipName, Type controllerType,
         int frameLength = 30)
         : base(model, animationClipName)

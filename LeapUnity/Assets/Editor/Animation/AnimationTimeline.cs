@@ -213,137 +213,19 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// End-effector constraint specification.
-    /// </summary>
-    public struct EndEffectorConstraint
-    {
-        /// <summary>
-        /// End-effector tag.
-        /// </summary>
-        public string endEffector;
-
-        /// <summary>
-        /// Constraint start frame.
-        /// </summary>
-        public int startFrame;
-
-        /// <summary>
-        /// Length of the constraint in frames.
-        /// </summary>
-        public int frameLength;
-
-        /// <summary>
-        /// If true, absolute rotation of the end-effector should be preserved.
-        /// </summary>
-        public bool preserveAbsoluteRotation;
-
-        /// <summary>
-        /// Scene object to which the end-effector should be aligned
-        /// </summary>
-        public GameObject target;
-
-        /// <summary>
-        /// Length of the frame window over which the constraint will become active.
-        /// </summary>
-        public int activationFrameLength;
-
-        /// <summary>
-        /// Length of the frame window over which the constraint will become inactive.
-        /// </summary>
-        public int deactivationFrameLength;
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="endEffector">End-effector tag</param>
-        /// <param name="startFrame">Constraint start frame</param>
-        /// <param name="frameLength">Length of the constraint in frames</param>
-        /// <param name="preserveAbsoluteRotation">If true, absolute rotation of the end-effector should be preserved</param>
-        /// <param name="target">Scene object to which the end-effector should be aligned</param>
-        public EndEffectorConstraint(string endEffector, int startFrame, int frameLength, bool preserveAbsoluteRotation,
-            GameObject target = null, int activationFrameLength = -1, int deactivationFrameLength = -1)
-        {
-            this.endEffector = endEffector;
-            this.startFrame = startFrame;
-            this.frameLength = frameLength;
-            this.preserveAbsoluteRotation = preserveAbsoluteRotation;
-            this.target = target;
-            this.activationFrameLength = activationFrameLength > -1 ? activationFrameLength : LEAPCore.endEffectorConstraintActivationFrameLength;
-            this.deactivationFrameLength = deactivationFrameLength > -1 ? deactivationFrameLength : LEAPCore.endEffectorConstraintActivationFrameLength;
-        }
-    }
-
-    /// <summary>
-    /// Container holding end-effector constraint annotations for a particular animation clip.
-    /// </summary>
-    public class EndEffectorConstraintContainer
-    {
-        /// <summary>
-        /// Animation clip.
-        /// </summary>
-        public AnimationClip AnimationClip
-        {
-            get;
-            private set;
-        }
-        
-        private Dictionary<string, List<EndEffectorConstraint>> _constraints;
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="animationClip">Animation clip</param>
-        /// <param name="constraints">End-effector constraints for the animation clip</param>
-        public EndEffectorConstraintContainer(AnimationClip animationClip, EndEffectorConstraint[] constraints)
-        {
-            this.AnimationClip = animationClip;
-
-            _constraints = new Dictionary<string,List<EndEffectorConstraint>>();
-            for (int constraintIndex = 0; constraintIndex < constraints.Length; ++constraintIndex)
-            {
-                string endEffector = constraints[constraintIndex].endEffector;
-                if (!_constraints.ContainsKey(endEffector))
-                    _constraints[endEffector] = new List<EndEffectorConstraint>();
-
-                _constraints[endEffector].Add(constraints[constraintIndex]);
-            }
-        }
-
-        /// <summary>
-        /// Get list of constraints on the specified end-effector.
-        /// </summary>
-        /// <param name="endEffector">End-effector tag</param>
-        /// <returns>List of constraints</returns>
-        public IList<EndEffectorConstraint> GetConstraintsForEndEffector(string endEffector)
-        {
-            return _constraints.ContainsKey(endEffector) ? _constraints[endEffector].AsReadOnly() : null;
-        }
-
-        /// <summary>
-        /// Get end-effector constraints active at the specified frame.
-        /// </summary>
-        /// <param name="frame">Frame index</param>
-        /// <returns>Active end-effector constraints</returns>
-        public EndEffectorConstraint[] GetConstraintsAtFrame(int frame)
-        {
-            List<EndEffectorConstraint> activeConstraints = new List<EndEffectorConstraint>();
-            foreach (KeyValuePair<string, List<EndEffectorConstraint>> kvp in _constraints)
-            {
-                activeConstraints.AddRange(
-                    kvp.Value.Where(eec => frame >= (eec.startFrame - eec.activationFrameLength) &&
-                        frame <= (eec.startFrame + eec.frameLength - 1 + eec.deactivationFrameLength)));
-            }
-
-            return activeConstraints.Count > 0 ? activeConstraints.ToArray() : null;
-        }
-    }
-
-    /// <summary>
     /// List of character models animated by the current timeline.
     /// </summary>
     public IList<GameObject> Models
     {
         get { return _models.AsReadOnly();  }
+    }
+
+    /// <summary>
+    /// Root object of the environment.
+    /// </summary>
+    public GameObject Environment
+    {
+        get { return _environment; }
     }
 
     /// <summary>
@@ -388,13 +270,6 @@ public class AnimationTimeline
         get { return _currentTime; }
         private set
         {
-            // TODO: catch a bug here
-            if (_currentTime == float.NaN)
-            {
-                Debug.LogError("Tried setting current time on timeline to NaN");
-                _currentTime = 0;
-            }
-            //
             _currentTime = value;
             if (_currentTime < 0f)
                 _currentTime = 0f;
@@ -459,6 +334,7 @@ public class AnimationTimeline
     }
 
     private List<GameObject> _models;
+    private GameObject _environment;
     private List<LayerContainer> _layerContainers;
     private Dictionary<int, ScheduledInstance> _animationInstancesById;
     private Dictionary<AnimationClip, EndEffectorConstraintContainer> _endEffectorConstraints;
@@ -466,6 +342,7 @@ public class AnimationTimeline
     private int _nextInstanceId = 0;
     private HashSet<int> _activeAnimationInstanceIds;
     private Dictionary<string, Dictionary<string, ModelPose>> _storedModelPoses;
+    private Dictionary<GameObject, Transform> _activeManipulatedObjectHandles;
 
     /// <summary>
     /// Constructor.
@@ -473,11 +350,13 @@ public class AnimationTimeline
     private AnimationTimeline()
     {
         _models = new List<GameObject>();
+        _environment = null;
         _layerContainers = new List<LayerContainer>();
         _animationInstancesById = new Dictionary<int, ScheduledInstance>();
         _endEffectorConstraints = new Dictionary<AnimationClip, EndEffectorConstraintContainer>();
         _activeAnimationInstanceIds = new HashSet<int>();
         _storedModelPoses = new Dictionary<string, Dictionary<string, ModelPose>>();
+        _activeManipulatedObjectHandles = new Dictionary<GameObject, Transform>();
 
         Active = false;
         Playing = false;
@@ -547,6 +426,23 @@ public class AnimationTimeline
         foreach (var layer in Layers)
             RemoveAllAnimations(layer.LayerName);
         _models.Clear();
+    }
+
+    /// <summary>
+    /// Set environment containing objects manipulated in animations.
+    /// </summary>
+    /// <param name="environment">Environment root object</param>
+    public void SetEnvironment(GameObject environment)
+    {
+        _environment = environment;
+        if (environment == null)
+            return;
+
+        var envController = environment.GetComponent<EnvironmentController>();
+        if (envController == null)
+            throw new Exception(string.Format("Environment root object {0} does not have an EnvironmentController", environment.name));
+        
+        envController.Init();
     }
 
     /// <summary>
@@ -818,6 +714,45 @@ public class AnimationTimeline
     }
 
     /// <summary>
+    /// Add a new environment object animation instance to a layer.
+    /// </summary>
+    /// <param name="layerIndex">Layer name</param>
+    /// <param name="animation">Animation instance</param>
+    /// <param name="startFrame">Animation start frame on the timeline</param>
+    /// <returns>Animation instance ID</returns>
+    public int AddEnvironmentObjectAnimation(string layerName, AnimationInstance animation, int startFrame = 0)
+    {
+        if (!(animation is EnvironmentObjectAnimationInstance))
+        {
+            throw new Exception("Environment object animations must be of type EnvironmentObjectAnimationInstance");
+        }
+        var envObjAnimation = animation as EnvironmentObjectAnimationInstance;
+
+        if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
+        {
+            throw new Exception(string.Format("There is no layer named {0}", layerName));
+        }
+
+        // Ensure character model for this animation instance has been added to this timeline
+        if (_environment == null ||
+            !_environment.GetComponent<EnvironmentController>().ManipulatedObjects.Any(obj => obj == envObjAnimation.Model))
+        {
+            throw new Exception(string.Format("Environment object {0} for animation {1} not defined on the current timeline",
+                envObjAnimation.Model.name, envObjAnimation.AnimationClip.name));
+        }
+
+        // Schedule the animation instance in the appropriate order (based on start frame)
+        var targetLayerContainer = GetLayer(layerName);
+        var newInstance = new ScheduledInstance(_nextInstanceId++, startFrame, animation, targetLayerContainer);
+        _AddAnimationToLayerContainer(newInstance, targetLayerContainer);
+
+        // Also add the instance so it can be fetched by ID
+        _animationInstancesById.Add(newInstance.InstanceId, newInstance);
+
+        return newInstance.InstanceId;
+    }
+
+    /// <summary>
     /// Initialize the animation timeline
     /// </summary>
     public void Init()
@@ -878,7 +813,7 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// Get the ID of the animation instance at the current frame in the specified layer.
+    /// Get the ID of the animation instance applied to the specified model at the current frame in the specified layer.
     /// </summary>
     /// <param name="layerName">Layer name</param>
     /// <param name="modelName">Character model name</param>
@@ -1074,10 +1009,10 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// Reset all character models to initial pose, encoded in
-    /// InitialPose animation clip.
+    /// Reset all character models to initial pose and the environment
+    /// to initial layout.
     /// </summary>
-    public void ResetModelsToInitialPose()
+    public void ResetModelsAndEnvironment()
     {
         // Set all models to initial pose
         var models = Models;
@@ -1087,6 +1022,12 @@ public class AnimationTimeline
             var morphController = model.GetComponent<MorphController>();
             if (morphController != null)
                 morphController.ResetAllWeights();
+        }
+
+        if (Environment != null)
+        {
+            // Reset the environment to initial layout
+            Environment.GetComponent<EnvironmentController>().ResetToInitialLayout();
         }
     }
 
@@ -1169,7 +1110,7 @@ public class AnimationTimeline
     {
         // Reset models and IK solvers
         _ClearIKGoals();
-        ResetModelsToInitialPose();
+        ResetModelsAndEnvironment();
 
         // Apply active animation instances in layers in correct order
         foreach (var layer in _layerContainers)
@@ -1223,6 +1164,12 @@ public class AnimationTimeline
 
                         // Notify listeners that the animation instance has just become active
                         AnimationStarted(animation.InstanceId);
+                    }
+
+                    if (animation.Animation is EnvironmentObjectAnimationInstance)
+                    {
+                        // Environment object animations don't get applied until after IK has been run
+                        continue;
                     }
 
                     if (layer.isIKEndEffectorConstr)
@@ -1354,36 +1301,50 @@ public class AnimationTimeline
         if (!_endEffectorConstraints.ContainsKey(animationClip))
             return;
 
+        // Set up end-effector goals
         EndEffectorConstraint[] activeConstraints = _endEffectorConstraints[animationClip].GetConstraintsAtFrame(CurrentFrame);
-        if (activeConstraints == null)
-            return;
-        IKSolver[] solvers = model.GetComponents<IKSolver>();
-
-        // Set end-effector goals
-        foreach (var constraint in activeConstraints)
+        if (activeConstraints != null)
         {
-            Transform endEffector = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
+            IKSolver[] solvers = model.GetComponents<IKSolver>();
 
-            // Compute constraint weight
-            float t = 1f;
-            if (CurrentFrame < constraint.startFrame)
-                t = Mathf.Clamp01(1f - ((float)(constraint.startFrame - CurrentFrame)) / constraint.activationFrameLength);
-            else if (CurrentFrame > (constraint.startFrame + constraint.frameLength - 1))
-                t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1))) / constraint.deactivationFrameLength);
-            float t2 = t * t;
-            float weight = -2f * t2 * t + 3f * t2;
-
-            // Set the constraint goal in relevant IK solvers
-            foreach (var solver in solvers)
+            foreach (var constraint in activeConstraints)
             {
-                if (solver.endEffectors.Contains(constraint.endEffector))
+                Transform endEffector = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
+
+                // Compute constraint weight
+                float t = 1f;
+                if (CurrentFrame < constraint.startFrame)
+                    t = Mathf.Clamp01(1f - ((float)(constraint.startFrame - CurrentFrame)) / constraint.activationFrameLength);
+                else if (CurrentFrame > (constraint.startFrame + constraint.frameLength - 1))
+                    t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1))) / constraint.deactivationFrameLength);
+                float t2 = t * t;
+                float weight = -2f * t2 * t + 3f * t2;
+
+                // Set the constraint goal in relevant IK solvers
+                foreach (var solver in solvers)
                 {
-                    IKGoal goal = new IKGoal(endEffector,
-                        constraint.target == null ? endEffector.position : constraint.target.transform.position,
-                        constraint.target == null ? endEffector.rotation : constraint.target.transform.rotation,
-                        weight, constraint.preserveAbsoluteRotation);
-                    solver.AddGoal(goal);
+                    if (solver.endEffectors.Contains(constraint.endEffector))
+                    {
+                        IKGoal goal = new IKGoal(endEffector,
+                            constraint.target == null ? endEffector.position : constraint.target.transform.position,
+                            constraint.target == null ? endEffector.rotation : constraint.target.transform.rotation,
+                            weight, constraint.preserveAbsoluteRotation);
+                        solver.AddGoal(goal);
+                    }
                 }
+            }
+        }
+        
+        // Set up object manipulations
+        _activeManipulatedObjectHandles.Clear();
+        EndEffectorConstraint[] activeManipulatedObjectConstraints =
+            _endEffectorConstraints[animationClip].GetManipulationConstraintsAtFrame(CurrentFrame);
+        if (LEAPCore.enableObjectManipulation && activeManipulatedObjectConstraints != null)
+        {
+            foreach (var constraint in activeManipulatedObjectConstraints)
+            {
+                Transform endEffector = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
+                _activeManipulatedObjectHandles[constraint.manipulatedObjectHandle] = endEffector;
             }
         }
     }
@@ -1434,6 +1395,40 @@ public class AnimationTimeline
             {
                 if (limbSolver.enabled)
                     limbSolver.Solve();
+            }
+        }
+
+        if (LEAPCore.enableObjectManipulation && Environment != null)
+        {
+            // Solve for environment layout
+            foreach (var kvp in _activeManipulatedObjectHandles)
+            {
+                var objHandle = kvp.Key.transform;
+                var endEffector = kvp.Value;
+                var obj = objHandle.transform.parent;
+
+                // TODO: temporary hack until I figure out how to do this properly
+                Vector3 vo = obj.position - objHandle.position;
+                Vector3 ve = endEffector.position - endEffector.parent.position;
+                obj.rotation = Quaternion.FromToRotation(vo, ve) * obj.rotation;
+                obj.position = endEffector.position + ve.normalized * vo.magnitude;
+                obj = obj;
+                //
+            }
+
+            if (IsBakingInstances)
+            {
+                // Bake all active environment object animations
+                foreach (int instanceId in _activeAnimationInstanceIds)
+                {
+                    var instance = GetAnimation(instanceId);
+                    if (!(instance is EnvironmentObjectAnimationInstance))
+                        continue;
+
+                    int startFrame = GetAnimationStartFrame(instanceId);
+                    var layer = GetLayerForAnimation(instanceId);
+                    instance.Apply(CurrentFrame - startFrame, layer.LayerMode);
+                }
             }
         }
     }

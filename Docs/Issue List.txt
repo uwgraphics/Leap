@@ -1,9 +1,47 @@
 Leap Animation Editor:
 
-#92 [] Torso sometimes snaps when using gaze IK
+#98 [] Animation timeline allows temporally overlapping animations in the same layer, on the same character model
+
+#96 [] Unnatural head and torso poses can result at low values of alignment parameters due to source rotations no longer being valid due to underlying body movement
+  - See head pose at the end of StealDiamondGaze2 - the character was hunching at the start of the gaze shift, but stands more upright as it goes on and consequently the head source rotation now points the head too high; since head align is low, target head rotation is fairly close to the source rotation, so it also looks bad!
+  - Maybe source rotation should be defined with respect to the original gaze direction in world space? No, this makes the gaze target effectively unreachable if, for instance, the character turns around as it's doing a gaze shift
+  - Idea - somehow update srcRot based on baseRot when alignment is low!
+
+#95 [] Sometimes eye gaze directions become divergent
+  - See in the example used in #94
+  - Might go away when #93 is fixed
+  
+#94 [] Torso snaps to a new pose as we start a new gaze shift in which torso movement is disabled
+  - For example, create a gaze shift towards the diamond in the StealDiamond scenario, set torso align to 0, and watch what happens with the torso at gaze shift start
+
+#93 [X] Some gaze shifts are synthesized with head pose that does not match the specified alignment parameter
+  - For example, create a gaze shift towards the diamond in the StealDiamond scenario, set head align to 0, and watch what happens with the head as target is reached
+  - The problem seems to be in torso movement towards the target - even though torso align is 0, the torso just "drops" downward for some reason (see frames 118-122)
+  - Last torso joint has rotParamAlign at 1 and trgReached at true and for some reason it still moves down by a large amount
+  - Has nothing to do with with joint rotation redistribution... if anything, disabling the latter only makes the problem worse, with the torso snapping all over the place
+  - The problem only occurs when the target is low and close to the character (e.g., right at their feet) - moving it away avoids the problem
+  - Unrelated to torso movement - even after fixing #97 the problem persists, see StealDiamondGaze9
+  - The problem is much more pronounced when using gaze IK
+  - Fixed (or at least greatly reduced) by improving how torso target pose is applied in GazeController._ApplyTargetPose()
+  
+#92 [X] Torso sometimes snaps when using gaze IK
   - See frames 243-244 in StealDiamond example
   - Also at some gaze instance boundaries in the same example, e.g., frames 154-155
   - Discontinuous goal weights?
+  - New instance at frames 154-155 in StealDiamond example
+  - IK solver isn't even getting called until frame 154?!
+  - At frame 154 it is called without any goals defined, then at 155 there are goals, but their weights are nearly zero (that's the way it's supposed to be, I think)
+  - It's because solver only gets run when there are goals with non-zero weights - fixed that now
+  
+#97 [X] Abrupt downward or upward movement of the torso in some gaze shifts
+  - Examples in TestExpressiveGaze
+  - Happens near the end of the gaze shift, torso abruptly changes direction - even when baseVPostureWeight is 0, which means we are directly interpolating gaze pose and base pose
+  - Happens even when not using gaze IK
+  - Happens even when it isn't full torso alignment
+  - Problem with both trajectory and (it seems) velocity
+  - Seems it happens when initial torso posture is very different from the target gaze posture (e.g., very hunched character) - the character abruptly "straightens out"
+  - This further suggests that gaze controller should (at most) be altering the torso pose in the horizontal plane
+  - ... made that modification in the gaze controller
 
 #91 [X] When using redistribution of gaze joint rotations, torso rotations are slightly discontinuous when starting fixation
   - Problem disappears when gaze is applied at least twice per frame - good enough for a temporary fix
