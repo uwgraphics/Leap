@@ -237,6 +237,12 @@ public class LEAPMenu
                 EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
+            // Create environment animations
+            var envController = testScenes.modelWindowWashingEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentObjectAnimation("Environment",
+                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge"),
+                    "WindowWashingSponge", timeline.FrameLength));
+
             // Initialize test scenario
             editTestScenario.models = new GameObject[2];
             editTestScenario.models[0] = testScenes.modelNorman;
@@ -264,6 +270,12 @@ public class LEAPMenu
             int bodyAnimationRomanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationRoman, 0, true);
             var bodyAnimationNormanette = new AnimationClipInstance(testScenes.modelNormanette, "PassSodaC");
             timeline.AddAnimation("BaseAnimation", bodyAnimationNormanette, 0);
+
+            // Create environment animations
+            var envController = testScenes.modelPassSodaEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentObjectAnimation("Environment",
+                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "SodaBottle"),
+                    "PassSodaBottle", timeline.FrameLength));
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -328,6 +340,18 @@ public class LEAPMenu
             if (LEAPCore.useExpressiveGaze)
                 EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            var envController = testScenes.modelBookShelfEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentObjectAnimation("Environment",
+                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1"),
+                    "BookShelfBook1", timeline.FrameLength));
+            timeline.AddEnvironmentObjectAnimation("Environment",
+                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2"),
+                    "BookShelfBook2", timeline.FrameLength));
+            timeline.AddEnvironmentObjectAnimation("Environment",
+                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3"),
+                    "BookShelfBook3", timeline.FrameLength));
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[1];

@@ -360,7 +360,12 @@ public sealed class ModelController : MonoBehaviour
     /// </summary>
     public void _ResetToInitialPose()
     {
-        _ResetToInitPose(rootBone);
+        foreach (var bone in bones)
+        {
+            bone.localPosition = initLPos.ContainsKey(bone.GetInstanceID()) ? GetInitPosition(bone) : bone.localPosition;
+            bone.localRotation = initLRot.ContainsKey(bone.GetInstanceID()) ? GetInitRotation(bone) : bone.localRotation;
+            bone.localScale = initLScal.ContainsKey(bone.GetInstanceID()) ? GetInitScale(bone) : bone.localScale;
+        }
     }
 
     /// <summary>
@@ -368,7 +373,12 @@ public sealed class ModelController : MonoBehaviour
     /// </summary>
     public void _StoreCurrentPose()
     {
-        _StoreCurrentPose(rootBone);
+        foreach (var bone in bones)
+        {
+            prevLPos[bone.GetInstanceID()] = bone.localPosition;
+            prevLRot[bone.GetInstanceID()] = bone.localRotation;
+            prevLScal[bone.GetInstanceID()] = bone.localScale;
+        }
     }
 
     /// <summary>
@@ -377,8 +387,7 @@ public sealed class ModelController : MonoBehaviour
     public void Init()
     {
         _InitBones();
-        _GetInitBoneTransforms(rootBone);
-
+        _GetInitBoneTransforms();
         _InitBlendShapes();
     }
 
@@ -410,41 +419,15 @@ public sealed class ModelController : MonoBehaviour
             boneIndexes[bones[boneIndex]] = boneIndex;
     }
 
-    private void _GetInitBoneTransforms(Transform bone)
+    private void _GetInitBoneTransforms()
     {
-        initLPos[bone.GetInstanceID()] = bone.localPosition;
-        initLRot[bone.GetInstanceID()] = bone.localRotation;
-        initLScal[bone.GetInstanceID()] = bone.localScale;
-        initWPos[bone.GetInstanceID()] = bone.position;
-        initWRot[bone.GetInstanceID()] = bone.rotation;
-
-        foreach (Transform child in bone)
+        foreach (var bone in bones)
         {
-            _GetInitBoneTransforms(child);
-        }
-    }
-
-    private void _ResetToInitPose(Transform root)
-    {
-        root.localPosition = initLPos.ContainsKey(root.GetInstanceID()) ? GetInitPosition(root) : root.localPosition;
-        root.localRotation = initLRot.ContainsKey(root.GetInstanceID()) ? GetInitRotation(root) : root.localRotation;
-        root.localScale = initLScal.ContainsKey(root.GetInstanceID()) ? GetInitScale(root) : root.localScale;
-
-        foreach (Transform child in root)
-        {
-            _ResetToInitPose(child);
-        }
-    }
-
-    private void _StoreCurrentPose(Transform root)
-    {
-        prevLPos[root.GetInstanceID()] = root.localPosition;
-        prevLRot[root.GetInstanceID()] = root.localRotation;
-        prevLScal[root.GetInstanceID()] = root.localScale;
-
-        foreach (Transform child in root)
-        {
-            _StoreCurrentPose(child);
+            initLPos[bone.GetInstanceID()] = bone.localPosition;
+            initLRot[bone.GetInstanceID()] = bone.localRotation;
+            initLScal[bone.GetInstanceID()] = bone.localScale;
+            initWPos[bone.GetInstanceID()] = bone.position;
+            initWRot[bone.GetInstanceID()] = bone.rotation;
         }
     }
 

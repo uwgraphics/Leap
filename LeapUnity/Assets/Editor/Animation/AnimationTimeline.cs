@@ -1336,7 +1336,6 @@ public class AnimationTimeline
         }
         
         // Set up object manipulations
-        _activeManipulatedObjectHandles.Clear();
         EndEffectorConstraint[] activeManipulatedObjectConstraints =
             _endEffectorConstraints[animationClip].GetManipulationConstraintsAtFrame(CurrentFrame);
         if (LEAPCore.enableObjectManipulation && activeManipulatedObjectConstraints != null)
@@ -1374,6 +1373,9 @@ public class AnimationTimeline
                 solver.ClearGoals();
             }
         }
+
+        // Clear object manipulations
+        _activeManipulatedObjectHandles.Clear();
     }
 
     // Solve for final model pose in all IK solvers on all models
@@ -1407,13 +1409,11 @@ public class AnimationTimeline
                 var endEffector = kvp.Value;
                 var obj = objHandle.transform.parent;
 
-                // TODO: temporary hack until I figure out how to do this properly
-                Vector3 vo = obj.position - objHandle.position;
-                Vector3 ve = endEffector.position - endEffector.parent.position;
-                obj.rotation = Quaternion.FromToRotation(vo, ve) * obj.rotation;
-                obj.position = endEffector.position + ve.normalized * vo.magnitude;
-                obj = obj;
-                //
+                obj.rotation = endEffector.rotation * Quaternion.Inverse(objHandle.localRotation);
+                Vector3 objScale = ModelUtils.GetBoneScale(obj);
+                Vector3 objHandleLocalPosition = objHandle.localPosition;
+                objHandleLocalPosition.Scale(objScale);
+                obj.position = endEffector.position - obj.rotation * objHandleLocalPosition;
             }
 
             if (IsBakingInstances)

@@ -291,7 +291,7 @@ public static class ModelUtils
     // Traverse a model's bone hierarchy and add all bones to the list
     private static void _GetAllBones(Transform rootBone, List<Transform> bones)
     {
-        if (rootBone == null)
+        if (rootBone == null || rootBone.tag == "EndEffectorTarget")
             return;
 
         bones.Add(rootBone);

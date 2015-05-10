@@ -1,3 +1,4 @@
-EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ActivationFrameLength,DeactivationFrameLength
-LWrist,19,30,true,PassSodaAMouth,20,20
-LWrist,68,73,true,PassSodaAHandoff,20,20
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ActivationFrameLength,DeactivationFrameLength,ManipulatedObjectHandle,ManipulationEndFrame
+LWrist,0,0,false,null,0,0,SodaBottleAHandle,18
+LWrist,19,30,true,PassSodaAMouth,20,20,SodaBottleAHandle,67
+LWrist,68,73,true,PassSodaAHandoff,20,20,SodaBottleAHandle,73
