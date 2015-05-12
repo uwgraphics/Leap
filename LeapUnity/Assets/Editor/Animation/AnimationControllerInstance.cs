@@ -64,6 +64,8 @@ public abstract class AnimationControllerInstance : AnimationInstance
 
         if (IsBaking)
         {
+            Controller.weight = 1f;
+
             // Initialize list of baked controller states
             _bakedControllerStates = new List<IAnimControllerState>(FrameLength);
             for (int frameIndex = 0; frameIndex < FrameLength; ++frameIndex)
@@ -94,7 +96,6 @@ public abstract class AnimationControllerInstance : AnimationInstance
         if (IsBaking)
         {
             // Update the controller to get new body pose
-            Controller.weight = 1f;
             Controller._UpdateTree();
             Controller._LateUpdateTree();
 

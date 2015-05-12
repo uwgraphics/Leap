@@ -556,7 +556,6 @@ public sealed class GazeJoint : DirectableJoint
     // Update target rotations during gaze shift to account for movement of the parent joints
     public void _UpdateTargetRotation()
     {
-        // How much will the joint rotate?
         float prevRotParamMR = rotParamMR;
         float prevRotParamAlign = rotParamAlign;
         float prevDistRotAlign = distRotAlign;
@@ -591,7 +590,6 @@ public sealed class GazeJoint : DirectableJoint
     // Update target rotations during VOR to account for movement of the parent joints
     public void _UpdateVORTargetRotation()
     {
-        // How much will the joint rotate?
         float prevFixDistRotAlign = DistanceToRotate(fixSrcRot, fixTrgRotAlign);
         float prevFixDistRot = DistanceToRotate(fixSrcRot, fixTrgRot);
         if (gazeCtrl.FixGazeTarget != null)
@@ -695,17 +693,18 @@ public sealed class GazeJoint : DirectableJoint
     // Apply new rotation to the joint
     public void _ApplyRotation(Quaternion q)
     {
-        Quaternion qb = bone.localRotation;
-
         // Eliminate roll component from the joint's rotation
         bone.localRotation = q;
-       /*if (IsEye || gazeCtrl.removeRoll)
-            _RemoveRoll();*/
+       if (IsEye || gazeCtrl.removeRoll)
+            _RemoveRoll();
         q = bone.localRotation;
 
         // Apply expressive displacement to the joint
-        q = q * (isVOR ? fixExpressiveRot : expressiveRot);
-        bone.localRotation = Quaternion.Slerp(qb, q, gazeCtrl.weight);
+        Quaternion qe = q * (isVOR ? fixExpressiveRot : expressiveRot);
+        q = Quaternion.Slerp(q, qe, gazeCtrl.expressiveWeight);
+
+        // Blend with base joint rotation
+        bone.localRotation = Quaternion.Slerp(baseRot, q, isVOR ? gazeCtrl.fixWeight : gazeCtrl.weight);
     }
 
     // Reset adjusted OMR

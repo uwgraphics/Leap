@@ -1,16 +1,23 @@
-Character,AnimationClip,StartFrame,FixationStartFrame,FixationEndFrame,Target,HeadAlign,TorsoAlign,TurnBody
-Norman,BookShelfGaze1,125,158,162,TopShelfLeft,-1,-1,True
-Norman,BookShelfGaze2,164,179,185,Book1,-1,-1,True
-Norman,BookShelfGaze3,310,331,400,BookShelf,-1,-1,True
-Norman,BookShelfGaze4,408,434,437,TopShelfLeft,-1,-1,True
-Norman,BookShelfGaze5,440,467,485,BookShelf,-1,-1,True
-Norman,BookShelfGaze6,581,603,670,BookShelf,-1,-1,True
-Norman,BookShelfGaze7,685,703,706,TopShelfMiddle,-1,-1,True
-Norman,BookShelfGaze8,709,720,730,Book2,-1,-1,True
-Norman,BookShelfGaze9,833,852,910,BookShelf,-1,-1,True
-Norman,BookShelfGaze10,918,950,952,TopShelfMiddle,-1,-1,True
-Norman,BookShelfGaze11,954,964,978,BookShelf,-1,-1,True
-Norman,BookShelfGaze12,1067,1085,1143,BookShelf,-1,-1,True
-Norman,BookShelfGaze13,1153,1177,1199,TopShelfRight,-1,-1,True
-Norman,BookShelfGaze14,1313,1328,1395,BookShelf,-1,-1,True
-Norman,BookShelfGaze15,1406,1431,1472,TopShelfRight,-1,-1,True
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+Norman,BookShelfGaze1,125,33,163,BookShelf1,"0 0 0",0.9443466,0,True
+Norman,BookShelfGaze2,164,15,185,BookShelf2,"0 0 0",0,0.303382,True
+Norman,BookShelfGaze2-Ahead,186,48,309,null,"-1.32531 4.537935 -6.477257",0.8749791,0,True
+Norman,BookShelfGaze3,310,21,380,BookShelf,"0 0 0",0,0.2049008,True
+Norman,BookShelfGaze4,381,18,438,BookShelf1,"0 0 0",0.5184425,0.177434,True
+Norman,BookShelfGaze5,439,27,485,BookShelf2,"0 0 0",1,0.6355979,True
+Norman,BookShelfGaze5-Ahead,486,48,580,null,"1.149847 4.592572 -5.704891",0.1581847,0.15408,True
+Norman,BookShelfGaze6,581,22,670,BookShelf,"0 0 0",0.2770206,0,True
+Norman,BookShelfGaze6-Ahead,671,13,684,null,"-10.68338 5.611954 -1.426107",0.8173294,0.6488667,True
+Norman,BookShelfGaze7,685,18,706,BookShelf2,"0 0 0",0.6920118,0,True
+Norman,BookShelfGaze7-Ahead,707,47,832,null,"-6.701173 5.034768 -6.359016",0.9776748,0,True
+Norman,BookShelfGaze8,833,19,917,BookShelf,"0 0 0",0.9999993,0.09068547,True
+Norman,BookShelfGaze9,918,32,947,BookShelf2,"0 0 0",0.4195343,0,True
+Norman,BookShelfGaze10,948,13,978,BookShelf1,"0 0 0",0.5507646,0,True
+Norman,BookShelfGaze10-Ahead,979,48,1066,null,"3.009338 4.628483 -3.703884",0.1707855,0.03439712,True
+Norman,BookShelfGaze11,1067,18,1148,BookShelf,"0 0 0",1,0.04271365,True
+Norman,BookShelfGaze12,1149,14,1163,BookShelf3,"0 0 0",0.1288142,0,True
+Norman,BookShelfGaze13,1164,10,1188,BookShelf2,"0 0 0",0.9340799,0,True
+Norman,BookShelfGaze13-Ahead,1189,48,1312,null,"-3.571678 4.705585 -7.750229",0.7699187,0,True
+Norman,BookShelfGaze14,1313,15,1399,BookShelf,"0 0 0",0,0.1598779,True
+Norman,BookShelfGaze15,1400,25,1472,BookShelf3,"0 0 0",0.219012,0,True
+Norman,BookShelfGaze15-Ahead,1473,48,1570,null,"0.942625 4.941298 -6.393833",0.6703694,0.1845259,True

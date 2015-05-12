@@ -173,7 +173,7 @@ public static class EyeGazeEditor
                         // of the next instance
                         var gazeAheadInstance = new EyeGazeInstance(newInstance.Model, newInstance.AnimationClip.name + LEAPCore.gazeAheadSuffix,
                             //Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
-                            maxEyeGazeGapLength, null, 0f, 0f, maxEyeGazeGapLength, true, false);
+                            maxEyeGazeGapLength, null, 0f, 0f, -1, true, false);
                         timeline.AddAnimation(layerName, gazeAheadInstance, newEndFrame + 1);
                     }
                     else
@@ -214,7 +214,7 @@ public static class EyeGazeEditor
                 var gazeAheadInstance = new EyeGazeInstance(
                     newInstance.Model, newInstance.AnimationClip.name + LEAPCore.gazeAheadSuffix,
                     //Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
-                    timeline.FrameLength - newEndFrame - 1, null, 0f, 0f, maxEyeGazeGapLength, true, false);
+                    timeline.FrameLength - newEndFrame - 1, null, 0f, 0f, -1, true, false);
                 timeline.AddAnimation(layerName, gazeAheadInstance, newEndFrame + 1);
             }
             else
@@ -261,7 +261,7 @@ public static class EyeGazeEditor
                         var prevGazeAheadInstance = new EyeGazeInstance(
                             prevInstance.Animation.Model, prevInstance.Animation.AnimationClip.name + LEAPCore.gazeAheadSuffix,
                             //Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
-                            newStartFrame - prevEndFrame - 1, null, 0f, 0f, maxEyeGazeGapLength, true, false);
+                            newStartFrame - prevEndFrame - 1, null, 0f, 0f, -1, true, false);
                         timeline.AddAnimation(layerName, prevGazeAheadInstance, prevEndFrame + 1);
                     }
                     else
@@ -356,7 +356,7 @@ public static class EyeGazeEditor
                     var prevGazeAheadInstance = new EyeGazeInstance(
                         prevInstance.Animation.Model, prevInstance.Animation.AnimationClip.name + LEAPCore.gazeAheadSuffix,
                         //Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate), null);
-                        nextStartFrame - prevEndFrame - 1, null, 0f, 0f, maxEyeGazeGapLength, true, false);
+                        nextStartFrame - prevEndFrame - 1, null, 0f, 0f, -1, true, false);
                     timeline.AddAnimation(layerName, prevGazeAheadInstance, prevEndFrame + 1);
                 }
             }
@@ -1159,11 +1159,12 @@ public static class EyeGazeEditor
             throw new Exception(string.Format("Cannot log gaze controller state becase model {0} has no gaze controller", model.name));
 
         UnityEngine.Debug.Log(string.Format("GazeController: state = {0}, gazeTarget = {1}, doGazeShift = {2}, stopGazeShift = {3}, " +
-            "fixGaze = {4}, useTorso = {5},  currentGazeTarget = {6}, fixGazeTarget = {7}",
+            "fixGaze = {4}, useTorso = {5},  currentGazeTarget = {6}, fixGazeTarget = {7}, weight = {8}, fixWeight = {9}",
             gazeController.State, gazeController.gazeTarget != null ? gazeController.gazeTarget.name : "null",
             gazeController.doGazeShift, gazeController.stopGazeShift, gazeController.fixGaze, gazeController.useTorso,
             gazeController.CurrentGazeTarget != null ? gazeController.CurrentGazeTarget.name : "null",
-            gazeController.FixGazeTarget != null ? gazeController.FixGazeTarget.name : "null"));
+            gazeController.FixGazeTarget != null ? gazeController.FixGazeTarget.name : "null",
+            gazeController.weight, gazeController.fixWeight));
 
         for (int gazeJointIndex = 0; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
         {
@@ -1601,7 +1602,8 @@ public static class EyeGazeEditor
             "srcRot = ({13}, {14}, {15}), trgRot = ({16}, {17}, {18}), trgRotAlign = ({19}, {20}, {21}), trgRotMR = ({22}, {23}, {24}), " +
             "distRotAlign = {25}, distRotMR = {26}, rotParamAlign = {27}, rotParamMR = {28}, mrReached = {29}, trgReached = {30}, isVOR = {31}, " +
             "fixSrcRot = ({32}, {33}, {34}), fixTrgRot = ({35}, {36}, {37}), fixTrgRotAlign = ({38}, {39}, {40}), fixRotParamAlign = {41}, " +
-            "expressiveRot = ({42}, {43}, {44}), fixExpressiveRot = ({45}, {46}, {47})",
+            "baseRot = ({42}, {43}, {44}), " +
+            "expressiveRot = ({45}, {46}, {47}), fixExpressiveRot = ({48}, {49}, {50})",
             jointName, joint.GazeController.State,
             joint.bone.localRotation.eulerAngles.x, joint.bone.localRotation.eulerAngles.y, joint.bone.localRotation.eulerAngles.z,
             joint.curVelocity, joint.maxVelocity, joint.latencyTime, joint.curUpMR, joint.curDownMR, joint.curInMR, joint.curOutMR,
@@ -1613,7 +1615,7 @@ public static class EyeGazeEditor
             joint.fixSrcRot.eulerAngles.x, joint.fixSrcRot.eulerAngles.y, joint.fixSrcRot.eulerAngles.z,
             joint.fixTrgRot.eulerAngles.x, joint.fixTrgRot.eulerAngles.y, joint.fixTrgRot.eulerAngles.z,
             joint.fixTrgRotAlign.eulerAngles.x, joint.fixTrgRotAlign.eulerAngles.y, joint.fixTrgRotAlign.eulerAngles.z,
-            joint.fixRotParamAlign,
+            joint.fixRotParamAlign, joint.baseRot.eulerAngles.x, joint.baseRot.eulerAngles.y, joint.baseRot.eulerAngles.z,
             joint.expressiveRot.eulerAngles.x, joint.expressiveRot.eulerAngles.y, joint.expressiveRot.eulerAngles.z,
             joint.fixExpressiveRot.eulerAngles.x, joint.fixExpressiveRot.eulerAngles.y, joint.fixExpressiveRot.eulerAngles.z));
     }

@@ -64,6 +64,8 @@ public struct GazeControllerState : IAnimControllerState
     public GameObject currentGazeTarget;
     public Vector3 effGazeTargetPosition;
     public GameObject fixGazeTarget;
+    public float weight;
+    public float fixWeight;
     public GazeJointState[] gazeJointStates;
 }
 
@@ -167,6 +169,16 @@ public class GazeController : AnimController
     /// during animation.
     /// </summary>
     public bool removeRoll = true;
+
+    /// <summary>
+    /// Weight with which gaze is applied for the current fixation.
+    /// </summary>
+    public float fixWeight = 1f;
+
+    /// <summary>
+    /// Weight with which expressive gaze is applied.
+    /// </summary>
+    public float expressiveWeight = 0f;
 
     // Shorthand for getting the eye joints
     [HideInInspector]
@@ -565,6 +577,9 @@ public class GazeController : AnimController
             // No current gaze target, VOR towards nothing
             FixGazeTarget = null;
         }
+
+        // Set fixation weight
+        fixWeight = weight;
 
         // Initialize target rotations of joints for the fixation target
         for (int ji = LastGazeJointIndex; ji >= 0; --ji)
@@ -1143,7 +1158,7 @@ public class GazeController : AnimController
             // Fixate gaze onto the current target
             _ApplyVOR();
             // TODO: hack - if we don't apply gaze at least twice in a frame,
-            // there is a discontinuity in torso rotations
+            // there is discontinuity in torso rotations
             _ApplyVOR();
             //
         }
@@ -1734,6 +1749,8 @@ public class GazeController : AnimController
         state.currentGazeTarget = CurrentGazeTarget;
         state.fixGazeTarget = FixGazeTarget;
         state.effGazeTargetPosition = effGazeTargetPos;
+        state.weight = weight;
+        state.fixWeight = fixWeight;
 
         state.gazeJointStates = new GazeControllerState.GazeJointState[gazeJoints.Length];
         for (int jointIndex = 0; jointIndex < gazeJoints.Length; ++jointIndex)
@@ -1773,6 +1790,8 @@ public class GazeController : AnimController
         CurrentGazeTarget = gazeControllerState.currentGazeTarget;
         FixGazeTarget = gazeControllerState.fixGazeTarget;
         effGazeTargetPos = gazeControllerState.effGazeTargetPosition;
+        weight = gazeControllerState.weight;
+        fixWeight = gazeControllerState.fixWeight;
 
         if (gazeControllerState.gazeJointStates != null && gazeControllerState.gazeJointStates.Length == gazeJoints.Length)
         {
@@ -1800,6 +1819,7 @@ public class GazeController : AnimController
         state.amplitude = 0f;
         state.currentGazeTarget = null;
         state.fixGazeTarget = null;
+        state.weight = state.fixWeight = 1f;
 
         for (int gazeJointIndex = 0; gazeJointIndex < gazeJoints.Length; ++gazeJointIndex)
         {

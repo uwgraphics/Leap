@@ -67,6 +67,11 @@ public class LEAPCore : MonoBehaviour
     public static string expressiveGazeSuffix = "-Expressive";
 
     /// <summary>
+    /// Time window over which gaze is blended out when gazing ahead.
+    /// </summary>
+    public static float gazeAheadBlendTime = 2f;
+
+    /// <summary>
     /// If true, expressive animation will be applied to gaze movements.
     /// </summary>
     public static bool useExpressiveGaze = true;

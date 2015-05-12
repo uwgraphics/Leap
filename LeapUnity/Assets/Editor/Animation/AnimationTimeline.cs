@@ -259,7 +259,7 @@ public class AnimationTimeline
     /// </summary>
     public int CurrentFrame
     {
-        get { return (int)(CurrentTime * LEAPCore.editFrameRate + 0.5f); }
+        get { return Mathf.RoundToInt(CurrentTime * LEAPCore.editFrameRate); }
     }
 
     /// <summary>

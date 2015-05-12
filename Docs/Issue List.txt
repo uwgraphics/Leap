@@ -1,5 +1,22 @@
 Leap Animation Editor:
 
+#102 [X] Blending gaze instances is broken
+  - When blend weight of the new gaze shift differs from the blend weight of the current gaze fixation, there is a discontinuity in head and torso rotations, like they are being initialized from non-blended rotations
+  - Was a bug in how gaze controller blend weights were initialized, fixed now
+
+#101 [X] Blending out gaze-ahead instances does not work when replaying baked gaze
+  - See EyeGazeInstance.Apply() - blend weight is computed only when baking, but it doesn't get baked itself
+  - Fixed that, but now there is issue #102
+
+#100 [] Gaze target inference will be invalid for manipulated objects
+  - See BookShelf example - target inference might attach the gaze target to a book even at a time when the book should actually be in the character's hand
+
+#99 [X] Gaze-ahead sometimes breaks and results in gaze in the wrong direction
+  - Walking90deg has examples of how broken it is
+  - Gaze-ahead should not be special gaze shifts, but normal gaze shifts towards targets in the distance
+  - Ahead-targets themselves should be inferred as part of Danny's inference
+  - The problem was actually in annotations, fixed now
+
 #98 [] Animation timeline allows temporally overlapping animations in the same layer, on the same character model
 
 #96 [] Unnatural head and torso poses can result at low values of alignment parameters due to source rotations no longer being valid due to underlying body movement

@@ -73,7 +73,7 @@ public abstract class AnimationInstance
     /// </summary>
     public virtual int FrameLength
     {
-        get { return (int)(TimeLength * LEAPCore.editFrameRate + 0.5f); }
+        get { return Mathf.RoundToInt(TimeLength * LEAPCore.editFrameRate); }
     }
 
     /// <summary>
@@ -435,6 +435,6 @@ public abstract class AnimationInstance
     /// <returns>Frame index</returns>
     public static int GetFrameAtTime(float time)
     {
-        return (int)(time * LEAPCore.editFrameRate + 0.5f);
+        return Mathf.RoundToInt(time * LEAPCore.editFrameRate);
     }
 }

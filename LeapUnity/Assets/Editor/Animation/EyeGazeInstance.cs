@@ -77,7 +77,7 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// </summary>
     public virtual int FixationStartFrame
     {
-        get { return (int)(FixationStartTime * LEAPCore.editFrameRate + 0.5f); }
+        get { return Mathf.RoundToInt(FixationStartTime * LEAPCore.editFrameRate); }
     }
 
     /// <summary>
@@ -301,15 +301,24 @@ public class EyeGazeInstance : AnimationControllerInstance
                 }
             }
 
+            // Compute gaze weight
+            float gazeWeight = 1f;
             if (Target == null)
             {
                 // This is a gaze shift ahead, blend it out
-                int numFrames = Mathf.Min(FrameLength, Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.maxEyeGazeGapLength));
+                int numFrames = Mathf.Min(FrameLength, Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.gazeAheadBlendTime));
                 float t = numFrames > 1 ? Mathf.Clamp01(((float)frame) / (numFrames - 1)) : 0f;
-                t = Mathf.Clamp01(t);
                 float t2 = t * t;
-                Weight = 1f + 2f * t2 * t - 3f * t2;
+                gazeWeight = 1f + 2f * t2 * t - 3f * t2;
             }
+            
+            // Apply gaze weight
+            if (GazeController.StateId == (int)GazeState.Shifting)
+                GazeController.weight = gazeWeight;
+            else if (frame > 0)
+                // TODO: careful here - we only compute fixation weight for the fixation in the *current* gaze instance
+                // and not the still-ongoing fixation from the previous gaze instance
+                GazeController.fixWeight = gazeWeight;
 
             _ApplyExpressive(frame);
         }
@@ -370,6 +379,7 @@ public class EyeGazeInstance : AnimationControllerInstance
         if (ExpressiveGazeAnimations == null)
         {
             // Expressive gaze animation not defined for this gaze instance
+            GazeController.expressiveWeight = 0f;
             return;
         }
 
