@@ -8,18 +8,6 @@ using System.Linq;
 using System.Text;
 
 /// <summary>
-/// Type of eye gaze editing operation.
-/// </summary>
-public enum EyeGazeEditType
-{
-    Add,
-    Remove,
-    SetTiming,
-    SetTarget,
-    SetAlignments
-}
-
-/// <summary>
 /// This class has static methods for performing eye gaze editing operations.
 /// </summary>
 public static class EyeGazeEditor
@@ -295,6 +283,9 @@ public static class EyeGazeEditor
 
         // Add the new eye gaze instance
         timeline.AddAnimation(layerName, newInstance, newStartFrame);
+
+        UnityEngine.Debug.Log(string.Format("Added new eye gaze instance {0} to layer {1}, character {2}",
+            newInstance.AnimationClip.name, layerName, newInstance.Model.name));
     }
 
     /// <summary>
@@ -367,6 +358,9 @@ public static class EyeGazeEditor
                 (prevInstance.Animation as EyeGazeInstance).SetFrameLength(nextStartFrame - prevStartFrame);
             }
         }
+
+        UnityEngine.Debug.Log(string.Format("Removed eye gaze instance {0} from layer {1}, character {2}",
+            instanceToRemove.AnimationClip.name, layerName, instanceToRemove.Model.name));
     }
 
     /// <summary>
@@ -379,9 +373,11 @@ public static class EyeGazeEditor
     public static void SetEyeGazeTiming(AnimationTimeline timeline, int instanceId,
         int startFrame, int endFrame)
     {
-        if (endFrame - startFrame + 1 < Mathf.RoundToInt(LEAPCore.minEyeGazeLength * LEAPCore.editFrameRate))
+        int minEyeGazeLength = Mathf.RoundToInt(LEAPCore.minEyeGazeLength * LEAPCore.editFrameRate);
+        if (endFrame - startFrame + 1 < minEyeGazeLength)
         {
-            throw new Exception(string.Format("Error setting eye gaze timing! Eye gaze instance must be longer than {0}s", LEAPCore.minEyeGazeLength));
+            UnityEngine.Debug.LogError(
+                string.Format("Unable to set eye gaze timing; gaze instance must not be shorter than {0} frames", minEyeGazeLength));
         }
 
         // Changing the timing of an instance is equivalent to removing the instance and then re-adding it with new times
@@ -390,6 +386,9 @@ public static class EyeGazeEditor
         RemoveEyeGaze(timeline, instanceId, layerName);
         instance.SetFrameLength(endFrame - startFrame + 1);
         AddEyeGaze(timeline, instance, startFrame, layerName);
+
+        UnityEngine.Debug.Log(string.Format("Set timing of eye gaze instance {0} to start frame {1}, end frame {2}",
+            instance.AnimationClip.name, startFrame, endFrame));
     }
 
     /// <summary>
@@ -411,6 +410,10 @@ public static class EyeGazeEditor
         instance.HeadAlign = headAlign;
         instance.TorsoAlign = torsoAlign;
         instance.TurnBody = turnBody;
+
+        UnityEngine.Debug.Log(string.Format(
+            "Set alignments of eye gaze instance {0} to head alignment {1}, torso alignment {2}, turnBody = {3}",
+            instance.AnimationClip.name, headAlign, torsoAlign, turnBody));
     }
 
     /// <summary>
@@ -419,18 +422,19 @@ public static class EyeGazeEditor
     /// <param name="timeline">Animation timeline</param>
     /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
     /// <param name="layerName">Animation layer holding eye gaze animations</param>
-    /// <param name="edits">If true, loads annotations specifying eye gaze edits (i.e., gaze not encoded in the base animation)</param>
+    /// <param name="fileSuffix">Eye gaze behavior file suffix.</param>
     /// <returns>true if eye gaze instances were loaded successfully, false otherwise</returns>
-    public static bool LoadEyeGaze(AnimationTimeline timeline, int baseAnimationInstanceId, string layerName = "Gaze", bool edits = false)
+    public static bool LoadEyeGaze(AnimationTimeline timeline, int baseAnimationInstanceId, string layerName = "Gaze", string fileSuffix = "")
     {
-        // Get base animation
+        // Get base animation and character model
         var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+        string modelName = baseAnimation.Model.name;
 
         // Get gaze behavior file path
         string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
             path += '/';
-        path += (baseAnimation.AnimationClip.name + (edits ? "#Edits.csv" : ".csv"));
+        path += (baseAnimation.AnimationClip.name + fileSuffix + ".csv");
 
         // Load gaze behaviors
         try
@@ -442,6 +446,9 @@ public static class EyeGazeEditor
             Dictionary<string, int> attributeIndices = new Dictionary<string, int>();
             var models = timeline.Models;
             GameObject[] gazeTargets = GameObject.FindGameObjectsWithTag("GazeTarget");
+
+            // Clear existing gaze
+            timeline.RemoveAllAnimations(layerName, modelName);
 
             while (!reader.EndOfStream && (line = reader.ReadLine()) != "")
             {
@@ -520,77 +527,11 @@ public static class EyeGazeEditor
                     torsoAlign = Mathf.Clamp01(torsoAlign);
                     bool turnBody = bool.Parse(lineElements[attributeIndices["TurnBody"]]);
 
-                    // Get gaze edit settings
-                    EyeGazeEditType editType = edits ? (EyeGazeEditType)Enum.Parse(typeof(EyeGazeEditType), lineElements[attributeIndices["EditType"]]) :
-                        EyeGazeEditType.Add;
-                    float exprGazeWeight = edits && attributeIndices.ContainsKey("ExpressiveGazeWeight") ?
-                        float.Parse(lineElements[attributeIndices["FixationStartFrame"]]) : 1f;
-                    
-                    if (!edits)
-                    {
-                        // Create and schedule gaze instance
-                        var gazeInstance = new EyeGazeInstance(model,
-                            animationClipName, frameLength, gazeTarget, headAlign, torsoAlign, fixationStartFrame, turnBody, true, startFrame);
-                        gazeInstance.AheadTargetPosition = aheadTargetPosition;
-                        AddEyeGaze(timeline, gazeInstance, startFrame, layerName);
-                    }
-                    else
-                    {
-                        var scheduledGazeInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(
-                            inst => inst.Animation.AnimationClip.name == animationClipName);
-
-                        if (editType != EyeGazeEditType.Add && scheduledGazeInstance == null)
-                        {
-                            UnityEngine.Debug.LogError(string.Format(
-                                "Unable to load editing operation {0} on eye gaze instance {1}: instance does not exist.",
-                                editType, animationClipName));
-                            continue;
-                        }
-
-                        switch (editType)
-                        {
-                            case EyeGazeEditType.Add:
-
-                                // Add new eye gaze instance
-                                var gazeInstance = new EyeGazeInstance(model,
-                                    animationClipName, frameLength, gazeTarget, headAlign, torsoAlign, fixationStartFrame, turnBody, false);
-                                gazeInstance.AheadTargetPosition = aheadTargetPosition;
-                                AddEyeGaze(timeline, gazeInstance, startFrame, layerName);
-                                break;
-                                
-                            case EyeGazeEditType.Remove:
-
-                                // Remove existing eye gaze instance
-                                RemoveEyeGaze(timeline, scheduledGazeInstance.InstanceId, layerName);
-                                break;
-
-                            case EyeGazeEditType.SetTiming:
-
-                                // Change eye gaze timings
-                                SetEyeGazeTiming(timeline, scheduledGazeInstance.InstanceId, startFrame, startFrame + frameLength - 1);
-                                break;
-
-                            case EyeGazeEditType.SetTarget:
-
-                                // Change eye gaze target
-                                (scheduledGazeInstance.Animation as EyeGazeInstance).Target = gazeTarget;
-                                break;
-
-                            case EyeGazeEditType.SetAlignments:
-
-                                // Change eye gaze head and torso alignments
-                                SetEyeGazeAlignments(timeline, scheduledGazeInstance.InstanceId, headAlign, torsoAlign, turnBody);
-                                break;
-
-                            default:
-
-                                UnityEngine.Debug.LogError(string.Format(
-                                    "Unrecognized edit operation {0} for eye gaze instance {1}", editType, animationClipName));
-                                break;
-                        }
-
-                        (scheduledGazeInstance.Animation as EyeGazeInstance).ExpressiveGazeWeight = exprGazeWeight;
-                    }
+                    // Create and schedule gaze instance
+                    var gazeInstance = new EyeGazeInstance(model,
+                        animationClipName, frameLength, gazeTarget, headAlign, torsoAlign, fixationStartFrame, turnBody, true, startFrame);
+                    gazeInstance.AheadTargetPosition = aheadTargetPosition;
+                    AddEyeGaze(timeline, gazeInstance, startFrame, layerName);
                 }
             }
 
@@ -610,8 +551,9 @@ public static class EyeGazeEditor
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
     /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <param name="fileSuffix">Eye gaze behavior file suffix.</param>
     /// <returns>true if eye gaze instances were saved successfully, false otherwise</returns>
-    public static bool SaveEyeGaze(AnimationTimeline timeline, int baseAnimationInstanceId)
+    public static bool SaveEyeGaze(AnimationTimeline timeline, int baseAnimationInstanceId, string fileSuffix = "")
     {
         // Get base animation
         var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
@@ -620,7 +562,7 @@ public static class EyeGazeEditor
         string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
             path += '/';
-        path += (baseAnimation.AnimationClip.name + ".csv");
+        path += (baseAnimation.AnimationClip.name + fileSuffix + ".csv");
 
         // Save gaze behaviors
         try

@@ -600,14 +600,62 @@ public class LEAPMenu
         SceneView.RepaintAll();
     }
 
-    [MenuItem("LEAP/Animation/Load Eye Gaze Edits", true, 9)]
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Hand-annotated", true, 10)]
+    private static bool ValidateLoadEyeGaze()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        return wnd.Timeline != null;
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Hand-annotated", false, 10)]
+    private static void LoadEyeGaze()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+        var models = timeline.Models;
+
+        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
+        {
+            var model = models[modelIndex];
+            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);
+            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze");
+        }
+
+        EyeGazeEditor.PrintEyeGaze(timeline);
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Inferred", true, 11)]
+    private static bool ValidateLoadEyeGazeInferred()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        return wnd.Timeline != null;
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Inferred", false, 11)]
+    private static void LoadEyeGazeInferred()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+        var models = timeline.Models;
+
+        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
+        {
+            var model = models[modelIndex];
+            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);
+            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze", "#Inferred");
+        }
+
+        EyeGazeEditor.PrintEyeGaze(timeline);
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Edits", true, 12)]
     private static bool ValidateLoadEyeGazeEdits()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Load Eye Gaze Edits", false, 9)]
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Edits", false, 12)]
     private static void LoadEyeGazeEdits()
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
@@ -618,13 +666,35 @@ public class LEAPMenu
         {
             var model = models[modelIndex];
             var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);
-            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze", true);
+            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze", "#Edits");
         }
 
         EyeGazeEditor.PrintEyeGaze(timeline);
     }
 
-    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true, 10)]
+    [MenuItem("LEAP/Animation/Save Eye Gaze", true, 13)]
+    private static bool ValidateSaveEyeGaze()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
+    }
+
+    [MenuItem("LEAP/Animation/Save Eye Gaze", false, 13)]
+    private static void SaveEyeGaze()
+    {
+        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
+        var timeline = wnd.Timeline;
+        var models = timeline.Models;
+
+        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
+        {
+            var model = models[modelIndex];
+            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);
+            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Edits");
+        }
+    }
+
+    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true, 15)]
     private static bool ValidateFixAnimationClipAssoc()
     {
         GameObject obj = Selection.activeGameObject;
@@ -636,7 +706,7 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", false, 10)]
+    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", false, 15)]
     private static void FixAnimationClipAssoc()
     {
         GameObject obj = Selection.activeGameObject;

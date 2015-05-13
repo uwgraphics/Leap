@@ -67,6 +67,9 @@ public class BodyIKSolver : IKSolver
     protected double[] _xb = null;
     protected Quaternion[] _qg = null;
 
+    // Solver weights
+    float curBasePoseWeight, curGazeDirectionWeight, curGazeVelocityWeight;
+
     // Solver results, timing & profiling
     protected Stopwatch _timer = new Stopwatch();
     protected float _goalTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal;
@@ -94,6 +97,16 @@ public class BodyIKSolver : IKSolver
             _qg[gazeJointIndex - (_gazeController.gazeJoints.Length - _numGazeJoints)] =
                 gazeJoint.bone.localRotation;
         }
+    }
+
+    /// <summary>
+    /// Initialize weights for the gaze constraints.
+    /// </summary>
+    /// <param name="gazeWeight"></param>
+    public virtual void InitGazeWeights(float gazeWeight)
+    {
+        curGazeDirectionWeight = gazeWeight * gazeDirectionWeight;
+        curGazeVelocityWeight = gazeWeight * gazeVelocityWeight;
     }
 
     /// <summary>
@@ -497,9 +510,8 @@ public class BodyIKSolver : IKSolver
         }
 
         // Compute gaze direction and velocity terms
-        Quaternion qg, qgp, qp;
+        Quaternion qg;
         float dt = _gazeController.DeltaTime;
-        Vector3 dg, dgp, d, dp;
         float curGazeDirectionTerm = 0f, curGazeVelocityTerm = 0f;
         for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
         {
@@ -519,32 +531,10 @@ public class BodyIKSolver : IKSolver
             v = _GetBodyJointRotation(x, bodyJointIndex);
             q = QuaternionUtil.Exp(v);
 
-            // Project current rotation into the horizontal plane
-            /*gazeJoint.bone.localRotation = q;
-            dp = gazeJoint.bone.forward;
-            dp = (new Vector3(dp.x, 0f, dp.z)).normalized;
-            gazeJoint.bone.forward = dp;
-            qp = gazeJoint.bone.localRotation;*/
-
             // Get rotation in the gaze pose
             qg = _qg[gazeJointIndex - (_gazeController.gazeJoints.Length - _numGazeJoints)];
 
-            // Project gaze rotation into the horizontal plane
-            /*gazeJoint.bone.localRotation = qg;
-            dgp = gazeJoint.bone.forward;
-            dgp = (new Vector3(dgp.x, 0f, dgp.z)).normalized;
-            gazeJoint.bone.forward = dgp;
-            qgp = gazeJoint.bone.localRotation;
-
-            // Restore original joint rotation
-            gazeJoint.bone.localRotation = q;
-
-            // Blend between original and projected rotations
-            qp = Quaternion.Slerp(q, qp, baseVPostureWeight);
-            qgp = Quaternion.Slerp(qg, qgp, baseVPostureWeight);*/
-
             // Penalize difference between shortest-arc gaze shift rotation and current rotation
-            //dq = Quaternion.Inverse(qgp) * qp;
             dq = Quaternion.Inverse(qg) * q;
             curGazeDirectionTerm = QuaternionUtil.Log(dq).sqrMagnitude;
             gazeDirectionTerm += curGazeDirectionTerm;

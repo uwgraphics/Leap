@@ -206,6 +206,17 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     /// <summary>
+    /// <see cref="AnimationControllerInstance.SetFrameLength"/>
+    /// </summary>
+    public override void SetFrameLength(int frameLength)
+    {
+        base.SetFrameLength(frameLength);
+
+        if (FixationStartFrame >= FrameLength)
+            SetFixationStartFrame(FrameLength - 1);
+    }
+
+    /// <summary>
     /// Set the frame (relative to the start of the gaze instance) when
     /// the gaze shift is expected to end and the fixation start.
     /// </summary>
@@ -213,6 +224,8 @@ public class EyeGazeInstance : AnimationControllerInstance
     public virtual void SetFixationStartFrame(int frame)
     {
         FixationStartTime = ((float)frame) / LEAPCore.editFrameRate;
+        if (FixationStartTime >= TimeLength)
+            FixationStartTime = TimeLength;
     }
 
     /// <summary>

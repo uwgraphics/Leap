@@ -73,6 +73,14 @@ public class AnimationTimeline
         /// <summary>Animation start time on the timeline.</summary>
         public int StartFrame { get; private set; }
 
+        /// <summary>
+        /// Animation end frame on the timeline.
+        /// </summary>
+        public int EndFrame
+        {
+            get { return StartFrame + Animation.FrameLength - 1; }
+        }
+
         /// <summary>Animation instance ID.</summary>
         public int InstanceId { get; private set; }
 
@@ -588,6 +596,25 @@ public class AnimationTimeline
         foreach (int instanceId in instanceIds)
         {
             if (_animationInstancesById[instanceId].OwningLayer.LayerName == layerName)
+                RemoveAnimation(instanceId);
+        }
+    }
+
+    /// <summary>
+    /// Remove all animations from the specified layer for a single model.
+    /// </summary>
+    /// <param name="layerName">Layer name</param>
+    /// <param name="modelName">Character model name</param>
+    public void RemoveAllAnimations(string layerName, string modelName)
+    {
+        if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
+            return;
+
+        var instanceIds = new List<int>(_animationInstancesById.Keys);
+        foreach (int instanceId in instanceIds)
+        {
+            if (_animationInstancesById[instanceId].OwningLayer.LayerName == layerName &&
+                _animationInstancesById[instanceId].Animation.Model.name == modelName)
                 RemoveAnimation(instanceId);
         }
     }
@@ -1109,7 +1136,7 @@ public class AnimationTimeline
     public void ApplyAnimation()
     {
         // Reset models and IK solvers
-        _ClearIKGoals();
+        _ResetIK();
         ResetModelsAndEnvironment();
 
         // Apply active animation instances in layers in correct order
@@ -1180,7 +1207,7 @@ public class AnimationTimeline
                         animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
 
                         // Set up IK goals for this layer
-                        _SetIKGoals(animation.Animation.Model, animation.Animation.AnimationClip);
+                        _SetIKEndEffectorGoals(animation.Animation.Model, animation.Animation.AnimationClip);
 
                         // Restore model scale
                         animation.Animation.Model.transform.localScale = modelScale;
@@ -1195,6 +1222,8 @@ public class AnimationTimeline
                 // Configure IK solver parameters for each model
                 if (layer.isIKBase)
                     _SetIKBasePose(model);
+                if (layer.isIKGaze)
+                    _SetIKGazeWeights(model, layer);
             
                 // Store model poses after the current layer is applied
                 StoreModelPose(model.gameObject.name, layer.LayerName + "Pose");
@@ -1296,7 +1325,7 @@ public class AnimationTimeline
     }
 
     // Set end-effector goals for the IK solver on the specified model
-    private void _SetIKGoals(GameObject model, AnimationClip animationClip)
+    private void _SetIKEndEffectorGoals(GameObject model, AnimationClip animationClip)
     {
         if (!_endEffectorConstraints.ContainsKey(animationClip))
             return;
@@ -1362,8 +1391,80 @@ public class AnimationTimeline
         }
     }
 
+
+    // Set gaze constraint weights for the IK solver on the specified model
+    private void _SetIKGazeWeights(GameObject model, LayerContainer gazeLayer)
+    {
+        float gazeWeight = 0f;
+
+        var curGazeInstance = gazeLayer.Animations.FirstOrDefault(inst =>
+            CurrentFrame >= inst.StartFrame && CurrentFrame <= inst.EndFrame &&
+            inst.Animation.Model == model);
+        if (curGazeInstance != null)
+        {
+            // Gaze is constrained by the current gaze instance
+
+            // Get all gaze instances on this model that follow the current one
+            var curOrNextGazeInstances = gazeLayer.Animations.Where(inst =>
+                inst.EndFrame >= CurrentFrame && inst.Animation.Model == model).ToArray();
+
+            // Find the first gap in those instances
+            int gazeIKEndFrame = FrameLength - 1;
+            for (int gazeInstanceIndex = 0; gazeInstanceIndex < curOrNextGazeInstances.Length; ++gazeInstanceIndex)
+            {
+                int nextEndFrame = curOrNextGazeInstances[gazeInstanceIndex].EndFrame;
+                int nextStartFrame = gazeInstanceIndex + 1 < curOrNextGazeInstances.Length ?
+                    curOrNextGazeInstances[gazeInstanceIndex + 1].StartFrame : FrameLength;
+
+                if (nextStartFrame - nextEndFrame > 1)
+                {
+                    gazeIKEndFrame = nextEndFrame;
+                    break;
+                }
+            }
+
+            // Get all gaze instances on this model that precede the current one
+            var curOrPrevGazeInstances = gazeLayer.Animations.Where(inst =>
+                inst.StartFrame <= CurrentFrame && inst.Animation.Model == model).ToArray();
+
+            // Find the first gap in those instances
+            int gazeIKStartFrame = 0;
+            for (int gazeInstanceIndex = curOrPrevGazeInstances.Length - 1; gazeInstanceIndex >= 0; --gazeInstanceIndex)
+            {
+                int prevStartFrame = curOrPrevGazeInstances[gazeInstanceIndex].StartFrame;
+                int prevEndFrame = gazeInstanceIndex - 1 >= 0 ?
+                    curOrPrevGazeInstances[gazeInstanceIndex - 1].EndFrame : 0;
+
+                if (prevEndFrame - prevStartFrame > 1)
+                {
+                    gazeIKStartFrame = prevStartFrame;
+                    break;
+                }
+            }
+
+            // Compute gaze IK activation/deactivation time
+            int gazeIKFrameLength = Mathf.RoundToInt(LEAPCore.gazeAheadBlendTime * LEAPCore.editFrameRate);
+
+            // Compute gaze IK weight
+            float gazeWeightIn = Mathf.Clamp01(((float)(CurrentFrame - gazeIKStartFrame)) / gazeIKFrameLength);
+            float gazeWeightOut = Mathf.Clamp01(((float)(gazeIKEndFrame - CurrentFrame)) / gazeIKFrameLength);
+            gazeWeight = Mathf.Min(gazeWeightIn, gazeWeightOut);
+        }
+
+        // Set gaze weights in the IK solver
+        IKSolver[] solvers = model.GetComponents<IKSolver>();
+        foreach (var solver in solvers)
+        {
+            if (solver is BodyIKSolver)
+            {
+                var bodySolver = solver as BodyIKSolver;
+                bodySolver.InitGazeWeights(gazeWeight);
+            }
+        }
+    }
+
     // Clear end-effector goals in all IK solvers on all models
-    private void _ClearIKGoals()
+    private void _ResetIK()
     {
         foreach (var model in Models)
         {

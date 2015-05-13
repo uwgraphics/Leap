@@ -176,6 +176,18 @@ public class GazeController : AnimController
     public float fixWeight = 1f;
 
     /// <summary>
+    /// Weight with which vertical head posture from the base animation
+    /// is preserved when applying gaze.
+    /// </summary>
+    public float headPostureWeight = 0f;
+
+    /// <summary>
+    /// Weight with which vertical torso posture from the base animation
+    /// is preserved when applying gaze.
+    /// </summary>
+    public float torsoPostureWeight = 1f;
+
+    /// <summary>
     /// Weight with which expressive gaze is applied.
     /// </summary>
     public float expressiveWeight = 0f;
@@ -660,14 +672,30 @@ public class GazeController : AnimController
             // No need to redistribute rotation when there is only 1 joint in the chain
             return;
 
+        // Gaze directions and joint rotations
         Vector3 trgDirW = joint.Direction;
         Vector3 trgDir, trgDirAlign, srcDir, baseDir;
-        Quaternion trgRot, trgRotAlign;
+        Quaternion trgRot, trgRotAlign, trgRotHAlign;
 
+        // Initialize joint indices and contributions
         int jin = FindGazeJointIndex(joint);
         int ji1 = jin + nj - 1;
         float cprev = 0f, c, c1;
         int jic;
+
+        // Compute vertical posture weight
+        float weight = 1f;
+        switch (joint.type)
+        {
+            case GazeJointType.Head:
+                weight = headPostureWeight;
+                break;
+            case GazeJointType.Torso:
+                weight = torsoPostureWeight;
+                break;
+            default:
+                break;
+        }
 
         for (int ji = ji1; ji >= jin; --ji)
         {
@@ -678,38 +706,35 @@ public class GazeController : AnimController
             c1 = (c - cprev) / (1f - cprev);
             cprev = c;
 
-            if (joint.type != GazeJointType.Torso)
-            {
-                // Get current joint's source and target gaze directions in local space
-                curJoint.bone.localRotation = Quaternion.identity;
-                srcDir = curJoint.bone.InverseTransformDirection(curJoint.bone.forward);
-                trgDir = curJoint.bone.InverseTransformDirection(trgDirW);
-                
-                // Compute current joint's contribution to the overall rotation
-                trgRot = Quaternion.FromToRotation(srcDir, trgDir);
-                trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
-                curJoint.bone.localRotation = trgRotAlign;
-            }
-            else
-            {
-                // Get current joint's base gaze direction in horizontal plane
-                curJoint.bone.localRotation = curJoint.baseRot;
-                baseDir = curJoint.bone.forward;
-                baseDir = new Vector3(baseDir.x, 0f, baseDir.z);
+            // Get current joint's source and target gaze directions
+            curJoint.bone.localRotation = Quaternion.identity;
+            srcDir = curJoint.bone.InverseTransformDirection(curJoint.bone.forward);
+            trgDir = curJoint.bone.InverseTransformDirection(trgDirW);
 
-                // Get current joint's source and target gaze directions in horizontal plane
-                curJoint.bone.localRotation = Quaternion.identity;
-                srcDir = curJoint.bone.forward;
-                srcDir = new Vector3(srcDir.x, 0f, srcDir.z);
-                trgDir = new Vector3(trgDirW.x, 0f, trgDirW.z);
+            // Compute current joint's contribution to the overall rotation
+            trgRot = Quaternion.FromToRotation(srcDir, trgDir);
+            trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
 
-                // Compute current joint's contribution to the overall rotation
-                trgRot = Quaternion.FromToRotation(srcDir, trgDir);
-                trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
-                trgDirAlign = trgRotAlign * srcDir;
-                trgRotAlign = Quaternion.FromToRotation(baseDir, trgDirAlign);
-                curJoint.bone.localRotation = curJoint.baseRot * trgRotAlign;
-            }
+            // Get current joint's base gaze direction in horizontal plane
+            curJoint.bone.localRotation = curJoint.baseRot;
+            baseDir = curJoint.bone.forward;
+            baseDir = new Vector3(baseDir.x, 0f, baseDir.z);
+
+            // Get current joint's source and target gaze directions, projected into horizontal plane
+            curJoint.bone.localRotation = Quaternion.identity;
+            srcDir = curJoint.bone.forward;
+            srcDir = new Vector3(srcDir.x, 0f, srcDir.z);
+            trgDir = new Vector3(trgDirW.x, 0f, trgDirW.z);
+
+            // Compute current joint's contribution to the overall rotation, projected into horizontal plane
+            trgRot = Quaternion.FromToRotation(srcDir, trgDir);
+            trgRotHAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
+            trgDirAlign = trgRotHAlign * srcDir;
+            trgRotHAlign = Quaternion.FromToRotation(baseDir, trgDirAlign);
+            trgRotHAlign = curJoint.baseRot * trgRotHAlign;
+
+            // Blend between fully and horizontally aligning rotations
+            curJoint.bone.localRotation = Quaternion.Slerp(trgRotAlign, trgRotHAlign, weight);
         }
     }
 

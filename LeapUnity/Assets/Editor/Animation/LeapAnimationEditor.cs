@@ -44,6 +44,8 @@ public class LeapAnimationEditor : EditorWindow
     private Texture _timelineNextFrameTexture;
     private Texture _timelineAddEyeGazeTexture;
     private Texture _timelineRemoveEyeGazeTexture;
+    private Texture _timelineSetEyeGazeStartTimeTexture;
+    private Texture _timelineSetEyeGazeEndTimeTexture;
 
     // Scene view rendering and interaction
     private AnimationEditGizmos _animationEditGizmos = null;
@@ -211,6 +213,16 @@ public class LeapAnimationEditor : EditorWindow
         {
             _OnRemoveEyeGaze();
         }
+        if (GUI.Button(new Rect(100, 120, 32, 32), _timelineSetEyeGazeStartTimeTexture)
+            && Timeline.Active && !Timeline.Playing)
+        {
+            _OnSetEyeGazeStartTime();
+        }
+        if (GUI.Button(new Rect(140, 120, 32, 32), _timelineSetEyeGazeEndTimeTexture)
+            && Timeline.Active && !Timeline.Playing)
+        {
+            _OnSetEyeGazeEndTime();
+        }
 
         GUI.Label(new Rect(20, 180, 80, 40), "Layers:");
 
@@ -318,6 +330,54 @@ public class LeapAnimationEditor : EditorWindow
         }
     }
 
+    // Set current time as the start time of the current eye gaze instance
+    private void _OnSetEyeGazeStartTime()
+    {
+        if (LastSelectedModel != null && LastSelectedModel.GetComponent<GazeController>() != null)
+        {
+            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
+            if (currentGazeInstanceId < 0)
+            {
+                UnityEngine.Debug.LogError("No eye gaze instance defined at current frame");
+                return;
+            }
+            var currentGazeInstance = Timeline.GetAnimation(currentGazeInstanceId);
+            int currentStartFrame = Timeline.GetAnimationStartFrame(currentGazeInstanceId);
+
+            EyeGazeEditor.SetEyeGazeTiming(Timeline, currentGazeInstanceId, Timeline.CurrentFrame,
+                currentStartFrame + currentGazeInstance.FrameLength - 1);
+        }
+    }
+
+    // Set current time as the end time of the current eye gaze instance
+    private void _OnSetEyeGazeEndTime()
+    {
+        if (LastSelectedModel != null && LastSelectedModel.GetComponent<GazeController>() != null)
+        {
+            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
+            if (currentGazeInstanceId < 0)
+            {
+                UnityEngine.Debug.LogError("No eye gaze instance defined at current frame");
+                return;
+            }
+            var currentGazeInstance = Timeline.GetAnimation(currentGazeInstanceId);
+            int currentStartFrame = Timeline.GetAnimationStartFrame(currentGazeInstanceId);
+            int currentEndFrame = currentStartFrame + currentGazeInstance.FrameLength - 1;
+
+            // Get the next gaze instance
+            var nextGazeInstance = Timeline.GetLayer("Gaze").Animations.FirstOrDefault(inst => inst.StartFrame > currentEndFrame &&
+                inst.Animation.Model == currentGazeInstance.Model);
+            int nextStartFrame = nextGazeInstance.StartFrame;
+            int nextEndFrame = nextStartFrame + nextGazeInstance.Animation.FrameLength - 1;
+
+            if (nextGazeInstance != null)
+            {
+                // We change the end time of the current gaze instance by setting a new start time for the next gaze instance
+                EyeGazeEditor.SetEyeGazeTiming(Timeline, nextGazeInstance.InstanceId, Timeline.CurrentFrame + 1, nextEndFrame);
+            }
+        }
+    }
+
     // Initialize animation timeline
     private void _InitTimeline()
     {
@@ -348,6 +408,8 @@ public class LeapAnimationEditor : EditorWindow
         _timelineNextFrameTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineNextFrame");
         _timelineAddEyeGazeTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineAddEyeGaze");
         _timelineRemoveEyeGazeTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineRemoveEyeGaze");
+        _timelineSetEyeGazeStartTimeTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineSetGazeStartTime");
+        _timelineSetEyeGazeEndTimeTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineSetGazeEndTime");
 
         _guiInitialized = true;
     }
@@ -439,6 +501,18 @@ public class LeapAnimationEditor : EditorWindow
                     else if (e.shift && e.keyCode == KeyCode.R)
                     {
                         _OnRemoveEyeGaze();
+                    }
+                    else if (e.shift && e.keyCode == KeyCode.LeftBracket)
+                    {
+                        _OnSetEyeGazeStartTime();
+                    }
+                    else if (e.shift && e.keyCode == KeyCode.RightBracket)
+                    {
+                        _OnSetEyeGazeEndTime();
+                    }
+                    else if (e.shift && e.keyCode == KeyCode.P)
+                    {
+                        EyeGazeEditor.PrintEyeGaze(Timeline);
                     }
                     else if (e.shift && e.keyCode == KeyCode.B)
                     {
