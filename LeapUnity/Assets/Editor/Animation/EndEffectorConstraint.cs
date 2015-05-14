@@ -77,8 +77,10 @@ public struct EndEffectorConstraint
         this.target = target;
         this.manipulatedObjectHandle = manipulatedObjectHandle;
         this.manipulationFrameLength = manipulationFrameLength;
-        this.activationFrameLength = activationFrameLength > -1 ? activationFrameLength : LEAPCore.endEffectorConstraintActivationFrameLength;
-        this.deactivationFrameLength = deactivationFrameLength > -1 ? deactivationFrameLength : LEAPCore.endEffectorConstraintActivationFrameLength;
+        this.activationFrameLength = activationFrameLength > -1 ? activationFrameLength :
+            Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.endEffectorConstraintActivationTime);
+        this.deactivationFrameLength = deactivationFrameLength > -1 ? deactivationFrameLength :
+            Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.endEffectorConstraintActivationTime);
     }
 }
 

@@ -163,11 +163,6 @@ public class LEAPMenu
         // Reload Leap configuration
         LEAPCore.LoadConfiguration();
 
-        // Add character models to the timeline
-        timeline.AddModel(testScenes.modelNorman);
-        timeline.AddModel(testScenes.modelNormanette);
-        timeline.AddModel(testScenes.modelRoman);
-
         // Deactivate all characters and props
         testScenes.modelNorman.SetActive(false);
         testScenes.modelNormanette.SetActive(false);
@@ -187,19 +182,26 @@ public class LEAPMenu
         // Create and configure animation layers
         timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
         timeline.GetLayer("BaseAnimation").isIKEndEffectorConstr = true;
-        timeline.GetLayer("BaseAnimation").isIKBase = true;
+        timeline.GetLayer("BaseAnimation").isBase = true;
         timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
-        timeline.GetLayer("Gaze").isIKBase = false;
-        timeline.GetLayer("Gaze").isIKGaze = true;
+        timeline.GetLayer("Gaze").isBase = false;
+        timeline.GetLayer("Gaze").isGaze = true;
         timeline.AddLayer(AnimationLayerMode.Override, 2, "Environment");
         timeline.GetLayer("Environment").isIKEndEffectorConstr = false;
-        timeline.GetLayer("Environment").isIKBase = false;
+        timeline.GetLayer("Environment").isBase = false;
+
+        // Configure gaze controllers
+        testScenes.modelNorman.GetComponent<GazeController>().headPostureWeight = 0f;
+        testScenes.modelNorman.GetComponent<GazeController>().torsoPostureWeight = 1f;
 
         if (sceneName == "TestExpressiveGaze")
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.modelTestExpressiveGazeEnv.SetActive(true);
             testScenes.cameraWindowWashing.enabled = true;
+
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
             timeline.SetEnvironment(testScenes.modelTestExpressiveGazeEnv);
@@ -221,6 +223,10 @@ public class LEAPMenu
             testScenes.modelNormanette.transform.position = new Vector3(2.58f, 0f, -3.72f);
             testScenes.modelWindowWashingEnv.SetActive(true);
             testScenes.cameraWindowWashing.enabled = true;
+
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
+            timeline.AddModel(testScenes.modelNormanette);
 
             // Set environment in the timeline
             timeline.SetEnvironment(testScenes.modelWindowWashingEnv);
@@ -259,6 +265,15 @@ public class LEAPMenu
             testScenes.modelNormanette.transform.position = new Vector3(0.36f, 0f, -3.72f);
             testScenes.modelPassSodaEnv.SetActive(true);
             testScenes.cameraPassSoda.enabled = true;
+
+            // Configure gaze controllers
+            testScenes.modelNorman.GetComponent<GazeController>().headPostureWeight = 0f;
+            testScenes.modelRoman.GetComponent<GazeController>().headPostureWeight = 1f;
+
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
+            timeline.AddModel(testScenes.modelNormanette);
+            timeline.AddModel(testScenes.modelRoman);
 
             // Set environment in the timeline
             timeline.SetEnvironment(testScenes.modelPassSodaEnv);
@@ -303,6 +318,9 @@ public class LEAPMenu
             testScenes.modelWalking90degEnv.SetActive(true);
             testScenes.cameraWalking90deg.enabled = true;
 
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
+
             // Set environment in the timeline
             timeline.SetEnvironment(testScenes.modelWalking90degEnv);
 
@@ -327,6 +345,9 @@ public class LEAPMenu
             testScenes.modelNorman.SetActive(true);
             testScenes.modelBookShelfEnv.SetActive(true);
             //testScenes.cameraBookShelf.enabled = true;
+
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
             timeline.SetEnvironment(testScenes.modelBookShelfEnv);
@@ -365,6 +386,10 @@ public class LEAPMenu
             testScenes.modelRoman.SetActive(true);
             //testScenes.cameraHandShake.enabled = true;
 
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
+            timeline.AddModel(testScenes.modelRoman);
+
             // Set environment in the timeline
             timeline.SetEnvironment(null);
 
@@ -398,6 +423,12 @@ public class LEAPMenu
             testScenes.modelStealDiamondEnv.SetActive(true);
             //testScenes.cameraStealDiamond.enabled = true;
 
+            // Configure gaze controllers
+            testScenes.modelNorman.GetComponent<GazeController>().headPostureWeight = 1f;
+
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
+
             // Set environment in the timeline
             timeline.SetEnvironment(testScenes.modelStealDiamondEnv);
 
@@ -430,6 +461,9 @@ public class LEAPMenu
             testScenes.modelFloor.SetActive(false);
             //testScenes.cameraWaitForBus.enabled = true;
 
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
+
             // Set environment in the timeline
             timeline.SetEnvironment(testScenes.modelWaitForBusEnv);
 
@@ -453,6 +487,9 @@ public class LEAPMenu
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.cameraWindowWashing.enabled = true;
+
+            // Add character models to the timeline
+            timeline.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
             timeline.SetEnvironment(null);

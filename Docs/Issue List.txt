@@ -1,5 +1,8 @@
 Leap Animation Editor:
 
+#103 [] Head and eyes overshoots the gaze target in some gaze shifts
+  - See StealDiamondGaze2 when StealDiamondGaze1 is disabled and dynamic gaze IK weights are used
+
 #102 [X] Blending gaze instances is broken
   - When blend weight of the new gaze shift differs from the blend weight of the current gaze fixation, there is a discontinuity in head and torso rotations, like they are being initialized from non-blended rotations
   - Was a bug in how gaze controller blend weights were initialized, fixed now

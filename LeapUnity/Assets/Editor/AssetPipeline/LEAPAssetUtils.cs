@@ -557,9 +557,11 @@ public static class LEAPAssetUtils
                         int.Parse(lineElements[attributeIndices["ManipulationEndFrame"]]) : -1;
                     int manipulationFrameLength = manipulationEndFrame >= 0 ? manipulationEndFrame - startFrame + 1 : -1;
                     int activationFrameLength = attributeIndices.ContainsKey("ActivationFrameLength") ?
-                        int.Parse(lineElements[attributeIndices["ActivationFrameLength"]]) : LEAPCore.endEffectorConstraintActivationFrameLength;
+                        int.Parse(lineElements[attributeIndices["ActivationFrameLength"]]) :
+                        Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.endEffectorConstraintActivationTime);
                     int deactivationFrameLength = attributeIndices.ContainsKey("DeactivationFrameLength") ?
-                        int.Parse(lineElements[attributeIndices["DeactivationFrameLength"]]) : LEAPCore.endEffectorConstraintActivationFrameLength;
+                        int.Parse(lineElements[attributeIndices["DeactivationFrameLength"]]) :
+                        Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.endEffectorConstraintActivationTime);
 
                     /*if (lastConstraintEndFrames.ContainsKey(endEffector) && lastConstraintEndFrames[endEffector] >= startFrame)
                     {

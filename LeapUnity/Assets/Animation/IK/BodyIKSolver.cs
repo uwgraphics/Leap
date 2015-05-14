@@ -68,7 +68,8 @@ public class BodyIKSolver : IKSolver
     protected Quaternion[] _qg = null;
 
     // Solver weights
-    float curBasePoseWeight, curGazeDirectionWeight, curGazeVelocityWeight;
+    float _curGazeWeight, _curBasePoseWeight,
+        _curGazeDirectionWeight, _curGazeVelocityWeight;
 
     // Solver results, timing & profiling
     protected Stopwatch _timer = new Stopwatch();
@@ -105,8 +106,9 @@ public class BodyIKSolver : IKSolver
     /// <param name="gazeWeight"></param>
     public virtual void InitGazeWeights(float gazeWeight)
     {
-        curGazeDirectionWeight = gazeWeight * gazeDirectionWeight;
-        curGazeVelocityWeight = gazeWeight * gazeVelocityWeight;
+        _curGazeWeight = gazeWeight;
+        _curGazeDirectionWeight = gazeWeight * gazeDirectionWeight;
+        _curGazeVelocityWeight = gazeWeight * gazeVelocityWeight;
     }
 
     /// <summary>
@@ -115,7 +117,6 @@ public class BodyIKSolver : IKSolver
     public override void Init()
     {
         base.Init();
-
         _upperBodyOnly = !endEffectors.Any(ee => ee == "LAnkle" || ee == "RAnkle");
         _CreateSolver();
     }
@@ -125,22 +126,7 @@ public class BodyIKSolver : IKSolver
     /// </summary>
     protected override void _Solve()
     {
-        // Update gaze direction weight
-        if (LEAPCore.useDynamicGazeIKWeight)
-        {
-            gazeDirectionWeight = 0f;
-            foreach (var goal in Goals)
-            {
-                if (goal.endEffector.tag == "LWrist" || goal.endEffector.tag == "RWrist" &&
-                    goal.weight > gazeDirectionWeight)
-                {
-                    gazeDirectionWeight = goal.weight;
-                }
-            }
-            gazeDirectionWeight = 1f - gazeDirectionWeight;
-        }
-
-        // Solve for body posture
+        _InitBasePoseWeight();
         _RunSolver();
 
         if (logPerformance)
@@ -160,6 +146,30 @@ public class BodyIKSolver : IKSolver
                 "Objective function: goalTerm = {0}, basePoseTerm = {1}, gazeDirectionTerm = {2}, gazeVelocityTerm = {3}",
                 _goalTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal));
             //
+        }
+    }
+
+    // Compute base term weight
+    protected virtual void _InitBasePoseWeight()
+    {
+        if (LEAPCore.useDynamicGazeIKWeight)
+        {
+            _curBasePoseWeight = (1f - _curGazeWeight) * basePoseWeight;
+
+            float maxGoalWeight = 0f;
+            foreach (var goal in Goals)
+            {
+                if ((goal.endEffector.tag == "LWrist" || goal.endEffector.tag == "RWrist") &&
+                    goal.weight > maxGoalWeight)
+                {
+                    maxGoalWeight = goal.weight;
+                }
+            }
+            _curBasePoseWeight = basePoseWeight * maxGoalWeight + _curBasePoseWeight * (1f - maxGoalWeight);
+        }
+        else
+        {
+            _curBasePoseWeight = basePoseWeight;
         }
     }
 
@@ -430,11 +440,11 @@ public class BodyIKSolver : IKSolver
         _ApplySolverPose(_xb);
 
         // Compute total objective value
-        func = goalTerm + basePoseWeight * basePoseTerm;
+        func = goalTerm + _curBasePoseWeight * basePoseTerm;
 
         // Log objective values
         _goalTermFinal = goalTerm;
-        _basePoseTermFinal = basePoseTerm * basePoseWeight;
+        _basePoseTermFinal = basePoseTerm * _curBasePoseWeight;
     }
 
     protected void _ObjFunc2(double[] x, ref double func, object obj)
@@ -552,13 +562,13 @@ public class BodyIKSolver : IKSolver
         _ApplySolverPose(_xb);
 
         // Compute total objective value
-        func = goalTerm + basePoseWeight * basePoseTerm + gazeDirectionWeight * gazeDirectionTerm
-            + gazeVelocityWeight * gazeVelocityTerm;
+        func = goalTerm + _curBasePoseWeight * basePoseTerm +
+            _curGazeDirectionWeight * gazeDirectionTerm + _curGazeVelocityWeight * gazeVelocityTerm;
 
         // Log objective values
         _goalTermFinal = goalTerm;
-        _basePoseTermFinal = basePoseTerm * basePoseWeight;
-        _gazeDirectionTermFinal = gazeDirectionTerm * gazeDirectionWeight;
-        _gazeVelocityTermFinal = gazeVelocityTerm * gazeVelocityWeight;
+        _basePoseTermFinal = basePoseTerm * _curBasePoseWeight;
+        _gazeDirectionTermFinal = gazeDirectionTerm * _curGazeDirectionWeight;
+        _gazeVelocityTermFinal = gazeVelocityTerm * _curGazeVelocityWeight;
     }
 }

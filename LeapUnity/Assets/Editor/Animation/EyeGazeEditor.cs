@@ -280,6 +280,24 @@ public static class EyeGazeEditor
                 }
             }
         }
+        else
+        {
+            // No gaze instance is preceding the new one
+
+            if (newStartFrame > minEyeGazeLength)
+            {
+                // Insert a gaze-ahead instance to fill the gap
+                var prevGazeAheadInstance = new EyeGazeInstance(
+                    newInstance.Model, newInstance.AnimationClip.name + "Start" + LEAPCore.gazeAheadSuffix,
+                    newStartFrame - 1, null, 0f, 0f, 1, true, false);
+                timeline.AddAnimation(layerName, prevGazeAheadInstance, 1);
+            }
+            else
+            {
+                // Just start the new instance a bit earlier
+                newStartFrame = 1;
+            }
+        }
 
         // Add the new eye gaze instance
         timeline.AddAnimation(layerName, newInstance, newStartFrame);
@@ -1188,18 +1206,11 @@ public static class EyeGazeEditor
             srcRotTorso, trgRotTorso, trgRotMinTorso, trgRotAlignTorso;
         trgRotMinTorso = Quaternion.identity;
 
-        // Apply animation at the end of the gaze shift
-        //baseAnimation.Apply(fixationStartFrame, AnimationLayerMode.Override);
-
         // Get source gaze joint rotations
         srcRotHead = gazeController.Head.srcRot;
         srcRotTorso = gazeInstance.TurnBody ? gazeController.Torso.srcRot : Quaternion.identity;
 
         // Compute full target rotations of the head and torso
-        /*gazeController.ApplySourcePose();
-        trgRotHead = gazeController.Head._ComputeTargetRotation(gazeController.gazeTarget.transform.position);
-        trgRotTorso = gazeController.Torso != null ?
-            gazeController.Torso._ComputeTargetRotation(gazeController.gazeTarget.transform.position) : Quaternion.identity;*/
         trgRotHead = gazeController.Head.trgRot;
         trgRotTorso = gazeInstance.TurnBody ?
             gazeController.Torso.trgRot : Quaternion.identity;

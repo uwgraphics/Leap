@@ -26,9 +26,9 @@ public class LEAPCore : MonoBehaviour
     public static int editFrameRate = 30;
 
     /// <summary>
-    /// Default time (in frames) over which end-effector constraints become active or inactive.
+    /// Default time over which end-effector constraints become active or inactive.
     /// </summary>
-    public static int endEffectorConstraintActivationFrameLength = 20;
+    public static float endEffectorConstraintActivationTime = 0.7f;
 
     /// <summary>
     /// Asset subdirectory for environment object models.
@@ -87,6 +87,11 @@ public class LEAPCore : MonoBehaviour
     public static bool useDynamicGazeIKWeight = true;
 
     /// <summary>
+    /// Default time over which gaze constraints become active or inactive.
+    /// </summary>
+    public static float gazeConstraintActivationTime = 0.35f;
+
+    /// <summary>
     /// If true, effective gaze target in a gaze shift will be adjusted for movement
     /// in the base animation.
     /// </summary>
@@ -132,9 +137,9 @@ public class LEAPCore : MonoBehaviour
                         editFrameRate = int.Parse(valueStr);
                         break;
 
-                    case "endEffectorConstraintActivationFrameLength":
+                    case "endEffectorConstraintActivationTime":
 
-                        endEffectorConstraintActivationFrameLength = int.Parse(valueStr);
+                        endEffectorConstraintActivationTime = float.Parse(valueStr);
                         break;
 
                     case "enableObjectManipulation":
@@ -165,6 +170,11 @@ public class LEAPCore : MonoBehaviour
                     case "useDynamicGazeIKWeight":
 
                         useDynamicGazeIKWeight = bool.Parse(valueStr);
+                        break;
+
+                    case "gazeConstraintActivationTime":
+
+                        gazeConstraintActivationTime = float.Parse(valueStr);
                         break;
 
                     case "adjustGazeTargetForMovingBase":

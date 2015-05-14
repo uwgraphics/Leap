@@ -147,6 +147,7 @@ public abstract class IKSolver : MonoBehaviour
     // Do the actual solve - subclasses of IKSolver must implement this
     protected abstract void _Solve();
 
+    // Merge all goals on the same end-effector into a single goal
     protected virtual void _ConsolidateGoals()
     {
         IKGoal[] goals = _goals.ToArray();
