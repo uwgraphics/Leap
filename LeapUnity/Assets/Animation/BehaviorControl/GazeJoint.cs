@@ -812,12 +812,6 @@ public sealed class GazeJoint : DirectableJoint
             bone.localRotation = currot; // restore original rotation
         }
 
-        if (type == GazeJointType.Torso)
-        {
-            // For the torso, target rotation should align the joint with the target only in the horizontal plane
-            trgrot = ModelUtils.LookAtRotationInHorizontalPlane(bone, wTargetPos);
-        }
-
         //trgrot = Quaternion.Euler(trgrot.eulerAngles.x, trgrot.eulerAngles.y, 0f);
 
         return trgrot;

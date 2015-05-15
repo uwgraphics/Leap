@@ -1,7 +1,26 @@
 Leap Animation Editor:
 
-#103 [] Head and eyes overshoots the gaze target in some gaze shifts
+#108 [] Torso rotations are completely broken when torso posture weight in the gaze controller is set to zero
+  - Discontinuous at gaze shift boundaries, see TestExpressiveGaze
+  - Gaze shifts are unnaturally fast
+  - Happens even when all IK is disabled
+  - Happens only when using GazeController._ApplyRotation() to distribute rotation
+  - The problem was in GazeJoint._ComputeTargetRotation() - we should *not* be computing target rotation in horizontal plane!
+
+#107 [] Hand constraint enforcement appears to be broken when character is rescaled
+  - Try Roman in HandShake example
+
+#106 [] When adding a gaze instance at start frame 0, it gets delayed to start frame 1, but frame length does not get shortened; if there are gaze instances further down the timeline, the end frame of the new instance overlaps with the start frame of the next instance
+  - Also see #105
+
+#105 [] Gaze doesn't work correctly for instance starting at frame 0
+
+#104 [] When using gaze IK, gaze cannot be unconstrained
+  - There must be contiguous gaze instances along the entire timeline, otherwise IK won't work during "gaps"
+
+#103 [X] Head and eyes overshoots the gaze target in some gaze shifts
   - See StealDiamondGaze2 when StealDiamondGaze1 is disabled and dynamic gaze IK weights are used
+  - Fixed, I guess
 
 #102 [X] Blending gaze instances is broken
   - When blend weight of the new gaze shift differs from the blend weight of the current gaze fixation, there is a discontinuity in head and torso rotations, like they are being initialized from non-blended rotations

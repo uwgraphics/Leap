@@ -19,8 +19,10 @@ public static class EyeGazeEditor
     /// <param name="newInstance">New eye gaze instance</param>
     /// <param name="newStartFrame">New eye gaze instance start frame</param>
     /// <param name="layerName">Animation layer holding eye gaze animations</param>
+    /// <param name="fillGapsWithGazeAhead">If false, gaps on the timeline between gaze instances will be filled
+    /// by extending the preceding gaze instances, rather than by inserting gaze-ahead instances.</param>
     public static void AddEyeGaze(AnimationTimeline timeline, EyeGazeInstance newInstance,
-        int newStartFrame, string layerName = "Gaze")
+        int newStartFrame, string layerName = "Gaze", bool fillGapsWithGazeAhead = true)
     {
         int maxEyeGazeGapLength = Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate);
         int minEyeGazeLength = Mathf.RoundToInt(LEAPCore.minEyeGazeLength * LEAPCore.editFrameRate);
@@ -110,7 +112,9 @@ public static class EyeGazeEditor
                     {
                         // Delay the start of the overlapping instance
 
-                        overlappingInstance._SetStartFrame(newEndFrame + 1);
+                        overlappingStartFrame = newEndFrame + 1;
+                        overlappingInstance._SetStartFrame(overlappingStartFrame);
+                        overlappingGazeInstance.SetFrameLength(overlappingEndFrame - overlappingStartFrame + 1);
                     }
                     else
                     {
@@ -144,7 +148,8 @@ public static class EyeGazeEditor
                 // New instance is not a gaze-ahead instance
 
                 if (nextStartFrame - newEndFrame - 1 < maxEyeGazeGapLength ||
-                    newInstance.AnimationClip.name.EndsWith(LEAPCore.gazeAheadSuffix))
+                    newInstance.AnimationClip.name.EndsWith(LEAPCore.gazeAheadSuffix) ||
+                    !fillGapsWithGazeAhead)
                 {
                     // The gap between the end of the new instance and the start of the next instance is small,
                     // so we can just extend the new gaze instance to the start of the next instance
@@ -192,7 +197,7 @@ public static class EyeGazeEditor
                 }
             }
         }
-        else if (timeline.FrameLength - newEndFrame - 1 >= maxEyeGazeGapLength)
+        else if ((timeline.FrameLength - newEndFrame - 1) >= maxEyeGazeGapLength && fillGapsWithGazeAhead)
         {
             // No follow-up gaze instance, but there is plenty more animation left on the timeline
 
@@ -212,7 +217,7 @@ public static class EyeGazeEditor
                 newEndFrame = timeline.FrameLength - 1;
             }
         }
-        else if (timeline.FrameLength - newEndFrame - 1 > 0)
+        else
         {
             // No follow-up gaze instance, so we extend the new gaze instance to the end of the animation timeline
             newInstance.SetFrameLength(timeline.FrameLength - newStartFrame);
@@ -232,7 +237,7 @@ public static class EyeGazeEditor
                 // There is a gaze instance preceding the new one, and it is not a gaze-ahead instance
                 // of another gaze instance
 
-                if (newStartFrame - prevEndFrame - 1 < maxEyeGazeGapLength)
+                if (newStartFrame - prevEndFrame - 1 < maxEyeGazeGapLength || !fillGapsWithGazeAhead)
                 {
                     // The gap between the end of the previous instance and the start of the new instance is small,
                     // so we extend the instance so its end lines up with the start of the new instance
@@ -312,7 +317,9 @@ public static class EyeGazeEditor
     /// <param name="timeline">Animation timeline</param>
     /// <param name="newInstance">Eye gaze instance ID</param>
     /// <param name="layerName">Animation layer holding eye gaze animations</param>
-    public static void RemoveEyeGaze(AnimationTimeline timeline, int instanceId, string layerName = "Gaze")
+    /// <param name="fillGapsWithGazeAhead">If false, gaps on the timeline between gaze instances will be filled
+    /// by extending the preceding gaze instances, rather than by inserting gaze-ahead instances.</param>
+    public static void RemoveEyeGaze(AnimationTimeline timeline, int instanceId, string layerName = "Gaze", bool fillGapsWithGazeAhead = true)
     {
         int maxEyeGazeGapLength = Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate);
 
@@ -325,8 +332,6 @@ public static class EyeGazeEditor
         var prevInstance = timeline.GetLayer(layerName).Animations.LastOrDefault(
             inst => inst.StartFrame + inst.Animation.FrameLength - 1 < startFrame &&
                 inst.Animation.Model == instanceToRemove.Model);
-        int prevStartFrame = prevInstance.StartFrame;
-        int prevEndFrame = prevStartFrame + prevInstance.Animation.FrameLength - 1;
 
         // Get the start frame of the next eye gaze instance that is not the gaze-ahead instance for the instance being removed
         var nextInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(inst => inst.StartFrame > endFrame &&
@@ -345,12 +350,15 @@ public static class EyeGazeEditor
 
         if (prevInstance != null)
         {
+            int prevStartFrame = prevInstance.StartFrame;
+            int prevEndFrame = prevStartFrame + prevInstance.Animation.FrameLength - 1;
+
             if (!prevInstance.Animation.AnimationClip.name.EndsWith(LEAPCore.gazeAheadSuffix))
             {
                 // There is a gaze instance preceding the one being removed, and it is not a gaze-ahead instance
                 // of another gaze instance
 
-                if (nextStartFrame - prevEndFrame - 1 < maxEyeGazeGapLength)
+                if (nextStartFrame - prevEndFrame - 1 < maxEyeGazeGapLength || !fillGapsWithGazeAhead)
                 {
                     // The gap between the end of the previous instance and the start of the next instance is small,
                     // so we extend the instance so its end lines up with the start of the next instance
@@ -401,9 +409,9 @@ public static class EyeGazeEditor
         // Changing the timing of an instance is equivalent to removing the instance and then re-adding it with new times
         string layerName = timeline.GetLayerForAnimation(instanceId).LayerName;
         var instance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
-        RemoveEyeGaze(timeline, instanceId, layerName);
+        RemoveEyeGaze(timeline, instanceId, layerName, false);
         instance.SetFrameLength(endFrame - startFrame + 1);
-        AddEyeGaze(timeline, instance, startFrame, layerName);
+        AddEyeGaze(timeline, instance, startFrame, layerName, false);
 
         UnityEngine.Debug.Log(string.Format("Set timing of eye gaze instance {0} to start frame {1}, end frame {2}",
             instance.AnimationClip.name, startFrame, endFrame));
@@ -659,10 +667,16 @@ public static class EyeGazeEditor
     /// <summary>
     /// Print eye gaze instances to the Unity console.
     /// </summary>
-    public static void PrintEyeGaze(AnimationTimeline timeline)
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="layerName">Animation layer holding the eye gaze animations</param>
+    /// <param name="model">Character model for which gaze should be printed (if null, all gaze is printed, regardless of the model)</param>
+    public static void PrintEyeGaze(AnimationTimeline timeline, string layerName = "Gaze", GameObject model = null)
     {
-        foreach (var instance in timeline.GetLayer("Gaze").Animations)
+        foreach (var instance in timeline.GetLayer(layerName).Animations)
         {
+            if (model != null && instance.Animation.Model != model)
+                continue;
+
             UnityEngine.Debug.Log(string.Format(
                 "EyeGazeInstance: model = {0}, animationClip = {1}, startFrame = {2}, fixationStartFrame = {3}, endFrame = {4}, target = {5}, headAlign = {6}, torsoAlign = {7}, turnBody = {8}, isBase = {9}",
                 instance.Animation.Model.name, instance.Animation.AnimationClip.name,
@@ -1119,12 +1133,13 @@ public static class EyeGazeEditor
             throw new Exception(string.Format("Cannot log gaze controller state becase model {0} has no gaze controller", model.name));
 
         UnityEngine.Debug.Log(string.Format("GazeController: state = {0}, gazeTarget = {1}, doGazeShift = {2}, stopGazeShift = {3}, " +
-            "fixGaze = {4}, useTorso = {5},  currentGazeTarget = {6}, fixGazeTarget = {7}, weight = {8}, fixWeight = {9}",
+            "fixGaze = {4}, useTorso = {5},  currentGazeTarget = {6}, fixGazeTarget = {7}, weight = {8}, fixWeight = {9}, " +
+            "headPostureWeight = {10}, torsoPostureWeight = {11}",
             gazeController.State, gazeController.gazeTarget != null ? gazeController.gazeTarget.name : "null",
             gazeController.doGazeShift, gazeController.stopGazeShift, gazeController.fixGaze, gazeController.useTorso,
             gazeController.CurrentGazeTarget != null ? gazeController.CurrentGazeTarget.name : "null",
             gazeController.FixGazeTarget != null ? gazeController.FixGazeTarget.name : "null",
-            gazeController.weight, gazeController.fixWeight));
+            gazeController.weight, gazeController.fixWeight, gazeController.headPostureWeight, gazeController.torsoPostureWeight));
 
         for (int gazeJointIndex = 0; gazeJointIndex < gazeController.gazeJoints.Length; ++gazeJointIndex)
         {

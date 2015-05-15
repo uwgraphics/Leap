@@ -95,8 +95,11 @@ public class LeapAnimationEditor : EditorWindow
 
         // Update last selected character model
         var selectedModel = ModelUtils.GetSelectedModel();
+        var prevSelectedModel = LastSelectedModel;
         LastSelectedModel = selectedModel != null ? selectedModel : LastSelectedModel;
         LastSelectedModel = Timeline.Models.Contains(LastSelectedModel) ? LastSelectedModel : null;
+        if (LastSelectedModel != prevSelectedModel)
+            _OnSelectedModelChanged();
 
         // Select gaze target (if one has been clicked in the scene view)
         // TODO: this is a hacky solution that prevents Unity from overriding the object selection
@@ -310,7 +313,7 @@ public class LeapAnimationEditor : EditorWindow
 
             // Create the new gaze instance and schedule it
             var newGazeInstance = new EyeGazeInstance(LastSelectedModel, gazeInstanceName, 30, gazeTarget, 1f, 0f, 30, true);
-            EyeGazeEditor.AddEyeGaze(Timeline, newGazeInstance, currentFrame, "Gaze");
+            EyeGazeEditor.AddEyeGaze(Timeline, newGazeInstance, currentFrame, "Gaze", false);
         }
     }
 
@@ -326,7 +329,7 @@ public class LeapAnimationEditor : EditorWindow
                 return;
             }
 
-            EyeGazeEditor.RemoveEyeGaze(Timeline, currentGazeInstanceId, "Gaze");
+            EyeGazeEditor.RemoveEyeGaze(Timeline, currentGazeInstanceId, "Gaze", false);
         }
     }
 
@@ -367,15 +370,20 @@ public class LeapAnimationEditor : EditorWindow
             // Get the next gaze instance
             var nextGazeInstance = Timeline.GetLayer("Gaze").Animations.FirstOrDefault(inst => inst.StartFrame > currentEndFrame &&
                 inst.Animation.Model == currentGazeInstance.Model);
-            int nextStartFrame = nextGazeInstance.StartFrame;
-            int nextEndFrame = nextStartFrame + nextGazeInstance.Animation.FrameLength - 1;
-
             if (nextGazeInstance != null)
             {
                 // We change the end time of the current gaze instance by setting a new start time for the next gaze instance
+                int nextStartFrame = nextGazeInstance.StartFrame;
+                int nextEndFrame = nextStartFrame + nextGazeInstance.Animation.FrameLength - 1;
                 EyeGazeEditor.SetEyeGazeTiming(Timeline, nextGazeInstance.InstanceId, Timeline.CurrentFrame + 1, nextEndFrame);
             }
         }
+    }
+
+    // Handle change in model selection
+    private void _OnSelectedModelChanged()
+    {
+        _changeGazeHeadAlign = _changeGazeTorsoAlign = false;
     }
 
     // Initialize animation timeline
@@ -512,15 +520,11 @@ public class LeapAnimationEditor : EditorWindow
                     }
                     else if (e.shift && e.keyCode == KeyCode.P)
                     {
-                        EyeGazeEditor.PrintEyeGaze(Timeline);
+                        EyeGazeEditor.PrintEyeGaze(Timeline, "Gaze", LastSelectedModel);
                     }
                     else if (e.shift && e.keyCode == KeyCode.B)
                     {
                         Timeline.BakeInstances();
-                    }
-                    else if (e.shift && e.keyCode == KeyCode.P)
-                    {
-                        EyeGazeEditor.PrintEyeGaze(Timeline);
                     }
                     else if (e.shift && e.keyCode == KeyCode.D)
                     {

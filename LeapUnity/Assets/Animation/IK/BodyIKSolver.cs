@@ -152,7 +152,7 @@ public class BodyIKSolver : IKSolver
     // Compute base term weight
     protected virtual void _InitBasePoseWeight()
     {
-        if (LEAPCore.useDynamicGazeIKWeight)
+        if (LEAPCore.useDynamicGazeIKWeights)
         {
             _curBasePoseWeight = (1f - _curGazeWeight) * basePoseWeight;
 

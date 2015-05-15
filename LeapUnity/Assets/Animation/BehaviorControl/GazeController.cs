@@ -66,6 +66,8 @@ public struct GazeControllerState : IAnimControllerState
     public GameObject fixGazeTarget;
     public float weight;
     public float fixWeight;
+    public float headPostureWeight;
+    public float torsoPostureWeight;
     public GazeJointState[] gazeJointStates;
 }
 
@@ -1776,6 +1778,8 @@ public class GazeController : AnimController
         state.effGazeTargetPosition = effGazeTargetPos;
         state.weight = weight;
         state.fixWeight = fixWeight;
+        state.headPostureWeight = headPostureWeight;
+        state.torsoPostureWeight = torsoPostureWeight;
 
         state.gazeJointStates = new GazeControllerState.GazeJointState[gazeJoints.Length];
         for (int jointIndex = 0; jointIndex < gazeJoints.Length; ++jointIndex)
@@ -1817,6 +1821,8 @@ public class GazeController : AnimController
         effGazeTargetPos = gazeControllerState.effGazeTargetPosition;
         weight = gazeControllerState.weight;
         fixWeight = gazeControllerState.fixWeight;
+        headPostureWeight = gazeControllerState.headPostureWeight;
+        torsoPostureWeight = gazeControllerState.torsoPostureWeight;
 
         if (gazeControllerState.gazeJointStates != null && gazeControllerState.gazeJointStates.Length == gazeJoints.Length)
         {
@@ -1845,6 +1851,8 @@ public class GazeController : AnimController
         state.currentGazeTarget = null;
         state.fixGazeTarget = null;
         state.weight = state.fixWeight = 1f;
+        state.headPostureWeight = 0f;
+        state.torsoPostureWeight = 1f;
 
         for (int gazeJointIndex = 0; gazeJointIndex < gazeJoints.Length; ++gazeJointIndex)
         {

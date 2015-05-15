@@ -1410,9 +1410,12 @@ public class AnimationTimeline
             CurrentFrame >= inst.StartFrame && CurrentFrame <= inst.EndFrame &&
             inst.Animation.Model == model);
 
-        if (LEAPCore.useGazeIK && LEAPCore.useDynamicGazeIKWeight && curGazeInstance != null)
+        if (LEAPCore.useGazeIK && LEAPCore.useDynamicGazeIKWeights && curGazeInstance != null)
         {
             // Gaze is constrained by the current gaze instance
+
+            // Compute gaze IK activation/deactivation time
+            int gazeIKFrameLength = Mathf.RoundToInt(LEAPCore.gazeConstraintActivationTime * LEAPCore.editFrameRate);
 
             // Get all gaze instances on this model that follow the current one
             var curOrNextGazeInstances = gazeLayer.Animations.Where(inst =>
@@ -1452,16 +1455,27 @@ public class AnimationTimeline
                 }
             }
 
-            // Compute gaze IK activation/deactivation time
-            int gazeIKFrameLength = Mathf.RoundToInt(LEAPCore.gazeConstraintActivationTime * LEAPCore.editFrameRate);
+            // TODO: quick hack to prevent constrained gaze from rapidly blending back into
+            // the base motion at the end of the timeline
+            if (curOrNextGazeInstances.Length >= 1 &&
+                !curOrNextGazeInstances[curOrNextGazeInstances.Length - 1]
+                .Animation.AnimationClip.name.EndsWith(LEAPCore.gazeAheadSuffix))
+            {
+                // This is the last gaze instance on the timeline, but it isn't gaze-ahead
+                gazeIKEndFrame = FrameLength - 1 + gazeIKFrameLength;
+            }
 
             // Compute gaze IK weight
             float gazeWeightIn = Mathf.Clamp01(((float)(CurrentFrame - gazeIKStartFrame)) / gazeIKFrameLength);
+            float gazeWeightIn2 = gazeWeightIn * gazeWeightIn;
+            gazeWeightIn = -2f * gazeWeightIn2 * gazeWeightIn + 3f * gazeWeightIn2;
             float gazeWeightOut = Mathf.Clamp01(((float)(gazeIKEndFrame - CurrentFrame)) / gazeIKFrameLength);
+            float gazeWeightOut2 = gazeWeightOut * gazeWeightOut;
+            gazeWeightOut = -2f * gazeWeightOut2 * gazeWeightOut + 3f * gazeWeightOut2;
             gazeWeight = Mathf.Min(gazeWeightIn, gazeWeightOut);
         }
 
-        if (!LEAPCore.useDynamicGazeIKWeight)
+        if (!LEAPCore.useDynamicGazeIKWeights)
         {
             // Use static weight for gaze constraints
             gazeWeight = 1f;
