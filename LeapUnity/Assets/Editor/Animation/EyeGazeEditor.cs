@@ -418,6 +418,38 @@ public static class EyeGazeEditor
     }
 
     /// <summary>
+    /// Gaze editing operation. Set new target for the eye gaze instance.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="instanceId">Eye gaze istance ID</param>
+    /// <param name="target">New gaze target</param>
+    public static void SetEyeGazeTarget(AnimationTimeline timeline, int instanceId, GameObject target)
+    {
+        var instance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
+        instance.Target = target;
+
+        UnityEngine.Debug.Log(string.Format(
+            "Set target of eye gaze instance {0} to {1}", instance.AnimationClip.name, target.name));
+    }
+
+    /// <summary>
+    /// Gaze editing operation. Set new gaze-ahead target position for the eye gaze instance.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="instanceId">Eye gaze istance ID</param>
+    /// <param name="target">New gaze-ahead target position</param>
+    public static void SetEyeGazeAheadTarget(AnimationTimeline timeline, int instanceId, Vector3 aheadTargetPosition)
+    {
+        var instance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
+        instance.Target = null;
+        instance.AheadTargetPosition = aheadTargetPosition;
+
+        UnityEngine.Debug.Log(string.Format(
+            "Set ahead target position of eye gaze instance {0} to {1}", instance.AnimationClip.name,
+            aheadTargetPosition.ToString()));
+    }
+
+    /// <summary>
     /// Gaze editing operation. Set new head and torso alignment values for the eye gaze instance.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>

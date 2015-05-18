@@ -1,6 +1,6 @@
 Leap Animation Editor:
 
-#108 [] Torso rotations are completely broken when torso posture weight in the gaze controller is set to zero
+#108 [X] Torso rotations are completely broken when torso posture weight in the gaze controller is set to zero
   - Discontinuous at gaze shift boundaries, see TestExpressiveGaze
   - Gaze shifts are unnaturally fast
   - Happens even when all IK is disabled
@@ -8,7 +8,8 @@ Leap Animation Editor:
   - The problem was in GazeJoint._ComputeTargetRotation() - we should *not* be computing target rotation in horizontal plane!
 
 #107 [] Hand constraint enforcement appears to be broken when character is rescaled
-  - Try Roman in HandShake example
+  - Roman in HandShake example; Norman in BookShelf example - constraints don't get enforced correctly
+  - Norman in WindowWashing example - occasional snapping in character's pose
 
 #106 [] When adding a gaze instance at start frame 0, it gets delayed to start frame 1, but frame length does not get shortened; if there are gaze instances further down the timeline, the end frame of the new instance overlaps with the start frame of the next instance
   - Also see #105

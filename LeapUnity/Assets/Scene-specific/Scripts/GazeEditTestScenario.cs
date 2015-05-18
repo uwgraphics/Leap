@@ -7,6 +7,7 @@ public class GazeEditTestScenario : Scenario
 {
     public GameObject[] models = new GameObject[0];
     public string[] animations = new string[0];
+    public string[] cameraAnimations = new string[0];
 
     /// <see cref="Scenario._Init()"/>
     protected override void _Init()
@@ -16,6 +17,7 @@ public class GazeEditTestScenario : Scenario
     /// <see cref="Scenario._Run()"/>
     protected override IEnumerator _Run()
     {
+        // Compute animation length
         float maxAnimationLength = 0f;
         for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
         {
@@ -32,9 +34,28 @@ public class GazeEditTestScenario : Scenario
             maxAnimationLength = Mathf.Max(maxAnimationLength, model.animation[animationName].length);
         }
 
+        // Enable camera animations (if any)
+        for (int cameraAnimationIndex = 0; cameraAnimationIndex < cameraAnimations.Length; ++cameraAnimationIndex)
+        {
+            string cameraAnimationName = cameraAnimations[cameraAnimationIndex];
+            foreach (var kvp in cameras)
+            {
+                if (kvp.Value.animation != null && kvp.Value.animation.GetClip(cameraAnimationName) != null)
+                {
+                    var cameraAnimation = kvp.Value.animation;
+                    cameraAnimation.Stop();
+                    cameraAnimation[cameraAnimationName].weight = 1f;
+                    cameraAnimation[cameraAnimationName].wrapMode = WrapMode.Once;
+                    cameraAnimation[cameraAnimationName].enabled = true;
+                }
+            }
+        }
+
         yield return new WaitForSeconds(maxAnimationLength);
 
-        cameras.FirstOrDefault(c => c.Value.camera.enabled).Value.camera.enabled = false;
+        // Disable all cameras
+        foreach (var kvp in cameras)
+            kvp.Value.camera.enabled = false;
 
         yield break;
     }
