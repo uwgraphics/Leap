@@ -717,21 +717,25 @@ public class GazeController : AnimController
             trgRot = Quaternion.FromToRotation(srcDir, trgDir);
             trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
 
+            // Get current joint's target gaze direction in the horizontal plane
+            curJoint.bone.localRotation = trgRotAlign;
+            trgDirAlign = curJoint.bone.forward;
+            trgDirAlign = new Vector3(trgDirAlign.x, 0f, trgDirAlign.z);
+            //
+            curJoint.bone.localRotation = Quaternion.identity;
+            trgDirAlign = curJoint.bone.InverseTransformDirection(trgDirAlign);
+            //
+
             // Get current joint's base gaze direction in horizontal plane
             curJoint.bone.localRotation = curJoint.baseRot;
             baseDir = curJoint.bone.forward;
             baseDir = new Vector3(baseDir.x, 0f, baseDir.z);
-
-            // Get current joint's source and target gaze directions, projected into horizontal plane
+            //
             curJoint.bone.localRotation = Quaternion.identity;
-            srcDir = curJoint.bone.forward;
-            srcDir = new Vector3(srcDir.x, 0f, srcDir.z);
-            trgDir = new Vector3(trgDirW.x, 0f, trgDirW.z);
+            baseDir = curJoint.bone.InverseTransformDirection(baseDir);
+            //
 
-            // Compute current joint's contribution to the overall rotation, projected into horizontal plane
-            trgRot = Quaternion.FromToRotation(srcDir, trgDir);
-            trgRotHAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
-            trgDirAlign = trgRotHAlign * srcDir;
+            // Align base gaze direction with the target gaze direction in the horizontal plane
             trgRotHAlign = Quaternion.FromToRotation(baseDir, trgDirAlign);
             trgRotHAlign = curJoint.baseRot * trgRotHAlign;
 
