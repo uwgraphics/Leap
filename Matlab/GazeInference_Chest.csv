@@ -1,0 +1,6 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+Roman,PassSodaBGaze1,9,25,24,,0 0 0,-1,-1,True
+Roman,PassSodaBGaze2,25,45,60,,0 0 0,-1,-1,True
+Roman,PassSodaBGaze3,86,101,100,,0 0 0,-1,-1,True
+Roman,PassSodaBGaze4,101,132,131,,0 0 0,-1,-1,True
+Roman,PassSodaBGaze5,132,166,181,,0 0 0,-1,-1,True
