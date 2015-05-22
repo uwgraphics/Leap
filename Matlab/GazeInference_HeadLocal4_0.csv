@@ -1,0 +1,8 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+Norman,BookShelfGaze1,131,158,188,,0 0 0,-1,-1,True
+Norman,BookShelfGaze2,405,434,464,,0 0 0,-1,-1,True
+Norman,BookShelfGaze3,677,704,734,,0 0 0,-1,-1,True
+Norman,BookShelfGaze4,908,941,971,,0 0 0,-1,-1,True
+Norman,BookShelfGaze5,992,1016,1046,,0 0 0,-1,-1,True
+Norman,BookShelfGaze6,1174,1211,1241,,0 0 0,-1,-1,True
+Norman,BookShelfGaze7,1394,1429,1571,,0 0 0,-1,-1,True

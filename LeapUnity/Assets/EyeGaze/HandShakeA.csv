@@ -1,5 +1,2 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,HandShakeAGaze1Start-Ahead,1,1,9,null,"0 0 0",0,0,True
-Norman,HandShakeAGaze1,10,27,41,RomanFace,"0 0 0",0,0,True
-Norman,HandShakeAGaze2,42,24,66,RomanRHand,"0 0 0",0,0.1515087,True
-Norman,HandShakeAGaze3,67,6,73,RomanFace,"0 0 0",0.1990287,0,True
+Norman,HandShakeAGaze1,1,27,68,Roman_Head_0,"0 0 0",0,0,True

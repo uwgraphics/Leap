@@ -1,0 +1,10 @@
+Character,AnimationClirp,StartFrame,FixationStartFrame,FixationEndFrame,HeadAlign,TorsoAlign,TurnBody
+Norman,StealDiamond,23,28,28,TARGET,-1,-1,True
+Norman,StealDiamond,28,41,55,TARGET,-1,-1,True
+Norman,StealDiamond,70,106,117,TARGET,-1,-1,True
+Norman,StealDiamond,129,153,157,TARGET,-1,-1,True
+Norman,StealDiamond,161,188,187,TARGET,-1,-1,True
+Norman,StealDiamond,186,196,204,TARGET,-1,-1,True
+Norman,StealDiamond,213,230,230,TARGET,-1,-1,True
+Norman,StealDiamond,230,244,245,TARGET,-1,-1,True
+Norman,StealDiamond,247,256,261,TARGET,-1,-1,True

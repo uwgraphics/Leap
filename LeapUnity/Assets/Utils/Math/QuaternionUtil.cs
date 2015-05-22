@@ -1,5 +1,8 @@
 using UnityEngine;
 using System.Collections;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// Utility class containing some helpful quaternion functions. 
@@ -87,13 +90,81 @@ public static class QuaternionUtil
         return q;
     }
 
+    // Find rotation vector displacement between two quaternions (from q1 to q2)
+    public static Vector3 Disp(Quaternion q1, Quaternion q2)
+    {
+        return QuaternionUtil.Log(Quaternion.Inverse(q1) * q2);
+    }
+
+    //find quaternion displacement between two quaternions (from q1 to q2)
+    public static Quaternion DispQ(Quaternion q1, Quaternion q2)
+    {
+        return Quaternion.Inverse(q1) * q2;
+    }
+
+    //check this function 
+    //converts a list of rotation vectors back to orientation quaternions
+    public static List<Quaternion> RotVecsToQuats(List<Vector3> rotVecs, Quaternion q0)
+    {
+        if (rotVecs == null || rotVecs.Count == 0)
+        {
+            throw new ArgumentException("Error in RotVecsToQuats function!");
+        }
+        var quaternions = new List<Quaternion>();
+
+        //running product
+        //Quaternion qProd = q0;
+        //quaternions.Add(q0);
+        //
+        //for (int i = 0; i < rotVecs.Count-1; i++) {
+        //    qProd = qProd * QuaternionUtil.Exp(rotVecs[i + 1] - rotVecs[i]);
+        //    quaternions.Add(qProd);
+        //}
+
+        Quaternion qProd = q0;
+        for (int i = 0; i < rotVecs.Count - 1; i++)
+        {
+            for (int j = 0; j < i - 1; j++)
+            {
+                qProd *= QuaternionUtil.Exp(rotVecs[j + 1] - rotVecs[j]);
+            }
+            quaternions.Add(qProd);
+            qProd = q0;
+        }
+
+        return quaternions;
+    }
+
+    public static List<Vector3> QuatsToRotVecs(List<Quaternion> quats, Vector3 p0)
+    {
+        if (quats == null) throw new ArgumentException("Error in QuatstoRotVecs function.");
+
+        var rotVecs = new List<Vector3>();
+        Vector3 pLast = p0;
+        Vector3 pNew = p0;
+        rotVecs.Add(p0);
+        for (int i = 0; i < quats.Count - 1; i++)
+        {
+            pNew = pLast + Disp(quats[i], quats[i + 1]);
+            rotVecs.Add(pNew - pLast);
+            pLast = pNew;
+        }
+
+        return rotVecs;
+    }
+
+    public static List<Vector3> QuatsToRotVecs(List<Quaternion> quats)
+    {
+        return QuatsToRotVecs(quats, Log(quats[0]));
+    }
+
     // First-order partial derivative of quaternion exp. map
     // TODO: this function is not giving the expected results and needs to be checked over
     public static Quaternion DExp(Vector3 v, int vci)
     {
         Quaternion q = new Quaternion();
         float phi = v.magnitude;
-        float phi2 = phi*phi;
+        float phi2 = phi * phi;
 
         if (Mathf.Abs(phi) > 0.005f)
         {

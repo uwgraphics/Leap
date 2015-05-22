@@ -1,0 +1,4 @@
+Character,AnimationClirp,StartFrame,FixationStartFrame,FixationEndFrame,HeadAlign,TorsoAlign,TurnBody
+Norman,Test,3,10,11,Target,-1,-1,True
+Norman,Test,12,20,20,nope,-1,-1,True
+Norman,Test,21,35,40,Target,-1,-1,True
