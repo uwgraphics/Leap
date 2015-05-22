@@ -1036,6 +1036,11 @@ public class AnimationTimeline
     /// </summary>
     public void BakeInstances()
     {
+        // Timer for measuring bake duration
+        System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+        timer.Start();
+
+        // Bake out all animation instances
         StartBakeInstances();
         Active = false;
         Active = true;
@@ -1044,6 +1049,10 @@ public class AnimationTimeline
             Advance(1f / LEAPCore.editFrameRate);
         Stop();
         FinalizeBakeInstances();
+
+        // Get bake duration
+        float elapsedTime = timer.ElapsedMilliseconds / 1000f;
+        Debug.Log(string.Format("Baking took {0} seconds", elapsedTime));
     }
 
     /// <summary>
