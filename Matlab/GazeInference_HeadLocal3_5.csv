@@ -1,0 +1,26 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+Norman,BookShelfGaze1,49,80,110,,0 0 0,-1,-1,True
+Norman,BookShelfGaze2,131,158,188,,0 0 0,-1,-1,True
+Norman,BookShelfGaze3,193,218,217,,0 0 0,-1,-1,True
+Norman,BookShelfGaze4,218,256,255,,0 0 0,-1,-1,True
+Norman,BookShelfGaze5,256,282,312,,0 0 0,-1,-1,True
+Norman,BookShelfGaze6,405,434,433,,0 0 0,-1,-1,True
+Norman,BookShelfGaze7,434,477,496,,0 0 0,-1,-1,True
+Norman,BookShelfGaze8,497,534,564,,0 0 0,-1,-1,True
+Norman,BookShelfGaze9,596,621,620,,0 0 0,-1,-1,True
+Norman,BookShelfGaze10,621,644,674,,0 0 0,-1,-1,True
+Norman,BookShelfGaze11,677,704,725,,0 0 0,-1,-1,True
+Norman,BookShelfGaze12,726,747,760,,0 0 0,-1,-1,True
+Norman,BookShelfGaze13,761,782,812,,0 0 0,-1,-1,True
+Norman,BookShelfGaze14,838,872,902,,0 0 0,-1,-1,True
+Norman,BookShelfGaze15,908,941,971,,0 0 0,-1,-1,True
+Norman,BookShelfGaze16,992,1016,1046,,0 0 0,-1,-1,True
+Norman,BookShelfGaze17,1078,1101,1100,,0 0 0,-1,-1,True
+Norman,BookShelfGaze18,1101,1127,1142,,0 0 0,-1,-1,True
+Norman,BookShelfGaze19,1143,1174,1173,,0 0 0,-1,-1,True
+Norman,BookShelfGaze20,1174,1211,1224,,0 0 0,-1,-1,True
+Norman,BookShelfGaze21,1225,1254,1284,,0 0 0,-1,-1,True
+Norman,BookShelfGaze22,1299,1335,1365,,0 0 0,-1,-1,True
+Norman,BookShelfGaze23,1394,1429,1459,,0 0 0,-1,-1,True
+Norman,BookShelfGaze24,1460,1483,1502,,0 0 0,-1,-1,True
+Norman,BookShelfGaze25,1503,1521,1571,,0 0 0,-1,-1,True
