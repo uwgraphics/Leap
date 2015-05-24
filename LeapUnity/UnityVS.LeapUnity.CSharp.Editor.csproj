@@ -7,16 +7,17 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{CA7E627E-FC07-D3B4-AE11-745B23A4E14C}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <AssemblyName>Assembly-CSharp-Editor</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
+    <UnityProjectType>Editor:5</UnityProjectType>
+    <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
+    <UnityVersion>4.5.5f1</UnityVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -100,7 +101,29 @@
     <Compile Include="Assets\Editor\AssetPipeline\LEAPAssetUtils.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LEAPModelPostprocessor.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LMCSerializer.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\AngleData.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\BlockMatchTimeline.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\CollisionData.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\CollisionTest.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\DataDisplay.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\FilterData.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\GazeBlock.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\GazeInference.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\GazeInferenceTestA.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\GazeTarget.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\InferenceAnimation.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\InferenceCharacter.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\InferenceScorer.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\InferenceTimeline.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\InferenceUtil.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\SceneCollisions.cs" />
+    <Compile Include="Assets\Editor\EyeGazeInference\SubGazeInference.cs" />
+    <Compile Include="Assets\Editor\GUI\GazeInference\FileIO.cs" />
+    <Compile Include="Assets\Editor\GUI\GazeInference\GazeInferenceMenu.cs" />
+    <Compile Include="Assets\Editor\GUI\GazeInference\GlobalVars.cs" />
     <Compile Include="Assets\Editor\GUI\LEAPMenu.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coinsurance.txt" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coverage.txt" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_history.txt" />
@@ -342,9 +365,6 @@
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-BasicOutline.shader" />
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Lighted.shader" />
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-LightedOutline.shader" />
-    <None Include="Assets\UnityVS\Editor\SyntaxTree.VisualStudio.Unity.Bridge.dll" />
-    <None Include="Assets\UnityVS\Editor\SyntaxTree.VisualStudio.Unity.Messaging.dll" />
-    <None Include="Assets\UnityVS\Editor\UnityVS.VersionSpecific.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
 </Project>

@@ -1,14 +1,8 @@
 
-work = true;
-if(work)
-    fp = 'C:\Local Users\Leap\Matlab\';
-    addpath C:\Local Users\Leap\Matlab\
-else
-    %path to the directory where all annotations are kept.  This is only
-    %the directory, so the actual file name must be concatanated below.
-    fp = 'E:\CS699-Gleicher\Leap_\Matlab\';
-    addpath E:\CS699-Gleicher\Leap_\Matlab\
-end;
+
+fp = strcat(pwd, '\')
+addpath pwd
+
 
 %animation title
 iFile = textscan( fopen(strcat(fp,'\GazeInference_BlockMatch.csv')), '%s%s%d%d%d%s%s%d%d%s', 'delimiter', ',', 'HeaderLines', 1);

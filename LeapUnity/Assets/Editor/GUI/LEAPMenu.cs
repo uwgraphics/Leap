@@ -580,7 +580,7 @@ public class LEAPMenu
             EyeGazeEditor.InferEyeGazeInstances(timeline, baseAnimation.InstanceId);
 
             // Save and print inferred eye gaze
-            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId);
+            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Inferred");
             EyeGazeEditor.PrintEyeGaze(timeline);
         }
         SceneView.RepaintAll();

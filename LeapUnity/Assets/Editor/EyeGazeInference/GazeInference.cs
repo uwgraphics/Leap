@@ -69,9 +69,9 @@ public class GazeInference {
             UnityEngine.Debug.Log(blockMatch);
 
             //scoring
-            var ha = new InferenceTimeline(GlobalVars.MatlabPath + animationTitle + ".csv");
-            var scorer = new InferenceScorer(blockMatch, ha);
-            UnityEngine.Debug.Log(scorer);
+            //var ha = new InferenceTimeline(GlobalVars.MatlabPath + animationTitle + ".csv");
+            //var scorer = new InferenceScorer(blockMatch, ha);
+            //UnityEngine.Debug.Log(scorer);
         }
         //NOT USING
         else if (iteration == 7) {

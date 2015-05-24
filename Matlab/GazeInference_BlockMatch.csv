@@ -1,5 +1,6 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Roman,PassSodaBGaze1,7,25,40,Norman_Head_0,0 0 0,-1,-1,True
-Roman,PassSodaBGaze2,86,110,125,Norman_Head_1,0 0 0,-1,-1,True
-Roman,PassSodaBGaze3,167,196,196,Soda Can_0,0 0 0,-1,-1,True
-Roman,PassSodaBGaze4,197,217,229,Norman_Head_2,0 0 0,-1,-1,True
+Norman,StealDiamondGaze1,37,67,67,StealDiamondEnv_0,0 0 0,-1,-1,True
+Norman,StealDiamondGaze2,68,101,101,StealDiamondEnv_1,0 0 0,-1,-1,True
+Norman,StealDiamondGaze3,102,151,166,StealDiamondEnv_2,0 0 0,-1,-1,True
+Norman,StealDiamondGaze4,167,193,193,StealDiamondEnv_3,0 0 0,-1,-1,True
+Norman,StealDiamondGaze5,194,229,244,StealDiamondEnv_4,0 0 0,-1,-1,True

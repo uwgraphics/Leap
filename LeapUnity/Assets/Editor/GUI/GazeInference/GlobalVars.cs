@@ -5,8 +5,8 @@ using System.Collections;
 using System.Linq;
 
 public static class GlobalVars {
-    public static bool work = true;
-    public static string MatlabPath = work ? @"C:\Local Users\Leap\Matlab\" : @"E:\CS699-Gleicher\Leap_\Matlab\";
+    public static bool work = false;
+    public static string MatlabPath = @"..\Matlab\";
     public static string CurrAnimation = "StealDiamond";
     public static string CurrCharacter = "Norman";
     //index 0: local 

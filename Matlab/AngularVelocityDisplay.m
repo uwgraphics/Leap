@@ -1,17 +1,10 @@
-work = true;
-if(work)
-    addpath C:\Local Users\Leap\Matlab
-    filename = 'C:\Local Users\Leap\Matlab\angularVelocity.csv';
-    filename_f = 'C:\Local Users\Leap\Matlab\angularVelocityFiltered.csv';
-    fp = 'C:\Local Users\Leap\Matlab'; 
-    fileID = fopen('C:\Local Users\Leap\Matlab\angularVelocityFiltered.csv');
-else
-    addpath E:\CS699-Gleicher\Leap_\Matlab
-    filename = 'E:\CS699-Gleicher\Leap_\Matlab\angularVelocity.csv';
-    filename_f = 'E:\CS699-Gleicher\Leap_\Matlab\angularVelocityFiltered.csv';
-    fp = 'E:\CS699-Gleicher\Leap_\Matlab';
-    fileID = fopen('E:\CS699-Gleicher\Leap_\Matlab\angularVelocityFiltered.csv');
-end;
+
+
+addpath pwd
+filename = strcat(pwd, '\angularVelocity.csv');
+filename_f = strcat(pwd, '\angularVelocityFiltered.csv');
+fp = pwd;
+fileID = fopen(strcat(pwd, '\angularVelocityFiltered.csv'));
 
 figure; 
 
