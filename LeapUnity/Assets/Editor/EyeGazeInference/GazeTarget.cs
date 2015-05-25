@@ -12,6 +12,7 @@ public class GazeTarget  {
     private InferenceCharacter Character { get; set; }
     private string AnimationTitle { get; set; }
     private string CharacterName { get; set; }
+    private List<GameObject> SceneTargets { get; set; }
 
     /// <summary>
     /// Adds gaze targets to the specified GazeBlocks
@@ -73,7 +74,9 @@ public class GazeTarget  {
 
 
     public List<GazeBlock> AddScenePoints() {
+
         var gbs = GazeBlocks;
+        SceneTargets = new List<GameObject>();
         List<GazeBlock> _gbs = new List<GazeBlock>();
 
         GameObject[] targets = GameObject.FindGameObjectsWithTag("GazeTarget");
@@ -98,8 +101,15 @@ public class GazeTarget  {
         foreach (var g in gbs)
         {
 
-            // TODO: Add target aggregation:
+            // Target aggregation 
+            var agg = targetAggregation(g.FixationPoint, g.FixationStartFrame);
+            if (!(agg == null)) {
+                _gbs.Add(new GazeBlock(g.StartFrame, g.FixationStartFrame, g.CharacterName, g.AnimationClip, g.TargetName, agg, g.TurnBody, g.FixationPoint));
+                continue;
+            }
 
+
+            //Should only get to these conditionals if aggregation fails distance test...
             //this means the target should be parented to the scene
             if (g.TargetName == "")
             {
@@ -109,6 +119,7 @@ public class GazeTarget  {
                 if (targetTest != null)
                 {
                     _gbs.Add(new GazeBlock(g.StartFrame, g.FixationStartFrame, g.CharacterName, g.AnimationClip, g.TargetName, targetTest, g.TurnBody, g.FixationPoint));
+                    SceneTargets.Add(targetTest);
                     counterArray[d[""]]++;
                     continue;
                 }
@@ -120,6 +131,7 @@ public class GazeTarget  {
                 n.transform.position = g.FixationPoint;
 
                 _gbs.Add(new GazeBlock(g.StartFrame, g.FixationStartFrame, g.CharacterName, g.AnimationClip, n.name, n, g.TurnBody, g.FixationPoint));
+                SceneTargets.Add(n);
 
                 //increment counter for the scene environment
                 counterArray[d[""]]++;
@@ -131,8 +143,8 @@ public class GazeTarget  {
                 var targetTest = targets.FirstOrDefault(m => m.name == g.TargetName + "_" + counterArray[d[g.TargetName]].ToString());
                 if (targetTest != null)
                 {
-                    g.Target = targetTest;
                     _gbs.Add(new GazeBlock(g.StartFrame, g.FixationStartFrame, g.CharacterName, g.AnimationClip, g.TargetName, targetTest, g.TurnBody, g.FixationPoint));
+                    SceneTargets.Add(targetTest);
                     counterArray[d[g.TargetName]]++;
                     continue;
                 }
@@ -155,6 +167,7 @@ public class GazeTarget  {
                 n.transform.position = g.FixationPoint;
 
                 _gbs.Add(new GazeBlock(g.StartFrame, g.FixationStartFrame, g.CharacterName, g.AnimationClip, n.name, n, g.TurnBody, g.FixationPoint));
+                SceneTargets.Add(n);
 
                 //increment counter for the scene environment
                 counterArray[d[g.TargetName]]++;
@@ -164,9 +177,63 @@ public class GazeTarget  {
         return _gbs;
     }
 
+    /// <summary>
+    /// Aggregate targets if they pass a distance threshold test
+    /// </summary>
+    /// <returns></returns>
+    private GameObject targetAggregation(Vector3 pt, int frame) {
+        Transform headTransform;
 
+        AnimationClip.Animation[AnimationTitle].normalizedTime = Mathf.Clamp01(((float)frame) / AnimationClip.FrameLength);
+        AnimationClip.Animation[AnimationTitle].weight = AnimationClip.Weight;
+        AnimationClip.Animation[AnimationTitle].enabled = true;
 
+        AnimationClip.Animation.Sample();
+        //////////////////////////////////////////////////////////////
+        headTransform = Character.HeadBone.transform;
+        //////////////////////////////////////////////////////////////
+        AnimationClip.Animation[AnimationTitle].enabled = false;
 
+        float headDrawDistance = 100.0f;
+
+        float minDis = float.MaxValue;
+        GameObject minDisOb = null;
+        Vector3 minDisPt2 = Vector3.zero;
+
+        Vector3 pt1;
+        Vector3 pt2; // point on forward head vector where the closest perpendicular line occurs.  This is what we care about here
+        float dist;
+
+        //loops through all targets already added to scene
+        for (int i = 0; i < SceneTargets.Count; i++) {
+            var st = SceneTargets[i];
+            var targetPos = st.transform.position;
+            var hv1 = headTransform.position;
+            var hv2 = headTransform.position + (headTransform.forward.normalized * headDrawDistance);
+
+            edgeDistanceTest(hv1, hv2, targetPos, targetPos, out pt1, out pt2, out dist);
+            if (dist < minDis) {
+                minDis = dist;
+                minDisOb = st;
+                minDisPt2 = pt2;
+            }
+        }
+
+        if (minDisOb == null) return null;
+
+        var headDis = Vector3.Distance(minDisPt2, headTransform.position);
+
+        //THIS SECTION AFFECTS HOW TARGETS ARE AGGREGATED
+        ////////////////////////////////////////////////////////////////////////////////
+        var distanceThresholdScalar = 0.1f;
+        var distanceThresholdExp = 1.2f;
+        float distanceThreshold = distanceThresholdScalar * (float)Math.Pow(headDis, distanceThresholdExp);
+        ////////////////////////////////////////////////////////////////////////////////
+
+        if (minDis < distanceThreshold) return minDisOb;
+        else return null;
+
+    }
 
     /// <summary>
     /// Goes through scene collision objects and returns the point in space being looked at and the name of that target object
@@ -251,6 +318,7 @@ public class GazeTarget  {
         targetName = minDis > distanceThreshold ? "" : minDisTarget;
         target = minDis > distanceThreshold ? null : minDisTargetObj;
     }
+
 
     /// <summary>
     /// utility function for checking distance from nose vector to one edge in a mesh triangle
