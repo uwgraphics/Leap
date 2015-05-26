@@ -183,6 +183,7 @@ public class LEAPMenu
         testScenes.cameraBookShelf2.enabled = false;
         testScenes.cameraStealDiamond1.enabled = false;
         testScenes.cameraStealDiamond2.enabled = false;
+        testScenes.cameraWaitForBus.enabled = false;
 
         // Create and configure animation layers
         timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
@@ -266,6 +267,8 @@ public class LEAPMenu
             editTestScenario.animations = new string[2];
             editTestScenario.animations[0] = "WindowWashingAwEdits";
             editTestScenario.animations[1] = "WindowWashingBwEdits";
+            editTestScenario.objectAnimations = new string[1];
+            editTestScenario.objectAnimations[0] = "WindowWashingSponge";
         }
         else if (sceneName == "PassSoda")
         {
@@ -318,6 +321,8 @@ public class LEAPMenu
             editTestScenario.animations[0] = "PassSodaAwEdits";
             editTestScenario.animations[1] = "PassSodaBwEdits";
             editTestScenario.animations[2] = "PassSodaCwEdits";
+            editTestScenario.objectAnimations = new string[1];
+            editTestScenario.objectAnimations[0] = "PassSodaBottle";
         }
         else if (sceneName == "Walking90deg")
         {
@@ -346,6 +351,8 @@ public class LEAPMenu
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "Walking90degwEdits";
+            editTestScenario.cameraAnimations = new string[1];
+            editTestScenario.cameraAnimations[0] = "Walking90degCamera";
         }
         else if (sceneName == "HandShake")
         {
@@ -425,6 +432,10 @@ public class LEAPMenu
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "BookShelfwEdits";
+            editTestScenario.objectAnimations = new string[3];
+            editTestScenario.animations[0] = "BookShelfBook1";
+            editTestScenario.animations[1] = "BookShelfBook2";
+            editTestScenario.animations[2] = "BookShelfBook3";
         }
         else if (sceneName == "StealDiamond")
         {
@@ -460,12 +471,16 @@ public class LEAPMenu
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "StealDiamondwEdits";
+            editTestScenario.objectAnimations = new string[1];
+            editTestScenario.objectAnimations[0] = "StealDiamondGem";
+            editTestScenario.cameraAnimations = new string[1];
+            editTestScenario.cameraAnimations[0] = "StealDiamondCamera1";
         }
         else if (sceneName == "WaitForBus")
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.modelWaitForBusEnv.SetActive(true);
-            //testScenes.cameraWaitForBus.enabled = true;
+            testScenes.cameraWaitForBus.enabled = true;
 
             // Add character models to the timeline
             timeline.AddModel(testScenes.modelNorman);
@@ -610,7 +625,7 @@ public class LEAPMenu
             EyeGazeEditor.InferEyeGazeAlignments(timeline, baseAnimation.InstanceId);
 
             // Save and print inferred eye gaze
-            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId);
+            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Inferred");
             EyeGazeEditor.PrintEyeGaze(timeline);
         }
         SceneView.RepaintAll();

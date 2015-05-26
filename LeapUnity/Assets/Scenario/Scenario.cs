@@ -38,6 +38,7 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
     protected Dictionary<string, GameObject> gazeTargets = new Dictionary<string, GameObject>();
     protected Dictionary<string, GameObject> cameras = new Dictionary<string, GameObject>();
     protected Dictionary<string, GameObject> lights = new Dictionary<string, GameObject>();
+    protected Dictionary<string, GameObject> manipulatedObjects = new Dictionary<string, GameObject>();
     protected Dictionary<string, GameObject> objects = new Dictionary<string, GameObject>();
 
     /// <summary>
@@ -802,6 +803,12 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
         foreach (GameObject obj in objs)
         {
             lights[obj.name] = obj;
+            objects[obj.name] = obj;
+        }
+        objs = GameObject.FindGameObjectsWithTag("ManipulatedObject");
+        foreach (GameObject obj in objs)
+        {
+            manipulatedObjects[obj.name] = obj;
             objects[obj.name] = obj;
         }
     }

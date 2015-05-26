@@ -15,9 +15,6 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
     <CompilerResponseFile></CompilerResponseFile>
-    <UnityProjectType>Game:1</UnityProjectType>
-    <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
-    <UnityVersion>4.5.5f1</UnityVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -155,8 +152,6 @@
     <Compile Include="Assets\Utils\ModelUtils.cs" />
     <Compile Include="Assets\Utils\PerlinMotionGenerator.cs" />
     <Compile Include="Assets\Utils\StateMachine.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coinsurance.txt" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coverage.txt" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_history.txt" />
@@ -398,6 +393,8 @@
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-BasicOutline.shader" />
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Lighted.shader" />
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-LightedOutline.shader" />
+    <None Include="Assets\Extensions\alglibnet2.dll" />
+    <None Include="Assets\Extensions\MathNet.Iridium.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
 </Project>

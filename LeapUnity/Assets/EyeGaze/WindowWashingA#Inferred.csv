@@ -1,0 +1,17 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+Norman,WindowWashingAGaze1,1,28,37,WindowPane_0,"0 0 0",1,0.1690916,True
+Norman,WindowWashingAGaze2,38,42,94,WindowWashingEnv_0,"0 0 0",0.9889421,0.1330656,True
+Norman,WindowWashingAGaze2-Ahead,95,21,116,null,"-0.6994804 5.675333 5.063403",0.974774,0,True
+Norman,WindowWashingAGaze3,117,37,155,WindowPane_1,"0 0 0",0.5798638,0,True
+Norman,WindowWashingAGaze4,156,41,198,WindowWashingEnv_1,"0 0 0",1,0.1705627,True
+Norman,WindowWashingAGaze5,199,33,233,WindowPane_2,"0 0 0",1,0.6211836,True
+Norman,WindowWashingAGaze6,234,36,271,WindowPane_3,"0 0 0",1,0.3476993,True
+Norman,WindowWashingAGaze7,272,35,308,WindowWashingEnv_2,"0 0 0",0.5909536,0.1975433,True
+Norman,WindowWashingAGaze8,309,32,342,WindowPane_4,"0 0 0",0.9180291,0.1821223,True
+Norman,WindowWashingAGaze9,343,45,389,WindowWashingEnv_3,"0 0 0",0.9752173,0,True
+Norman,WindowWashingAGaze10,390,58,466,WindowWashingEnv_4,"0 0 0",1,0,True
+Norman,WindowWashingAGaze11,467,28,496,WindowPane_5,"0 0 0",1,0.2130492,True
+Norman,WindowWashingAGaze12,497,48,546,WindowWashingEnv_5,"0 0 0",0.9754744,0,True
+Norman,WindowWashingAGaze13,547,40,601,WindowWashingEnv_6,"0 0 0",0.9978372,0,True
+Norman,WindowWashingAGaze13-Ahead,602,38,640,null,"-0.7751505 3.180612 5.490187",0.8901458,0,True
+Norman,WindowWashingAGaze14,641,38,700,WindowWashingEnv_7,"0 0 0",0.8890961,0,True

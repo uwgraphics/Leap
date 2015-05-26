@@ -1,0 +1,7 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+Norman,StealDiamondGaze1Start-Ahead,1,1,36,null,"0 0 0",0,0,True
+Norman,StealDiamondGaze1,37,29,67,StealDiamondEnv_0,"0 0 0",0,0,True
+Norman,StealDiamondGaze2,68,32,101,StealDiamondEnv_1,"0 0 0",0,0,True
+Norman,StealDiamondGaze3,102,49,166,StealDiamondEnv_2,"0 0 0",0,0,True
+Norman,StealDiamondGaze4,167,25,193,StealDiamondEnv_3,"0 0 0",0,0,True
+Norman,StealDiamondGaze5,194,35,285,StealDiamondEnv_4,"0 0 0",0,0,True

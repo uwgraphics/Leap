@@ -7,6 +7,7 @@ public class GazeEditTestScenario : Scenario
 {
     public GameObject[] models = new GameObject[0];
     public string[] animations = new string[0];
+    public string[] objectAnimations = new string[0];
     public string[] cameraAnimations = new string[0];
 
     /// <see cref="Scenario._Init()"/>
@@ -17,21 +18,46 @@ public class GazeEditTestScenario : Scenario
     /// <see cref="Scenario._Run()"/>
     protected override IEnumerator _Run()
     {
-        // Compute animation length
+        // Initialize models
         float maxAnimationLength = 0f;
         for (int modelIndex = 0; modelIndex < models.Length; ++modelIndex)
         {
             var model = models[modelIndex];
             string animationName = animations[modelIndex];
 
+            // Disable animation controllers
             model.GetComponent<AnimControllerTree>().enabled = false;
+            
+            // Disable IK
+            var solvers = model.GetComponents<IKSolver>();
+            foreach (var solver in solvers)
+                solver.enabled = false;
 
+            // Play animation
             model.animation.Stop();
             model.animation[animationName].weight = 1f;
             model.animation[animationName].wrapMode = WrapMode.Once;
             model.animation[animationName].enabled = true;
 
+            // Compute animation length
             maxAnimationLength = Mathf.Max(maxAnimationLength, model.animation[animationName].length);
+        }
+
+        // Enable object animations (if any)
+        for (int objectAnimationIndex = 0; objectAnimationIndex < objectAnimations.Length; ++objectAnimationIndex)
+        {
+            string objectAnimationName = objectAnimations[objectAnimationIndex];
+            foreach (var kvp in manipulatedObjects)
+            {
+                if (kvp.Value.animation != null && kvp.Value.animation.GetClip(objectAnimationName) != null)
+                {
+                    var objectAnimation = kvp.Value.animation;
+                    objectAnimation.Stop();
+                    objectAnimation[objectAnimationName].weight = 1f;
+                    objectAnimation[objectAnimationName].wrapMode = WrapMode.Once;
+                    objectAnimation[objectAnimationName].enabled = true;
+                }
+            }
         }
 
         // Enable camera animations (if any)
