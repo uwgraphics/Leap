@@ -1,5 +1,9 @@
 Leap Animation Editor:
 
+#109 [] Baking gaze animation is extremely slow
+  - Gaze IK weight computation in AnimationTimeline._InitGazeIK() takes up a lot of time for some reason... or causes something else (IK?) to take a very long time
+  - It's the IK solver that's too slow...
+
 #108 [X] Torso rotations are completely broken when torso posture weight in the gaze controller is set to zero
   - Discontinuous at gaze shift boundaries, see TestExpressiveGaze
   - Gaze shifts are unnaturally fast

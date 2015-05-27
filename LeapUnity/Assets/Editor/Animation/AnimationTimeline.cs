@@ -1045,7 +1045,8 @@ public class AnimationTimeline
         Active = false;
         Active = true;
         Play();
-        for (int frameIndex = 0; frameIndex < FrameLength; ++frameIndex)
+        int frameLength = FrameLength;
+        for (int frameIndex = 0; frameIndex < frameLength; ++frameIndex)
             Advance(1f / LEAPCore.editFrameRate);
         Stop();
         FinalizeBakeInstances();
@@ -1179,7 +1180,7 @@ public class AnimationTimeline
 
                         animation.Animation.Finish();
                         _activeAnimationInstanceIds.Remove(animation.InstanceId);
-
+                        
                         Debug.Log(string.Format("{0}: Deactivating animation instance {1} on model {2}",
                             CurrentFrame, animation.Animation.AnimationClip.name, animation.Animation.Model.name));
 

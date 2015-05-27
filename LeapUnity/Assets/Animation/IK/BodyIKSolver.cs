@@ -257,9 +257,9 @@ public class BodyIKSolver : IKSolver
         }
 
         // Initialize solver
-        alglib.minlbfgscreatef(Math.Min(5, _x.Length), _x, 0.05, out _state);
+        alglib.minlbfgscreatef(Math.Min(5, _x.Length), _x, 0.1, out _state);
         alglib.minlbfgssetscale(_state, _s);
-        alglib.minlbfgssetcond(_state, 0.05, 0, 0, 10);
+        alglib.minlbfgssetcond(_state, 0.2, 0, 0, 10);
         alglib.minlbfgssetprecdefault(_state);
         if (LEAPCore.useGazeIK)
             alglib.minlbfgsoptimize(_state, _ObjFunc2, null, null); // dry run
@@ -523,7 +523,7 @@ public class BodyIKSolver : IKSolver
         Quaternion qg;
         float dt = _gazeController.DeltaTime;
         float curGazeDirectionTerm = 0f, curGazeVelocityTerm = 0f;
-        for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
+        /*for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
         {
             if (_gazeController.CurrentGazeTarget == null)
                 // No gaze constraint if there is no gaze target
@@ -556,7 +556,7 @@ public class BodyIKSolver : IKSolver
             // TODO
             curGazeVelocityTerm = 0f;
             gazeVelocityTerm += curGazeVelocityTerm;
-        }
+        }*/
 
         // Reapply base pose
         _ApplySolverPose(_xb);

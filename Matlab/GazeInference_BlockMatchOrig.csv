@@ -1,7 +1,19 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,StealDiamondGaze1,15,38,38,,0 0 0,-1,-1,True
-Norman,StealDiamondGaze2,39,76,76,,0 0 0,-1,-1,True
-Norman,StealDiamondGaze3,77,101,101,,0 0 0,-1,-1,True
-Norman,StealDiamondGaze4,102,149,164,,0 0 0,-1,-1,True
-Norman,StealDiamondGaze5,167,193,193,,0 0 0,-1,-1,True
-Norman,StealDiamondGaze6,194,229,244,,0 0 0,-1,-1,True
+Norman,Walking90degGaze1,10,21,21,,0 0 0,-1,-1,True
+Norman,Walking90degGaze2,22,51,66,,0 0 0,-1,-1,True
+Norman,Walking90degGaze3,70,93,93,,0 0 0,-1,-1,True
+Norman,Walking90degGaze4,94,123,138,,0 0 0,-1,-1,True
+Norman,Walking90degGaze5,167,182,182,,0 0 0,-1,-1,True
+Norman,Walking90degGaze6,183,205,205,,0 0 0,-1,-1,True
+Norman,Walking90degGaze7,206,233,233,,0 0 0,-1,-1,True
+Norman,Walking90degGaze8,234,251,251,,0 0 0,-1,-1,True
+Norman,Walking90degGaze9,252,266,281,,0 0 0,-1,-1,True
+Norman,Walking90degGaze10,305,339,339,,0 0 0,-1,-1,True
+Norman,Walking90degGaze11,340,360,375,,0 0 0,-1,-1,True
+Norman,Walking90degGaze12,376,394,394,,0 0 0,-1,-1,True
+Norman,Walking90degGaze13,395,413,413,,0 0 0,-1,-1,True
+Norman,Walking90degGaze14,414,463,463,,0 0 0,-1,-1,True
+Norman,Walking90degGaze15,464,485,500,,0 0 0,-1,-1,True
+Norman,Walking90degGaze16,509,522,522,,0 0 0,-1,-1,True
+Norman,Walking90degGaze17,523,548,548,,0 0 0,-1,-1,True
+Norman,Walking90degGaze18,549,581,596,,0 0 0,-1,-1,True

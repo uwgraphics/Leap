@@ -433,9 +433,9 @@ public class LEAPMenu
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "BookShelfwEdits";
             editTestScenario.objectAnimations = new string[3];
-            editTestScenario.animations[0] = "BookShelfBook1";
-            editTestScenario.animations[1] = "BookShelfBook2";
-            editTestScenario.animations[2] = "BookShelfBook3";
+            editTestScenario.objectAnimations[0] = "BookShelfBook1";
+            editTestScenario.objectAnimations[1] = "BookShelfBook2";
+            editTestScenario.objectAnimations[2] = "BookShelfBook3";
         }
         else if (sceneName == "StealDiamond")
         {

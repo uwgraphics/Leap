@@ -1,6 +1,8 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,StealDiamondGaze1,37,67,67,StealDiamondEnv_0,0 0 0,-1,-1,True
-Norman,StealDiamondGaze2,68,101,101,StealDiamondEnv_1,0 0 0,-1,-1,True
-Norman,StealDiamondGaze3,102,151,166,StealDiamondEnv_2,0 0 0,-1,-1,True
-Norman,StealDiamondGaze4,167,193,193,StealDiamondEnv_3,0 0 0,-1,-1,True
-Norman,StealDiamondGaze5,194,229,244,StealDiamondEnv_4,0 0 0,-1,-1,True
+Norman,Walking90degGaze1,10,22,37,Cone4_0,0 0 0,-1,-1,True
+Norman,Walking90degGaze2,94,126,141,Floor_0,0 0 0,-1,-1,True
+Norman,Walking90degGaze3,164,183,198,Walking90degEnv_0,0 0 0,-1,-1,True
+Norman,Walking90degGaze4,206,236,251,Walking90degEnv_1,0 0 0,-1,-1,True
+Norman,Walking90degGaze5,305,327,342,Floor_1,0 0 0,-1,-1,True
+Norman,Walking90degGaze6,501,523,535,Cone1_0,0 0 0,-1,-1,True
+Norman,Walking90degGaze7,536,581,596,,0 0 0,-1,-1,True
