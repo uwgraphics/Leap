@@ -2,7 +2,7 @@ Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTarge
 Norman,WaitForBusGaze1Start-Ahead,1,1,16,null,"4.418586 5.093864 2.052639",0.06022276,0.01060915,True
 Norman,WaitForBusGaze1,17,32,50,WaitForBusEnv_0,"0 0 0",0.5483748,0.02894759,True
 Norman,WaitForBusGaze2,51,22,136,WaitForBusEnv_1,"0 0 0",0.3602442,0,True
-Norman,WaitForBusGaze4,137,18,155,Road_0,"0 0 0",0.5538194,0,True
+Norman,WaitForBusGaze4,137,18,155,Road_0,"0 0 0",0.7538194,0,True
 Norman,WaitForBusGaze5,156,44,215,Grass1_0,"0 0 0",0.9054651,0.04527422,True
 Norman,WaitForBusGaze6,216,25,255,Sign_pole_0,"0 0 0",1,0.1538941,True
 Norman,WaitForBusGaze6-Ahead,256,43,328,WaitForBusEnv_6,"-0.2548869 2.803788 4.12913",0.4465039,0,True

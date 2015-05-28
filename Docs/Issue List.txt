@@ -1,5 +1,9 @@
 Leap Animation Editor:
 
+#110 [] Constraining eyes by OMR does not work correctly
+  - In WaitForBusEdits1 example, eye rotation around frame 142 is *way* outside valid downward OMR
+  - For now I "fixed" it by setting much lower OMR than natural
+
 #109 [] Baking gaze animation is extremely slow
   - Gaze IK weight computation in AnimationTimeline._InitGazeIK() takes up a lot of time for some reason... or causes something else (IK?) to take a very long time
   - It's the IK solver that's too slow...
