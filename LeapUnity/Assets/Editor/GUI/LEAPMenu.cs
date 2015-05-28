@@ -202,6 +202,11 @@ public class LEAPMenu
         testScenes.modelRoman.GetComponent<GazeController>().headPostureWeight = 0f;
         testScenes.modelRoman.GetComponent<GazeController>().torsoPostureWeight = 1f;
 
+        // Reset test scenario
+        editTestScenario.models = null;
+        editTestScenario.objectAnimations = null;
+        editTestScenario.cameraAnimations = null;
+
         if (sceneName == "TestExpressiveGaze")
         {
             LEAPCore.gazeConstraintActivationTime = 0f;
