@@ -1,0 +1,1 @@
+ffmpeg -y -r 30 -i ./VideoCapture/frame%%05d.png -r 30 -c:v libx264 -profile:v baseline -pix_fmt yuv420p -an %1.mp4

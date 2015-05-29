@@ -1,6 +1,6 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,Walking90degGaze1-Ahead,35,39,76,null,"3.962608 3.214225 6.597405",0.8723739,0.4606947,True
-Norman,Walking90degGaze2,77,20,98,Cone3,"0 0 0",0,0,True
+Norman,Walking90degGaze1-Ahead,1,39,76,null,"3.962608 3.214225 6.597405",0.8723739,0.4606947,True
+Norman,Walking90degGaze2,77,20,98,Cone3,"0 0 0",0.4,0,True
 Norman,Walking90degGaze2-Ahead,99,19,133,null,"-3.23479 3.855952 2.942616",0.5681757,0.4743881,True
 Norman,Walking90degGaze3,134,17,151,Cone6,"0 0 0",0.1416937,1,True
 Norman,Walking90degGaze3-Ahead,152,18,198,null,"-1.064156 3.966568 -4.529239",1,1,True
