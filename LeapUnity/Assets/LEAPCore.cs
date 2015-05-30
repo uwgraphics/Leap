@@ -109,7 +109,7 @@ public class LEAPCore : MonoBehaviour
     {
         try
         {
-            var reader = new StreamReader(Application.dataPath + "/Leap.cfg");
+            var reader = new StreamReader(Application.dataPath + "/../Leap/Leap.cfg");
             string line;
             int lineIndex = -1;
             while (!reader.EndOfStream)

@@ -523,7 +523,7 @@ public class BodyIKSolver : IKSolver
         Quaternion qg;
         float dt = _gazeController.DeltaTime;
         float curGazeDirectionTerm = 0f, curGazeVelocityTerm = 0f;
-        /*for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
+        for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
         {
             if (_gazeController.CurrentGazeTarget == null)
                 // No gaze constraint if there is no gaze target
@@ -556,7 +556,7 @@ public class BodyIKSolver : IKSolver
             // TODO
             curGazeVelocityTerm = 0f;
             gazeVelocityTerm += curGazeVelocityTerm;
-        }*/
+        }
 
         // Reapply base pose
         _ApplySolverPose(_xb);
