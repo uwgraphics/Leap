@@ -1220,21 +1220,13 @@ public class AnimationTimeline
                         continue;
                     }
 
+                    animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
+
                     if (layer.isIKEndEffectorConstr)
                     {
-                        // First apply animation without any scaling, so that end-effector goals can be initialized
-                        Vector3 modelScale = animation.Animation.Model.transform.localScale;
-                        animation.Animation.Model.transform.localScale = new Vector3(1, 1, 1);
-                        animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
-
                         // Set up IK goals for this layer
                         _SetIKEndEffectorGoals(animation.Animation.Model, animation.Animation.AnimationClip);
-
-                        // Restore model scale
-                        animation.Animation.Model.transform.localScale = modelScale;
                     }
-
-                    animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
                 }
             }
 
@@ -1256,6 +1248,7 @@ public class AnimationTimeline
 
         // Apply any active end-effector constraints
         _SolveIK();
+        _ApplyEnvironmentAnimations();
 
         if (IsBakingInstances)
             // Apply morph deformations
@@ -1556,20 +1549,25 @@ public class AnimationTimeline
                 objHandleLocalPosition.Scale(objScale);
                 obj.position = endEffector.position - obj.rotation * objHandleLocalPosition;
             }
+        }
+    }
 
-            if (IsBakingInstances)
+    // Apply animations on environment objects
+    private void _ApplyEnvironmentAnimations()
+    {
+        if (LEAPCore.enableObjectManipulation && Environment != null
+            && IsBakingInstances)
+        {
+            // Bake all active environment object animations
+            foreach (int instanceId in _activeAnimationInstanceIds)
             {
-                // Bake all active environment object animations
-                foreach (int instanceId in _activeAnimationInstanceIds)
-                {
-                    var instance = GetAnimation(instanceId);
-                    if (!(instance is EnvironmentObjectAnimationInstance))
-                        continue;
+                var instance = GetAnimation(instanceId);
+                if (!(instance is EnvironmentObjectAnimationInstance))
+                    continue;
 
-                    int startFrame = GetAnimationStartFrame(instanceId);
-                    var layer = GetLayerForAnimation(instanceId);
-                    instance.Apply(CurrentFrame - startFrame, layer.LayerMode);
-                }
+                int startFrame = GetAnimationStartFrame(instanceId);
+                var layer = GetLayerForAnimation(instanceId);
+                instance.Apply(CurrentFrame - startFrame, layer.LayerMode);
             }
         }
     }

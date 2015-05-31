@@ -1,5 +1,11 @@
 Leap Animation Editor:
 
+#113 [] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
+
+#112 [] IK does not work correctly for end-effector constraints attached to parts of the character affected by gaze
+
+#111 [] IK does not work correctly for resized character models
+
 #110 [] Constraining eyes by OMR does not work correctly
   - In WaitForBusEdits1 example, eye rotation around frame 142 is *way* outside valid downward OMR
   - For now I "fixed" it by setting much lower OMR than natural

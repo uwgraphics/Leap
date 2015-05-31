@@ -63,6 +63,11 @@ public class BlinkController : AnimController
     public float blinkDecayLength = 6f;
 
     /// <summary>
+    /// Amount of droop applied to eyelids based on eye movement.
+    /// </summary>
+    public float eyelidDroopFactor = 0.32f;
+
+    /// <summary>
     /// Apply downward rotation to the eyes (to follow eyelid movement).
     /// </summary>
     public bool moveDownEyes = false;
@@ -489,7 +494,7 @@ public class BlinkController : AnimController
             if (curBlinkDecayTime > 0)
                 droop = blinkBaseWeight + curBlinkDecayTime / curBlinkDecayLength * (curBlinkDecayWeight - blinkBaseWeight);
         }
-        droop += 0.32f * prevEyePitch / gazeCtrl.LEye.downMR;
+        droop += eyelidDroopFactor * prevEyePitch / 35f;
         droop = droop < 0 ? 0 : droop; // Partial blinks don't look quite right...
         _morphController.morphChannels[lBlinkMTIndex].weight += droop;
         _morphController.morphChannels[rBlinkMTIndex].weight += droop;

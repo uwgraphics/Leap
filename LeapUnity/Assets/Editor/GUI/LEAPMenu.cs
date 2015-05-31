@@ -192,7 +192,7 @@ public class LEAPMenu
         timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
         timeline.GetLayer("Gaze").isBase = false;
         timeline.GetLayer("Gaze").isGaze = true;
-        timeline.AddLayer(AnimationLayerMode.Override, 2, "Environment");
+        timeline.AddLayer(AnimationLayerMode.Override, 10, "Environment");
         timeline.GetLayer("Environment").isIKEndEffectorConstr = false;
         timeline.GetLayer("Environment").isBase = false;
 
@@ -280,10 +280,14 @@ public class LEAPMenu
             testScenes.modelNorman.SetActive(true);
             testScenes.modelRoman.SetActive(true);
             testScenes.modelNormanette.SetActive(true);
-            testScenes.modelNormanette.transform.position = new Vector3(-0.91f, 0f, -3.72f);
+            testScenes.modelNormanette.transform.position = new Vector3(-4.97f, 0f, 1.24f);
             testScenes.modelNormanette.transform.localScale = new Vector3(0.96f, 0.91f, 0.96f);
             testScenes.modelPassSodaEnv.SetActive(true);
             testScenes.cameraPassSoda.enabled = true;
+
+            // Some end-effector goals are affected by gaze, so reconfigure IK for layers
+            /*timeline.GetLayer("BaseAnimation").isIKEndEffectorConstr = false;
+            timeline.GetLayer("Gaze").isIKEndEffectorConstr = true;*/
 
             // Add character models to the timeline
             timeline.AddModel(testScenes.modelNorman);

@@ -257,9 +257,9 @@ public class BodyIKSolver : IKSolver
         }
 
         // Initialize solver
-        alglib.minlbfgscreatef(Math.Min(5, _x.Length), _x, 0.1, out _state);
+        alglib.minlbfgscreatef(Math.Min(5, _x.Length), _x, 0.05, out _state);
         alglib.minlbfgssetscale(_state, _s);
-        alglib.minlbfgssetcond(_state, 0.2, 0, 0, 10);
+        alglib.minlbfgssetcond(_state, 0.05, 0, 0, 10);
         alglib.minlbfgssetprecdefault(_state);
         if (LEAPCore.useGazeIK)
             alglib.minlbfgsoptimize(_state, _ObjFunc2, null, null); // dry run
@@ -475,8 +475,8 @@ public class BodyIKSolver : IKSolver
                 wrist = goal.endEffector;
                 shoulder = _limbShoulderJoints[endEffectorIndex];
                 elbow = _limbElbowJoints[endEffectorIndex];
-                limbLength = (shoulder.position - elbow.position).magnitude +
-                    (wrist.position - elbow.position).magnitude;
+                limbLength = ((shoulder.position - elbow.position).magnitude +
+                    (wrist.position - elbow.position).magnitude) * LEAPCore.maxLimbExtension;
                 limbLength /= goal.weight;
 
                 // Compute distance beween limb root and goal

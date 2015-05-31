@@ -337,6 +337,25 @@ public class EyeGazeInstance : AnimationControllerInstance
         }
 
         base._Apply(frame, layerMode);
+        // TODO: this is a hack to prevent OMR violation
+        foreach (var eye in GazeController.eyes)
+        {
+            if (eye.bone.localEulerAngles.x > eye.curDownMR)
+            {
+                eye.bone.localEulerAngles = new Vector3(
+                    eye.curDownMR,
+                    eye.bone.localEulerAngles.y,
+                    eye.bone.localEulerAngles.z);
+            }
+            else if (-eye.bone.localEulerAngles.x > eye.curUpMR)
+            {
+                eye.bone.localEulerAngles = new Vector3(
+                    -eye.curUpMR,
+                    eye.bone.localEulerAngles.y,
+                    eye.bone.localEulerAngles.z);
+            }
+        }
+        //
         _lastAppliedFrame = frame;
         _ApplyBake(frame, layerMode);
 

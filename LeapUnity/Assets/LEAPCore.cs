@@ -31,6 +31,11 @@ public class LEAPCore : MonoBehaviour
     public static float endEffectorConstraintActivationTime = 0.7f;
 
     /// <summary>
+    /// How far the IK solver is allowed to extend a limb when solving for its pose.
+    /// </summary>
+    public static float maxLimbExtension = 0.95f;
+
+    /// <summary>
     /// Asset subdirectory for environment object models.
     /// </summary>
     public static string environmentModelsDirectory = "Assets/Environment/Models";

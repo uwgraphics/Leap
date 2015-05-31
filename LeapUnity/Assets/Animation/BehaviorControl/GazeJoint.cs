@@ -674,6 +674,10 @@ public sealed class GazeJoint : DirectableJoint
             rotParamAlign = distRotAlign > 0f ? DistanceToRotate(srcRot, bone.localRotation) / distRotAlign : 0f;
             rotParamMR = distRotMR > 0f ? DistanceToRotate(srcRot, bone.localRotation) / distRotMR : 0f;
         }
+        // TODO: this is a hack to prevent OMR violation
+        if (Mathf.Abs(Pitch) > curDownMR)
+            Pitch = Mathf.Sign(Pitch) * curDownMR;
+        //
 
         // Is the gaze shift finished?
         trgReached = rotParamAlign >= 1f;

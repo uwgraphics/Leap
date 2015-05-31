@@ -61,15 +61,13 @@ public class LimbIKSolver : IKSolver
             cur_es.Normalize();
             cur_ew.Normalize();
             // Don't allow the arm to extend completley
-            // TODO: body solver should take care of this
-            /*if (goal_l >= 0.95f * (les + lew))
+            if (goal_l >= LEAPCore.maxLimbExtension * (les + lew))
             {
-                goal_l = 0.95f * (les + lew);
+                goal_l = LEAPCore.maxLimbExtension * (les + lew);
                 goal_n = goal_n.normalized * goal_l;
 
                 //Debug.LogWarning(string.Format("Limb {0} cannot reach the goal", endEffectors[0]));
-            }*/
-            //
+            }
 
             // If elbow is completely extended or collapsed, we reuse previous rot. axis
             if (Mathf.Abs(Mathf.Abs(Vector3.Dot(cur_es, cur_ew)) - 1f) > 0.0001f)

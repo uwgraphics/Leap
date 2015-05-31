@@ -420,6 +420,8 @@ public abstract class AnimController : MonoBehaviour
             StateHandler handler = null, handlerLate = null;
 
             // Get update handler method (if it exists)
+            if (sd.updateHandler == null)
+                sd.updateHandler = "";
             MethodInfo mi = ctrl_type.GetMethod(sd.updateHandler, BindingFlags.Instance |
                                                 BindingFlags.Public | BindingFlags.NonPublic);
             if (mi != null)
@@ -428,6 +430,8 @@ public abstract class AnimController : MonoBehaviour
             }
 
             // Get late update handler method (if it exists)
+            if (sd.lateUpdateHandler == null)
+                sd.lateUpdateHandler = "";
             mi = ctrl_type.GetMethod(sd.lateUpdateHandler, BindingFlags.Instance |
                                                 BindingFlags.Public | BindingFlags.NonPublic);
             if (mi != null)
@@ -447,6 +451,8 @@ public abstract class AnimController : MonoBehaviour
                 StateTransitionHandler handler = null;
 
                 // Get update handler method (if it exists)
+                if (std.transitionHandler == null)
+                    std.transitionHandler = "";
                 MethodInfo mi = ctrl_type.GetMethod(std.transitionHandler, BindingFlags.Instance |
                                                 BindingFlags.Public | BindingFlags.NonPublic);
                 if (mi != null)
