@@ -392,8 +392,8 @@ public class BodyIKSolver : IKSolver
                 wrist = goal.endEffector;
                 shoulder = _limbShoulderJoints[endEffectorIndex];
                 elbow = _limbElbowJoints[endEffectorIndex];
-                limbLength = (shoulder.position - elbow.position).magnitude +
-                    (wrist.position - elbow.position).magnitude;
+                limbLength = ((shoulder.position - elbow.position).magnitude +
+                    (wrist.position - elbow.position).magnitude) * LEAPCore.maxLimbExtension;
                 limbLength /= goal.weight;
 
                 // Compute distance beween limb root and goal
