@@ -1,8 +1,15 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,Walking90degGaze1,10,22,37,,0 0 0,-1,-1,True
-Norman,Walking90degGaze2,94,123,138,,0 0 0,-1,-1,True
-Norman,Walking90degGaze3,167,183,198,,0 0 0,-1,-1,True
-Norman,Walking90degGaze4,206,234,249,,0 0 0,-1,-1,True
-Norman,Walking90degGaze5,305,327,342,,0 0 0,-1,-1,True
-Norman,Walking90degGaze6,509,523,538,,0 0 0,-1,-1,True
-Norman,Walking90degGaze7,549,581,596,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze1,10,38,37,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze2,38,60,75,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze3,117,156,155,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze4,156,210,209,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze5,210,233,248,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze6,249,282,281,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze7,282,306,321,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze8,324,352,351,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze9,352,397,396,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze10,397,448,463,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze11,486,504,519,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze12,523,547,546,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze13,547,587,602,,0 0 0,-1,-1,True
+Norman,WindowWashingAGaze14,641,679,694,,0 0 0,-1,-1,True

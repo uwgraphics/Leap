@@ -225,7 +225,7 @@ public class GazeTarget  {
 
         //THIS SECTION AFFECTS HOW TARGETS ARE AGGREGATED
         ////////////////////////////////////////////////////////////////////////////////
-        var distanceThresholdScalar = 0.1f;
+        var distanceThresholdScalar = 0.3f;
         var distanceThresholdExp = 1.2f;
         float distanceThreshold = distanceThresholdScalar * (float)Math.Pow(headDis, distanceThresholdExp);
         ////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,12 @@
 Leap Animation Editor:
 
+#115 [] Huge discontinuities in torso pose
+  - See Roman in PassSodaEdits0
+
+#114 [] Jerkiness and small posture discontinuities at gaze instance boundaries
+  - See BookShelfEdits0, between frames 900 and 1000
+  - Seems to be worse in baked/exported motion
+
 #113 [] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
 
 #112 [] IK does not work correctly for end-effector constraints attached to parts of the character affected by gaze
