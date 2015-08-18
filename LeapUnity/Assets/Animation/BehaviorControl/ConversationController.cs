@@ -107,8 +107,10 @@ public class ConversationController : AnimController
         addNewTarget = true;
     }
 
-    protected override void _Init()
+    public override void Start()
     {
+        base.Start();
+
         gazeCtrl = GetComponent<GazeController>();
         if (gazeCtrl == null)
             Debug.LogError("ConversationController requires a GazeController component to be present on the agent.");
@@ -227,7 +229,7 @@ public class ConversationController : AnimController
         if (curGazeHoldTime >= gazeHoldTime &&
             (gazeCtrl.StateId == (int)GazeState.NoGaze &&
             gazeAvCtrl.StateId == (int)GazeAversionState.MutualGaze ||
-            !gazeCtrl.isEnabled))
+            !gazeCtrl.enabled))
         {
             // Done acknowledging the new participant
             _GazeAtNextTarget(false);
@@ -341,7 +343,7 @@ public class ConversationController : AnimController
         if (curGazeHoldTime >= gazeHoldTime &&
             (gazeCtrl.StateId == (int)GazeState.NoGaze &&
             gazeAvCtrl.StateId == (int)GazeAversionState.MutualGaze ||
-            !gazeCtrl.isEnabled))
+            !gazeCtrl.enabled))
         {
             _GazeAtNextTarget(false);
         }

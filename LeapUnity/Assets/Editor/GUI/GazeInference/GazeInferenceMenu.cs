@@ -12,12 +12,11 @@ public class GazeInferenceMenu {
         
     }
 
-    
     //TODO: Fix this.  Does not work.
     //clear the gaze targets from the current scene
     [MenuItem("GazeInference/Delete Gaze Points")]
     private static void deleteGazePoints() {
-        var currEnvironement = AnimationTimeline.Instance.Environment;
+        var currEnvironement = AnimationManager.Instance.Environment;
         if (currEnvironement == null) return;
         var envName = currEnvironement.name;
 

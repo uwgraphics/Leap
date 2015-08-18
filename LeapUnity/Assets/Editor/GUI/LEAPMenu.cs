@@ -127,7 +127,7 @@ public class LEAPMenu
     }
 
     [MenuItem("LEAP/Animation/Test: StealDiamond", false, 36)]
-    private static void TesStealDiamond()
+    private static void TestStealDiamond()
     {
         TestScene("StealDiamond");
     }
@@ -158,7 +158,7 @@ public class LEAPMenu
         var editTestScenario = GameObject.FindGameObjectWithTag("ScenarioManager").GetComponent<GazeEditTestScenario>();
         var testScenes = GameObject.Find("EyeGazeEditor").GetComponent<EyeGazeEditTestScenes>();
         timeline.RemoveAllLayers();
-        timeline.RemoveAllModels();
+        timeline.OwningManager.RemoveAllModels();
 
         // Reload Leap configuration
         LEAPCore.LoadConfiguration();
@@ -186,9 +186,9 @@ public class LEAPMenu
         testScenes.cameraWaitForBus.enabled = false;
 
         // Create and configure animation layers
-        timeline.AddLayer(AnimationLayerMode.Override, 0, "BaseAnimation");
-        timeline.GetLayer("BaseAnimation").isIKEndEffectorConstr = true;
-        timeline.GetLayer("BaseAnimation").isBase = true;
+        timeline.AddLayer(AnimationLayerMode.Override, 0, LEAPCore.baseAnimationLayerName);
+        timeline.GetLayer(LEAPCore.baseAnimationLayerName).isIKEndEffectorConstr = true;
+        timeline.GetLayer(LEAPCore.baseAnimationLayerName).isBase = true;
         timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
         timeline.GetLayer("Gaze").isBase = false;
         timeline.GetLayer("Gaze").isGaze = true;
@@ -216,19 +216,17 @@ public class LEAPMenu
             testScenes.cameraWindowWashing.enabled = true;
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(testScenes.modelTestExpressiveGazeEnv);
+            timeline.OwningManager.SetEnvironment(testScenes.modelTestExpressiveGazeEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "TestExpressiveGaze");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+            var bodyAnimationNorman = new AnimationClipInstance("TestExpressiveGaze", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
         }
         else if (sceneName == "WindowWashing")
@@ -241,29 +239,26 @@ public class LEAPMenu
             testScenes.cameraWindowWashing.enabled = true;
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
-            timeline.AddModel(testScenes.modelNormanette);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelNormanette);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(testScenes.modelWindowWashingEnv);
+            timeline.OwningManager.SetEnvironment(testScenes.modelWindowWashingEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "WindowWashingA");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
-            var bodyAnimationNormanette = new AnimationClipInstance(testScenes.modelNormanette, "WindowWashingB");
-            timeline.AddAnimation("BaseAnimation", bodyAnimationNormanette, 0);
+            var bodyAnimationNorman = new AnimationClipInstance("WindowWashingA", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var bodyAnimationNormanette = new AnimationClipInstance("WindowWashingB", testScenes.modelNormanette);
+            timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNormanette, 0);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Create environment animations
             var envController = testScenes.modelWindowWashingEnv.GetComponent<EnvironmentController>();
             timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge"),
-                    "WindowWashingSponge", timeline.FrameLength));
+                new EnvironmentObjectAnimationInstance("WindowWashingSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge")));
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[2];
@@ -286,39 +281,33 @@ public class LEAPMenu
             testScenes.cameraPassSoda.enabled = true;
 
             // Some end-effector goals are affected by gaze, so reconfigure IK for layers
-            /*timeline.GetLayer("BaseAnimation").isIKEndEffectorConstr = false;
+            /*timeline.GetLayer(LEAPCore.baseAnimationLayerName).isIKEndEffectorConstr = false;
             timeline.GetLayer("Gaze").isIKEndEffectorConstr = true;*/
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
-            timeline.AddModel(testScenes.modelNormanette);
-            timeline.AddModel(testScenes.modelRoman);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelNormanette);
+            timeline.OwningManager.AddModel(testScenes.modelRoman);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(testScenes.modelPassSodaEnv);
+            timeline.OwningManager.SetEnvironment(testScenes.modelPassSodaEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "PassSodaA");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
-            var bodyAnimationRoman = new AnimationClipInstance(testScenes.modelRoman, "PassSodaB");
-            int bodyAnimationRomanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationRoman, 0, true);
-            var bodyAnimationNormanette = new AnimationClipInstance(testScenes.modelNormanette, "PassSodaC");
-            timeline.AddAnimation("BaseAnimation", bodyAnimationNormanette, 0);
+            var bodyAnimationNorman = new AnimationClipInstance("PassSodaA", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var bodyAnimationRoman = new AnimationClipInstance("PassSodaB", testScenes.modelRoman);
+            int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationRoman, 0, true);
+            var bodyAnimationNormanette = new AnimationClipInstance("PassSodaC", testScenes.modelNormanette);
+            timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNormanette, 0);
 
             // Create environment animations
             var envController = testScenes.modelPassSodaEnv.GetComponent<EnvironmentController>();
             timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "SodaBottle"),
-                    "PassSodaBottle", timeline.FrameLength));
+                new EnvironmentObjectAnimationInstance("PassSodaBottle", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "SodaBottle")));
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-            {
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationRomanInstanceId, "Gaze");
-            }
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -340,19 +329,17 @@ public class LEAPMenu
             testScenes.cameraWalking90deg.enabled = true;
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(testScenes.modelWalking90degEnv);
+            timeline.OwningManager.SetEnvironment(testScenes.modelWalking90degEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "Walking90deg");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+            var bodyAnimationNorman = new AnimationClipInstance("Walking90deg", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -371,26 +358,21 @@ public class LEAPMenu
             testScenes.cameraHandShake.enabled = true;
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
-            timeline.AddModel(testScenes.modelRoman);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelRoman);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(testScenes.modelHandShakeEnv);
+            timeline.OwningManager.SetEnvironment(testScenes.modelHandShakeEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "HandShakeA");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
-            var bodyAnimationRoman = new AnimationClipInstance(testScenes.modelRoman, "HandShakeB");
-            int bodyAnimationRomanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationRoman, 0, true);
+            var bodyAnimationNorman = new AnimationClipInstance("HandShakeA", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var bodyAnimationRoman = new AnimationClipInstance("HandShakeB", testScenes.modelRoman);
+            int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationRoman, 0, true);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-            {
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationRomanInstanceId, "Gaze");
-            }
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -409,32 +391,27 @@ public class LEAPMenu
             testScenes.cameraBookShelf2.enabled = true;
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(testScenes.modelBookShelfEnv);
+            timeline.OwningManager.SetEnvironment(testScenes.modelBookShelfEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "BookShelf");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+            var bodyAnimationNorman = new AnimationClipInstance("BookShelf", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Create environment animations
             var envController = testScenes.modelBookShelfEnv.GetComponent<EnvironmentController>();
             timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1"),
-                    "BookShelfBook1", timeline.FrameLength));
+                new EnvironmentObjectAnimationInstance("BookShelfBook1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1")));
             timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2"),
-                    "BookShelfBook2", timeline.FrameLength));
+                new EnvironmentObjectAnimationInstance("BookShelfBook2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2")));
             timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3"),
-                    "BookShelfBook3", timeline.FrameLength));
+                new EnvironmentObjectAnimationInstance("BookShelfBook3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3")));
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[1];
@@ -454,25 +431,22 @@ public class LEAPMenu
             testScenes.cameraStealDiamond2.enabled = true;
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(testScenes.modelStealDiamondEnv);
+            timeline.OwningManager.SetEnvironment(testScenes.modelStealDiamondEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "StealDiamond");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+            var bodyAnimationNorman = new AnimationClipInstance("StealDiamond", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
 
             // Create environment animations
             var envController = testScenes.modelStealDiamondEnv.GetComponent<EnvironmentController>();
             timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance(envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Gem"),
-                    "StealDiamondGem", timeline.FrameLength));
+                new EnvironmentObjectAnimationInstance("StealDiamondGem", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Gem")));
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -492,19 +466,17 @@ public class LEAPMenu
             testScenes.cameraWaitForBus.enabled = true;
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(testScenes.modelWaitForBusEnv);
+            timeline.OwningManager.SetEnvironment(testScenes.modelWaitForBusEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "WaitForBus");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+            var bodyAnimationNorman = new AnimationClipInstance("WaitForBus", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -519,23 +491,21 @@ public class LEAPMenu
             testScenes.cameraWindowWashing.enabled = true;
 
             // Add character models to the timeline
-            timeline.AddModel(testScenes.modelNorman);
+            timeline.OwningManager.AddModel(testScenes.modelNorman);
 
             // Set environment in the timeline
-            timeline.SetEnvironment(null);
+            timeline.OwningManager.SetEnvironment(null);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance(testScenes.modelNorman, "InitialPose");
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation("BaseAnimation", bodyAnimationNorman, 0, true);
+            var bodyAnimationNorman = new AnimationClipInstance("InitialPose", testScenes.modelNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            if (LEAPCore.useExpressiveGaze)
-                EyeGazeEditor.LoadExpressiveEyeGazeAnimations(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
         }
 
-        timeline.Init();
+        timeline.OwningManager.Init();
     }
 
     [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 5)]
@@ -551,7 +521,7 @@ public class LEAPMenu
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
         timeline.ResetModelsAndEnvironment();
-        EyeGazeEditor.ResetEyeGazeControllers(timeline.Models.ToArray());
+        EyeGazeEditor.ResetEyeGazeControllers(timeline.OwningManager.Models.ToArray());
         SceneView.RepaintAll();
     }
 
@@ -567,17 +537,9 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        var models = timeline.Models;
-        string[] baseAnimationClipNames = new string[models.Count];
-        
-        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
-        {
-            var model = models[modelIndex];
-            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model).Animation;
-            baseAnimationClipNames[modelIndex] = baseAnimation.AnimationClip.name + "wEdits";
-        }
-        
-        timeline.Bake(baseAnimationClipNames);
+
+        timeline.InitBake("Edits");
+        timeline.Bake();
     }
 
     [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", true, 7)]
@@ -598,7 +560,7 @@ public class LEAPMenu
         timeline.GetLayer("Gaze").Active = false;
 
         // Infer gaze shifts and fixations in the base animation
-        var baseLayer = timeline.GetLayer("BaseAnimation");
+        var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
             EyeGazeEditor.InferEyeGazeInstances(timeline, baseAnimation.InstanceId);
@@ -628,7 +590,7 @@ public class LEAPMenu
         timeline.GetLayer("Gaze").Active = false;
 
         // Infer head and torso alignments for all gaze shifts in the base animation
-        var baseLayer = timeline.GetLayer("BaseAnimation");
+        var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
             EyeGazeEditor.InferEyeGazeAlignments(timeline, baseAnimation.InstanceId);
@@ -636,33 +598,6 @@ public class LEAPMenu
             // Save and print inferred eye gaze
             EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Inferred");
             EyeGazeEditor.PrintEyeGaze(timeline);
-        }
-        SceneView.RepaintAll();
-    }
-
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Expressive Motion", true, 8)]
-    private static bool ValidateInferEyeGazeExpressiveMotion()
-    {
-        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
-        return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
-    }
-
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Expressive Motion", false, 8)]
-    private static void InferEyeGazeExpressiveMotion()
-    {
-        var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
-        var timeline = wnd.Timeline;
-
-        // Disable IK and gaze layers
-        timeline.SetIKEnabled(false);
-        timeline.GetLayer("Gaze").Active = false;
-
-        // Extract expressive motion for all gaze shifts in the base animation
-        var baseLayer = timeline.GetLayer("BaseAnimation");
-        foreach (var baseAnimation in baseLayer.Animations)
-        {
-            EyeGazeEditor.ExtractExpressiveEyeGazeAnimations(timeline, baseAnimation.InstanceId);
-            EyeGazeEditor.SaveExpressiveEyeGazeAnimations(timeline, baseAnimation.InstanceId);
         }
         SceneView.RepaintAll();
     }
@@ -679,12 +614,12 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        var models = timeline.Models;
+        var models = timeline.OwningManager.Models;
 
         for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
         {
             var model = models[modelIndex];
-            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);
+            var baseAnimation = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(a => a.Animation.Model == model);
             EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze");
         }
 
@@ -703,12 +638,12 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        var models = timeline.Models;
+        var models = timeline.OwningManager.Models;
 
         for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
         {
             var model = models[modelIndex];
-            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);
+            var baseAnimation = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(a => a.Animation.Model == model);
             EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze", "#Inferred");
         }
 
@@ -727,12 +662,12 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        var models = timeline.Models;
+        var models = timeline.OwningManager.Models;
 
         for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
         {
             var model = models[modelIndex];
-            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);
+            var baseAnimation = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(a => a.Animation.Model == model);
             EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze", "#Edits");
         }
 
@@ -751,12 +686,12 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
-        var models = timeline.Models;
+        var models = timeline.OwningManager.Models;
 
         for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
         {
             var model = models[modelIndex];
-            var baseAnimation = timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(a => a.Animation.Model == model);
+            var baseAnimation = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(a => a.Animation.Model == model);
             EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Edits");
         }
     }
@@ -910,8 +845,6 @@ public class LEAPMenu
         ModelUtils.AutoTagModel(obj);
 
         // Create default anim. controllers
-        AnimControllerTree atree = obj.AddComponent<AnimControllerTree>();
-        RootController rootctr = obj.AddComponent<RootController>();
         LocomotionController lococtr = obj.AddComponent<LocomotionController>();
         BodyIdleController idlectr = obj.AddComponent<BodyIdleController>();
         GestureController gestctr = obj.AddComponent<GestureController>();
@@ -922,23 +855,8 @@ public class LEAPMenu
         GazeController gazectr = obj.AddComponent<GazeController>();
         BlinkController blinkctr = obj.AddComponent<BlinkController>();
         EyesAliveController eactr = obj.AddComponent<EyesAliveController>();
-        // Link the controllers into a hierarchy
-        atree.rootController = obj.GetComponent<RootController>();
-        rootctr.childControllers = new AnimController[2];
-        rootctr.childControllers[0] = lococtr;
-        rootctr.childControllers[1] = facectr;
-        lococtr.childControllers = new AnimController[2];
-        lococtr.childControllers[0] = idlectr;
-        lococtr.childControllers[1] = gestctr;
-        facectr.childControllers = new AnimController[3];
-        facectr.childControllers[0] = exprctr;
-        facectr.childControllers[1] = spctr;
-        facectr.childControllers[2] = gazectr;
-        gazectr.childControllers = new AnimController[2];
-        gazectr.childControllers[0] = blinkctr;
-        gazectr.childControllers[1] = eactr;
+
         // Initialize controller states
-        rootctr._CreateStates();
         lococtr._CreateStates();
         idlectr._CreateStates();
         gestctr._CreateStates();
@@ -985,20 +903,10 @@ public class LEAPMenu
         ModelUtils.AutoTagModel(obj);
 
         // Create default anim. controllers
-        AnimControllerTree atree = obj.AddComponent<AnimControllerTree>();
-        RootController rootctr = obj.AddComponent<RootController>();
         GazeController gazectr = obj.AddComponent<GazeController>();
         BlinkController blinkctr = obj.AddComponent<BlinkController>();
 
-        // Link the controllers into a hierarchy
-        atree.rootController = obj.GetComponent<RootController>();
-        rootctr.childControllers = new AnimController[1];
-        rootctr.childControllers[0] = gazectr;
-        gazectr.childControllers = new AnimController[1];
-        gazectr.childControllers[0] = blinkctr;
-
         // Initialize controller states
-        rootctr._CreateStates();
         gazectr._CreateStates();
         blinkctr._CreateStates();
 

@@ -152,32 +152,7 @@ public class FaceController : AnimController
     /// <summary>
     /// Shorthand for getting the head joint.
     /// </summary>
-    public virtual DirectableJoint Head
-    {
-        get
-        {
-            foreach (DirectableJoint joint in puppetJoints)
-                if (joint.bone.tag == "HeadBone")
-                    return joint;
-
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Shorthand for getting the neck joint.
-    /// </summary>
-    public virtual DirectableJoint Neck
-    {
-        get
-        {
-            foreach (DirectableJoint joint in puppetJoints)
-                if (joint.bone.tag == "NeckBone")
-                    return joint;
-
-            return null;
-        }
-    }
+    public DirectableJoint head;
 
     /// <summary>
     /// Performs a head gesture. 
@@ -291,7 +266,7 @@ public class FaceController : AnimController
             stopGesture = true;
     }
 
-    protected override void _Init()
+    public override void Start()
     {
         // Initialize random motion generators
         randomMotionGen.Init(gameObject);
@@ -383,7 +358,7 @@ public class FaceController : AnimController
             rot = UnityEngine.Quaternion.Slerp(trgRot, finRot, t);
         else
             rot = finRot;
-        Head.bone.localRotation = rot;
+        head.bone.localRotation = rot;
 
         time += DeltaTime;
         if (time > length)
@@ -482,7 +457,7 @@ public class FaceController : AnimController
         gestLeft = numGestures;
         ret = false;
         sustain = false;
-        origRot = Head.bone.localRotation;
+        origRot = head.bone.localRotation;
         trgRot = _ComputeTargetHeadRotation(gestTargetVert, gestTargetHor);
         retRot = _ComputeTargetHeadRotation(gestReturnVert, gestReturnHor);
         finRot = _ComputeTargetHeadRotation(gestFinalVert, gestFinalHor);
@@ -493,10 +468,10 @@ public class FaceController : AnimController
     // Compute bone rotation after change to yaw and pitch has been applied
     private UnityEngine.Quaternion _ComputeTargetHeadRotation(float vert, float hor)
     {
-        Head.Pitch += vert;
-        Head.Yaw += hor;
-        UnityEngine.Quaternion rot = Head.bone.localRotation;
-        Head.bone.localRotation = origRot;
+        head.Pitch += vert;
+        head.Yaw += hor;
+        UnityEngine.Quaternion rot = head.bone.localRotation;
+        head.bone.localRotation = origRot;
 
         return rot;
     }

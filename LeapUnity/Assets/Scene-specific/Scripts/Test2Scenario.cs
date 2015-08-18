@@ -3,8 +3,7 @@ using System.Collections;
 
 public class Test2Scenario : TestScenario
 {
-
-	protected override void _Init()
+    protected override void _Init()
 	{
 		Debug.Log( "This is Test2Scenario" );
 	}

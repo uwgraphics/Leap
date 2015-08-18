@@ -15,7 +15,7 @@ public class GazeAversion_Thinking : Scenario
 	VideoCapture vidcap;
 	
 	/// <see cref="Scenario._Init()"/>
-	protected override void _Init()
+    protected override void _Init()
 	{
 		vidcap = GetComponent<VideoCapture>();
 		vidcap.enabled = false;

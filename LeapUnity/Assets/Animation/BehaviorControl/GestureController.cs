@@ -34,7 +34,7 @@ public class GestureController : AnimController
 		gestureAnimation = gestureName;
 	}
 
-	protected override void _Init()
+	public override void Start()
 	{
 	}
 	

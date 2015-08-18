@@ -8,7 +8,7 @@ public class LEAPCore : MonoBehaviour
 	public const string agentModelDirectory = "Assets/Agents";
 	public const string morphAnimationPrefix = "MC";
 	public const string morphTargetPrefix = "MT";
-	
+
 	/// <summary>
 	/// Whether morph target import should explicitly look for split
 	/// vertices, and split them in the morph target.
@@ -24,6 +24,11 @@ public class LEAPCore : MonoBehaviour
     /// Frame rate to use for animation viewing and editing.
     /// </summary>
     public static int editFrameRate = 30;
+
+    /// <summary>
+    /// Name of the base animation layer in the animation timeline.
+    /// </summary>
+    public static string baseAnimationLayerName = "BaseAnimation";
 
     /// <summary>
     /// Default time over which end-effector constraints become active or inactive.
@@ -67,19 +72,9 @@ public class LEAPCore : MonoBehaviour
     public static string gazeAheadSuffix = "-Ahead";
 
     /// <summary>
-    /// Suffix appended to names of expressive gaze instances.
-    /// </summary>
-    public static string expressiveGazeSuffix = "-Expressive";
-
-    /// <summary>
     /// Time window over which gaze is blended out when gazing ahead.
     /// </summary>
     public static float gazeAheadBlendTime = 2f;
-
-    /// <summary>
-    /// If true, expressive animation will be applied to gaze movements.
-    /// </summary>
-    public static bool useExpressiveGaze = true;
 
     /// <summary>
     /// If true, posture IK will incorporate gaze constraints.
@@ -160,11 +155,6 @@ public class LEAPCore : MonoBehaviour
                     case "maxEyeGazeGapLength":
 
                         maxEyeGazeGapLength = float.Parse(valueStr);
-                        break;
-
-                    case "useExpressiveGaze":
-
-                        useExpressiveGaze = bool.Parse(valueStr);
                         break;
 
                     case "useGazeIK":

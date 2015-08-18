@@ -23,11 +23,6 @@ public sealed class ModelController : MonoBehaviour
     private Dictionary<int, Vector3> initWPos = new Dictionary<int, Vector3>();
     private Dictionary<int, Quaternion> initWRot = new Dictionary<int, Quaternion>();
 
-    // Previous pose, or rather pose at the end of LateUpdate phase of the previous frame
-    private Dictionary<int, Vector3> prevLPos = new Dictionary<int, Vector3>();
-    private Dictionary<int, Quaternion> prevLRot = new Dictionary<int, Quaternion>();
-    private Dictionary<int, Vector3> prevLScal = new Dictionary<int, Vector3>();
-
     // Meshes with blend shapes:
     private SkinnedMeshRenderer[] meshesWithBlendShapes;
 
@@ -147,59 +142,6 @@ public sealed class ModelController : MonoBehaviour
 
             return -Vector3.Cross(bodyUp, bodyRight);
         }
-    }
-
-    /// <summary>
-    /// Gets the previous (stored) position of the specified bone.
-    /// </summary>
-    /// <param name="bone">
-    /// Bone reference.
-    /// </param>
-    /// <returns>
-    /// Previous position.
-    /// </returns>
-    public Vector3 GetPrevPosition(Transform bone)
-    {
-        if (prevLPos.ContainsKey(bone.GetInstanceID()))
-            return prevLPos[bone.GetInstanceID()];
-
-        return new Vector3(0, 0, 0);
-    }
-
-    /// <summary>
-    /// Gets the previous (stored) rotation of the specified bone.
-    /// </summary>
-    /// <param name="bone">
-    /// Bone reference.
-    /// </param>
-    /// <returns>
-    /// Previous rotation.
-    /// </returns>
-    public Quaternion GetPrevRotation(Transform bone)
-    {
-        if (prevLRot.ContainsKey(bone.GetInstanceID()))
-        {
-            return prevLRot[bone.GetInstanceID()];
-        }
-
-        return new Quaternion(0, 0, 0, 1);
-    }
-
-    /// <summary>
-    /// Gets the previous (stored) scale of the specified bone.
-    /// </summary>
-    /// <param name="bone">
-    /// Bone reference.
-    /// </param>
-    /// <returns>
-    /// Previous scale.
-    /// </returns>
-    public Vector3 GetPrevScale(Transform bone)
-    {
-        if (prevLScal.ContainsKey(bone.GetInstanceID()))
-            return prevLScal[bone.GetInstanceID()];
-
-        return new Vector3(1, 1, 1);
     }
 
     /// <summary>
@@ -365,19 +307,6 @@ public sealed class ModelController : MonoBehaviour
             bone.localPosition = initLPos.ContainsKey(bone.GetInstanceID()) ? GetInitPosition(bone) : bone.localPosition;
             bone.localRotation = initLRot.ContainsKey(bone.GetInstanceID()) ? GetInitRotation(bone) : bone.localRotation;
             bone.localScale = initLScal.ContainsKey(bone.GetInstanceID()) ? GetInitScale(bone) : bone.localScale;
-        }
-    }
-
-    /// <summary>
-    /// Stores the current pose of the model.
-    /// </summary>
-    public void _StoreCurrentPose()
-    {
-        foreach (var bone in bones)
-        {
-            prevLPos[bone.GetInstanceID()] = bone.localPosition;
-            prevLRot[bone.GetInstanceID()] = bone.localRotation;
-            prevLScal[bone.GetInstanceID()] = bone.localScale;
         }
     }
 

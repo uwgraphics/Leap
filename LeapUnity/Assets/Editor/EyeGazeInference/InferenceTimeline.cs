@@ -87,9 +87,9 @@ public class InferenceTimeline {
             var nextFrameDiff = GazeBlocks[i + 1].StartFrame - GazeBlocks[i].FixationStartFrame;
             GazeBlocks[i].FixationEndFrame = nextFrameDiff >= maxTimeFrame ? GazeBlocks[i].FixationStartFrame + maxTimeFrame : GazeBlocks[i+1].StartFrame - 1;
         }
-        var lastFrame = AnimationTimeline.Instance.FrameLength;
+        var lastFrame = AnimationManager.Instance.Timeline.FrameLength;
         var l = GazeBlocks[GazeBlocks.Count - 1].FixationStartFrame + maxTimeFrame;
-        GazeBlocks[GazeBlocks.Count - 1].FixationEndFrame = l > lastFrame ? AnimationTimeline.Instance.FrameLength : l;
+        GazeBlocks[GazeBlocks.Count - 1].FixationEndFrame = l > lastFrame ? AnimationManager.Instance.Timeline.FrameLength : l;
     }
 }
 

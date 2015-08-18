@@ -112,11 +112,12 @@ public class BodyIKSolver : IKSolver
     }
 
     /// <summary>
-    /// <see cref="IKSolver.Init"/>
+    /// <see cref="IKSolver.Start"/>
     /// </summary>
-    public override void Init()
+    public override void Start()
     {
-        base.Init();
+        base.Start();
+
         _upperBodyOnly = !endEffectors.Any(ee => ee == "LAnkle" || ee == "RAnkle");
         _CreateSolver();
     }
@@ -498,8 +499,6 @@ public class BodyIKSolver : IKSolver
         float curRotTerm = 0f;
         for (int bodyJointIndex = 0; bodyJointIndex < _bodyJoints.Count; ++bodyJointIndex)
         {
-            var bodyJoint = _bodyJoints[bodyJointIndex];
-
             // Penalize difference between base and current rotation of the joint
             vb = _GetBodyJointRotation(_xb, bodyJointIndex);
             qb = QuaternionUtil.Exp(vb);
@@ -521,7 +520,6 @@ public class BodyIKSolver : IKSolver
 
         // Compute gaze direction and velocity terms
         Quaternion qg;
-        float dt = _gazeController.DeltaTime;
         float curGazeDirectionTerm = 0f, curGazeVelocityTerm = 0f;
         for (int gazeJointIndex = _gazeController.LastGazeJointIndex; gazeJointIndex >= 0; --gazeJointIndex)
         {

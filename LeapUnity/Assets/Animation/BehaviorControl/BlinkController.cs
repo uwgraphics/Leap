@@ -201,8 +201,10 @@ public class BlinkController : AnimController
         return true;
     }
 
-    protected override void _Init()
+    public override void Start()
     {
+        base.Start();
+
         // Try to find blink morph channels and anim.
         lBlinkMTIndex = GetComponent<MorphController>().GetMorphChannelIndex(blinkLeftMTName);
         rBlinkMTIndex = GetComponent<MorphController>().GetMorphChannelIndex(blinkRightMTName);
@@ -210,7 +212,7 @@ public class BlinkController : AnimController
         {
             Debug.LogWarning("Blink Controller on agent " + gameObject.name +
                              " could not be initialized; eye blink morph targets missing");
-            this.isEnabled = false;
+            this.enabled = false;
 
             return;
         }
@@ -229,9 +231,11 @@ public class BlinkController : AnimController
             gazeCtrl.StateChange += new StateChangeEvtH(GazeController_StateChange);
     }
 
-    protected override void _LateUpdate()
+    public override void LateUpdate()
     {
         prevEyePitch = gazeCtrl.LEye.Pitch;
+
+        base.LateUpdate();
     }
 
     protected virtual void Update_NoBlink()

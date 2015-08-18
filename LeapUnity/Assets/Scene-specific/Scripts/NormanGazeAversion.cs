@@ -6,7 +6,7 @@ using System.IO;
 public class NormanGazeAversion : Scenario
 {
 	/// <see cref="Scenario._Init()"/>
-	protected override void _Init()
+    protected override void _Init()
 	{
 	}
 	

@@ -98,7 +98,7 @@ public class StylizedGazeScenario : Scenario
 	}
 	
 	/// <see cref="Scenario._Init()"/>
-	protected override void _Init()
+    protected override void _Init()
 	{
 		// Set frame rate and resolution
 		// TODO: won't be needed when all conditions are finalized

@@ -141,7 +141,7 @@ public class TorsoExperiment1 : Scenario
 	}
 	
 	/// <see cref="Scenario._Init()"/>
-	protected override void _Init()
+    protected override void _Init()
 	{
 		subjectId = (ushort)Random.Range(1, ushort.MaxValue);
 		if( !File.Exists("TorsoGaze_Log.csv") )

@@ -17,6 +17,7 @@ public abstract class AnimationControllerInstance : AnimationInstance
     public override float TimeLength
     {
         get { return _timeLength; }
+        set { _timeLength = value < 0f ? 0f : value; }
     }
 
     /// <summary>
@@ -29,56 +30,19 @@ public abstract class AnimationControllerInstance : AnimationInstance
 
     protected AnimController _controller = null;
     protected float _timeLength = 1f;
-    protected List<IAnimControllerState> _bakedControllerStates;
 
     /// <summary>
     /// Constructor.
     /// </summary>
+    /// <param name="name">Animation instance name</param>
     /// <param name="model">Character model</param>
-    /// <param name="animationClipName">Animation clip name</param>
     /// <param name="controllerType">AnimController type</param>
     /// <param name="frameLength">Animation controller activity duration.</param>
-    public AnimationControllerInstance(GameObject model, string animationClipName, Type controllerType,
-        int frameLength = 30)
-        : base(model, animationClipName)
+    public AnimationControllerInstance(string name, GameObject model, Type controllerType,
+        int frameLength = 30) : base(name, model)
     {
         _controller = model.GetComponent(controllerType) as AnimController;
-        SetFrameLength(frameLength);
-    }
-
-    /// <summary>
-    /// Set animation controller activity duration.
-    /// </summary>
-    /// <param name="frameLength"></param>
-    public virtual void SetFrameLength(int frameLength)
-    {
-        _timeLength = ((float)frameLength) / LEAPCore.editFrameRate;
-    }
-
-    /// <summary>
-    /// <see cref="AnimationInstance.Start()"/>
-    /// </summary>
-    public override void Start()
-    {
-        base.Start();
-
-        if (IsBaking)
-        {
-            Controller.weight = 1f;
-
-            // Initialize list of baked controller states
-            _bakedControllerStates = new List<IAnimControllerState>(FrameLength);
-            for (int frameIndex = 0; frameIndex < FrameLength; ++frameIndex)
-                _bakedControllerStates.Add(Controller.GetRuntimeState());
-        }
-    }
-
-    /// <summary>
-    /// <see cref="AnimationInstance.Finish()"/>
-    /// </summary>
-    public override void Finish()
-    {
-        base.Finish();
+        FrameLength = frameLength;
     }
 
     /// <summary>
@@ -86,29 +50,11 @@ public abstract class AnimationControllerInstance : AnimationInstance
     /// </summary>
     /// <param name="frame">Frame index</param>
     /// <param name="layerMode">Animation layering mode</param>
-    protected override void _Apply(int frame, AnimationLayerMode layerMode)
+    public override void Apply(int frame, AnimationLayerMode layerMode)
     {
         if (layerMode == AnimationLayerMode.Additive)
         {
             throw new Exception("Additive layering not supported for AnimationControllerInstance");
-        }
-
-        if (IsBaking)
-        {
-            // Update the controller to get new body pose
-            Controller._UpdateTree();
-            Controller._LateUpdateTree();
-
-            // Bake the current controller state
-            _bakedControllerStates[frame] = Controller.GetRuntimeState();
-        }
-        else
-        {
-            if (_bakedControllerStates != null && frame < _bakedControllerStates.Count)
-            {
-                // Apply the baked controller state
-                Controller.SetRuntimeState(_bakedControllerStates[frame]);
-            }
         }
     }
 }

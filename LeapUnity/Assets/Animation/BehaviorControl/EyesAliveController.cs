@@ -36,12 +36,14 @@ public class EyesAliveController : AnimController
     protected ContinuousUniformDistribution uniDist1 = null; //Amplitude of gaze shift
     protected ContinuousUniformDistribution uniDist2 = null; //Direction of gaze shift
 
-    protected override void _Init()
+    public override void Start()
     {
+        base.Start();
+
         // Get relevant animation controllers
         blinkCtrl = GetComponent<BlinkController>();
         gazeAversionCtrl = GetComponent<GazeAversionController>();
-        gazeCtrl = Parent as GazeController;
+        gazeCtrl = GetComponent<GazeController>();
         //gazeCtrl.StateChange += new StateChangeEvtH(GazeController_StateChange);
 
         // Set up random number generators

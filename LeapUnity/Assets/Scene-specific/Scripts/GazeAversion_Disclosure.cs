@@ -27,7 +27,7 @@ public class GazeAversion_Disclosure : Scenario
 	VideoCapture vidcap;
 	
 	/// <see cref="Scenario._Init()"/>
-	protected override void _Init()
+    protected override void _Init()
 	{
 		randNumGen = new MersenneTwisterRandomSource();
 		nextSmileDistribution = new NormalDistribution(randNumGen);

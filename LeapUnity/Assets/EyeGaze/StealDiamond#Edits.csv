@@ -1,10 +1,10 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,StealDiamondGaze1Start-Ahead,1,1,44,null,"0.3253159 2.916077 5.621482",0,0,True
+Norman,StealDiamondGaze9,1,1,44,RoomFront,"0.3253159 2.916077 5.621482",1,0.4,True
 Norman,StealDiamondGaze1,45,25,70,RoomLeft3,"0 0 0",0.9826547,0.06288744,True
 Norman,StealDiamondGaze2,71,10,111,RoomLeft1,"0 0 0",0.9087417,0.2147056,True
 Norman,StealDiamondGaze3,112,37,157,RoomRight1,"0 0 0",0.8211755,0.07274679,True
 Norman,StealDiamondGaze9,158,29,205,Diamond,"0 0 0",0.7553326,0,True
 Norman,StealDiamondGaze5,206,39,247,RoomBack,"0 0 0",0.6704586,0.1853146,True
-Norman,StealDiamondGaze6,248,9,259,RoomRight2,"0 0 0",0.5447242,1,True
-Norman,StealDiamondGaze7,260,8,269,RoomLeft2,"0 0 0",0.6779569,1,True
+Norman,StealDiamondGaze6,248,9,259,RoomRight2,"0 0 0",0.5447242,0,True
+Norman,StealDiamondGaze7,260,8,269,RoomLeft2,"0 0 0",0.6779569,0,True
 Norman,StealDiamondGaze8,270,9,285,RoomBack,"0 0 0",0,0.197616,True

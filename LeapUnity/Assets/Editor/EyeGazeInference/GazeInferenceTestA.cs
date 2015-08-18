@@ -66,7 +66,7 @@ public class GazeInferenceTestF
         AnimationTitle = animationTitle;
         CharacterName = characterName;
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(Character.CharModel, animationTitle);
+        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel);
         SceneCollisions = new SceneCollisions(animationTitle);
 
         TagCounter1 = 0;
@@ -182,7 +182,7 @@ public class GazeInferenceTestF
             //this means the target should be parented to the scene
             if (g.TargetName == "")
             {
-                var currEnvironement = AnimationTimeline.Instance.Environment;
+                var currEnvironement = AnimationManager.Instance.Environment;
                 UnityEngine.Debug.Log(currEnvironement);
 
                 var targetTest = targets.FirstOrDefault(m => m.name == currEnvironement.name + "_" + counterArray[d[""]].ToString());
@@ -559,7 +559,7 @@ public class GazeInferenceTestG
         AnimationTitle = animationTitle;
         CharacterName = characterName;
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(Character.CharModel, animationTitle);
+        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel);
         SceneCollisions = new SceneCollisions(animationTitle);
         GazeTargetObjects = GameObject.FindGameObjectsWithTag("GazeTarget");
 
@@ -684,7 +684,7 @@ public class GazeInferenceTestG
             //this means the target should be parented to the scene
             if (g.TargetName == "")
             {
-                var currEnvironement = AnimationTimeline.Instance.Environment;
+                var currEnvironement = AnimationManager.Instance.Environment;
 
                 var targetTest = targets.FirstOrDefault(m => m.name == currEnvironement.name + "_" + d[""].ToString());
                 if (targetTest != null)

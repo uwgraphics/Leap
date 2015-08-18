@@ -144,8 +144,10 @@ public class ExpressionController : AnimController
         }
     }
 
-    protected override void _Init()
+    public override void Start()
     {
+        base.Start();
+
         // Set up random number generators
         randNumGen = new MersenneTwisterRandomSource();
         expDist = new ExponentialDistribution(randNumGen);
@@ -169,11 +171,13 @@ public class ExpressionController : AnimController
         curTime = 0;
     }
 
-    protected override void _Update()
+    public override void Update()
     {
         // Apply fixed expressions
         foreach (KeyValuePair<int, float> fxmag in fixedExpr)
             _morphController.morphChannels[fxmag.Key].weight += fxmag.Value;
+
+        base.Update();
     }
 
     protected virtual void Update_Base()

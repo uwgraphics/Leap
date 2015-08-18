@@ -45,9 +45,11 @@ public class ListenController : AnimController
     private float audioTime = 0f;
     public string KinectArgument = null;
 
-    protected override void _Init()
+    public override void Start()
     {
-        if (isEnabled)
+        base.Start();
+
+        if (enabled)
         {
             //Set up the kinect speech application
             Process speechProcess = new Process();
@@ -178,13 +180,15 @@ public class ListenController : AnimController
         return null;
     }
 
-    protected override void _Update()
+    public override void Update()
     {
         //Keep confidence threshold between 0 and 1
         if (confidenceThreshold <= 0)
             confidenceThreshold = 0;
         if (confidenceThreshold >= 1.0)
             confidenceThreshold = 1.0;
+
+        base.Update();
     }
 
     //Listening

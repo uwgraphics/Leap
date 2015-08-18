@@ -64,8 +64,10 @@ public class BodyIdleController : AnimController
 		postureAnimation = animName;
 	}
 
-	protected override void _Init()
+	public override void Start()
 	{
+        base.Start();
+
 		changePosture = true;
 		
 		// Initialize random motion generators
@@ -113,10 +115,7 @@ public class BodyIdleController : AnimController
 	}
 	
 	protected virtual void Update_Engaged()
-	{
-		if(randomMotionEnabled)
-			puppetEnabled = true;
-		
+	{		
 		if(changePosture)
 		{
 			if( curPostureAnim != "" )

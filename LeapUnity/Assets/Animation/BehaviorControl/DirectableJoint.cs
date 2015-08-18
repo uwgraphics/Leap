@@ -169,30 +169,6 @@ public class DirectableJoint
     }
 
     /// <summary>
-    /// Change in joint position relative to initial position,
-    /// after all animation has been applied.
-    /// </summary>
-    public virtual Vector3 PositionOffset
-    {
-        get
-        {
-            return mdlCtrl.GetPrevPosition(bone) - InitPosition;
-        }
-    }
-
-    /// <summary>
-    /// Change in joint rotation relative to initial rotation,
-    /// after all animation has been applied.
-    /// </summary>
-    public virtual Quaternion RotationOffset
-    {
-        get
-        {
-            return Quaternion.Inverse(InitRotation) * mdlCtrl.GetPrevRotation(bone);
-        }
-    }
-
-    /// <summary>
     /// Facing direction. 
     /// </summary>
     public virtual Vector3 Direction

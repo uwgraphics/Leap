@@ -403,7 +403,7 @@ public class TorsoExperiment2 : Scenario
 	}
 	
 	/// <see cref="Scenario._Init()"/>
-	protected override void _Init()
+    protected override void _Init()
 	{
 		// Get task settings from command line
 		string[] args = System.Environment.GetCommandLineArgs();
@@ -613,7 +613,7 @@ public class TorsoExperiment2 : Scenario
 		yield return new WaitForSeconds(0.5f);
 		ShowScene();
 		if( expCondition == ExperimentCondition.NoGaze )
-			gazeCtrl.isEnabled = false;
+			gazeCtrl.enabled = false;
 		
 		// Wait for participant to approach
 		yield return StartCoroutine(WaitForPartApproaching());
@@ -837,7 +837,7 @@ public class TorsoExperiment2 : Scenario
 		yield return new WaitForSeconds(0.5f);
 		ShowScene();
 		if( expCondition == ExperimentCondition.NoGaze )
-			gazeCtrl.isEnabled = false;
+			gazeCtrl.enabled = false;
 		
 		// Wait for participant to approach
 		yield return StartCoroutine(WaitForPartApproaching());

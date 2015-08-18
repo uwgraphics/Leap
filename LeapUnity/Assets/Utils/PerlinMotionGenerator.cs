@@ -147,7 +147,13 @@ public class PerlinMotionGenerator
 
     public float DeltaTime
     {
-        get { return mdlCtrl.gameObject.GetComponent<AnimControllerTree>().DeltaTime; }
+        get
+        {
+            if (Application.isEditor)
+                return AnimController.deltaTime;
+
+            return Time.deltaTime;
+        }
     }
 
     /// <summary>
@@ -264,8 +270,10 @@ public class PerlinMotionGenerator
             if (transf.bone == null)
                 continue;
 
-            transf.srcRot = mdlCtrl.GetPrevRotation(transf.bone);
-            transf.srcPos = mdlCtrl.GetPrevPosition(transf.bone);
+            /*transf.srcRot = mdlCtrl.GetPrevRotation(transf.bone);
+            transf.srcPos = mdlCtrl.GetPrevPosition(transf.bone);*/
+            transf.srcRot = transf.bone.localRotation;
+            transf.srcPos = transf.bone.localPosition;
             transf.perlinParam = 0;
             transf.perlinOffset = UnityEngine.Random.Range(0, 10000f);
         }

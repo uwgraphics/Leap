@@ -24,15 +24,16 @@ public class SimpleEyeGazeSynthesisInstance : AnimationInstance
     public override float TimeLength
     {
         get { return BodyAnimation.TimeLength; }
+        set { throw new InvalidOperationException(); }
     }
 
     /// <summary>
     /// Constructor.
     /// </summary>
+    /// <param name="name">Animation clip name</param>
     /// <param name="model">Character model</param>
-    /// <param name="animationClipName">Animation clip name</param>
-    public SimpleEyeGazeSynthesisInstance(GameObject model, string animationClipName, AnimationInstance bodyAnimation)
-        : base(model, animationClipName)
+    public SimpleEyeGazeSynthesisInstance(string name, GameObject model, AnimationInstance bodyAnimation)
+        : base(name, model)
     {
         BodyAnimation = bodyAnimation;
         if (ModelController == null)
@@ -42,9 +43,9 @@ public class SimpleEyeGazeSynthesisInstance : AnimationInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance._Apply"/>
+    /// <see cref="AnimationInstance.Apply"/>
     /// </summary>
-    protected override void _Apply(int frame, AnimationLayerMode layerMode)
+    public override void Apply(int frame, AnimationLayerMode layerMode)
     {
         _ApplyEye(frame, layerMode, ModelController.LEye);
         _ApplyEye(frame, layerMode, ModelController.REye);

@@ -115,8 +115,9 @@ public class SimpleListenController : AnimController
 		stopListen = true;
 	}
 
-	protected override void _Init()
+	public override void Start()
 	{
+        base.Start();
 	}
 	
 	protected virtual void Update_NotListening()

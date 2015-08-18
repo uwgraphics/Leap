@@ -98,7 +98,7 @@ public class LeapAnimationEditor : EditorWindow
         var selectedModel = ModelUtils.GetSelectedModel();
         var prevSelectedModel = LastSelectedModel;
         LastSelectedModel = selectedModel != null ? selectedModel : LastSelectedModel;
-        LastSelectedModel = Timeline.Models.Contains(LastSelectedModel) ? LastSelectedModel : null;
+        LastSelectedModel = Timeline.OwningManager.Models.Contains(LastSelectedModel) ? LastSelectedModel : null;
         if (LastSelectedModel != prevSelectedModel)
             _OnSelectedModelChanged();
 
@@ -147,7 +147,7 @@ public class LeapAnimationEditor : EditorWindow
                 Timeline.ResetModelsAndEnvironment();
 
                 // Show all models
-                var models = Timeline.Models;
+                var models = Timeline.OwningManager.Models;
                 foreach (var model in models)
                     ModelUtils.ShowModel(model, true);
 
@@ -254,7 +254,8 @@ public class LeapAnimationEditor : EditorWindow
         // Bake procedural anim. instances into clips
         if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "Apply"))
         {
-             Timeline.BakeInstances();
+            Timeline.InitBake("Edits");
+            Timeline.Bake();
         }
 
         // Update the playback slider
@@ -290,7 +291,7 @@ public class LeapAnimationEditor : EditorWindow
             var gazeLayer = Timeline.GetLayer("Gaze");
 
             // Get the base animation instance
-            var baseInstance = Timeline.GetLayer("BaseAnimation").Animations.FirstOrDefault(inst => inst.Animation.Model == LastSelectedModel);
+            var baseInstance = Timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(inst => inst.Animation.Model == LastSelectedModel);
             if (baseInstance == null)
             {
                 UnityEngine.Debug.LogError("No base animation loaded for character model " + LastSelectedModel.name);
@@ -312,13 +313,13 @@ public class LeapAnimationEditor : EditorWindow
             int existingInstanceId = -1;
             do
             {
-                gazeInstanceName = baseInstance.Animation.AnimationClip.name + "Gaze" + (gazeInstanceIndex++);
+                gazeInstanceName = baseInstance.Animation.Name + "Gaze" + (gazeInstanceIndex++);
                 existingInstanceId = Timeline.FindAnimationByName(gazeInstanceName);
             }
             while(existingInstanceId > -1);
 
             // Create the new gaze instance and schedule it
-            var newGazeInstance = new EyeGazeInstance(LastSelectedModel, gazeInstanceName, 30, gazeTarget, 1f, 0f, 30, true);
+            var newGazeInstance = new EyeGazeInstance(gazeInstanceName, LastSelectedModel, 30, gazeTarget, 1f, 0f, 30, true);
             EyeGazeEditor.AddEyeGaze(Timeline, newGazeInstance, currentFrame, "Gaze", false);
         }
     }
@@ -400,9 +401,6 @@ public class LeapAnimationEditor : EditorWindow
                 UnityEngine.Debug.LogError("No eye gaze instance defined at current frame");
                 return;
             }
-            var currentGazeInstance = Timeline.GetAnimation(currentGazeInstanceId);
-            int currentStartFrame = Timeline.GetAnimationStartFrame(currentGazeInstanceId);
-            int currentEndFrame = currentStartFrame + currentGazeInstance.FrameLength - 1;
 
             // Get gaze target for the new gaze instance
             var gazeTarget = Selection.activeGameObject != null && Selection.activeGameObject.tag == "GazeTarget" ?
@@ -426,8 +424,10 @@ public class LeapAnimationEditor : EditorWindow
     // Initialize animation timeline
     private void _InitTimeline()
     {
+        AnimationManager.Instance.Init();
+
         // Initialize the animation timeline
-        Timeline = AnimationTimeline.Instance;
+        Timeline = AnimationManager.Instance.Timeline;
         Timeline.Active = false;
         Timeline.Stop();
 
@@ -566,7 +566,8 @@ public class LeapAnimationEditor : EditorWindow
                     }
                     else if (e.shift && e.keyCode == KeyCode.B)
                     {
-                        Timeline.BakeInstances();
+                        Timeline.InitBake("Edits");
+                        Timeline.Bake();
                     }
                     else if (e.shift && e.keyCode == KeyCode.D)
                     {
@@ -652,7 +653,7 @@ public class LeapAnimationEditor : EditorWindow
     {
         /*var animation = Timeline.GetAnimation(animationInstanceId);
         var layer = Timeline.GetLayerForAnimation(animationInstanceId);
-        if (layer.LayerName == "BaseAnimation")
+        if (layer.LayerName == LEAPCore.baseAnimationLayerName)
         {
             var model = animation.Model.gameObject;
             ModelUtils.ShowModel(model);
@@ -663,7 +664,7 @@ public class LeapAnimationEditor : EditorWindow
     {
         /*var animation = Timeline.GetAnimation(animationInstanceId);
         var layer = Timeline.GetLayerForAnimation(animationInstanceId);
-        if (layer.LayerName == "BaseAnimation")
+        if (layer.LayerName == LEAPCore.baseAnimationLayerName)
         {
             var model = animation.Model.gameObject;
             ModelUtils.ShowModel(model, false);

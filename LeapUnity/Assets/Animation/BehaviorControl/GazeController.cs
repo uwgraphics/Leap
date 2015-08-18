@@ -39,7 +39,7 @@ public struct GazeControllerState : IAnimControllerState
         public bool isVOR;
         public Quaternion fixSrcRot, fixTrgRot, fixTrgRotAlign;
         public float fixRotParamAlign;
-        public Quaternion baseRot, expressiveRot, fixExpressiveRot;
+        public Quaternion baseRot;
     }
 
     public int stateId;
@@ -1036,8 +1036,10 @@ public class GazeController : AnimController
         return -0.25f * amplitude * pred + 0.5f * amplitude - 57.5f * pred + 105f;
     }
 
-    protected override void _Init()
+    public override void Start()
     {
+        base.Start();
+
         // Get joint chain indices
         torsoIndex = _FindGazeJointIndex("TorsoBone");
         headIndex = _FindGazeJointIndex("HeadBone");
@@ -1112,10 +1114,6 @@ public class GazeController : AnimController
         cam = GameObject.FindGameObjectWithTag("EyeContactHelper");
         if (cam == null)
             cam = GameObject.FindGameObjectWithTag("MainCamera");
-    }
-
-    protected override void _Update()
-    {
     }
 
     protected virtual void LateUpdate_NoGaze()
@@ -1884,8 +1882,6 @@ public class GazeController : AnimController
             gazeJointState.isVOR = false;
             gazeJointState.fixSrcRot = Quaternion.identity;
             gazeJointState.fixTrgRotAlign = Quaternion.identity;
-            gazeJointState.expressiveRot = Quaternion.identity;
-            gazeJointState.fixExpressiveRot = Quaternion.identity;
 
             state.gazeJointStates[gazeJointIndex] = gazeJointState;
         }

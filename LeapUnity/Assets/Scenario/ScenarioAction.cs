@@ -234,7 +234,7 @@ public class GazeAtAction : ScenarioAction
 	/// </summary>
 	public override void Execute()
 	{
-		if( !gazeCtrl.isEnabled )
+		if( !gazeCtrl.enabled )
 			return;
 		
 		gazeCtrl.Head.align = headAlign;

@@ -30,7 +30,7 @@ public class SubGazeInference {
         AnimationTitle = animationTitle;
         CharacterName = characterName;
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(Character.CharModel, animationTitle);
+        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel);
         Targeting = targeting;
         BlockCounter = 1;
 

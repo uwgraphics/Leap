@@ -11,7 +11,7 @@ public class SimpleScene_Shiyu : Scenario
 	private string agentName = "Lily";
 	
 	/// <see cref="Scenario._Init()"/>
-	protected override void _Init()
+    protected override void _Init()
 	{
 	}
 	

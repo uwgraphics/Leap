@@ -188,14 +188,6 @@ public sealed class GazeJoint : DirectableJoint
     [HideInInspector]
     public Quaternion baseRot = Quaternion.identity;
 
-    // Rotational displacement applied to the joint as it rotates towards the target
-    [HideInInspector]
-    public Quaternion expressiveRot = Quaternion.identity;
-
-    // Rotational displacement applied to the joint as it fixates the target
-    [HideInInspector]
-    public Quaternion fixExpressiveRot = Quaternion.identity;
-
     private MorphController morphCtrl;
     private GazeController gazeCtrl;
 
@@ -412,8 +404,6 @@ public sealed class GazeJoint : DirectableJoint
             fixTrgRot = fixTrgRotAlign = bone.localRotation;
             fixRotParamAlign = 1f;
         }
-
-        fixExpressiveRot = expressiveRot;
     }
 
     // Stop VOR movement
@@ -659,8 +649,6 @@ public sealed class GazeJoint : DirectableJoint
         float v = 2f * (nj - ji) / (nj * (nj + 1f)) * last.curVelocity;
 
         // Update and apply new rotation
-        float rpa = rotParamAlign;
-        float rpmr = rotParamMR;
         float ddrot = deltaTime * v;
         rotParamAlign = Mathf.Clamp01(rotParamAlign + ddrot / distRotAlign);
         rotParamMR = Mathf.Clamp01(rotParamMR + ddrot / distRotMR);
@@ -702,10 +690,6 @@ public sealed class GazeJoint : DirectableJoint
        if (IsEye || gazeCtrl.removeRoll)
             _RemoveRoll();
         q = bone.localRotation;
-
-        // Apply expressive displacement to the joint
-        Quaternion qe = q * (isVOR ? fixExpressiveRot : expressiveRot);
-        q = Quaternion.Slerp(q, qe, gazeCtrl.expressiveWeight);
 
         // Blend with base joint rotation
         bone.localRotation = Quaternion.Slerp(baseRot, q, isVOR ? gazeCtrl.fixWeight : gazeCtrl.weight);
@@ -863,8 +847,6 @@ public sealed class GazeJoint : DirectableJoint
         state.fixTrgRotAlign = fixTrgRotAlign;
         state.fixRotParamAlign = fixRotParamAlign;
         state.baseRot = baseRot;
-        state.expressiveRot = expressiveRot;
-        state.fixExpressiveRot = fixExpressiveRot;
 
         return state;
     }
@@ -909,7 +891,5 @@ public sealed class GazeJoint : DirectableJoint
         fixSrcRot = state.fixSrcRot;
         fixTrgRotAlign = state.fixTrgRotAlign;
         fixRotParamAlign = state.fixRotParamAlign;
-        expressiveRot = state.expressiveRot;
-        fixExpressiveRot = state.fixExpressiveRot;
     }
 }

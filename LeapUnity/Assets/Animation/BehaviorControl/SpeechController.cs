@@ -166,8 +166,10 @@ public class SpeechController : AnimController
         stopSpeech = true;
     }
 
-    protected override void _Init()
+    public override void Start()
     {
+        base.Start();
+
         bodyIdleCtrl = gameObject.GetComponent<BodyIdleController>();
         faceCtrl = gameObject.GetComponent<FaceController>();
         gazeCtrl = gameObject.GetComponent<GazeController>();

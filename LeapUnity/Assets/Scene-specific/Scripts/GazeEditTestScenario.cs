@@ -26,7 +26,7 @@ public class GazeEditTestScenario : Scenario
             string animationName = animations[modelIndex];
 
             // Disable animation controllers
-            model.GetComponent<AnimControllerTree>().enabled = false;
+            AnimController.SetAnimControllersEnabled(model, false);
             
             // Disable IK
             var solvers = model.GetComponents<IKSolver>();

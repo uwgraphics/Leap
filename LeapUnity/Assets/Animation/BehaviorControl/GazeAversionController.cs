@@ -78,9 +78,11 @@ public class GazeAversionController : AnimController
     protected GameObject[] sideTargets = null;
     protected GameObject[] downTargets = null;
 
-    protected override void _Init()
+    public override void Start()
     {
-        gazeCtrl = Parent as GazeController;
+        base.Start();
+
+        gazeCtrl = GetComponent<GazeController>();
         speechCtrl = gameObject.GetComponent<SpeechController>();
         speechCtrl.StateChange += new StateChangeEvtH(SpeechController_StateChange);
 
@@ -116,7 +118,7 @@ public class GazeAversionController : AnimController
     //This function receives notifications from the speech controller every time it changes state
     protected virtual void SpeechController_StateChange(AnimController sender, int srcState, int trgState)
     {
-        if (isEnabled)
+        if (enabled)
         {
             // No Speech -> Prepare Speech
             if (srcState == (int)SpeechState.NoSpeech && trgState == (int)SpeechState.PrepareSpeech)
@@ -173,9 +175,11 @@ public class GazeAversionController : AnimController
         resetTime();
     }
 
-    protected override void _Update()
+    public override void Update()
     {
         timeElapsed += DeltaTime;
+
+        base.Update();
     }
 
     protected virtual void Update_GazeAway()

@@ -27,7 +27,7 @@ public class GazeTarget  {
         SceneCollisions = new SceneCollisions(animationTitle);
         GazeTargetObjects = GameObject.FindGameObjectsWithTag("GazeTarget");
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(Character.CharModel, animationTitle);
+        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel);
         GazeBlocks = gbs;
     }
 
@@ -113,7 +113,7 @@ public class GazeTarget  {
             //this means the target should be parented to the scene
             if (g.TargetName == "")
             {
-                var currEnvironement = AnimationTimeline.Instance.Environment;
+                var currEnvironement = AnimationManager.Instance.Environment;
 
                 var targetTest = targets.FirstOrDefault(m => m.name == currEnvironement.name + "_" + counterArray[d[""]].ToString());
                 if (targetTest != null)
@@ -159,7 +159,7 @@ public class GazeTarget  {
                 //TODO: check if the parent object is part of norman or roman's body.  If it is, set parent to environment
                 if (g.Target.name.Equals("Norman_Hand") || g.Target.name.Equals("Norman_Head") ||
                     g.Target.name.Equals("Roman_Hand") || g.Target.name.Equals("Roman_Head")) {
-                        var currEnvironement = AnimationTimeline.Instance.Environment;
+                        var currEnvironement = AnimationManager.Instance.Environment;
                         parent = currEnvironement.transform;
                 }
 

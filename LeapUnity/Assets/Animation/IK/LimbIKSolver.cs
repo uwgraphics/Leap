@@ -16,9 +16,9 @@ public class LimbIKSolver : IKSolver
     protected Vector3 _elbowAxis = new Vector3(0f, 1f, 0f);
 
     /// <summary>
-    /// <see cref="IKSolver.Init"/>
+    /// <see cref="IKSolver.Start"/>
     /// </summary>
-    public override void Init()
+    public override void Start()
     {
         if (endEffectors.Length != 1)
         {
@@ -26,7 +26,7 @@ public class LimbIKSolver : IKSolver
             return;
         }
 
-        base.Init();
+        base.Start();
 
         _isLeg = endEffectors[0] == "LAnkle" || endEffectors[0] == "RAnkle";
         _shoulder = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 2));

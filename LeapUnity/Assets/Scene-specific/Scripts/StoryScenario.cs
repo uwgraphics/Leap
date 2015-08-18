@@ -108,7 +108,7 @@ public class StoryScenario : Scenario
 	}
 	
 	/// <see cref="Scenario._Init()"/>
-	protected override void _Init()
+    protected override void _Init()
 	{
 		// Initialize important variables
 		//phMosaic = GameObject.FindGameObjectWithTag("PhotoMosaic").GetComponent<PhotoMosaic>();

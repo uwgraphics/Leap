@@ -107,16 +107,6 @@ public abstract class IKSolver : MonoBehaviour
     }
 
     /// <summary>
-    /// Initialize the IK solver.
-    /// </summary>
-    public virtual void Init()
-    {
-        Model = gameObject.GetComponent<ModelController>();
-        if (Model == null)
-            Debug.LogError("Cannot initialize IKSolver on a character without ModelController");
-    }
-
-    /// <summary>
     /// Given the current set of IK goals, solve for the character's pose.
     /// </summary>
     public virtual void Solve()
@@ -134,11 +124,19 @@ public abstract class IKSolver : MonoBehaviour
         _Solve();
     }
 
+    /// <summary>
+    /// Start the IK solver.
+    /// </summary>
     public virtual void Start()
     {
-        Init();
+        Model = gameObject.GetComponent<ModelController>();
+        if (Model == null)
+            Debug.LogError("Cannot initialize IKSolver on a character without ModelController");
     }
 
+    /// <summary>
+    /// Update the IK solver
+    /// </summary>
     public virtual void LateUpdate()
     {
         Solve();
