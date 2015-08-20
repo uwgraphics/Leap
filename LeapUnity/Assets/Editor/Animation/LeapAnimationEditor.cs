@@ -254,7 +254,7 @@ public class LeapAnimationEditor : EditorWindow
         // Bake procedural anim. instances into clips
         if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "Apply"))
         {
-            Timeline.InitBake("Edits");
+            Timeline.InitBake(LEAPCore.defaultBakedTimelineName);
             Timeline.Bake();
         }
 
@@ -566,7 +566,7 @@ public class LeapAnimationEditor : EditorWindow
                     }
                     else if (e.shift && e.keyCode == KeyCode.B)
                     {
-                        Timeline.InitBake("Edits");
+                        Timeline.InitBake(LEAPCore.defaultBakedTimelineName);
                         Timeline.Bake();
                     }
                     else if (e.shift && e.keyCode == KeyCode.D)

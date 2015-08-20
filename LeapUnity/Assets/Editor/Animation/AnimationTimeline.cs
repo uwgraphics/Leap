@@ -236,7 +236,16 @@ public class AnimationTimeline
             get { return _animationContainers.AsReadOnly(); }
         }
 
+        /// <summary>
+        /// List of containers for baked animations of environment objects.
+        /// </summary>
+        public IList<BakedAnimationContainer> ManipulatedObjectAnimationContainers
+        {
+            get { return _manipulatedObjectAnimationContainers.AsReadOnly(); }
+        }
+
         private List<BakedAnimationContainer> _animationContainers = new List<BakedAnimationContainer>();
+        private List<BakedAnimationContainer> _manipulatedObjectAnimationContainers = new List<BakedAnimationContainer>();
 
         /// <summary>
         /// Constructor.
@@ -247,9 +256,19 @@ public class AnimationTimeline
             Name = name;
             OwningTimeline = timeline;
 
+            // Create baked animation containers
             foreach (var model in timeline.OwningManager.Models)
             {
                 _animationContainers.Add(new BakedAnimationContainer(model, this));
+            }
+
+            // Create baked animation containers for environment objects
+            var manipulatedObjects = timeline.OwningManager.Environment.GetComponent<EnvironmentController>().ManipulatedObjects;
+            foreach (var manipulatedObject in manipulatedObjects)
+            {
+                _manipulatedObjectAnimationContainers.Add(
+                    new BakedAnimationContainer(manipulatedObject, this)
+                    );
             }
         }
     }
@@ -306,7 +325,7 @@ public class AnimationTimeline
         public AnimationClipInstance _AnimationInstance
         {
             get;
-            private set;
+            set;
         }
 
         private List<BakedControllerContainer> _controllerContainers = new List<BakedControllerContainer>();
@@ -322,7 +341,8 @@ public class AnimationTimeline
             OwningTimelineContainer = timelineContainer;
 
             // Get base animation clip
-            var baseAnimation = timelineContainer.OwningTimeline.GetLayer(LEAPCore.baseAnimationLayerName)
+            var baseAnimation = timelineContainer.OwningTimeline
+                .GetLayer(model.tag == "ManipulatedObject" ? LEAPCore.environmentAnimationLayerName : LEAPCore.baseAnimationLayerName)
                 .Animations.FirstOrDefault(a => a.Animation.Model == model);
             if (baseAnimation == null)
                 throw new Exception("No base animation found for character model " + model.name);
@@ -420,9 +440,21 @@ public class AnimationTimeline
     /// <summary>
     /// List of baked animation timeline containers.
     /// </summary>
-    public IList<BakedAnimationTimelineContainer> BakedAnimations
+    public IList<BakedAnimationTimelineContainer> BakedTimelineContainers
     {
         get { return _bakedTimelineContainers; }
+    }
+
+    /// <summary>
+    /// Container of the currently active baked animation timeline.
+    /// </summary>
+    public BakedAnimationTimelineContainer ActiveBakedTimeline
+    {
+        get
+        {
+            return _activeBakedTimelineContainerIndex >= 0 && _activeBakedTimelineContainerIndex < _bakedTimelineContainers.Count ?
+                _bakedTimelineContainers[_activeBakedTimelineContainerIndex] : null;
+        }
     }
 
     /// <summary>
@@ -518,7 +550,7 @@ public class AnimationTimeline
     private List<LayerContainer> _layerContainers;
     private Dictionary<int, ScheduledInstance> _animationInstancesById;
     private List<BakedAnimationTimelineContainer> _bakedTimelineContainers;
-    private int _activeBakedAnimationContainerIndex = -1;
+    private int _activeBakedTimelineContainerIndex = -1;
     private Dictionary<AnimationClip, EndEffectorConstraintContainer> _endEffectorConstraints;
 
     public bool _active = false;
@@ -857,25 +889,19 @@ public class AnimationTimeline
     /// <param name="animation">Animation instance</param>
     /// <param name="startFrame">Animation start frame on the timeline</param>
     /// <returns>Animation instance ID</returns>
-    public int AddEnvironmentObjectAnimation(string layerName, AnimationInstance animation, int startFrame = 0)
+    public int AddManipulatedObjectAnimation(string layerName, AnimationClipInstance animation, int startFrame = 0)
     {
-        if (!(animation is EnvironmentObjectAnimationInstance))
-        {
-            throw new Exception("Environment object animations must be of type EnvironmentObjectAnimationInstance");
-        }
-        var envObjAnimation = animation as EnvironmentObjectAnimationInstance;
-
         if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
         {
             throw new Exception(string.Format("There is no layer named {0}", layerName));
         }
 
-        // Ensure character model for this animation instance has been added to this timeline
+        // Ensure model for this animation instance has been added to this timeline
         if (OwningManager.Environment == null ||
-            !OwningManager.Environment.GetComponent<EnvironmentController>().ManipulatedObjects.Any(obj => obj == envObjAnimation.Model))
+            !OwningManager.Environment.GetComponent<EnvironmentController>().ManipulatedObjects.Any(obj => obj == animation.Model))
         {
-            throw new Exception(string.Format("Environment object {0} for animation {1} not defined on the current timeline",
-                envObjAnimation.Model.name, envObjAnimation.AnimationClip.name));
+            throw new Exception(string.Format("Environment object {0} for animation {1} not found",
+                animation.Model.name, animation.AnimationClip.name));
         }
 
         // Schedule the animation instance in the appropriate order (based on start frame)
@@ -971,12 +997,12 @@ public class AnimationTimeline
         Debug.Log("Initializing the baking of the current animation timeline");
 
         IsBaking = false;
-        _activeBakedAnimationContainerIndex = -1;
+        _activeBakedTimelineContainerIndex = -1;
         for (int bakedAnimationContainerIndex = 0; bakedAnimationContainerIndex < _bakedTimelineContainers.Count; ++bakedAnimationContainerIndex)
         {
             if (_bakedTimelineContainers[bakedAnimationContainerIndex].Name == bakedTimelineName)
             {
-                _activeBakedAnimationContainerIndex = bakedAnimationContainerIndex;
+                _activeBakedTimelineContainerIndex = bakedAnimationContainerIndex;
                 _bakedTimelineContainers[bakedAnimationContainerIndex] = new BakedAnimationTimelineContainer(bakedTimelineName, this);
 
                 return;
@@ -984,7 +1010,7 @@ public class AnimationTimeline
         }
 
         _bakedTimelineContainers.Add(new BakedAnimationTimelineContainer(bakedTimelineName, this));
-        _activeBakedAnimationContainerIndex = _bakedTimelineContainers.Count - 1;
+        _activeBakedTimelineContainerIndex = _bakedTimelineContainers.Count - 1;
     }
 
     /// <summary>
@@ -999,13 +1025,13 @@ public class AnimationTimeline
     /// Bake a range of frames on the timeline into animation clips.
     /// </summary>
     /// <param name="startFrame">Start frame index</param>
-    /// <param name="length">Range length in frames</param>
+    /// <param name="frameLength">Range length in frames</param>
     /// <returns>Animation clip</returns>
-    public void BakeRange(int startFrame, int length)
+    public void BakeRange(int startFrame, int frameLength)
     {
         // Get baked animation container
-        var bakedTimelineContainer = _activeBakedAnimationContainerIndex >= 0 && _activeBakedAnimationContainerIndex < _bakedTimelineContainers.Count ?
-            _bakedTimelineContainers[_activeBakedAnimationContainerIndex] : null;
+        var bakedTimelineContainer = _activeBakedTimelineContainerIndex >= 0 && _activeBakedTimelineContainerIndex < _bakedTimelineContainers.Count ?
+            _bakedTimelineContainers[_activeBakedTimelineContainerIndex] : null;
         if (bakedTimelineContainer == null)
         {
             throw new Exception(string.Format("Trying to bake animation timeline without an active container. Did you remember to call InitBake()?"));
@@ -1027,8 +1053,7 @@ public class AnimationTimeline
         Active = false;
         Active = true;
         Play();
-        int frameLength = FrameLength;
-        for (int frameIndex = 0; frameIndex < frameLength; ++frameIndex)
+        for (int frameIndex = startFrame; frameIndex < frameLength; ++frameIndex)
         {
             _BakeCurrentFrame(bakedTimelineContainer);
             Advance(1f / LEAPCore.editFrameRate);
@@ -1042,19 +1067,34 @@ public class AnimationTimeline
         IsBaking = false;
 
         // Set the curves to their animation clips on each model and write them out
-        foreach (var bakedAnimationContainer in bakedTimelineContainer.AnimationContainers)
+        var allBakedAnimationContainers = bakedTimelineContainer.AnimationContainers.Union(bakedTimelineContainer.ManipulatedObjectAnimationContainers);
+        foreach (var bakedAnimationContainer in allBakedAnimationContainers)
         {
             var model = bakedAnimationContainer.Model;
             LEAPAssetUtils.SetAnimationCurvesOnClip(model, bakedAnimationContainer.AnimationClip, bakedAnimationContainer._AnimationCurves);
 
+            // Determine path for the animation clip
+            string path = "";
+            if (model.GetComponent<ModelController>() != null)
+            {
+                path = LEAPAssetUtils.GetModelDirectory(model) + bakedAnimationContainer.AnimationClip.name + ".anim";
+            }
+            else
+            {
+                path = LEAPCore.environmentModelsDirectory + "/" + bakedAnimationContainer.AnimationClip.name + ".anim";
+            }
+
             // Write animation clip to file
-            string path = LEAPAssetUtils.GetModelDirectory(model) + bakedAnimationContainer.AnimationClip.name + ".anim";
             if (AssetDatabase.GetAssetPath(bakedAnimationContainer.AnimationClip) != path)
             {
                 AssetDatabase.DeleteAsset(path);
                 AssetDatabase.CreateAsset(bakedAnimationContainer.AnimationClip, path);
             }
             AssetDatabase.SaveAssets();
+
+            // Re-add the clip to its model
+            LEAPAssetUtils.AddAnimationClipToModel(bakedAnimationContainer.AnimationClip, model);
+            bakedAnimationContainer._AnimationInstance = new AnimationClipInstance(bakedAnimationContainer.AnimationClip.name, model);
         }
     }
 
@@ -1168,7 +1208,7 @@ public class AnimationTimeline
     public void ApplyAnimation()
     {
         if (!IsBaking &&
-            _activeBakedAnimationContainerIndex >= 0 && _activeBakedAnimationContainerIndex < _bakedTimelineContainers.Count)
+            _activeBakedTimelineContainerIndex >= 0 && _activeBakedTimelineContainerIndex < _bakedTimelineContainers.Count)
         {
             // We have already evaluated and baked the animation timeline, so apply the baked animation
             _ApplyBakedAnimation();
@@ -1236,13 +1276,6 @@ public class AnimationTimeline
                         AnimationStarted(animation.InstanceId);
                     }
 
-                    if (animation.Animation is EnvironmentObjectAnimationInstance)
-                    {
-                        // Environment object animations don't get applied until after IK has been run,
-                        // since manipulated objects might be affected by IK
-                        continue;
-                    }
-
                     animation.Animation.Apply(CurrentFrame - animation.StartFrame, layer.LayerMode);
 
                     if (layer.isIKEndEffectorConstr && animation.Animation is AnimationClipInstance)
@@ -1269,11 +1302,10 @@ public class AnimationTimeline
             LayerApplied(layer.LayerName);
         }
 
-        // Apply blendshape animations, environment object animations, animation controllers, and IK
+        // Apply blendshape animations, animation controllers, and IK
         _ApplyMorph();
         _LateUpdateControllers();
         _SolveIK();
-        _ApplyEnvironmentAnimations();
 
         // Notify listeners that animation is applied
         AllAnimationApplied();
@@ -1284,7 +1316,7 @@ public class AnimationTimeline
     /// </summary>
     public void _Init()
     {
-        _activeBakedAnimationContainerIndex = -1;
+        _activeBakedTimelineContainerIndex = -1;
         _InitControllers();
         _InitIK();
     }
@@ -1351,11 +1383,23 @@ public class AnimationTimeline
     // Bake the current animation frame
     private void _BakeCurrentFrame(BakedAnimationTimelineContainer bakedTimelineContainer)
     {
-        foreach (var bakedAnimationContainer in bakedTimelineContainer.AnimationContainers)
+        var allBakedAnimationContainers = bakedTimelineContainer.AnimationContainers.Union(bakedTimelineContainer.ManipulatedObjectAnimationContainers);
+        foreach (var bakedAnimationContainer in allBakedAnimationContainers)
         {
             var model = bakedAnimationContainer.Model;
-            Transform[] bones = ModelUtils.GetAllBones(model);
-            var modelController = model.GetComponent<ModelController>();
+            Transform[] bones = null;
+            ModelController modelController = model.GetComponent<ModelController>();
+
+            // Get model bones
+            if (modelController == null)
+            {
+                bones = new Transform[1];
+                bones[0] = model.transform;
+            }
+            else
+            {
+                bones = ModelUtils.GetAllBones(model);
+            }
 
             // Compute current frame time
             float time = ((float)CurrentFrame) / LEAPCore.editFrameRate;
@@ -1401,7 +1445,7 @@ public class AnimationTimeline
             }
 
             // Next, bake blend shape properties
-            int numBlendShapes = modelController.NumberOfBlendShapes;
+            int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
             for (int blendShapeIndex = 0; blendShapeIndex < numBlendShapes; ++blendShapeIndex)
             {
                 var keyFrame = new Keyframe();
@@ -1422,8 +1466,7 @@ public class AnimationTimeline
     // Apply baked animation at the current frame to all the models
     private void _ApplyBakedAnimation()
     {
-        // Get baked timeline container
-        var bakedTimelineContainer = _bakedTimelineContainers[_activeBakedAnimationContainerIndex];
+        var bakedTimelineContainer = _bakedTimelineContainers[_activeBakedTimelineContainerIndex];
 
         // Apply each baked animation
         foreach (var bakedAnimationContainer in bakedTimelineContainer.AnimationContainers)
@@ -1455,6 +1498,12 @@ public class AnimationTimeline
                 //
             }
         }
+
+        // Apply baked animations of manipulated objects
+        foreach (var bakedAnimationContainer in bakedTimelineContainer.ManipulatedObjectAnimationContainers)
+        {
+            bakedAnimationContainer._AnimationInstance.Apply(CurrentFrame, AnimationLayerMode.Override);
+        }
     }
 
     // Initialize animation controllers on all models
@@ -1465,7 +1514,7 @@ public class AnimationTimeline
             foreach (var model in OwningManager.Models)
             {
                 var component = model.GetComponent(controllerType);
-                if (component == null)
+                if (component == null || !(component as AnimController).enabled)
                     continue;
 
                 var controller = component as AnimController;
@@ -1486,7 +1535,7 @@ public class AnimationTimeline
             foreach (var model in OwningManager.Models)
             {
                 var component = model.GetComponent(controllerType);
-                if (component == null)
+                if (component == null || !(component as AnimController).enabled)
                     continue;
 
                 var controller = component as AnimController;
@@ -1503,7 +1552,7 @@ public class AnimationTimeline
             foreach (var model in OwningManager.Models)
             {
                 var component = model.GetComponent(controllerType);
-                if (component == null)
+                if (component == null || !(component as AnimController).enabled)
                     continue;
 
                 var controller = component as AnimController;
@@ -1736,25 +1785,6 @@ public class AnimationTimeline
                 Vector3 objHandleLocalPosition = objHandle.localPosition;
                 objHandleLocalPosition.Scale(objScale);
                 obj.position = endEffector.position - obj.rotation * objHandleLocalPosition;
-            }
-        }
-    }
-
-    // Apply animations on environment objects
-    private void _ApplyEnvironmentAnimations()
-    {
-        if (LEAPCore.enableObjectManipulation && OwningManager.Environment != null)
-        {
-            foreach (int instanceId in _activeAnimationInstanceIds)
-            {
-                var instance = GetAnimation(instanceId);
-                if (!(instance is EnvironmentObjectAnimationInstance))
-                    continue;
-
-                int startFrame = GetAnimationStartFrame(instanceId);
-                var layer = GetLayerForAnimation(instanceId);
-                instance.Apply(CurrentFrame - startFrame, layer.LayerMode);
-                // TODO: make sure environment animations are correctly baked and applied
             }
         }
     }

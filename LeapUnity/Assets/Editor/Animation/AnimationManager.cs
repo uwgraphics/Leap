@@ -141,7 +141,7 @@ public class AnimationManager
     /// </summary>
     public void RemoveAllModels()
     {
-        if (Timeline.Layers.Any(l => l.Animations.Any(a => !(a.Animation is EnvironmentObjectAnimationInstance))))
+        if (Timeline.Layers.Any(l => l.Animations.Count > 0))
         {
             throw new Exception(string.Format(
                 "Cannot remove character models, because there are still animation instances referencing them"));

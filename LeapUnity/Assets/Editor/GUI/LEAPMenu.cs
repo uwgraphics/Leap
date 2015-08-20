@@ -257,18 +257,18 @@ public class LEAPMenu
 
             // Create environment animations
             var envController = testScenes.modelWindowWashingEnv.GetComponent<EnvironmentController>();
-            timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance("WindowWashingSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge")));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance("WindowWashingSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge")));
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[2];
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.models[1] = testScenes.modelNormanette;
             editTestScenario.animations = new string[2];
-            editTestScenario.animations[0] = "WindowWashingAwEdits";
-            editTestScenario.animations[1] = "WindowWashingBwEdits";
+            editTestScenario.animations[0] = "WindowWashingA-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.animations[1] = "WindowWashingB-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.objectAnimations = new string[1];
-            editTestScenario.objectAnimations[0] = "WindowWashingSponge";
+            editTestScenario.objectAnimations[0] = "WindowWashingSponge-" + LEAPCore.defaultBakedTimelineName;
         }
         else if (sceneName == "PassSoda")
         {
@@ -302,8 +302,8 @@ public class LEAPMenu
 
             // Create environment animations
             var envController = testScenes.modelPassSodaEnv.GetComponent<EnvironmentController>();
-            timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance("PassSodaBottle", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "SodaBottle")));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance("PassSodaBottle", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "SodaBottle")));
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -316,11 +316,11 @@ public class LEAPMenu
             editTestScenario.models[1] = testScenes.modelRoman;
             editTestScenario.models[2] = testScenes.modelNormanette;
             editTestScenario.animations = new string[3];
-            editTestScenario.animations[0] = "PassSodaAwEdits";
-            editTestScenario.animations[1] = "PassSodaBwEdits";
-            editTestScenario.animations[2] = "PassSodaCwEdits";
+            editTestScenario.animations[0] = "PassSodaA-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.animations[1] = "PassSodaB-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.animations[2] = "PassSodaC-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.objectAnimations = new string[1];
-            editTestScenario.objectAnimations[0] = "PassSodaBottle";
+            editTestScenario.objectAnimations[0] = "PassSodaBottle-" + LEAPCore.defaultBakedTimelineName;
         }
         else if (sceneName == "Walking90deg")
         {
@@ -346,7 +346,7 @@ public class LEAPMenu
             editTestScenario.models = new GameObject[1];
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
-            editTestScenario.animations[0] = "Walking90degwEdits";
+            editTestScenario.animations[0] = "Walking90deg-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.cameraAnimations = new string[1];
             editTestScenario.cameraAnimations[0] = "Walking90degCamera";
         }
@@ -380,8 +380,8 @@ public class LEAPMenu
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.models[1] = testScenes.modelRoman;
             editTestScenario.animations = new string[2];
-            editTestScenario.animations[0] = "HandShakeAwEdits";
-            editTestScenario.animations[1] = "HandShakeBwEdits";
+            editTestScenario.animations[0] = "HandShakeA-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.animations[1] = "HandShakeB-" + LEAPCore.defaultBakedTimelineName;
         }
         else if (sceneName == "BookShelf")
         {
@@ -406,22 +406,22 @@ public class LEAPMenu
 
             // Create environment animations
             var envController = testScenes.modelBookShelfEnv.GetComponent<EnvironmentController>();
-            timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance("BookShelfBook1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1")));
-            timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance("BookShelfBook2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2")));
-            timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance("BookShelfBook3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3")));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance("BookShelfBook1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1")));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance("BookShelfBook2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2")));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance("BookShelfBook3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3")));
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[1];
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
-            editTestScenario.animations[0] = "BookShelfwEdits";
+            editTestScenario.animations[0] = "BookShelf-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.objectAnimations = new string[3];
-            editTestScenario.objectAnimations[0] = "BookShelfBook1";
-            editTestScenario.objectAnimations[1] = "BookShelfBook2";
-            editTestScenario.objectAnimations[2] = "BookShelfBook3";
+            editTestScenario.objectAnimations[0] = "BookShelfBook1-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations[1] = "BookShelfBook2-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations[2] = "BookShelfBook3-" + LEAPCore.defaultBakedTimelineName;
         }
         else if (sceneName == "StealDiamond")
         {
@@ -442,8 +442,8 @@ public class LEAPMenu
 
             // Create environment animations
             var envController = testScenes.modelStealDiamondEnv.GetComponent<EnvironmentController>();
-            timeline.AddEnvironmentObjectAnimation("Environment",
-                new EnvironmentObjectAnimationInstance("StealDiamondGem", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Gem")));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance("StealDiamondGem", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Gem")));
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -453,9 +453,9 @@ public class LEAPMenu
             editTestScenario.models = new GameObject[1];
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
-            editTestScenario.animations[0] = "StealDiamondwEdits";
+            editTestScenario.animations[0] = "StealDiamond-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.objectAnimations = new string[1];
-            editTestScenario.objectAnimations[0] = "StealDiamondGem";
+            editTestScenario.objectAnimations[0] = "StealDiamondGem-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.cameraAnimations = new string[1];
             editTestScenario.cameraAnimations[0] = "StealDiamondCamera1";
         }
@@ -483,7 +483,7 @@ public class LEAPMenu
             editTestScenario.models = new GameObject[1];
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
-            editTestScenario.animations[0] = "WaitForBuswEdits";
+            editTestScenario.animations[0] = "WaitForBus-" + LEAPCore.defaultBakedTimelineName;
         }
         else // if (sceneName == "InitialPose")
         {
@@ -538,7 +538,7 @@ public class LEAPMenu
         var wnd = EditorWindow.GetWindow<LeapAnimationEditor>();
         var timeline = wnd.Timeline;
 
-        timeline.InitBake("Edits");
+        timeline.InitBake(LEAPCore.defaultBakedTimelineName);
         timeline.Bake();
     }
 

@@ -35,7 +35,6 @@ public sealed class EnvironmentController : MonoBehaviour
     public void Init()
     {
         _InitObjects();
-        _InitObjects(RootObject);
     }
 
     /// <summary>

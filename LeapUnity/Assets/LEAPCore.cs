@@ -31,6 +31,16 @@ public class LEAPCore : MonoBehaviour
     public static string baseAnimationLayerName = "BaseAnimation";
 
     /// <summary>
+    /// Name of the environment animation layer in the animation timeline.
+    /// </summary>
+    public static string environmentAnimationLayerName = "Environment";
+
+    /// <summary>
+    /// Default baked animation timeline name.
+    /// </summary>
+    public static string defaultBakedTimelineName = "Edits";
+
+    /// <summary>
     /// Default time over which end-effector constraints become active or inactive.
     /// </summary>
     public static float endEffectorConstraintActivationTime = 0.7f;

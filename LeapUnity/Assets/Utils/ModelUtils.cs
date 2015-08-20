@@ -281,7 +281,7 @@ public static class ModelUtils
     /// <returns>Relative path of the bone</returns>
     public static string GetBonePath(Transform bone)
     {
-        if (bone.tag == "Agent")
+        if (bone.tag == "Agent" || bone.tag == "ManipulatedObject")
             return "";
 
         string parentPath = GetBonePath(bone.parent);

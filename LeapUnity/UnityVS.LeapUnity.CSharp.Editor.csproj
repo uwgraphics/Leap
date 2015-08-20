@@ -99,7 +99,6 @@
     <Compile Include="Assets\Editor\Animation\AnimationManager.cs" />
     <Compile Include="Assets\Editor\Animation\AnimationTimeline.cs" />
     <Compile Include="Assets\Editor\Animation\EndEffectorConstraint.cs" />
-    <Compile Include="Assets\Editor\Animation\EnvironmentObjectAnimationInstance.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeEditor.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeInstance.cs" />
     <Compile Include="Assets\Editor\Animation\LeapAnimationEditor.cs" />

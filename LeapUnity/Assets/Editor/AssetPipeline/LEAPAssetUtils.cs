@@ -257,15 +257,45 @@ public static class LEAPAssetUtils
     }
 
     /// <summary>
+    /// Add an animation to the specified character model.
+    /// </summary>
+    /// <param name="clip">Animation clip</param>
+    /// <param name="model">Character model</param>
+    public static void AddAnimationClipToModel(AnimationClip clip, GameObject model)
+    {
+        var animationComponent = model.gameObject.animation;
+        foreach (AnimationState animationState in animationComponent)
+        {
+            if (animationState.clip != null && animationState.clip.name == clip.name)
+            {
+                animationComponent.RemoveClip(animationState.clip);
+                break;
+            }
+        }
+
+        animationComponent.AddClip(clip, clip.name);
+    }
+
+    /// <summary>
     /// Create an array of empty animation curves for specified character model.
     /// </summary>
     /// <param name="model">Character model</param>
     /// <returns>Animation curves</returns>
     public static AnimationCurve[] CreateAnimationCurvesForModel(GameObject model)
     {
-        Transform[] bones = ModelUtils.GetAllBones(model);
+        // Get all bones on the model
+        Transform[] bones = null;
         var modelController = model.GetComponent<ModelController>();
-        int numBlendShapes = modelController.NumberOfBlendShapes;
+        if (modelController == null)
+        {
+            bones = new Transform[1];
+            bones[0] = model.transform;
+        }
+        else
+        {
+            bones = ModelUtils.GetAllBones(model);
+        }
+        int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
 
         // 3 properties for the root position, 4 for the rotation of each bone (incl. root), 1 for each blend shape
         AnimationCurve[] curves = new AnimationCurve[3 + bones.Length * 4 + numBlendShapes];
@@ -284,8 +314,9 @@ public static class LEAPAssetUtils
     public static AnimationCurve[] GetAnimationCurvesFromClip(GameObject model, AnimationClip clip)
     {
         var modelController = model.GetComponent<ModelController>();
-        int numBlendShapes = modelController.NumberOfBlendShapes;
-        AnimationCurve[] curves = new AnimationCurve[3 + modelController.NumberOfBones * 4 + numBlendShapes];
+        int numBones = modelController == null ? 0 : modelController.NumberOfBones;
+        int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
+        AnimationCurve[] curves = new AnimationCurve[3 + numBones * 4 + numBlendShapes];
         AnimationClipCurveData[] curveData = AnimationUtility.GetAllCurves(clip, true);
 
         // Create empty curves for all bone properties
@@ -297,7 +328,7 @@ public static class LEAPAssetUtils
         }
 
         // Get curve data from the animation clip for each bone
-        for (int boneIndex = 0; boneIndex < modelController.NumberOfBones; ++boneIndex)
+        for (int boneIndex = 0; boneIndex < numBones; ++boneIndex)
         {
             var bone = modelController[boneIndex];
             string bonePath = ModelUtils.GetBonePath(bone);
@@ -390,8 +421,17 @@ public static class LEAPAssetUtils
     /// <param name="curves">Animation curves</param>
     public static void SetAnimationCurvesOnClip(GameObject model, AnimationClip clip, AnimationCurve[] curves)
     {
-        Transform[] bones = ModelUtils.GetAllBones(model);
         var modelController = model.GetComponent<ModelController>();
+        Transform[] bones = null;
+        if (modelController == null)
+        {
+            bones = new Transform[1];
+            bones[0] = model.transform;
+        }
+        else
+        {
+            bones = ModelUtils.GetAllBones(model);
+        }
 
         // Set curves for bone properties
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
@@ -422,7 +462,7 @@ public static class LEAPAssetUtils
         }
 
         // Set curves for blend shapes
-        int numBlendShapes = modelController.NumberOfBlendShapes;
+        int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
         for (int blendShapeIndex = 0; blendShapeIndex < numBlendShapes; ++blendShapeIndex)
         {
             // Get blend shape info
