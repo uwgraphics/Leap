@@ -403,20 +403,20 @@ public class AnimationTimeline
             private set;
         }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="controller">Animation controller</param>
+        /// <param name="animationContainer">Baked animation container</param>
         public BakedControllerContainer(AnimController controller, BakedAnimationContainer animationContainer)
         {
             Controller = controller;
             OwningAnimationContainer = animationContainer;
             ControllerStates = new List<IAnimControllerState>();
 
-            // Get base animation clip
-            var baseAnimation = animationContainer.OwningTimelineContainer.OwningTimeline.GetLayer(LEAPCore.baseAnimationLayerName)
-                .Animations.FirstOrDefault(a => a.Animation.Model == animationContainer.Model);
-            if (baseAnimation == null)
-                throw new Exception("No base animation found for character model " + animationContainer.Model.name);
-
             // Initialize controller states
-            for (int frameIndex = 0; frameIndex < baseAnimation.Animation.FrameLength; ++frameIndex)
+            int frameLength = animationContainer.OwningTimelineContainer.OwningTimeline.FrameLength;
+            for (int frameIndex = 0; frameIndex < frameLength; ++frameIndex)
                 ControllerStates.Add(controller.GetRuntimeState());
         }
     }
@@ -1458,6 +1458,14 @@ public class AnimationTimeline
             for (int controllerIndex = 0; controllerIndex < bakedAnimationContainer.ControllerContainers.Count; ++controllerIndex)
             {
                 var controllerContainer = bakedAnimationContainer.ControllerContainers[controllerIndex];
+                // TODO: figure out why the hell frame index is sometimes out of range
+                if (CurrentFrame < 0 || CurrentFrame >= controllerContainer.ControllerStates.Count)
+                {
+                    Debug.LogError(string.Format("Frame index out of range. CurrentFrame = {0}, controllerContainer.ControllerStates.Count = {1}",
+                        CurrentFrame, controllerContainer.ControllerStates.Count));
+                    continue;
+                }
+                //
                 controllerContainer.ControllerStates[CurrentFrame] = controllerContainer.Controller.GetRuntimeState();
             }
         }
@@ -1476,6 +1484,14 @@ public class AnimationTimeline
             // Also apply animation controller states
             foreach (var controllerContainer in bakedAnimationContainer.ControllerContainers)
             {
+                // TODO: figure out why the hell frame index is sometimes out of range
+                if (CurrentFrame < 0 || CurrentFrame >= controllerContainer.ControllerStates.Count)
+                {
+                    Debug.LogError(string.Format("Frame index out of range. CurrentFrame = {0}, controllerContainer.ControllerStates.Count = {1}",
+                        CurrentFrame, controllerContainer.ControllerStates.Count));
+                    continue;
+                }
+                //
                 controllerContainer.Controller.SetRuntimeState(controllerContainer.ControllerStates[CurrentFrame]);
                 // TODO: this is a hack to prevent OMR violation
                 /*foreach (var eye in GazeController.eyes)
@@ -1795,7 +1811,7 @@ public class AnimationTimeline
         foreach (var model in OwningManager.Models)
         {
             var morphController = model.GetComponent<MorphController>();
-            if (morphController != null)
+            if (morphController != null && morphController.enabled)
                 morphController.Apply();
         }
     }

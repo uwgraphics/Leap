@@ -126,7 +126,7 @@ public abstract class AnimController : MonoBehaviour
     {
         get
         {
-            return _fsm.State;
+            return _fsm != null ? _fsm.State : -1;
         }
     }
 

@@ -27,6 +27,8 @@ public class GazeEditTestScenario : Scenario
 
             // Disable animation controllers
             AnimController.SetAnimControllersEnabled(model, false);
+            var morphController = model.GetComponent<MorphController>();
+            morphController.enabled = false;
             
             // Disable IK
             var solvers = model.GetComponents<IKSolver>();

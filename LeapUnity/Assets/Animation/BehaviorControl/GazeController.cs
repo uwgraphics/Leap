@@ -1755,6 +1755,8 @@ public class GazeController : AnimController
     public override IAnimControllerState GetRuntimeState()
     {
         GazeControllerState state = new GazeControllerState();
+        if (!enabled)
+            return state;
 
         state.stateId = StateId;
         state.gazeTarget = gazeTarget;
@@ -1798,6 +1800,9 @@ public class GazeController : AnimController
     /// <returns></returns>
     public override void SetRuntimeState(IAnimControllerState state)
     {
+        if (!enabled)
+            return;
+
         GazeControllerState gazeControllerState = (GazeControllerState)state;
         _GetFSM()._SetState(gazeControllerState.stateId);
         gazeTarget = gazeControllerState.gazeTarget;
