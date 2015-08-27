@@ -1721,11 +1721,11 @@ public class AnimationTimeline
 
             // Compute gaze IK weight
             float gazeWeightIn = gazeIKFrameLength > 0 ?
-                Mathf.Clamp01(((float)(CurrentFrame - gazeIKStartFrame)) / gazeIKFrameLength) : 0f;
+                Mathf.Clamp01(((float)(CurrentFrame - gazeIKStartFrame)) / gazeIKFrameLength) : 1f;
             float gazeWeightIn2 = gazeWeightIn * gazeWeightIn;
             gazeWeightIn = -2f * gazeWeightIn2 * gazeWeightIn + 3f * gazeWeightIn2;
             float gazeWeightOut = gazeIKFrameLength > 0 ?
-                Mathf.Clamp01(((float)(gazeIKEndFrame - CurrentFrame)) / gazeIKFrameLength) : 0f;
+                Mathf.Clamp01(((float)(gazeIKEndFrame - CurrentFrame)) / gazeIKFrameLength) : 1f;
             float gazeWeightOut2 = gazeWeightOut * gazeWeightOut;
             gazeWeightOut = -2f * gazeWeightOut2 * gazeWeightOut + 3f * gazeWeightOut2;
             gazeWeight = Mathf.Min(gazeWeightIn, gazeWeightOut);

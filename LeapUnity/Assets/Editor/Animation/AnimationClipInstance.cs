@@ -77,7 +77,7 @@ public class AnimationClipInstance : AnimationInstance
                 continue;
             }
 
-            if (clip.name == name && AssetDatabase.GetAssetPath(clip) != "")
+            if (clip.name == name)
             {
                 // There is already a defined clip for this animation instance,
                 // so assume that is the animation

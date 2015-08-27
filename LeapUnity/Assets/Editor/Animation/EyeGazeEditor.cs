@@ -935,43 +935,52 @@ public static class EyeGazeEditor
     /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
     /// <param name="eyeGazeInstance">Eye gaze instance<param>
     /// <param name="eyeGazeStartFrame">Eye gaze start frame</param>
+    /// <param name="eyeGazeTargetPosition">Eye gaze target position without offset</param>
+    /// <param name="baseAnimationLayerName">Base animation layer name</param>
     public static Vector3 ComputeMovingTargetPositionOffset(AnimationTimeline timeline, int baseAnimationInstanceId,
-        EyeGazeInstance eyeGazeInstance, int eyeGazeStartFrame)
+        EyeGazeInstance eyeGazeInstance, int eyeGazeStartFrame, Vector3 eyeGazeTargetPosition,
+        string baseAnimationLayerName = "BaseAnimation")
     {
         if (!LEAPCore.adjustGazeTargetForMovingBase)
             return Vector3.zero;
 
         var baseAnimationInstance = timeline.GetAnimation(baseAnimationInstanceId);
+        int baseAnimationStartFrame = timeline.GetAnimationStartFrame(baseAnimationInstanceId);
         var model = eyeGazeInstance.Model;
         string poseName = eyeGazeInstance.Name + "Pose";
         var gazeController = eyeGazeInstance.GazeController;
 
-        // Estimate gaze shift duration
+        // Estimate gaze shift duration and gaze shift  end frame
         float estGazeShiftTimeLength = ComputeEstGazeShiftTimeLength(eyeGazeInstance,
             GetInitControllerForEyeGazeInstance(eyeGazeInstance));
+        int eyeGazeFixationStartFrame = eyeGazeStartFrame +
+            Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * estGazeShiftTimeLength);
 
-        // Store current model pose
+        // Store current model pose and apply base animation
         timeline.StoreModelPose(model.name, poseName);
 
-        // Get base position at the current frame
-        baseAnimationInstance.Apply(eyeGazeStartFrame, AnimationLayerMode.Override);
-        Vector3 currentBasePos = gazeController.gazeJoints[gazeController.LastGazeJointIndex].bone.position;
+        // Get base position and rotation at the start of the gaze shift
+        baseAnimationInstance.Apply(eyeGazeStartFrame - baseAnimationStartFrame, AnimationLayerMode.Override);
+        Vector3 pos0 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.position;
+        Quaternion rot0 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.rotation;
 
-        // Apply the base animation at a time in near future
-        int eyeGazeFixationStartFrame = eyeGazeStartFrame +
-            Mathf.RoundToInt(((float)LEAPCore.editFrameRate) * estGazeShiftTimeLength); // look ahead to the estimated end of the current gaze shift
-        baseAnimationInstance.Apply(eyeGazeFixationStartFrame, AnimationLayerMode.Override);
-
-        // Get future base position at the current frame
-        Vector3 aheadBasePos = gazeController.gazeJoints[gazeController.LastGazeJointIndex].bone.position;
+        // Get base position and rotation at the end of the gaze shift
+        baseAnimationInstance.Apply(eyeGazeFixationStartFrame - baseAnimationStartFrame, AnimationLayerMode.Override);
+        Vector3 pos1 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.position;
+        Quaternion rot1 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.rotation;
 
         // Reapply current model pose
-        //baseAnimationInstance.Animation.Apply(AnimationTimeline.Instance.CurrentFrame - baseAnimationInstance.StartFrame, AnimationLayerMode.Override);
         AnimationManager.Instance.Timeline.ApplyModelPose(model.name, poseName);
         AnimationManager.Instance.Timeline.RemoveModelPose(model.name, poseName);
 
-        // Set gaze target position offset
-        return currentBasePos - aheadBasePos;
+        // Compute target position offset
+        Vector3 vt1 = eyeGazeTargetPosition - pos1;
+        Quaternion dq = Quaternion.Inverse(rot1) * rot0;
+        Vector3 vt0 = dq * vt1;
+        Vector3 pt1 = pos0 + vt0;
+        Vector3 targetPositionOffset = pt1 - eyeGazeTargetPosition;
+
+        return targetPositionOffset;
     }
 
     /// <summary>
@@ -1058,8 +1067,9 @@ public static class EyeGazeEditor
         }
 
         // Compute gaze target position offset due to moving base
+        Vector3 targetPosition = gazeInstance.Target == null ? gazeInstance.AheadTargetPosition : gazeInstance.Target.transform.position;
         gazeController.movingTargetPositionOffset =
-            ComputeMovingTargetPositionOffset(timeline, baseAnimationInstanceId, gazeInstance, startFrame);
+            ComputeMovingTargetPositionOffset(timeline, baseAnimationInstanceId, gazeInstance, startFrame, targetPosition);
 
         // Compute initial state of the gaze controller at the start of the current gaze instance
         baseAnimation.Apply(startFrame, AnimationLayerMode.Override);

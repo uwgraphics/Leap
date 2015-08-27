@@ -253,7 +253,13 @@ public class EyeGazeInstance : AnimationControllerInstance
         var baseAnimationInstance = AnimationManager.Instance.Timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(
             inst => inst.Animation.Model == Model);
         GazeController.movingTargetPositionOffset = EyeGazeEditor.ComputeMovingTargetPositionOffset(
-            AnimationManager.Instance.Timeline, baseAnimationInstance.InstanceId, this, AnimationManager.Instance.Timeline.CurrentFrame);
+            AnimationManager.Instance.Timeline, baseAnimationInstance.InstanceId, this,
+            AnimationManager.Instance.Timeline.CurrentFrame,
+            Target == null ? AheadTargetPosition : Target.transform.position);
+        //
+        Debug.LogWarning(string.Format("Frame {0}: Moving target position offset is {1}",
+            AnimationManager.Instance.Timeline.CurrentFrame, GazeController.movingTargetPositionOffset));
+        //
         // TODO: base animation should be specified as a parameter of the eye gaze instance!
     }
 

@@ -189,11 +189,6 @@ public class GazeController : AnimController
     /// </summary>
     public float torsoPostureWeight = 1f;
 
-    /// <summary>
-    /// Weight with which expressive gaze is applied.
-    /// </summary>
-    public float expressiveWeight = 0f;
-
     // Shorthand for getting the eye joints
     [HideInInspector]
     public GazeJoint[] eyes = new GazeJoint[0];
@@ -992,7 +987,7 @@ public class GazeController : AnimController
     }
 
     // Compute overall amplitude of the gaze shift towards current target
-    public virtual float _ComputeGazeShiftAmplitude(bool adjustForMovingTarget = false)
+    public virtual float _ComputeGazeShiftAmplitude()
     {
         Vector3 srcdir = new Vector3(0, 0, 0);
         Vector3 ec = new Vector3(0, 0, 0);
@@ -1003,7 +998,7 @@ public class GazeController : AnimController
         }
         srcdir /= (float)eyes.Length;
         ec /= (float)eyes.Length;
-        Vector3 trgPos = adjustForMovingTarget ? EffGazeTargetPosition + curMovingTargetPosOff : EffGazeTargetPosition;
+        Vector3 trgPos = EffGazeTargetPosition + curMovingTargetPosOff;
         Vector3 trgdir = (trgPos - ec).normalized;
         
         return Vector3.Angle(srcdir, trgdir);
@@ -1032,7 +1027,7 @@ public class GazeController : AnimController
     public virtual float _ComputeTorsoLatency()
     {
         float pred = Mathf.Clamp01(predictability);
-        float amplitude = _ComputeGazeShiftAmplitude(true);
+        float amplitude = _ComputeGazeShiftAmplitude();
         return -0.25f * amplitude * pred + 0.5f * amplitude - 57.5f * pred + 105f;
     }
 

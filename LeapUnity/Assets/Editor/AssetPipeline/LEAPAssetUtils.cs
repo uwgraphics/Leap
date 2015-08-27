@@ -478,6 +478,31 @@ public static class LEAPAssetUtils
     }
 
     /// <summary>
+    /// Copy the animation curve from one property to another.
+    /// </summary>
+    /// <param name="clip">Animation clip</param>
+    /// <param name="fromProperty"></param>
+    /// <param name="toProperty"></param>
+    public static void CopyAnimationCurveFromToProperty(AnimationClip clip,
+        Type propertyType, string fromPath, string fromProperty, string toPath, string toProperty)
+    {
+        AnimationClipCurveData[] allCurveData = AnimationUtility.GetAllCurves(clip);
+
+        // Get original animation curve data
+        var fromCurveData = allCurveData.FirstOrDefault(fc =>
+            fc.path == fromPath && fc.type == propertyType && fc.propertyName == fromProperty);
+        if (fromCurveData == null)
+        {
+            UnityEngine.Debug.LogError(
+                string.Format("Trying to copy animation curve for non-existent property {0}, {1}, {2}",
+                fromPath, propertyType.Name, fromProperty)
+                );
+        }
+
+        clip.SetCurve(toPath, propertyType, toProperty, fromCurveData.curve);
+    }
+
+    /// <summary>
     /// Make sure animation clips added to the character model's Animation component are
     /// correctly associated with the model.
     /// </summary>

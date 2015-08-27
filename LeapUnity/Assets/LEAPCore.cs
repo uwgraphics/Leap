@@ -105,7 +105,7 @@ public class LEAPCore : MonoBehaviour
     /// If true, effective gaze target in a gaze shift will be adjusted for movement
     /// in the base animation.
     /// </summary>
-    public static bool adjustGazeTargetForMovingBase = false;
+    public static bool adjustGazeTargetForMovingBase = true;
 
     /// <summary>
     /// If true, gaze controller state log will contained detailed state of every gaze joint

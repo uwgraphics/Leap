@@ -176,8 +176,10 @@ public class LEAPMenu
         testScenes.modelStealDiamondEnv.SetActive(false);
         testScenes.modelWaitForBusEnv.SetActive(false);
         testScenes.cameraWindowWashing.enabled = false;
+        testScenes.cameraWindowWashingCloseUp.enabled = false;
         testScenes.cameraPassSoda.enabled = false;
         testScenes.cameraWalking90deg.enabled = false;
+        testScenes.cameraWalking90degCloseUp.enabled = false;
         testScenes.cameraHandShake.enabled = false;
         testScenes.cameraBookShelf1.enabled = false;
         testScenes.cameraBookShelf2.enabled = false;
@@ -210,6 +212,7 @@ public class LEAPMenu
         if (sceneName == "TestExpressiveGaze")
         {
             LEAPCore.gazeConstraintActivationTime = 0f;
+            //testScenes.modelNorman.GetComponent<GazeController>().torsoPostureWeight = 0f;
 
             testScenes.modelNorman.SetActive(true);
             testScenes.modelTestExpressiveGazeEnv.SetActive(true);
@@ -1036,11 +1039,11 @@ public class LEAPMenu
     private static string _GetLMCPath(GameObject obj)
     {
         // Determine original asset path
-        string asset_path = "";
+        string assetPath = "";
         UnityEngine.Object prefab = EditorUtility.GetPrefabParent(obj);
         if (prefab != null)
         {
-            asset_path = AssetDatabase.GetAssetPath(prefab);
+            assetPath = AssetDatabase.GetAssetPath(prefab);
         }
         else
         {
@@ -1048,18 +1051,49 @@ public class LEAPMenu
         }
 
         // Determine LMC file path
-        string lmc_path = "";
-        int ext_i = asset_path.LastIndexOf(".", StringComparison.InvariantCultureIgnoreCase);
+        string lmcPath = "";
+        int ext_i = assetPath.LastIndexOf(".", StringComparison.InvariantCultureIgnoreCase);
         if (ext_i >= 0)
         {
-            lmc_path = asset_path.Substring(0, ext_i) + ".lmc";
+            lmcPath = assetPath.Substring(0, ext_i) + ".lmc";
         }
         else
         {
-            lmc_path += ".lmc";
+            lmcPath += ".lmc";
         }
 
-        return lmc_path;
+        return lmcPath;
     }
 
+
+    /// <summary>
+    /// Validate run a custom script.
+    /// </summary>
+    /// <returns>
+    /// Always true
+    /// </returns>
+    [MenuItem("LEAP/Custom Scripts/Run Script 1", true)]
+    private static bool ValidateRunScript1()
+    {
+        return true;
+    }
+
+    /// <summary>
+    /// Run a custom script.
+    /// </summary>
+    [MenuItem("LEAP/Custom Scripts/Run Script 1")]
+    private static void RunScript1()
+    {
+        var model = Selection.activeGameObject;
+        var animationComponent = model.GetComponent<Animation>();
+        var clip = animationComponent.GetClip("WindowWashingA-Eyes");
+
+        string blendShapePath = ModelUtils.GetBonePath(ModelUtils.FindBone(model.transform, "srfBind_Cn_Head"));
+        LEAPAssetUtils.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
+            "blendShape.BottomLidUp_2.L", blendShapePath, "blendShape.BottomLidUp_2.R");
+        LEAPAssetUtils.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
+            "blendShape.TopLidDown_2.L", blendShapePath, "blendShape.TopLidDown_2.R");
+
+        return;
+    }
 }
