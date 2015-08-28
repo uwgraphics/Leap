@@ -961,13 +961,13 @@ public static class EyeGazeEditor
 
         // Get base position and rotation at the start of the gaze shift
         baseAnimationInstance.Apply(eyeGazeStartFrame - baseAnimationStartFrame, AnimationLayerMode.Override);
-        Vector3 pos0 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.position;
-        Quaternion rot0 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.rotation;
+        Vector3 pos0 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.parent.position;
+        Quaternion rot0 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.parent.rotation;
 
         // Get base position and rotation at the end of the gaze shift
         baseAnimationInstance.Apply(eyeGazeFixationStartFrame - baseAnimationStartFrame, AnimationLayerMode.Override);
-        Vector3 pos1 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.position;
-        Quaternion rot1 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.rotation;
+        Vector3 pos1 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.parent.position;
+        Quaternion rot1 = gazeController.gazeJoints[gazeController.gazeJoints.Length - 1].bone.parent.rotation;
 
         // Reapply current model pose
         AnimationManager.Instance.Timeline.ApplyModelPose(model.name, poseName);

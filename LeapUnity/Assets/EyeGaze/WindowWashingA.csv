@@ -10,10 +10,10 @@ Norman,WindowWashingAGaze8,311,40,359,WindowUpperRight,"0 0 0",0,0.624133,True
 Norman,WindowWashingAGaze9,360,44,409,AboveBucket,"0 0 0",0,0.2115284,True
 Norman,WindowWashingAGaze10,410,29,439,WindowUpperRight,"0 0 0",1,0.7903199,True
 Norman,WindowWashingAGaze11,440,37,477,WindowUpperLeft2,"0 0 0",0,0.09241562,True
-Norman,WindowWashingAGaze12,478,35,513,WindowCenterRight2,"0 0 0",1,0.01299442,True
-Norman,WindowWashingAGaze13,514,21,549,AboveBucket,"0 0 0",1,0.4100354,True
+Norman,WindowWashingAGaze12,478,20,498,WindowCenterRight2,"0 0 0",1,0.01299442,True
+Norman,WindowWashingAGaze13,499,21,549,AboveBucket,"0 0 0",1,0.4100354,True
 Norman,WindowWashingAGaze15,550,35,585,WindowCenterRight1,"0 0 0",1,0,True
 Norman,WindowWashingAGaze16,586,31,617,WindowLowerLeft,"0 0 0",0,0.07987582,True
 Norman,WindowWashingAGaze17,618,30,648,WindowLowerRight2,"0 0 0",0,0,True
 Norman,WindowWashingAGaze18,649,30,679,AboveBucket,"0 0 0",1,0.428023,True
-Norman,WindowWashingAGaze19,680,23,703,WindowUpperCenter,"0 0 0",1,0.1010943,True
+Norman,WindowWashingAGaze19,680,20,700,WindowUpperCenter,"0 0 0",1,0.1010943,True
