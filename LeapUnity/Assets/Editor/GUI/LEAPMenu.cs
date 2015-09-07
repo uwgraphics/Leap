@@ -338,7 +338,7 @@ public class LEAPMenu
             timeline.OwningManager.SetEnvironment(testScenes.modelWalking90degEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance("Walking90deg", testScenes.modelNorman);
+            var bodyAnimationNorman = new AnimationClipInstance("Walking90deg-Eyes", testScenes.modelNorman);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
 
             // Load eye gaze
@@ -349,7 +349,7 @@ public class LEAPMenu
             editTestScenario.models = new GameObject[1];
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
-            editTestScenario.animations[0] = "Walking90deg-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.animations[0] = "Walking90deg-Eyes-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.cameraAnimations = new string[1];
             editTestScenario.cameraAnimations[0] = "Walking90degCamera";
         }
@@ -596,6 +596,7 @@ public class LEAPMenu
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
+            EyeGazeEditor.InferEyeGazeAheadTargets(timeline, baseAnimation.InstanceId);
             EyeGazeEditor.InferEyeGazeAlignments(timeline, baseAnimation.InstanceId);
 
             // Save and print inferred eye gaze

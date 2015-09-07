@@ -56,5 +56,13 @@ public abstract class AnimationControllerInstance : AnimationInstance
         {
             throw new Exception("Additive layering not supported for AnimationControllerInstance");
         }
+
+        if (!Controller.enabled)
+            return;
+
+        _ApplyController(frame);
     }
+
+    // Apply the animation controller at the specified frame
+    protected abstract void _ApplyController(int frame);
 }

@@ -1314,7 +1314,7 @@ public class AnimationTimeline
     /// <summary>
     /// Initialize the animation timeline
     /// </summary>
-    public void _Init()
+    public void Init()
     {
         _activeBakedTimelineContainerIndex = -1;
         _InitControllers();

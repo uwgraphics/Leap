@@ -67,7 +67,7 @@ public class LEAPCore : MonoBehaviour
 
     /// <summary>
     /// Eye gaze editor: maximal length of gap between two neighboring eye gaze instances
-    /// (gaze shift + fixation), also minimal length of a gaze-back instance.
+    /// (gaze shift + fixation), also minimal length of a gaze-ahead instance.
     /// </summary>
     public static float maxEyeGazeGapLength = 2f;
 
@@ -75,9 +75,14 @@ public class LEAPCore : MonoBehaviour
     /// Asset subdirectory for eye gaze annotations.
     /// </summary>
     public static string eyeGazeDirectory = "Assets/EyeGaze";
+
+    /// <summary>
+    /// Suffix appended to names of the gaze-ahead instance at the start of the animation.
+    /// </summary>
+    public static string gazeAheadAtStartSuffix = "Start-Ahead";
     
     /// <summary>
-    /// Suffix appended to names of gaze-back instances.
+    /// Suffix appended to names of gaze-ahead instances.
     /// </summary>
     public static string gazeAheadSuffix = "-Ahead";
 

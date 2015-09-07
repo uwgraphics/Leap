@@ -293,8 +293,8 @@ public static class EyeGazeEditor
             {
                 // Insert a gaze-ahead instance to fill the gap
                 var prevGazeAheadInstance = new EyeGazeInstance(
-                    newInstance.Name + "Start" + LEAPCore.gazeAheadSuffix, newInstance.Model,
-                    newStartFrame - 1, null, 0f, 0f, 1, true, false);
+                    newInstance.Name + LEAPCore.gazeAheadAtStartSuffix, newInstance.Model,
+                    newStartFrame - 1, null, 0f, 0f, 30);
                 timeline.AddAnimation(layerName, prevGazeAheadInstance, 1);
             }
             else
@@ -808,8 +808,31 @@ public static class EyeGazeEditor
     }
 
     /// <summary>
-    /// Infer eye gaze alignment parameters for currently defined
-    /// eye gaze instances on the character model.
+    /// Infer target positions for gaze-ahead shifts accompanying the specified base animation.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <param name="layerName">Animation layer holding eye gaze animations</param>
+    public static void InferEyeGazeAheadTargets(AnimationTimeline timeline, int baseAnimationInstanceId, string layerName = "Gaze")
+    {
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+
+        // Infer head and torso alignments
+        var gazeLayer = timeline.GetLayer(layerName);
+        foreach (var instance in gazeLayer.Animations)
+        {
+            if (!(instance.Animation is EyeGazeInstance) ||
+                instance.Animation.Model != baseAnimation.Model)
+            {
+                continue;
+            }
+
+            _InferEyeGazeAheadTarget(timeline, baseAnimationInstanceId, instance.InstanceId);
+        }
+    }
+
+    /// <summary>
+    /// Infer head and torso alignment parameters for gaze shifts accompanying the specified base animation.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
     /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
@@ -825,7 +848,6 @@ public static class EyeGazeEditor
         foreach (var instance in gazeLayer.Animations)
         {
             if (!(instance.Animation is EyeGazeInstance) ||
-                !(instance.Animation as EyeGazeInstance).IsBase ||
                 instance.Animation.Model != baseAnimation.Model)
             {
                 continue;
@@ -1026,6 +1048,30 @@ public static class EyeGazeEditor
 
         // Then remove the actual instnace
         timeline.RemoveAnimation(instanceId);
+    }
+
+    // Infer target of the gaze-ahead instance
+    private static void _InferEyeGazeAheadTarget(AnimationTimeline timeline, int baseAnimationInstanceId, int instanceId)
+    {
+        var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
+        var gazeInstance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
+        int startFrame = timeline.GetAnimationStartFrame(instanceId);
+        var gazeController = gazeInstance.GazeController;
+        var model = gazeInstance.Model;
+
+        // Store current model pose and apply base animation
+        string poseName = gazeInstance.Name + "Pose";
+        timeline.StoreModelPose(model.name, poseName);
+        int fixationStartFrame = startFrame + gazeInstance.FixationStartFrame;
+        baseAnimation.Apply(fixationStartFrame, AnimationLayerMode.Override);
+
+        // Determine position of the gaze target for gazing ahead
+        Vector3 aheadTargetPos = gazeController.Head.bone.position + 5f * gazeController.Head.Direction;
+        gazeInstance.AheadTargetPosition = aheadTargetPos;
+
+        // Reapply current model pose
+        timeline.ApplyModelPose(model.name, poseName);
+        timeline.RemoveModelPose(model.name, poseName);
     }
 
     // Infer eye gaze alignment values for the specified gaze instance

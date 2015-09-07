@@ -181,9 +181,32 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.Apply"/>
+    /// <see cref="AnimationInstance.Finish"/>
     /// </summary>
-    public override void Apply(int frame, AnimationLayerMode layerMode)
+    public override void Finish()
+    {
+        // Unregister handler for gaze controller state changes
+        GazeController.StateChange -= GazeController_StateChange;
+
+        base.Finish();
+    }
+
+    /// <summary>
+    /// Set the frame (relative to the start of the gaze instance) when
+    /// the gaze shift is expected to end and the fixation start.
+    /// </summary>
+    /// <param name="frame"></param>
+    public virtual void _SetFixationStartFrame(int frame)
+    {
+        FixationStartTime = ((float)frame) / LEAPCore.editFrameRate;
+        if (FixationStartTime >= TimeLength)
+            FixationStartTime = TimeLength;
+    }
+
+    /// <summary>
+    /// <see cref="AnimationControllerInstance._ApplyController"/>
+    /// </summary>
+    protected override void _ApplyController(int frame)
     {
         if (GazeController.StateId == (int)GazeState.Shifting)
         {
@@ -211,7 +234,7 @@ public class EyeGazeInstance : AnimationControllerInstance
             float t2 = t * t;
             gazeWeight = 1f + 2f * t2 * t - 3f * t2;
         }
-            
+
         // Apply gaze weight
         if (GazeController.StateId == (int)GazeState.Shifting)
             GazeController.weight = gazeWeight;
@@ -219,31 +242,6 @@ public class EyeGazeInstance : AnimationControllerInstance
             // TODO: careful here - we only compute fixation weight for the fixation in the *current* gaze instance
             // and not the still-ongoing fixation from the previous gaze instance
             GazeController.fixWeight = gazeWeight;
-
-        base.Apply(frame, layerMode);
-    }
-
-    /// <summary>
-    /// <see cref="AnimationInstance.Finish"/>
-    /// </summary>
-    public override void Finish()
-    {
-        // Unregister handler for gaze controller state changes
-        GazeController.StateChange -= GazeController_StateChange;
-
-        base.Finish();
-    }
-
-    /// <summary>
-    /// Set the frame (relative to the start of the gaze instance) when
-    /// the gaze shift is expected to end and the fixation start.
-    /// </summary>
-    /// <param name="frame"></param>
-    public virtual void _SetFixationStartFrame(int frame)
-    {
-        FixationStartTime = ((float)frame) / LEAPCore.editFrameRate;
-        if (FixationStartTime >= TimeLength)
-            FixationStartTime = TimeLength;
     }
 
     // Compute gaze shift parameters to account for anticipated body movement
@@ -256,10 +254,6 @@ public class EyeGazeInstance : AnimationControllerInstance
             AnimationManager.Instance.Timeline, baseAnimationInstance.InstanceId, this,
             AnimationManager.Instance.Timeline.CurrentFrame,
             Target == null ? AheadTargetPosition : Target.transform.position);
-        //
-        Debug.LogWarning(string.Format("Frame {0}: Moving target position offset is {1}",
-            AnimationManager.Instance.Timeline.CurrentFrame, GazeController.movingTargetPositionOffset));
-        //
         // TODO: base animation should be specified as a parameter of the eye gaze instance!
     }
 

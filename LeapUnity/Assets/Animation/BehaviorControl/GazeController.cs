@@ -843,16 +843,8 @@ public class GazeController : AnimController
 
             if (joint == Head)
             {
-                // TODO: remove this
-                float headMaxVelocityOrig = (4f / 3f) * (joint.velocity / 50f) * headDistRotAlignOrig +
-                    joint.velocity / 2.5f;
-                //
                 joint.maxVelocity = (4f / 3f) * (joint.velocity / 50f) * headDistRotAlign +
                     joint.velocity / 2.5f;
-                // TODO: remove this
-                Debug.LogWarning(string.Format("Original Head.maxVelocity = {0}; adjusted Head.maxVelocity = {1}",
-                    headMaxVelocityOrig, joint.maxVelocity));
-                //
             }
             else
             {

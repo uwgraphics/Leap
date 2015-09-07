@@ -1,4 +1,4 @@
-Shader "Transparent/Cutout/Diffuse2Sided" {
+Shader "Transparent/Cutout/Diffuse 2-Sided" {
 Properties {
 	_Color ("Main Color", Color) = (1,1,1,1)
 	_MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
