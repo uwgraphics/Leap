@@ -1,5 +1,12 @@
 Leap Animation Editor:
 
+#118 [] Character pose and animation controller states can vary at the start of the animation timeline, which is incorrect
+
+#117 [] Character pose does not get reset properly when using Reset to Initial Pose
+
+#116 [] None of the keyboard shortcuts for gaze editing work anymore
+  - Possibly related, but in the handler function for shortcuts, LeapAnimationEdit._animationEditGizmos == null always evaluates to true, even though it is definitely not null!
+
 #115 [] Huge discontinuities in torso pose
   - See Roman in PassSodaEdits0
 

@@ -214,52 +214,6 @@ public sealed class GazeJoint : DirectableJoint
     }
 
     /// <summary>
-    /// Axis about which the gaze joint is rotating over the course
-    /// of the gaze shift
-    /// </summary>
-    public Vector3 RotationAxis
-    {
-        get
-        {
-            Quaternion currot = bone.localRotation;
-
-            Quaternion qs = isVOR ? fixSrcRot : srcRot;
-            Quaternion qt = isVOR ? fixTrgRotAlign : trgRotAlign;
-
-            Vector3 axis = Vector3.up.normalized;
-            if (qs != qt)
-            {
-                bone.localRotation = qs;
-                Vector3 vs = Direction.normalized;
-                bone.localRotation = qt;
-                Vector3 vt = Direction.normalized;
-                axis = Vector3.Cross(vs, vt).normalized;
-            }
-
-            bone.localRotation = currot;
-
-            return axis;
-        }
-    }
-
-    /// <summary>
-    /// How much this gaze joint contributes to the overall rotation of
-    /// its body part.
-    /// </summary>
-    public float RotationContribution
-    {
-        get
-        {
-            var last = gazeCtrl.GetLastGazeJointInChain(type);
-            int ji = gazeCtrl.FindGazeJointIndex(this) - gazeCtrl.FindGazeJointIndex(last);
-            int nj = gazeCtrl.GetNumGazeJointsInChain(type);
-            float c = 2f * (nj - ji) / (nj * (nj + 1f));
-
-            return c;
-        }
-    }
-
-    /// <summary>
     /// Gaze controller that owns the current gaze joint.
     /// </summary>
     public GazeController GazeController

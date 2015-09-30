@@ -18,10 +18,8 @@ public class EyeGazeEditTestScenes : MonoBehaviour
     public GameObject modelStealDiamondEnv = null;
     public GameObject modelWaitForBusEnv = null;
     public Camera cameraWindowWashing = null;
-    public Camera cameraWindowWashingCloseUp = null;
     public Camera cameraPassSoda = null;
     public Camera cameraWalking90deg = null;
-    public Camera cameraWalking90degCloseUp = null;
     public Camera cameraHandShake = null;
     public Camera cameraBookShelf1 = null;
     public Camera cameraBookShelf2 = null;

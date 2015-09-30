@@ -133,19 +133,22 @@ public class BodyIKSolver : IKSolver
         if (logPerformance)
         {
             //
-            /*for (int goalIndex = 0; goalIndex < _goals.Count; ++goalIndex)
+            /*UnityEngine.Debug.LogWarning(string.Format("Body IK weights:"));
+            for (int goalIndex = 0; goalIndex < _goals.Count; ++goalIndex)
             {
                 IKGoal goal = _goals[goalIndex];
-                UnityEngine.Debug.LogWarning(string.Format("Body IK goal: endEffector = {0}, position = {1}, weight = {2}",
+                UnityEngine.Debug.LogWarning(string.Format("endEffector = {0}, position = {1}, weight = {2}",
                     goal.endEffector.tag, goal.position, goal.weight));
-            }*/
+            }
+            UnityEngine.Debug.LogWarning(string.Format("base pose weight = {0}", _curBasePoseWeight));
+            UnityEngine.Debug.LogWarning(string.Format("gaze direction weight = {0}", _curGazeDirectionWeight));*/
             //
-            UnityEngine.Debug.LogWarning(string.Format("Body IK solve: {0} ms, {1} iterations, {2} obj. evals",
-                _timer.ElapsedMilliseconds, _rep.iterationscount, _rep.nfev));
+            /*UnityEngine.Debug.LogWarning(string.Format("Body IK solve: {0} ms, {1} iterations, {2} obj. evals",
+                _timer.ElapsedMilliseconds, _rep.iterationscount, _rep.nfev));*/
             //
-            UnityEngine.Debug.LogWarning(string.Format(
-                "Objective function: goalTerm = {0}, basePoseTerm = {1}, gazeDirectionTerm = {2}, gazeVelocityTerm = {3}",
-                _goalTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal));
+            /*UnityEngine.Debug.LogWarning(string.Format(
+                "Body IK objective function: goalTerm = {0}, basePoseTerm = {1}, gazeDirectionTerm = {2}, gazeVelocityTerm = {3}",
+                _goalTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal));*/
             //
         }
     }

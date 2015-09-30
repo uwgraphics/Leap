@@ -1,8 +1,0 @@
-Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,Walking90degGaze1,10,22,52,,0 0 0,-1,-1,True
-Norman,Walking90degGaze1,71,106,136,,0 0 0,-1,-1,True
-Norman,Walking90degGaze2,167,183,213,,0 0 0,-1,-1,True
-Norman,Walking90degGaze2,304,341,371,,0 0 0,-1,-1,True
-Norman,Walking90degGaze3,373,411,427,,0 0 0,-1,-1,True
-Norman,Walking90degGaze4,428,465,495,,0 0 0,-1,-1,True
-Norman,Walking90degGaze3,549,581,609,,0 0 0,-1,-1,True

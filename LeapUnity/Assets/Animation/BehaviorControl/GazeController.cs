@@ -109,6 +109,11 @@ public class GazeController : AnimController
     public bool useTorso = true;
 
     /// <summary>
+    /// How much the pelvis contributes to torso rotation toward the gaze target.
+    /// </summary>
+    public float pelvisAlign = 0.5f;
+
+    /// <summary>
     /// Predictability of the gaze target (0-1). 
     /// </summary>
     public float predictability = 1f;
@@ -230,7 +235,7 @@ public class GazeController : AnimController
         get
         {
             if (lEyeIndex < 0)
-                lEyeIndex = _FindGazeJointIndex("LEyeBone");
+                lEyeIndex = _FindGazeJointIndex(GazeJointType.LEye);
             
             return lEyeIndex >= 0 ? gazeJoints[lEyeIndex] : null;
         }
@@ -244,7 +249,7 @@ public class GazeController : AnimController
         get
         {
             if (rEyeIndex < 0)
-                rEyeIndex = _FindGazeJointIndex("REyeBone");
+                rEyeIndex = _FindGazeJointIndex(GazeJointType.REye);
 
             return rEyeIndex >= 0 ? gazeJoints[rEyeIndex] : null;
         }
@@ -261,7 +266,7 @@ public class GazeController : AnimController
                 headIndex = -1;
 
             if (headIndex < 0)
-                headIndex = _FindGazeJointIndex("HeadBone");
+                headIndex = _FindGazeJointIndex(GazeJointType.Head);
 
             return headIndex >= 0 ? gazeJoints[headIndex] : null;
         }
@@ -278,7 +283,7 @@ public class GazeController : AnimController
                 torsoIndex = -1;
 
             if (torsoIndex < 0)
-                torsoIndex = _FindGazeJointIndex("TorsoBone");
+                torsoIndex = _FindGazeJointIndex(GazeJointType.Torso);
 
             return torsoIndex >= 0 ? gazeJoints[torsoIndex] : null;
         }
@@ -694,12 +699,15 @@ public class GazeController : AnimController
                 break;
         }
 
+        // Apply rotational contribution of each joint in the chain
         for (int ji = ji1; ji >= jin; --ji)
         {
             var curJoint = gazeJoints[ji];
+            bool isRoot = ji == ji1 && joint.type == GazeJointType.Torso;
 
             jic = ji - jin + 1;
-            c = ((float)((nj - jic + 1) * (nj - jic + 2))) / (nj * (nj + 1));
+            c = isRoot ? pelvisAlign :
+                ((float)((nj - jic + 1) * (nj - jic + 2))) / (nj * (nj + 1));
             c1 = (c - cprev) / (1f - cprev);
             cprev = c;
 
@@ -716,19 +724,15 @@ public class GazeController : AnimController
             curJoint.bone.localRotation = trgRotAlign;
             trgDirAlign = curJoint.bone.forward;
             trgDirAlign = new Vector3(trgDirAlign.x, 0f, trgDirAlign.z);
-            //
             curJoint.bone.localRotation = Quaternion.identity;
             trgDirAlign = curJoint.bone.InverseTransformDirection(trgDirAlign);
-            //
 
             // Get current joint's base gaze direction in horizontal plane
             curJoint.bone.localRotation = curJoint.baseRot;
             baseDir = curJoint.bone.forward;
             baseDir = new Vector3(baseDir.x, 0f, baseDir.z);
-            //
             curJoint.bone.localRotation = Quaternion.identity;
             baseDir = curJoint.bone.InverseTransformDirection(baseDir);
-            //
 
             // Align base gaze direction with the target gaze direction in the horizontal plane
             trgRotHAlign = Quaternion.FromToRotation(baseDir, trgDirAlign);
@@ -1039,10 +1043,10 @@ public class GazeController : AnimController
         base.Start();
 
         // Get joint chain indices
-        torsoIndex = _FindGazeJointIndex("TorsoBone");
-        headIndex = _FindGazeJointIndex("HeadBone");
-        lEyeIndex = _FindGazeJointIndex("LEyeBone");
-        rEyeIndex = _FindGazeJointIndex("REyeBone");
+        torsoIndex = _FindGazeJointIndex(GazeJointType.Torso);
+        headIndex = _FindGazeJointIndex(GazeJointType.Head);
+        lEyeIndex = _FindGazeJointIndex(GazeJointType.LEye);
+        rEyeIndex = _FindGazeJointIndex(GazeJointType.REye);
 
         // Initialize every gaze joint
         List<GazeJoint> eye_list = new List<GazeJoint>();
@@ -1348,10 +1352,10 @@ public class GazeController : AnimController
     }
 
     // Find index of gaze joint with specified bone tag
-    protected virtual int _FindGazeJointIndex(string boneTag)
+    protected virtual int _FindGazeJointIndex(GazeJointType jointType)
     {
         for (int gji = 0; gji < gazeJoints.Length; ++gji)
-            if (gazeJoints[gji].bone.tag == boneTag)
+            if (gazeJoints[gji].type == jointType)
                 return gji;
 
         return -1;

@@ -176,10 +176,8 @@ public class LEAPMenu
         testScenes.modelStealDiamondEnv.SetActive(false);
         testScenes.modelWaitForBusEnv.SetActive(false);
         testScenes.cameraWindowWashing.enabled = false;
-        testScenes.cameraWindowWashingCloseUp.enabled = false;
         testScenes.cameraPassSoda.enabled = false;
         testScenes.cameraWalking90deg.enabled = false;
-        testScenes.cameraWalking90degCloseUp.enabled = false;
         testScenes.cameraHandShake.enabled = false;
         testScenes.cameraBookShelf1.enabled = false;
         testScenes.cameraBookShelf2.enabled = false;
@@ -338,7 +336,7 @@ public class LEAPMenu
             timeline.OwningManager.SetEnvironment(testScenes.modelWalking90degEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance("Walking90deg-Eyes", testScenes.modelNorman);
+            var bodyAnimationNorman = new AnimationClipInstance("Walking90deg", testScenes.modelNorman);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
 
             // Load eye gaze
@@ -349,7 +347,7 @@ public class LEAPMenu
             editTestScenario.models = new GameObject[1];
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
-            editTestScenario.animations[0] = "Walking90deg-Eyes-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.animations[0] = "Walking90deg-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.cameraAnimations = new string[1];
             editTestScenario.cameraAnimations[0] = "Walking90degCamera";
         }
@@ -1094,6 +1092,44 @@ public class LEAPMenu
             "blendShape.BottomLidUp_2.L", blendShapePath, "blendShape.BottomLidUp_2.R");
         LEAPAssetUtils.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
             "blendShape.TopLidDown_2.L", blendShapePath, "blendShape.TopLidDown_2.R");
+
+        return;
+    }
+
+    /// <summary>
+    /// Validate run a custom script.
+    /// </summary>
+    /// <returns>
+    /// Always true
+    /// </returns>
+    [MenuItem("LEAP/Custom Scripts/Run Script 2", true)]
+    private static bool ValidateRunScript2()
+    {
+        return true;
+    }
+
+    /// <summary>
+    /// Run a custom script.
+    /// </summary>
+    [MenuItem("LEAP/Custom Scripts/Run Script 2")]
+    private static void RunScript2()
+    {
+        // Create output file for head velocities
+        System.IO.StreamWriter sw = new System.IO.StreamWriter("../Matlab/GazeController/HeadVelocities.csv", false);
+
+        // Get logged gaze controller states and print out velocities
+        var timeline = AnimationManager.Instance.Timeline;
+        var controllerContainer = timeline.BakedTimelineContainers[0].AnimationContainers[0].ControllerContainers
+            .FirstOrDefault(c => c.Controller is GazeController);
+        for (int frameIndex = 0; frameIndex < controllerContainer.ControllerStates.Count; ++frameIndex)
+        {
+            GazeControllerState gazeControllerState = (GazeControllerState)controllerContainer.ControllerStates[frameIndex];
+            float curVelocity = gazeControllerState.stateId == (int)GazeState.Shifting &&
+                gazeControllerState.gazeJointStates[2].latencyTime <= 0f ?
+                gazeControllerState.gazeJointStates[2].curVelocity : 0f; ;
+            sw.WriteLine(string.Format("{0},{1}", frameIndex, curVelocity));
+        }
+        sw.Close();
 
         return;
     }
