@@ -77,8 +77,8 @@
     <Compile Include="Assets\Animation\BehaviorControl\EyesAliveController.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\FaceController.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\GazeAversionController.cs" />
+    <Compile Include="Assets\Animation\BehaviorControl\GazeBodyPart.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\GazeController.cs" />
-    <Compile Include="Assets\Animation\BehaviorControl\GazeJoint.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\GestureController.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\ListenController.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\LocomotionController.cs" />

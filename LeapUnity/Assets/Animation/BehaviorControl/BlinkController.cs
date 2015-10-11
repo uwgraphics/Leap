@@ -233,7 +233,7 @@ public class BlinkController : AnimController
 
     public override void LateUpdate()
     {
-        prevEyePitch = gazeCtrl.LEye.Pitch;
+        prevEyePitch = gazeCtrl.lEye.Pitch;
 
         base.LateUpdate();
     }
@@ -307,8 +307,8 @@ public class BlinkController : AnimController
                 t = 1f - (nbt - beist) / (1 - beist);
             }
 
-            foreach (GazeJoint eye in gazeCtrl.eyes)
-                eye.Pitch += t * eye.downMR / 2f;
+            gazeCtrl.lEye.Pitch += (t * gazeCtrl.lEye.downOMR / 2f);
+            gazeCtrl.rEye.Pitch += (t * gazeCtrl.rEye.downOMR / 2f);
         }
     }
 
@@ -319,8 +319,8 @@ public class BlinkController : AnimController
 
         // Compute rotation distance
         float hrotd = 0;
-        if (gazeCtrl.Head != null)
-            hrotd = UnityEngine.Quaternion.Angle(gazeCtrl.Head.srcRot, gazeCtrl.Head.trgRot);
+        if (gazeCtrl.head != null)
+            hrotd = UnityEngine.Vector3.Angle(gazeCtrl.head._SourceDirection, gazeCtrl.head._TargetDirection);
 
         // Compute blink probability
         //float pb = 0.4f*hrotd/30f - 0.067f;

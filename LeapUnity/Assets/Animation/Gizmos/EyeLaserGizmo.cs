@@ -1,6 +1,15 @@
 using UnityEngine;
 using System.Collections;
 
+public enum EyeLaserBodyPart
+{
+    Eyes,
+    Head,
+    Torso,
+    All,
+    None
+}
+
 /// <summary>
 /// Class for drawing "eye lasers", which indicate direction
 /// of the agent's gaze for debugging purposes.
@@ -9,29 +18,23 @@ using System.Collections;
 public class EyeLaserGizmo : MonoBehaviour
 {
     /// <summary>
-	/// If true, single eye laser is shown from the centroid of the eyes.
-	/// </summary>
-	public bool showGazeLaser = true;
+    /// Specifies for which body parts lasers will be rendered.
+    /// </summary>
+    public EyeLaserBodyPart showLasersForBodyParts;
 
     /// <summary>
-    /// If true, eye laser is shown from the head.
+    /// If true, a laser is shown for every gaze joint.
     /// </summary>
-    public bool showHeadLaser = false;
+    public bool showGazeJointLasers = false;
 
     /// <summary>
-    /// If true, eye laser is shown from the torso.
+    /// If true, source and target gaze directions are also indicated with lasers.
     /// </summary>
-    public bool showTorsoLaser = false;
+    public bool showGazeShiftLasers = false;
 
-    /// <summary>
-    /// if true, eye laser is shown for every gaze joint.
-    /// </summary>
-    public bool showDetailedLasers = false;
-
-	public Color gazeLaserColor = Color.magenta;
-    public Color eyeLaserColor = Color.red;
+	public Color eyeLaserColor = Color.red;
     public Color headLaserColor = Color.blue;
-    public Color torsoLaserColor = Color.blue;
+    public Color torsoLaserColor = Color.magenta;
 
 	private void OnDrawGizmos()
 	{
@@ -39,40 +42,50 @@ public class EyeLaserGizmo : MonoBehaviour
 		if( gazeController == null)
 			return;
 
-        Vector3 eyeCentroid = 0.5f*(gazeController.LEye.bone.position + gazeController.REye.bone.position);
-        Vector3 gazeDir = (0.5f*(gazeController.LEye.Direction + gazeController.REye.Direction)).normalized;
-        float gazetargetDist = gazeController.CurrentGazeTarget != null ?
-            Vector3.Distance(eyeCentroid, gazeController.CurrentGazeTarget.transform.position) : 3f;
-
-        if (showGazeLaser)
+        if (showLasersForBodyParts == EyeLaserBodyPart.Eyes || showLasersForBodyParts == EyeLaserBodyPart.All)
         {
-            Gizmos.color = gazeLaserColor;
-            Gizmos.DrawRay(eyeCentroid, gazeDir.normalized * gazetargetDist);
+            _DrawLasers(gazeController.lEye, eyeLaserColor);
+            _DrawLasers(gazeController.rEye, eyeLaserColor);
         }
 
-        foreach (GazeJoint gazeJoint in gazeController.gazeJoints)
+        if (showLasersForBodyParts == EyeLaserBodyPart.Head || showLasersForBodyParts == EyeLaserBodyPart.All)
         {
-            if (gazeJoint.IsEye && showDetailedLasers)
-            {
-                Gizmos.color = eyeLaserColor;
-            }
-            else if (gazeJoint.type == GazeJointType.Head && showHeadLaser &&
-                (showDetailedLasers || gazeJoint == gazeController.Head))
-            {
-                Gizmos.color = headLaserColor;
-            }
-            else if (gazeJoint.type == GazeJointType.Torso && showTorsoLaser &&
-                (showDetailedLasers || gazeJoint == gazeController.Torso))
-            {
-                Gizmos.color = torsoLaserColor;
-            }
-            else
-            {
-                continue;
-            }
+            _DrawLasers(gazeController.head, headLaserColor);
+        }
 
-            Gizmos.DrawRay(gazeJoint.bone.position, gazeJoint.Direction * gazetargetDist);
+        if (showLasersForBodyParts == EyeLaserBodyPart.Torso || showLasersForBodyParts == EyeLaserBodyPart.All)
+        {
+            _DrawLasers(gazeController.torso, torsoLaserColor);
         }
 	}
+
+    private void _DrawLasers(GazeBodyPart gazeBodyPart, Color laserColor)
+    {
+        GazeController gazeController = GetComponent<GazeController>();
+        Vector3 eyeCenter = gazeController.EyeCenter;
+        float gazeTargetDist = gazeController.CurrentGazeTarget != null ?
+            Vector3.Distance(eyeCenter, gazeController.CurrentGazeTarget.transform.position) : 3f;
+
+        Gizmos.color = laserColor;
+        Gizmos.DrawRay(gazeBodyPart.Top.position, gazeBodyPart.Direction * gazeTargetDist);
+
+        if (showGazeJointLasers)
+        {
+            foreach (var gazeJoint in gazeBodyPart.gazeJoints)
+            {
+                Gizmos.DrawRay(gazeJoint.position, gazeJoint.forward * gazeTargetDist);
+            }
+        }
+
+        if (showGazeShiftLasers)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawRay(gazeBodyPart.Position, gazeBodyPart._SourceDirection * gazeTargetDist);
+            Gizmos.color = Color.green;
+            Gizmos.DrawRay(gazeBodyPart.Position, gazeBodyPart._TargetDirectionAlign * gazeTargetDist);
+            Gizmos.color = Color.black;
+            Gizmos.DrawRay(gazeBodyPart.Position, gazeBodyPart._TargetDirection * gazeTargetDist);
+        }
+    }
 }
 

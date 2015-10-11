@@ -1493,25 +1493,6 @@ public class AnimationTimeline
                 }
                 //
                 controllerContainer.Controller.SetRuntimeState(controllerContainer.ControllerStates[CurrentFrame]);
-                // TODO: this is a hack to prevent OMR violation
-                /*foreach (var eye in GazeController.eyes)
-                {
-                    if (eye.bone.localEulerAngles.x > eye.curDownMR)
-                    {
-                        eye.bone.localEulerAngles = new Vector3(
-                            eye.curDownMR,
-                            eye.bone.localEulerAngles.y,
-                            eye.bone.localEulerAngles.z);
-                    }
-                    else if (-eye.bone.localEulerAngles.x > eye.curUpMR)
-                    {
-                        eye.bone.localEulerAngles = new Vector3(
-                            -eye.curUpMR,
-                            eye.bone.localEulerAngles.y,
-                            eye.bone.localEulerAngles.z);
-                    }
-                }*/
-                //
             }
         }
 

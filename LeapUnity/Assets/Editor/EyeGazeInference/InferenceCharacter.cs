@@ -34,7 +34,7 @@ public class InferenceCharacter {
     //[1] chest
     //[2] spine_a
     //[3] spine_b
-    public GazeJoint[] InferenceBones {
+    public Transform[] InferenceBones {
         get;
         protected set;
     }
@@ -102,13 +102,13 @@ public class InferenceCharacter {
 
         CharModel = charModel;
         //create SpineBones array
-        var inferenceBones = new GazeJoint[5]; //changed to 5 from 4 when neck was added (?)
+        var inferenceBones = new Transform[5]; //changed to 5 from 4 when neck was added (?)
         var gazeCtrl = charModel.GetComponent<GazeController>();
-        var headBone = gazeCtrl.Head.bone;
+        var headBone = gazeCtrl.head.Top;
 
-        GazeJoint[] headJoints = gazeCtrl.gazeJoints.Where(gj => gj.bone.tag == "HeadBone").ToArray();
+        Transform[] headJoints = (Transform[])gazeCtrl.head.gazeJoints.Clone();
         int headJointIndex = 0; //last I checked, there were two headJoints to pick from...
-        GazeJoint headJoint = headJoints[headJointIndex];
+        var headJoint = headJoints[headJointIndex];
         inferenceBones[0] = headJoint;
         Transform[] tBones;
         tBones = charModel.GetComponentsInChildren<Transform>();
@@ -122,7 +122,7 @@ public class InferenceCharacter {
         SpineABone = ModelUtils.FindBone(HipBone, "srfBind_Cn_SpineB");
         SpineBBone = ModelUtils.FindBone(HipBone, "srfBind_Cn_SpineA");
 
-        GazeJoint[] chestJoints = gazeCtrl.gazeJoints.Where(gj => gj.bone.tag == "TorsoBone").ToArray();
+        Transform[] chestJoints = (Transform[])gazeCtrl.torso.gazeJoints.Clone();
 
         inferenceBones[1] = chestJoints[0]; // chest
         inferenceBones[2] = chestJoints[2]; // spine_a

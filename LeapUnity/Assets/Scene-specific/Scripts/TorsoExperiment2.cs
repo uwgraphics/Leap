@@ -246,7 +246,7 @@ public class TorsoExperiment2 : Scenario
 		GazeController gctrl = agents[agentName].GetComponent<GazeController>();
         gctrl.useTorso = true;//expCondition == ExperimentCondition.ReorientBody ? true : false;
 		
-		return GazeAt(agentName, partLocationsAssigned[part], headAlign, 0, torsoAlign, 0, 1);
+		return GazeAt(agentName, partLocationsAssigned[part], headAlign, torsoAlign);
 	}
 	
 	/// <summary>
@@ -569,7 +569,7 @@ public class TorsoExperiment2 : Scenario
 		
 		// Initialize agent's gaze controller
 		gazeCtrl = agents[agentName].GetComponent<GazeController>();
-		gazeCtrl.gazeJoints[2].align = 0.6f;
+		gazeCtrl.head.align = 0.6f;
         gazeCtrl.useTorso = true;//expCondition == ExperimentCondition.ReorientBody ? true : false;
 		
 		// Initialize agent's listen controller

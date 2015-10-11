@@ -111,15 +111,15 @@ public class TorsoExperiment1 : Scenario
 			
 		case GazeShiftType.EyeHead:
                 gctrl.useTorso = false;
-			action_id = GazeAt(agentName,targetName,0.3f,0f,0f,0f,1f );
+			action_id = GazeAt(agentName,targetName,0.3f,0f);
 			break;
 			
 		case GazeShiftType.UpperBody0:
-			action_id = GazeAt(agentName,targetName,0.3f,0f,0f,0f,1f );
+			action_id = GazeAt(agentName,targetName,0.3f,0f);
 			break;
 			
 		case GazeShiftType.UpperBody1:
-			action_id = GazeAt(agentName,targetName,0.3f,0f,0.3f,0f,1f );
+			action_id = GazeAt(agentName,targetName,0.3f,0.3f);
 			break;
 		
 		default:
@@ -167,7 +167,7 @@ public class TorsoExperiment1 : Scenario
 		exprCtrl.FixExpression();
 		// Initialize gaze
 		yield return new WaitForSeconds(0.1f);
-		curgaze = GazeAtCamera("Jasmin",1f,0f,1f,0f,1f);
+		curgaze = GazeAtCamera("Jasmin",1f,1f);
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );
 		// Show scene again
 		ShowScene();
@@ -242,7 +242,7 @@ public class TorsoExperiment1 : Scenario
 				curgaze = GazeAt("Jasmin",plane.name,gs);
 				yield return StartCoroutine( WaitUntilFinished(curgaze) );
 				yield return new WaitForSeconds(0.8f);
-				curgaze = GazeAtCamera("Jasmin",1f,0f,gs==GazeShiftType.EyeHead?0f:1f,75,1f);
+				curgaze = GazeAtCamera("Jasmin",1f,gs==GazeShiftType.EyeHead?0f:1f);
 				yield return StartCoroutine( WaitUntilFinished(curgaze) );
 				
 				// Store info needed for response logging

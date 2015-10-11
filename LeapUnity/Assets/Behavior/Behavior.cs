@@ -182,7 +182,7 @@ public class GazeAction : BehaviorAction
             gazing = true;
 
             // Set gaze parameters
-            gazeCtrl.Head.align = headAlign;
+            gazeCtrl.head.align = headAlign;
         }
 
         return true;

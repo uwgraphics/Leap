@@ -384,12 +384,12 @@ public class GazeAversionController : AnimController
     {
         //Minimal use of head for intimacy gaze aversions
         if (aversionType == GazeAversionType.Intimacy)
-            gazeCtrl.Head.align = 0.1f;
+            gazeCtrl.head.align = 0.1f;
         else
-            gazeCtrl.Head.align = 0.4f;
+            gazeCtrl.head.align = 0.4f;
 
-        if (gazeCtrl.Torso != null)
-            gazeCtrl.Torso.align = 0f;
+        if (gazeCtrl.torso != null)
+            gazeCtrl.torso.align = 0f;
 
         if (aversionTarget == GazeAversionTarget.None)
         {
@@ -477,9 +477,9 @@ public class GazeAversionController : AnimController
     protected virtual void Transition_GazeAwayMutualGaze_helper()
     {
         //Look at the interlocutor
-        gazeCtrl.Head.align = 1f;
-        if (gazeCtrl.Torso != null)
-            gazeCtrl.Torso.align = 0f;
+        gazeCtrl.head.align = 1f;
+        if (gazeCtrl.torso != null)
+            gazeCtrl.torso.align = 0f;
         gazeCtrl.GazeAt(mutualGazeObject);
         resetTime();
 

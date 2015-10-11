@@ -170,17 +170,12 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
     /// <param name="headAlign">
     /// Head alignment parameter.
     /// </param>
-    /// <param name="headLatency">
-    /// Head latency parameter.
-    /// </param>
     /// <returns>
     /// Action ID.
     /// </returns>
-    public virtual int GazeAt(string agentName, string targetName,
-                              float headAlign, float headLatency)
+    public virtual int GazeAt(string agentName, string targetName, float headAlign)
     {
-        return DoAction(new GazeAtAction(agents[agentName], objects[targetName],
-                                          headAlign, headLatency));
+        return DoAction(new GazeAtAction(agents[agentName], objects[targetName], headAlign));
     }
 
     /// <summary>
@@ -195,17 +190,12 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
     /// <param name="headAlign">
     /// Head alignment parameter.
     /// </param>
-    /// <param name="headLatency">
-    /// Head latency parameter.
-    /// </param>
     /// <returns>
     /// Action ID.
     /// </returns>
-    public virtual int GazeAt(string agentName, GameObject target,
-                              float headAlign, float headLatency)
+    public virtual int GazeAt(string agentName, GameObject target, float headAlign)
     {
-        return DoAction(new GazeAtAction(agents[agentName], target,
-                                          headAlign, headLatency));
+        return DoAction(new GazeAtAction(agents[agentName], target, headAlign));
     }
 
     /// <summary>
@@ -219,29 +209,17 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
     /// </param>
     /// <param name="headAlign">
     /// Head alignment parameter.
-    /// </param>
-    /// <param name="headLatency">
-    /// Head latency parameter.
     /// </param>
     /// <param name="torsoAlign">
     /// Torso alignment parameter.
     /// </param>
-    /// <param name="torsoLatency">
-    /// Torso latency parameter.
-    /// </param>
-    /// <param name="eyeAlign">
-    /// Torso alignment parameter.
-    /// </param>
     /// <returns>
     /// Action ID.
     /// </returns>
     public virtual int GazeAt(string agentName, string targetName,
-                              float headAlign, float headLatency,
-                              float torsoAlign, float torsoLatency,
-                              float eyeAlign)
+                              float headAlign, float torsoAlign)
     {
-        return DoAction(new GazeAtAction(agents[agentName], objects[targetName],
-                                          headAlign, headLatency, torsoAlign, torsoLatency, eyeAlign));
+        return DoAction(new GazeAtAction(agents[agentName], objects[targetName], headAlign, torsoAlign));
     }
 
     /// <summary>
@@ -270,19 +248,15 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
     /// <param name="headAlign">
     /// Head alignment parameter.
     /// </param>
-    /// <param name="headLatency">
-    /// Head latency parameter.
-    /// </param>
     /// <returns>
     /// Action ID.
     /// </returns>
-    public virtual int GazeAtCamera(string agentName, float headAlign, float headLatency)
+    public virtual int GazeAtCamera(string agentName, float headAlign)
     {
         GameObject cam = GameObject.FindGameObjectWithTag("EyeContactHelper");
         if (cam == null)
             cam = GameObject.FindGameObjectWithTag("MainCamera");
-        return DoAction(new GazeAtAction(agents[agentName], cam,
-                                          headAlign, headLatency));
+        return DoAction(new GazeAtAction(agents[agentName], cam, headAlign));
     }
 
     /// <summary>
@@ -294,27 +268,18 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
     /// <param name="headAlign">
     /// Head alignment parameter.
     /// </param>
-    /// <param name="headLatency">
-    /// Head latency parameter.
-    /// </param>
     /// <param name="torsoAlign">
     /// Torso alignment parameter.
-    /// </param>
-    /// <param name="torsoLatency">
-    /// Head latency parameter.
     /// </param>
     /// <returns>
     /// Action ID.
     /// </returns>
-    public virtual int GazeAtCamera(string agentName, float headAlign, float headLatency,
-                                    float torsoAlign, float torsoLatency, float eyeAlign)
+    public virtual int GazeAtCamera(string agentName, float headAlign, float torsoAlign)
     {
         GameObject cam = GameObject.FindGameObjectWithTag("EyeContactHelper");
         if (cam == null)
             cam = GameObject.FindGameObjectWithTag("MainCamera");
-        return DoAction(new GazeAtAction(agents[agentName], cam,
-                                          headAlign, headLatency,
-                                          torsoAlign, torsoLatency, eyeAlign));
+        return DoAction(new GazeAtAction(agents[agentName], cam, headAlign, torsoAlign));
     }
 
     /// <summary>

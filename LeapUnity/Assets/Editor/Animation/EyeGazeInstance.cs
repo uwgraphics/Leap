@@ -167,10 +167,10 @@ public class EyeGazeInstance : AnimationControllerInstance
         GazeController.StateChange += new StateChangeEvtH(GazeController_StateChange);
 
         // Initiate gaze shift to target
-        GazeController.Head.align = Mathf.Clamp01(HeadAlign);
-        if (GazeController.Torso != null)
+        GazeController.head.align = Mathf.Clamp01(HeadAlign);
+        if (GazeController.torso != null)
         {
-            GazeController.Torso.align = Mathf.Clamp01(TorsoAlign);
+            GazeController.torso.align = Mathf.Clamp01(TorsoAlign);
         }
         GazeController.useTorso = TurnBody;
         if (Target != null)
@@ -224,24 +224,14 @@ public class EyeGazeInstance : AnimationControllerInstance
             }
         }
 
-        // Compute gaze weight
-        float gazeWeight = 1f;
         if (Target == null)
         {
             // This is a gaze shift ahead, blend it out
             int numFrames = Mathf.Min(FrameLength, Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.gazeAheadBlendTime));
             float t = numFrames > 1 ? Mathf.Clamp01(((float)frame) / (numFrames - 1)) : 0f;
             float t2 = t * t;
-            gazeWeight = 1f + 2f * t2 * t - 3f * t2;
+            GazeController.weight = 1f + 2f * t2 * t - 3f * t2;
         }
-
-        // Apply gaze weight
-        if (GazeController.StateId == (int)GazeState.Shifting)
-            GazeController.weight = gazeWeight;
-        else if (frame > 0)
-            // TODO: careful here - we only compute fixation weight for the fixation in the *current* gaze instance
-            // and not the still-ongoing fixation from the previous gaze instance
-            GazeController.fixWeight = gazeWeight;
     }
 
     // Compute gaze shift parameters to account for anticipated body movement
@@ -250,7 +240,7 @@ public class EyeGazeInstance : AnimationControllerInstance
         // How far ahead do we need to look to anticipate the target?
         var baseAnimationInstance = AnimationManager.Instance.Timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(
             inst => inst.Animation.Model == Model);
-        GazeController.movingTargetPositionOffset = EyeGazeEditor.ComputeMovingTargetPositionOffset(
+        GazeController._MovingTargetPositionOffset = EyeGazeEditor.ComputeMovingTargetPositionOffset(
             AnimationManager.Instance.Timeline, baseAnimationInstance.InstanceId, this,
             AnimationManager.Instance.Timeline.CurrentFrame,
             Target == null ? AheadTargetPosition : Target.transform.position);

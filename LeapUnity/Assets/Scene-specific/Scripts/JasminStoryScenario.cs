@@ -26,7 +26,8 @@ public class JasminStoryScenario : StoryScenario
 		
 		// PP -> PPC
 		SetGazePathArcs(agentName,0f,0f,0f);
-		curgaze = GazeAt(agentName,"GTTestL",1f,0f,0f,0f,0.4f);
+		//curgaze = GazeAt(agentName,"GTTestL",1f,0f,0f,0f,0.4f);
+        // TODO: bring this back when you bring back stylized gaze
 		//curgaze = GazeAtCamera(agentName,0f,0f,0f,0f,1f);
 		//blinkCtrl.Blink(0.65f,0.8f,1f);
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );

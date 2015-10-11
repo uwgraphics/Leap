@@ -41,7 +41,7 @@ public class GeomUtil
 	/// in 3D space.
 	/// </summary>
 	public static void ClosestPointsOn2Lines(Vector3 u1, Vector3 u2,
-        Vector3 v1, Vector3 v2, out float ut, out float vt )
+        Vector3 v1, Vector3 v2, out float ut, out float vt)
 	{
 		Vector3 u = u2-u1;
 		Vector3 v = v2-v1;
@@ -96,7 +96,6 @@ public class GeomUtil
  
 			return false;
 		}
- 
 		else
         {
 			return true;

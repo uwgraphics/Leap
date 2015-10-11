@@ -38,7 +38,7 @@ public class AlexLectureScenario : LectureScenario
 		//Get the head started in the correct position
 		if (condition == ConditionType.Affiliative	|| condition == ConditionType.Both || condition == ConditionType.Audio) {
 			//Start by fully aligning with the camera
-			gazeCtrl.Head.align = 1f;
+			gazeCtrl.head.align = 1f;
 			gazeCtrl.GazeAt("MainCamera");
 			
 			yield return StartCoroutine( WaitForGazeShiftFinished() );
@@ -51,7 +51,7 @@ public class AlexLectureScenario : LectureScenario
 		}
 		else if (condition == ConditionType.Referential) {
 			//Align fully with the map, then gaze at the participant out of the corner of one eye
-			gazeCtrl.Head.align = 1f;
+			gazeCtrl.head.align = 1f;
 			gazeCtrl.GazeAt("Map");
 			
 			yield return StartCoroutine( WaitForGazeShiftFinished() );
@@ -62,7 +62,7 @@ public class AlexLectureScenario : LectureScenario
 			
 			yield return new WaitForSeconds(2f);
 			
-			gazeCtrl.Head.align = 0f;
+			gazeCtrl.head.align = 0f;
 			
 			gazeCtrl.GazeAt("MainCamera");
 			
@@ -96,32 +96,32 @@ public class AlexLectureScenario : LectureScenario
 		}
 		
 		// Set parameters of the 1. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 1. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// Set parameters of the 2. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 2. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// Set parameters of the 3. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 3. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
@@ -134,22 +134,22 @@ public class AlexLectureScenario : LectureScenario
 		speechCtrl.Speak("AlexLecture2");
 		
 		// Set parameters of the 4. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 4. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// Set parameters of the 5. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 5. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
@@ -162,12 +162,12 @@ public class AlexLectureScenario : LectureScenario
 		speechCtrl.Speak("AlexLecture3");
 		
 		// Set parameters of the 6. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 6. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
@@ -180,32 +180,32 @@ public class AlexLectureScenario : LectureScenario
 		speechCtrl.Speak("AlexLecture4");
 		
 		// Set parameters of the 7. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 7. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// Set parameters of the 8. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 8. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// Set parameters of the 9. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 9. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
@@ -216,22 +216,22 @@ public class AlexLectureScenario : LectureScenario
 		speechCtrl.Speak("AlexLecture5");
 		
 		// Set parameters of the 10. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 10. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// Set parameters of the 11. gaze shift
-		gazeCtrl.Head.align = mapAlign;
+		gazeCtrl.head.align = mapAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		
 		// 11. gaze shift back
-		gazeCtrl.Head.align = cameraAlign;
+		gazeCtrl.head.align = cameraAlign;
 		
 		yield return StartCoroutine( WaitForGazeShiftFinished() );
 		

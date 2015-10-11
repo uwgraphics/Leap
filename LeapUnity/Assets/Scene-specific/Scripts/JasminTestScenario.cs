@@ -10,13 +10,15 @@ public class JasminTestScenario : TestScenario
 		
 		HideScene();
 		yield return new WaitForSeconds(1f);
-		int gaze_id = GazeAtCamera(agentName,1f,0f,1f,0f,1f);
-		yield return StartCoroutine( WaitUntilFinished(gaze_id) );
+        // TODO: bring this back when you bring back stylized gaze
+		//int gaze_id = GazeAtCamera(agentName,1f,0f,1f,0f,1f);
+		//yield return StartCoroutine( WaitUntilFinished(gaze_id) );
 		ShowScene();
 		yield return new WaitForSeconds(1f);
-		
-		gaze_id = GazeAt(agentName,"GTTest",0f,0f,0f,0f,1f);
-		yield return StartCoroutine( WaitUntilFinished(gaze_id) );
+
+        // TODO: bring this back when you bring back stylized gaze
+		//gaze_id = GazeAt(agentName,"GTTest",0f,0f,0f,0f,1f);
+		//yield return StartCoroutine( WaitUntilFinished(gaze_id) );
 		
 		/*ChangeExpression(agentName, "ExpressionSmileClosed",0.6f,0f);
 		yield return new WaitForSeconds(2f);

@@ -197,10 +197,10 @@ public class LEAPMenu
         timeline.GetLayer("Environment").isBase = false;
 
         // Configure gaze controllers
-        testScenes.modelNorman.GetComponent<GazeController>().headPostureWeight = 0f;
-        testScenes.modelNorman.GetComponent<GazeController>().torsoPostureWeight = 1f;
-        testScenes.modelRoman.GetComponent<GazeController>().headPostureWeight = 0f;
-        testScenes.modelRoman.GetComponent<GazeController>().torsoPostureWeight = 1f;
+        testScenes.modelNorman.GetComponent<GazeController>().head.postureWeight = 0f;
+        testScenes.modelNorman.GetComponent<GazeController>().torso.postureWeight = 1f;
+        testScenes.modelRoman.GetComponent<GazeController>().head.postureWeight = 0f;
+        testScenes.modelRoman.GetComponent<GazeController>().torso.postureWeight = 1f;
 
         // Reset test scenario
         editTestScenario.models = null;
@@ -1114,8 +1114,9 @@ public class LEAPMenu
     [MenuItem("LEAP/Custom Scripts/Run Script 2")]
     private static void RunScript2()
     {
-        // Create output file for head velocities
-        System.IO.StreamWriter sw = new System.IO.StreamWriter("../Matlab/GazeController/HeadVelocities.csv", false);
+        // Create output files for velocities
+        System.IO.StreamWriter swh = new System.IO.StreamWriter("../Matlab/GazeController/HeadVelocities.csv", false);
+        System.IO.StreamWriter swt = new System.IO.StreamWriter("../Matlab/GazeController/TorsoVelocities.csv", false);
 
         // Get logged gaze controller states and print out velocities
         var timeline = AnimationManager.Instance.Timeline;
@@ -1124,12 +1125,17 @@ public class LEAPMenu
         for (int frameIndex = 0; frameIndex < controllerContainer.ControllerStates.Count; ++frameIndex)
         {
             GazeControllerState gazeControllerState = (GazeControllerState)controllerContainer.ControllerStates[frameIndex];
-            float curVelocity = gazeControllerState.stateId == (int)GazeState.Shifting &&
-                gazeControllerState.gazeJointStates[2].latencyTime <= 0f ?
-                gazeControllerState.gazeJointStates[2].curVelocity : 0f; ;
-            sw.WriteLine(string.Format("{0},{1}", frameIndex, curVelocity));
+            float curHeadVelocity = gazeControllerState.stateId == (int)GazeState.Shifting &&
+                gazeControllerState.headState.latency <= 0f ?
+                gazeControllerState.headState.curVelocity : 0f; ;
+            float curTorsoVelocity = gazeControllerState.stateId == (int)GazeState.Shifting &&
+                gazeControllerState.torsoState.latency <= 0f ?
+                gazeControllerState.torsoState.curVelocity : 0f; ;
+            swh.WriteLine(string.Format("{0},{1}", frameIndex, curHeadVelocity));
+            swt.WriteLine(string.Format("{0},{1}", frameIndex, curTorsoVelocity));
         }
-        sw.Close();
+        swh.Close();
+        swt.Close();
 
         return;
     }

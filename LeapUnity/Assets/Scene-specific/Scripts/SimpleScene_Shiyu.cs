@@ -27,11 +27,11 @@ public class SimpleScene_Shiyu : Scenario
 		
 		// Initialize gaze
 		yield return new WaitForSeconds(0.6f);
-		curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 0.8f, 0f);
+		curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 0.8f);
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );
-		curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 0.8f, 0f);
+		curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 0.8f);
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );
-		curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 1.0f, 0f);
+		curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 1.0f);
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );
 		
 		

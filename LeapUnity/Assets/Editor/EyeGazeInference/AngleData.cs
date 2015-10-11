@@ -293,10 +293,10 @@ public class AngleData {
             Hips_Orientations_Local.Add(Character.HipBone.localRotation);
             Hips_Orientations_Global.Add(Character.HipBone.rotation);
             //root space
-            Head_Orientations_Root.Add(QuaternionUtil.DispQ(Character.HipBone.rotation, Character.InferenceBones[0].bone.rotation));
-            Chest_Orientations_Root.Add(QuaternionUtil.DispQ(Character.HipBone.rotation, Character.InferenceBones[1].bone.rotation));
-            SpineA_Orientations_Root.Add(QuaternionUtil.DispQ(Character.HipBone.rotation, Character.InferenceBones[2].bone.rotation));
-            SpineB_Orientations_Root.Add(QuaternionUtil.DispQ(Character.HipBone.rotation, Character.InferenceBones[3].bone.rotation));
+            Head_Orientations_Root.Add(QuaternionUtil.DispQ(Character.HipBone.rotation, Character.InferenceBones[0].rotation));
+            Chest_Orientations_Root.Add(QuaternionUtil.DispQ(Character.HipBone.rotation, Character.InferenceBones[1].rotation));
+            SpineA_Orientations_Root.Add(QuaternionUtil.DispQ(Character.HipBone.rotation, Character.InferenceBones[2].rotation));
+            SpineB_Orientations_Root.Add(QuaternionUtil.DispQ(Character.HipBone.rotation, Character.InferenceBones[3].rotation));
             //head local space
             Head_Orientations_HeadL.Add(QuaternionUtil.DispQ(Character.ChestBone.rotation, Character.HeadBone.rotation));
             /////////////////////////////////////////////////////////////////

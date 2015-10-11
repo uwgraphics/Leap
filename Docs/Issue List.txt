@@ -1,32 +1,50 @@
 Leap Animation Editor:
 
+#120 [] Head and torso should keep moving until the eyes reach their target (regardless of whether min. head rotation is correctly computed or not, see #119)
+
+#119 [] Computing minimal head rotation needed for the eyes to reach the target is wrong; head reaches the target while the eyes are still moving
+
+#113 [] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
+  - Refactoring seems to have fixed the problem for the head, but not the torso
+  
+#94 [] Torso snaps to a new pose as we start a new gaze shift in which torso movement is disabled
+  - For example, create a gaze shift toward the diamond in the StealDiamond scenario, set torso align to 0, and watch what happens with the torso at gaze shift start
+  
+#109 [] Baking gaze animation is extremely slow
+  - Gaze IK weight computation in AnimationTimeline._InitGazeIK() takes up a lot of time for some reason... or causes something else (IK?) to take a very long time
+  - It's the IK solver that's too slow...
+  
+#105 [] Gaze doesn't work correctly for instance starting at frame 0
+
 #118 [] Character pose and animation controller states can vary at the start of the animation timeline, which is incorrect
 
 #117 [] Character pose does not get reset properly when using Reset to Initial Pose
 
+#112 [] IK does not work correctly for end-effector constraints attached to parts of the character affected by gaze
+
+#111 [] IK does not work correctly for resized character models
+
+#104 [] When using gaze IK, gaze cannot be unconstrained
+  - There must be contiguous gaze instances along the entire timeline, otherwise IK won't work during "gaps"
+
 #116 [] None of the keyboard shortcuts for gaze editing work anymore
   - Possibly related, but in the handler function for shortcuts, LeapAnimationEdit._animationEditGizmos == null always evaluates to true, even though it is definitely not null!
+  
+#100 [] Gaze target inference will be invalid for manipulated objects
+  - See BookShelf example - target inference might attach the gaze target to a book even at a time when the book should actually be in the character's hand
+  
+#62 [] Stopping a gaze shift causes a discontinuity in pose
 
-#115 [] Huge discontinuities in torso pose
+#115 [X] Huge discontinuities in torso pose
   - See Roman in PassSodaEdits0
 
 #114 [X] Jerkiness and small posture discontinuities at gaze instance boundaries
   - See BookShelfEdits0, between frames 900 and 1000
   - Seems to be worse in baked/exported motion
 
-#113 [] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
-
-#112 [] IK does not work correctly for end-effector constraints attached to parts of the character affected by gaze
-
-#111 [] IK does not work correctly for resized character models
-
-#110 [] Constraining eyes by OMR does not work correctly
+#110 [X] Constraining eyes by OMR does not work correctly
   - In WaitForBusEdits1 example, eye rotation around frame 142 is *way* outside valid downward OMR
   - For now I "fixed" it by setting much lower OMR than natural
-
-#109 [] Baking gaze animation is extremely slow
-  - Gaze IK weight computation in AnimationTimeline._InitGazeIK() takes up a lot of time for some reason... or causes something else (IK?) to take a very long time
-  - It's the IK solver that's too slow...
 
 #108 [X] Torso rotations are completely broken when torso posture weight in the gaze controller is set to zero
   - Discontinuous at gaze shift boundaries, see TestExpressiveGaze
@@ -35,17 +53,12 @@ Leap Animation Editor:
   - Happens only when using GazeController._ApplyRotation() to distribute rotation
   - The problem was in GazeJoint._ComputeTargetRotation() - we should *not* be computing target rotation in horizontal plane!
 
-#107 [] Hand constraint enforcement appears to be broken when character is rescaled
+#107 [X] Hand constraint enforcement appears to be broken when character is rescaled
   - Roman in HandShake example; Norman in BookShelf example - constraints don't get enforced correctly
   - Norman in WindowWashing example - occasional snapping in character's pose
 
-#106 [] When adding a gaze instance at start frame 0, it gets delayed to start frame 1, but frame length does not get shortened; if there are gaze instances further down the timeline, the end frame of the new instance overlaps with the start frame of the next instance
+#106 [X] When adding a gaze instance at start frame 0, it gets delayed to start frame 1, but frame length does not get shortened; if there are gaze instances further down the timeline, the end frame of the new instance overlaps with the start frame of the next instance
   - Also see #105
-
-#105 [] Gaze doesn't work correctly for instance starting at frame 0
-
-#104 [] When using gaze IK, gaze cannot be unconstrained
-  - There must be contiguous gaze instances along the entire timeline, otherwise IK won't work during "gaps"
 
 #103 [X] Head and eyes overshoots the gaze target in some gaze shifts
   - See StealDiamondGaze2 when StealDiamondGaze1 is disabled and dynamic gaze IK weights are used
@@ -59,28 +72,22 @@ Leap Animation Editor:
   - See EyeGazeInstance.Apply() - blend weight is computed only when baking, but it doesn't get baked itself
   - Fixed that, but now there is issue #102
 
-#100 [] Gaze target inference will be invalid for manipulated objects
-  - See BookShelf example - target inference might attach the gaze target to a book even at a time when the book should actually be in the character's hand
-
 #99 [X] Gaze-ahead sometimes breaks and results in gaze in the wrong direction
   - Walking90deg has examples of how broken it is
   - Gaze-ahead should not be special gaze shifts, but normal gaze shifts towards targets in the distance
   - Ahead-targets themselves should be inferred as part of Danny's inference
   - The problem was actually in annotations, fixed now
 
-#98 [] Animation timeline allows temporally overlapping animations in the same layer, on the same character model
+#98 [X] Animation timeline allows temporally overlapping animations in the same layer, on the same character model
 
-#96 [] Unnatural head and torso poses can result at low values of alignment parameters due to source rotations no longer being valid due to underlying body movement
+#96 [X] Unnatural head and torso poses can result at low values of alignment parameters due to source rotations no longer being valid due to underlying body movement
   - See head pose at the end of StealDiamondGaze2 - the character was hunching at the start of the gaze shift, but stands more upright as it goes on and consequently the head source rotation now points the head too high; since head align is low, target head rotation is fairly close to the source rotation, so it also looks bad!
   - Maybe source rotation should be defined with respect to the original gaze direction in world space? No, this makes the gaze target effectively unreachable if, for instance, the character turns around as it's doing a gaze shift
   - Idea - somehow update srcRot based on baseRot when alignment is low!
 
-#95 [] Sometimes eye gaze directions become divergent
+#95 [X] Sometimes eye gaze directions become divergent
   - See in the example used in #94
   - Might go away when #93 is fixed
-  
-#94 [] Torso snaps to a new pose as we start a new gaze shift in which torso movement is disabled
-  - For example, create a gaze shift towards the diamond in the StealDiamond scenario, set torso align to 0, and watch what happens with the torso at gaze shift start
 
 #93 [X] Some gaze shifts are synthesized with head pose that does not match the specified alignment parameter
   - For example, create a gaze shift towards the diamond in the StealDiamond scenario, set head align to 0, and watch what happens with the head as target is reached
@@ -135,10 +142,10 @@ Leap Animation Editor:
 #86 [X] During VOR, we can't just keep the same orientation that was set when fixation started; alignment should approach 1 as body gets more aligned with the target or keep the original value as body rotates away from the target
   - This is a problem when there is a lot of body motion, esp. in walking motions
 
-#85 [] Degenerate gaze shifts - gaze controller enters fixation mode even though neither eyes nor head have yet aligned with the target
+#85 []X Degenerate gaze shifts - gaze controller enters fixation mode even though neither eyes nor head have yet aligned with the target
   - StealDiamondGaze2 is a nasty example where for some reason neck is more aligned with the target than  the head!
 
-#84 [] Alignment inference still seems to have some issues
+#84 [X] Alignment inference still seems to have some issues
   - Check StealDiamond example
 
 #83 [X] Eyes often snap when switching to a new gaze instance
@@ -165,7 +172,7 @@ Leap Animation Editor:
   - Because of changes made to VOR while fixing #71
   - Rotation computation during VOR should be analogous to rotation computation during the gaze shift (with source and target rotations and whatnot), only difference being that rotation does not advance but remains static relative to the target
 
-#73 [] VOR won't work correctly when there is a sequence of gaze-ahead shifts
+#73 [X] VOR won't work correctly when there is a sequence of gaze-ahead shifts
   - B/c gaze-ahead is towards a helper target that moves around - scheduling a gaze shift ahead while VOR is active towards previous ahead target position will cause the helper target to move and break the VOR
   - Implemented an untested fix
 
@@ -206,17 +213,18 @@ Leap Animation Editor:
   - It's because baked GazeController state is incorrect for some frames (among other things, CurrentGazeTarget is set to null) - see #68
   - Fixed by fixing #68
 
-#66 [] Target gaze rotation computation in the gaze controller is slightly off
+#66 [X] Target gaze rotation computation in the gaze controller is slightly off
   - GazeController.ApplyTargetPose() does not distribute trgRotAlign of the torso correctly among spine joints
 
-#65 [] Gaze controller goes into VOR state even though eyes haven't aligned with the target
+#65 [X] Gaze controller goes into VOR state even though eyes haven't aligned with the target
   - Eyes don't seem to VOR at all, even though they are in VOR mode
   - See example WindowWashingAGaze8
 
-#64 [] Discontinuous pose when using expressive gaze animations
+#64 [X] Discontinuous pose when using expressive gaze animations
   - Many examples in WindowWashing
   - Snapping seems to happen when gaze controller goes from NoGaze to Shifting
   - Might be #60 redux
+  - Fixed, no longer using expressive gaze animations
 
 #63 [X] Ahead target position computation is off
   - See example in second gaze shift in WindowWashing, the ahead target is clearly too low and far right (it should be closer to WindowUpperLeft1)
@@ -237,8 +245,6 @@ Leap Animation Editor:
   - Rekeying all the joints seems to have fixed the problem
 
 #63 [X] EyeGazeEditor.GetInitControllerForEyeGazeInstance() sets head and torso alignments to 1
-
-#62 [] Stopping a gaze shift causes a discontinuity in pose
 
 #60 [X] VOR target rotation is discontinuous in the first frame of a gaze shift
   - fixTrgRot computation is discontinuous between gaze instances for some reason, but *only* when there is expressive gaze and *only* for the first frame of the gaze shift
@@ -272,14 +278,14 @@ Leap Animation Editor:
   - Computing for worst case scenario (all alignments set to 1) also gives an underestimate
   - Found a hacky "solution" by simply doubling the initial estimate - real fix will be having accurate gaze shift inference
 
-#54 [] When trying to remove an animation clip from an Animation component, Unity sometimes logs an error saying that the animation clip does not exist, even though it definitely does
+#54 [X] When trying to remove an animation clip from an Animation component, Unity sometimes logs an error saying that the animation clip does not exist, even though it definitely does
 
-#53 [] Removing eye gaze in EyeGazeEditor.RemoveEyeGaze() results in some gaze instances having incorrect timings
+#53 [X] Removing eye gaze in EyeGazeEditor.RemoveEyeGaze() results in some gaze instances having incorrect timings
   - This may also break EyeGazeEditor.SetEyeGazeTiming()
 
 #52 [X] Adding a gaze instance that overlaps multiple other gaze instances does not work correctly
 
-#51 [] Spine joints in body motions often have roll movement (around the z axis), which our gaze model does not use - this invalidates head and torso alignment inferences
+#51 [X] Spine joints in body motions often have roll movement (around the z axis), which our gaze model does not use - this invalidates head and torso alignment inferences
   - Related to #24
   - When non-zero roll is applied to a torso joint, it can have substantial effect on alignments, so our old approach of just ignoring roll isn't going to cut it anymore
 
@@ -288,16 +294,17 @@ Leap Animation Editor:
 #48 [X] Current approach for gazing back and blending into the original motion has a bug where the character's pose snaps to the original motion instead of blending smoothly
   - Happens with Roman in the PassSoda test case
   
-#47 [] Current approach for gazing back and blending into the original motion is not valid when the original motion has the character facing a radically different direction from the ahead-direction (defined based on the position of the feet)
+#47 [X] Current approach for gazing back and blending into the original motion is not valid when the original motion has the character facing a radically different direction from the ahead-direction (defined based on the position of the feet)
   - This happens with both Norman and Roman in the PassSoda test case
 
-#46 [] Gaze sometimes leaves alignment with a moving object during VOR phase
+#46 [X] Gaze sometimes leaves alignment with a moving object during VOR phase
   - See how badly Roman tracks SodaBottleB in PassSoda test case
 
-#45 [] Moving end-effector goals attached to the character skeleton itself are not properly enforced
+#45 [X] Moving end-effector goals attached to the character skeleton itself are not properly enforced
   - See PassSodaBMouth constraint in PassSoda example
+  - Same problem as #112?
 
-#44 [] Eyes sometimes appear to violate OMR quite badly
+#44 [X] Eyes sometimes appear to violate OMR quite badly
   - See Roman's eyes in PassSoda example
 
 #35 [X] Head snaps to wrong orientation when it begins to rotate at gaze shift start

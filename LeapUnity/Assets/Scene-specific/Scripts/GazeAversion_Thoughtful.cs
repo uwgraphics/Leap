@@ -68,19 +68,19 @@ public class GazeAversion_Thoughtful : Scenario
 		// Initialize gaze
 		yield return new WaitForSeconds(0.6f);
 		if (gactrl.condition != GazeAversionCondition.BadModel) {
-			curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 0.8f, 0f);
+			curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 0.8f);
 			yield return StartCoroutine( WaitUntilFinished(curgaze) );
-			curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 0.8f, 0f);
+			curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 0.8f);
 			yield return StartCoroutine( WaitUntilFinished(curgaze) );
-			curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 1.0f, 0f);
+			curgaze = GazeAt(agentName, gactrl.mutualGazeObject, 1.0f);
 			yield return StartCoroutine( WaitUntilFinished(curgaze) );
 		}
 		else {
-			curgaze = GazeAt(agentName, GameObject.Find ("GazeLeft"), 0.8f, 0f);
+			curgaze = GazeAt(agentName, GameObject.Find ("GazeLeft"), 0.8f);
 			yield return StartCoroutine( WaitUntilFinished(curgaze) );
-			curgaze = GazeAt(agentName, GameObject.Find ("GazeLeft"), 0.8f, 0f);
+			curgaze = GazeAt(agentName, GameObject.Find ("GazeLeft"), 0.8f);
 			yield return StartCoroutine( WaitUntilFinished(curgaze) );
-			curgaze = GazeAt(agentName, GameObject.Find ("GazeLeft"), 1.0f, 0f);
+			curgaze = GazeAt(agentName, GameObject.Find ("GazeLeft"), 1.0f);
 			yield return StartCoroutine( WaitUntilFinished(curgaze) );
 		}
 		

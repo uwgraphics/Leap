@@ -35,7 +35,8 @@ public class JasminAccuracyScenario : TestScenario
 		Debug.Log( "Looking at " + customTarget );
 		
 		// Gaze at target
-		curgaze = GazeAt(agentName,customTarget,0f,0f,0f,0f,eyeAlign);
+		//curgaze = GazeAt(agentName,customTarget,0f,0f,0f,0f,eyeAlign);
+        // TODO: bring this back when you bring back stylized gaze
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );
 		if( lightUpTarget )
 			_SwitchLitTexture(customTarget);

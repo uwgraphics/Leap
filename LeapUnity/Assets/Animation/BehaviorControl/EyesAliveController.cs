@@ -58,8 +58,8 @@ public class EyesAliveController : AnimController
         uniDist2.SetDistributionParameters(0f, 100f);
 
         // Create arrays for eye rotations
-        srcEyeRot = new UnityEngine.Quaternion[gazeCtrl.eyes.Length];
-        trgEyeRot = new UnityEngine.Quaternion[gazeCtrl.eyes.Length];
+        srcEyeRot = new UnityEngine.Quaternion[2];
+        trgEyeRot = new UnityEngine.Quaternion[2];
 
         gazeLength = (float)normDist1.NextDouble();
         if (gazeLength > 2f)
@@ -180,21 +180,22 @@ public class EyesAliveController : AnimController
         }
 
         // Compute source and target rotations
-        for (int ei = 0; ei < gazeCtrl.eyes.Length; ++ei)
-        {
-            GazeJoint eye = gazeCtrl.eyes[ei];
+        srcEyeRot[0] = gazeCtrl.lEye.Top.localRotation;
+        srcEyeRot[1] = gazeCtrl.rEye.Top.localRotation;
 
-            // Current rotation is source rotation
-            srcEyeRot[ei] = eye.bone.localRotation;
-
-            // Compute target rotation
-            eye.Pitch += pitch;
-            eye.Yaw += yaw;
-            if (eye.CheckMR())
-                eye.ClampMR();
-            trgEyeRot[ei] = eye.bone.localRotation;
-            eye.bone.localRotation = srcEyeRot[ei];
-        }
+        // Compute target rotation
+        gazeCtrl.lEye.Pitch += pitch;
+        gazeCtrl.lEye.Yaw += yaw;
+        gazeCtrl.rEye.Pitch += pitch;
+        gazeCtrl.rEye.Yaw += yaw;
+        if (gazeCtrl.lEye.CheckOMR())
+            gazeCtrl.lEye.ClampOMR();
+        if (gazeCtrl.rEye.CheckOMR())
+            gazeCtrl.rEye.ClampOMR();
+        trgEyeRot[0] = gazeCtrl.lEye.Top.localRotation;
+        trgEyeRot[1] = gazeCtrl.rEye.Top.localRotation;
+        gazeCtrl.lEye.Top.localRotation = srcEyeRot[0];
+        gazeCtrl.rEye.Top.localRotation = srcEyeRot[1];
 
         // Compute time when gaze shift back to initial position should begin
         gazeLength = (float)normDist1.NextDouble();
@@ -207,35 +208,28 @@ public class EyesAliveController : AnimController
         //Compute the point in space where the eyes should be shifting to, given the target rotations.
         bool parallelEyes = false;
         Vector3 targetPos = new Vector3();
-        if (gazeCtrl.eyes.Length > 1)
-        { //We have (at least) two eyes
-            Vector3 p1 = new Vector3();
-            Vector3 p2 = new Vector3();
-            GazeJoint eye1 = gazeCtrl.eyes[0];
-            GazeJoint eye2 = gazeCtrl.eyes[1];
-            UnityEngine.Quaternion savedRot1 = eye1.bone.localRotation;
-            UnityEngine.Quaternion savedRot2 = eye2.bone.localRotation;
-            eye1.bone.localRotation = trgEyeRot[0];
-            eye2.bone.localRotation = trgEyeRot[1];
-            parallelEyes = GeomUtil.ClosestPointsOn2Lines(
-                eye1.bone.position, (eye1.helper.position - eye1.bone.position),
-                eye2.bone.position, (eye2.helper.position - eye2.bone.position), out p1, out p2);
-            targetPos = 0.5f * (p1 + p2);
-            eye1.bone.localRotation = savedRot1;
-            eye2.bone.localRotation = savedRot2;
+        Vector3 p1 = new Vector3();
+        Vector3 p2 = new Vector3();
+        var eye1 = gazeCtrl.lEye.Top;
+        var eye2 = gazeCtrl.rEye.Top;
+        UnityEngine.Quaternion savedRot1 = eye1.localRotation;
+        UnityEngine.Quaternion savedRot2 = eye2.localRotation;
+        eye1.localRotation = trgEyeRot[0];
+        eye2.localRotation = trgEyeRot[1];
+        parallelEyes = GeomUtil.ClosestPointsOn2Lines(
+            eye1.position, eye1.forward,
+            eye2.position, eye2.forward, out p1, out p2);
+        if (parallelEyes)
+        {
+            p1 = eye1.position + 10f * eye1.forward;
+            p2 = eye2.position + 10f * eye2.forward;
         }
-
-        if (gazeCtrl.eyes.Length == 1 || parallelEyes)
-        { //We only have one eye, or the eyes are currently looking in a parallel direction
-            GazeJoint eye1 = gazeCtrl.eyes[0];
-            UnityEngine.Quaternion savedRot = eye1.bone.localRotation;
-            eye1.bone.localRotation = trgEyeRot[0];
-            targetPos = eye1.bone.position + 1000f * (eye1.helper.position - eye1.bone.position);
-            eye1.bone.localRotation = savedRot;
-        }
+        targetPos = 0.5f * (p1 + p2);
+        eye1.localRotation = savedRot1;
+        eye2.localRotation = savedRot2;
 
         //Execute the gaze shift, with no head alignment
-        gazeCtrl.Head.align = 0f;
+        gazeCtrl.head.align = 0f;
         gazeCtrl.GazeAt(targetPos);
     }
 
@@ -260,33 +254,26 @@ public class EyesAliveController : AnimController
             //Compute the point in space where the eyes should be shifting back to, given the source rotations.
             bool parallelEyes = false;
             Vector3 targetPos = new Vector3();
-            if (gazeCtrl.eyes.Length > 1)
-            { //We have (at least) two eyes
-                Vector3 p1 = new Vector3();
-                Vector3 p2 = new Vector3();
-                GazeJoint eye1 = gazeCtrl.eyes[0];
-                GazeJoint eye2 = gazeCtrl.eyes[1];
-                UnityEngine.Quaternion savedRot1 = eye1.bone.localRotation;
-                UnityEngine.Quaternion savedRot2 = eye2.bone.localRotation;
-                eye1.bone.localRotation = srcEyeRot[0];
-                eye2.bone.localRotation = srcEyeRot[1];
-                parallelEyes = GeomUtil.ClosestPointsOn2Lines(
-                    eye1.bone.position, (eye1.helper.position - eye1.bone.position),
-                    eye2.bone.position, (eye2.helper.position - eye2.bone.position),
-                    out p1, out p2);
-                targetPos = 0.5f * (p1 + p2);
-                eye1.bone.localRotation = savedRot1;
-                eye2.bone.localRotation = savedRot2;
+            Vector3 p1 = new Vector3();
+            Vector3 p2 = new Vector3();
+            var eye1 = gazeCtrl.lEye.Top;
+            var eye2 = gazeCtrl.rEye.Top;
+            UnityEngine.Quaternion savedRot1 = eye1.localRotation;
+            UnityEngine.Quaternion savedRot2 = eye2.localRotation;
+            eye1.localRotation = srcEyeRot[0];
+            eye2.localRotation = srcEyeRot[1];
+            parallelEyes = GeomUtil.ClosestPointsOn2Lines(
+                eye1.position, eye1.forward,
+                eye2.position, eye2.forward,
+                out p1, out p2);
+            if (parallelEyes)
+            {
+                p1 = eye1.position + 10f * eye1.forward;
+                p2 = eye2.position + 10f * eye2.forward;
             }
-
-            if (gazeCtrl.eyes.Length == 1 || parallelEyes)
-            { //We only have one eye, or the eyes are currently looking in a parallel direction
-                GazeJoint eye1 = gazeCtrl.eyes[0];
-                UnityEngine.Quaternion savedRot = eye1.bone.localRotation;
-                eye1.bone.localRotation = srcEyeRot[0];
-                targetPos = eye1.bone.position + 1000f * (eye1.helper.position - eye1.bone.position);
-                eye1.bone.localRotation = savedRot;
-            }
+            targetPos = 0.5f * (p1 + p2);
+            eye1.localRotation = savedRot1;
+            eye2.localRotation = savedRot2;
 
             //Execute the gaze shift
             gazeCtrl.GazeAt(targetPos);

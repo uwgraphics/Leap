@@ -24,16 +24,16 @@ public class TwoAgentsGazeAversion : Scenario
 		
 		// Initialize gaze
 		yield return new WaitForSeconds(0.6f);
-		curgaze = GazeAt("Norman", gactrl.mutualGazeObject, 0.8f, 0f);
-		curgazeOther = GazeAt("Norman2", gactrlNorman2.mutualGazeObject, 0.8f, 0f);
+		curgaze = GazeAt("Norman", gactrl.mutualGazeObject, 0.8f);
+		curgazeOther = GazeAt("Norman2", gactrlNorman2.mutualGazeObject, 0.8f);
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );
 		yield return StartCoroutine( WaitUntilFinished(curgazeOther) );
-		curgaze = GazeAt("Norman", gactrl.mutualGazeObject, 0.8f, 0f);
-		curgazeOther = GazeAt("Norman2", gactrlNorman2.mutualGazeObject, 0.8f, 0f);
+		curgaze = GazeAt("Norman", gactrl.mutualGazeObject, 0.8f);
+		curgazeOther = GazeAt("Norman2", gactrlNorman2.mutualGazeObject, 0.8f);
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );
 		yield return StartCoroutine( WaitUntilFinished(curgazeOther) );
-		curgaze = GazeAt("Norman", gactrl.mutualGazeObject, 1.0f, 0f);
-		curgazeOther = GazeAt("Norman2", gactrlNorman2.mutualGazeObject, 1.0f, 0f);
+		curgaze = GazeAt("Norman", gactrl.mutualGazeObject, 1.0f);
+		curgazeOther = GazeAt("Norman2", gactrlNorman2.mutualGazeObject, 1.0f);
 		yield return StartCoroutine( WaitUntilFinished(curgaze) );
 		yield return StartCoroutine( WaitUntilFinished(curgazeOther) );
 		

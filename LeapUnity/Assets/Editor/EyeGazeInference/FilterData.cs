@@ -58,13 +58,4 @@ public class FilterData {
 
         return orientations;
     }
-    
-
-    //TODO: complete this function.
-    //For now, the GazeJoint will automatically be the rightArm with tag RElbow
-    private GazeJoint jointIndex(string jointName) {
-        return new GazeJoint();
-    }
-
-
 }
