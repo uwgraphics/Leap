@@ -1080,6 +1080,7 @@ public static class EyeGazeEditor
     // Infer eye gaze alignment values for the specified gaze instance
     private static void _InferEyeGazeAlignments(AnimationTimeline timeline, int baseAnimationInstanceId, int instanceId)
     {
+        throw new NotImplementedException("You forgot to update the implementation, doofus.");
         // TODO: bring this back and update it after gaze controller refactoring is done
         /*
         var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
@@ -1226,13 +1227,15 @@ public static class EyeGazeEditor
         UnityEngine.Debug.Log(string.Format("{0}: curAlign = {1}, " +
             "curVelocity = {2} [maxVelocity = {3}], latency = {4}, cur*OMR = ({5}, {6}, {7}, {8}), " +
             "srcDir = ({9}, {10}, {11}), trgDir = ({12}, {13}, {14}), trgDirAlign = ({15}, {16}, {17}), rotParam = {18}, " +
-            "isFix = {19}, fixSrcDir = ({20}, {21}, {22}), fixTrgDir = ({23}, {24}, {25}), fixTrgDirAlign = ({26}, {27}, {28})",
+            "curDir = ({19}, {20}, {21}), " +
+            "isFix = {22}, fixSrcDir = ({23}, {24}, {25}), fixTrgDir = ({26}, {27}, {28}), fixTrgDirAlign = ({29}, {30}, {31})",
             ((GazeBodyPartType)state.gazeBodyPartType).ToString(),
             state.curAlign, state.curVelocity, state.maxVelocity, state.latency,
             state.curInOMR, state.curOutOMR, state.curUpOMR, state.curDownOMR,
             state.srcDir.x, state.srcDir.y, state.srcDir.z,
             state.trgDir.x, state.trgDir.y, state.trgDir.z,
             state.trgDirAlign.x, state.trgDirAlign.y, state.trgDirAlign.z, state.rotParam,
+            state.curDir.x, state.curDir.y, state.curDir.z,
             state.isFix, state.fixSrcDir.x, state.fixSrcDir.y, state.fixSrcDir.z,
             state.fixTrgDir.x, state.fixTrgDir.y, state.fixTrgDir.z,
             state.fixTrgDirAlign.x, state.fixTrgDirAlign.y, state.fixTrgDirAlign.z

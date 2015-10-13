@@ -192,6 +192,22 @@ public class GazeBodyPart
     }
 
     /// <summary>
+    /// Current gaze shift source direction.
+    /// </summary>
+    public Vector3 _FixTargetDirectionAlign
+    {
+        get { return fixTrgDirAlign; }
+    }
+
+    /// <summary>
+    /// Current gaze shift source direction.
+    /// </summary>
+    public Vector3 _FixTargetDirection
+    {
+        get { return fixTrgDir; }
+    }
+
+    /// <summary>
     /// true if the body part is fixating a gaze target, false otherwise.
     /// </summary>
     public bool _IsFix
@@ -216,6 +232,7 @@ public class GazeBodyPart
     private Vector3 trgDir = Vector3.zero;
     private Vector3 trgDirAlign = Vector3.zero;
     private float rotParam = 0f;
+    private Vector3 curDir = Vector3.zero;
     private bool isFix = false;
     private Quaternion[] fixSrcRots;
     private Vector3 fixSrcDir = Vector3.zero;
@@ -507,6 +524,9 @@ public class GazeBodyPart
         {
             fixSrcDir = fixTrgDir = fixTrgDirAlign = srcDir;
         }
+
+        // Also copy over source joint rotations
+        srcRots.CopyTo(fixSrcRots, 0);
     }
 
     // Apply gaze fixation for this body part
@@ -557,6 +577,7 @@ public class GazeBodyPart
         trgDir = srcDir;
         trgDirAlign = srcDir;
         rotParam = 0f;
+        curDir = srcDir;
     }
 
     // Initialize fully aligning target direction for the current gaze target
@@ -565,7 +586,7 @@ public class GazeBodyPart
         trgDir = GetTargetDirection(gazeController.CurrentGazeTargetPosition);
     }
 
-    // Initialize fully aligning target direction for the current gaze target
+    // Initialize OMR-constrained target direction for the current gaze target
     public void _InitOMRTargetDirection()
     {
         trgDirAlign = GetOMRTargetDirection(gazeController.CurrentGazeTargetPosition);
@@ -581,8 +602,8 @@ public class GazeBodyPart
 
         // Compute mean initial eye position (IEP)
         float lEyePitch, lEyeYaw, rEyePitch, rEyeYaw;
-        gazeController.lEye._ComputeIEP(out lEyePitch, out lEyeYaw);
-        gazeController.rEye._ComputeIEP(out rEyePitch, out rEyeYaw);
+        gazeController.lEye._GetIEP(out lEyePitch, out lEyeYaw);
+        gazeController.rEye._GetIEP(out rEyePitch, out rEyeYaw);
         float pitch = (lEyePitch + rEyePitch) / 2f;
         float yaw = (lEyeYaw + rEyeYaw) / 2f;
 
@@ -593,6 +614,33 @@ public class GazeBodyPart
         curOutOMR = adjOutOMR = outOMR * yawAdj;
         curUpOMR = adjUpOMR = upOMR * pitchAdj;
         curDownOMR = adjDownOMR = downOMR * pitchAdj;
+    }
+
+    // Update gaze direction that will align the body part with the target
+    public void _UpdateTargetDirection()
+    {
+        float prevDistRotAlign = Vector3.Angle(srcDir, trgDirAlign);
+        float prevDistRot = Vector3.Angle(srcDir, trgDir);
+        trgDir = GetTargetDirection(gazeController.CurrentGazeTargetPosition);
+
+        if (!IsEye)
+        {
+            float prevAlign = prevDistRot > 0.0001f ? prevDistRotAlign / prevDistRot : 1f;
+            Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDir), prevAlign);
+            trgDirAlign = rotAlign * srcDir;
+        }
+        else
+        {
+            trgDirAlign = GetOMRTargetDirection(gazeController.CurrentGazeTargetPosition);
+            trgDirAlign = srcDir != trgDir ?
+                GeomUtil.ProjectVectorOntoPlane(trgDirAlign, Vector3.Cross(srcDir, trgDir)) :
+                trgDir;
+        }
+
+        // Renormalize gaze shift progress
+        float distRotAlign = Vector3.Angle(srcDir, trgDirAlign);
+        rotParam = Mathf.Max(Mathf.Clamp01(rotParam * (distRotAlign > 0.00001f ? prevDistRotAlign / distRotAlign : 1f)),
+            rotParam);
     }
 
     // Rotate the body part's gaze joints toward the current target
@@ -616,19 +664,21 @@ public class GazeBodyPart
 
             return false;
         }
-
-        // Update aligning target direction to account for relative gaze target movement
-        _UpdateTargetDirection();
         
         // Rotate the body part toward the target
         float distRotDiff = deltaTime * curVelocity;
         float distRotAlign = Vector3.Angle(_SourceDirection, _TargetDirectionAlign);
         rotParam = rotParam < 1f ? Mathf.Clamp01(rotParam + distRotDiff / distRotAlign) : 1f;
         Quaternion rot = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDirAlign), rotParam);
-        Vector3 dir = rot * srcDir;
+        curDir = rot * srcDir;
 
-        // Apply the new body posture
-        RotateTowards(dir);
+        return rotParam >= 1f;
+    }
+
+    // Apply current gaze shift posture
+    public void _ApplyGazeShift()
+    {
+        RotateTowards(curDir);
         if (GazeBodyPartType == GazeBodyPartType.Torso)
             _SolveBodyIK();
 
@@ -637,8 +687,6 @@ public class GazeBodyPart
             // If OMR has been reached, clamp the rotation
             ClampOMRToSource(); // TODO: keep an eye out for discontinuities in orientation (LOL)
         }
-
-        return rotParam >= 1f;
     }
 
     // Apply source rotations (before gaze shift start) to the gaze joints
@@ -691,6 +739,7 @@ public class GazeBodyPart
         state.trgDir = trgDir;
         state.trgDirAlign = trgDirAlign;
         state.rotParam = rotParam;
+        state.curDir = curDir;
         state.isFix = isFix;
         state.fixSrcRots = (Quaternion[])fixSrcRots.Clone();
         state.fixSrcDir = fixSrcDir;
@@ -698,6 +747,20 @@ public class GazeBodyPart
         state.fixTrgDirAlign = fixTrgDirAlign;
 
         return state;
+    }
+
+    // Compute the difference between OMR-constrained eye target rotation and the target rotation
+    // needed to align the eye with the target
+    public Quaternion _GetOMRTargetRotationDiff()
+    {
+        Quaternion trgRot = ModelUtils.LookAtRotation(Top, gazeController.CurrentGazeTargetPosition);
+        Quaternion curRot = Top.localRotation;
+        Top.localRotation = trgRot;
+        ClampOMRToSource();
+        Quaternion trgRotOMR = Top.localRotation;
+        Top.localRotation = curRot;
+        
+        return Quaternion.Inverse(trgRotOMR) * trgRot;
     }
 
     // Set the current state of the gaze body part from the snapshot
@@ -725,6 +788,7 @@ public class GazeBodyPart
         trgDir = state.trgDir;
         trgDirAlign = state.trgDirAlign;
         rotParam = state.rotParam;
+        curDir = state.curDir;
         isFix = state.isFix;
         fixSrcRots = (Quaternion[])state.fixSrcRots.Clone();
         fixSrcDir = state.fixSrcDir;
@@ -753,6 +817,7 @@ public class GazeBodyPart
         state.trgDir = Vector3.zero;
         state.trgDirAlign = Vector3.zero;
         state.rotParam = 0f;
+        state.curDir = Vector3.zero;
         state.isFix = false;
         state.fixSrcRots = new Quaternion[gazeJoints.Length];
         state.fixSrcDir = Vector3.zero;
@@ -763,7 +828,7 @@ public class GazeBodyPart
     }
 
     // Compute IEP of the specified eye (pitch and yaw given a contralateral target)
-    private void _ComputeIEP(out float pitch, out float yaw)
+    private void _GetIEP(out float pitch, out float yaw)
     {
         // Get source and target eye orientations
         Quaternion srcRot = Top.localRotation;
@@ -821,33 +886,6 @@ public class GazeBodyPart
         curDownOMR = adjDownOMR * (-1f / 600f * headVelocity + 1f);
         curInOMR = adjInOMR * (-1f / 600f * headVelocity + 1f);
         curOutOMR = adjOutOMR * (-1f / 600f * headVelocity + 1f);
-    }
-
-    // Update gaze direction that will align the body part with the target
-    private void _UpdateTargetDirection()
-    {
-        float prevDistRotAlign = Vector3.Angle(srcDir, trgDirAlign);
-        float prevDistRot = Vector3.Angle(srcDir, trgDir);
-        trgDir = GetTargetDirection(gazeController.CurrentGazeTargetPosition);
-
-        if (!IsEye)
-        {
-            float prevAlign = prevDistRot > 0.0001f ? prevDistRotAlign / prevDistRot : 1f;
-            Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDir), prevAlign);
-            trgDirAlign = rotAlign * srcDir;
-        }
-        else
-        {
-            trgDirAlign = GetOMRTargetDirection(gazeController.CurrentGazeTargetPosition);
-            trgDirAlign = srcDir != trgDir ?
-                GeomUtil.ProjectVectorOntoPlane(trgDirAlign, Vector3.Cross(srcDir, trgDir)) :
-                trgDir;
-        }
-
-        // Renormalize gaze shift progress
-        float distRotAlign = Vector3.Angle(srcDir, trgDirAlign);
-        rotParam = Mathf.Max(Mathf.Clamp01(rotParam * (distRotAlign > 0.00001f ? prevDistRotAlign / distRotAlign : 1f)),
-            rotParam);
     }
 
     // Update gaze direction that will align the body part with the target during fixation

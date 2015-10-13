@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public enum EyeLaserBodyPart
 {
@@ -38,7 +39,7 @@ public class EyeLaserGizmo : MonoBehaviour
 
 	private void OnDrawGizmos()
 	{
-		GazeController gazeController = GetComponent<GazeController>();
+        GazeController gazeController = GetComponent<GazeController>();
 		if( gazeController == null)
 			return;
 
@@ -61,6 +62,9 @@ public class EyeLaserGizmo : MonoBehaviour
 
     private void _DrawLasers(GazeBodyPart gazeBodyPart, Color laserColor)
     {
+        if (!gazeBodyPart.Defined)
+            return;
+
         GazeController gazeController = GetComponent<GazeController>();
         Vector3 eyeCenter = gazeController.EyeCenter;
         float gazeTargetDist = gazeController.CurrentGazeTarget != null ?
@@ -80,11 +84,17 @@ public class EyeLaserGizmo : MonoBehaviour
         if (showGazeShiftLasers)
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawRay(gazeBodyPart.Position, gazeBodyPart._SourceDirection * gazeTargetDist);
+            Gizmos.DrawRay(gazeBodyPart.Position, gazeController.StateId == (int)GazeState.Shifting ?
+                gazeBodyPart._SourceDirection * gazeTargetDist :
+                gazeBodyPart._FixSourceDirection * gazeTargetDist);
             Gizmos.color = Color.green;
-            Gizmos.DrawRay(gazeBodyPart.Position, gazeBodyPart._TargetDirectionAlign * gazeTargetDist);
+            Gizmos.DrawRay(gazeBodyPart.Position, gazeController.StateId == (int)GazeState.Shifting ?
+                gazeBodyPart._TargetDirectionAlign * gazeTargetDist :
+                gazeBodyPart._FixTargetDirectionAlign * gazeTargetDist);
             Gizmos.color = Color.black;
-            Gizmos.DrawRay(gazeBodyPart.Position, gazeBodyPart._TargetDirection * gazeTargetDist);
+            Gizmos.DrawRay(gazeBodyPart.Position, gazeController.StateId == (int)GazeState.Shifting ?
+                gazeBodyPart._TargetDirection * gazeTargetDist :
+                gazeBodyPart._FixTargetDirection * gazeTargetDist);
         }
     }
 }

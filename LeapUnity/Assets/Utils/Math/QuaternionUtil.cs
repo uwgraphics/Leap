@@ -9,6 +9,16 @@ using System.Linq;
 /// </summary>
 public static class QuaternionUtil
 {
+    // Angle of the rotation represented by the quaternion
+    public static float Angle(Quaternion q)
+    {
+        float angle;
+        Vector3 axis;
+        q.ToAngleAxis(out angle, out axis);
+
+        return angle;
+    }
+
     // Multiply quaternion with a scalar
     public static Quaternion Mul(Quaternion q, float v)
     {
@@ -96,64 +106,49 @@ public static class QuaternionUtil
         return QuaternionUtil.Log(Quaternion.Inverse(q1) * q2);
     }
 
-    //find quaternion displacement between two quaternions (from q1 to q2)
+    // Find quaternion displacement between two quaternions (from q1 to q2)
     public static Quaternion DispQ(Quaternion q1, Quaternion q2)
     {
         return Quaternion.Inverse(q1) * q2;
     }
 
-    //check this function 
-    //converts a list of rotation vectors back to orientation quaternions
-    public static List<Quaternion> RotVecsToQuats(List<Vector3> rotVecs, Quaternion q0)
+    // Convert an array of rotation vectors back to quaternions
+    public static Quaternion[] RotVecsToQuats(Vector3[] rotVecs, Quaternion q0)
     {
-        if (rotVecs == null || rotVecs.Count == 0)
-        {
-            throw new ArgumentException("Error in RotVecsToQuats function!");
-        }
-        var quaternions = new List<Quaternion>();
-
-        //running product
-        //Quaternion qProd = q0;
-        //quaternions.Add(q0);
-        //
-        //for (int i = 0; i < rotVecs.Count-1; i++) {
-        //    qProd = qProd * QuaternionUtil.Exp(rotVecs[i + 1] - rotVecs[i]);
-        //    quaternions.Add(qProd);
-        //}
-
+        Quaternion[] quaternions = new Quaternion[rotVecs.Length - 1];
         Quaternion qProd = q0;
-        for (int i = 0; i < rotVecs.Count - 1; i++)
+        for (int i = 0; i < rotVecs.Length - 1; i++)
         {
             for (int j = 0; j < i - 1; j++)
             {
                 qProd *= QuaternionUtil.Exp(rotVecs[j + 1] - rotVecs[j]);
             }
-            quaternions.Add(qProd);
+            quaternions[i] = qProd;
             qProd = q0;
         }
 
         return quaternions;
     }
 
-    public static List<Vector3> QuatsToRotVecs(List<Quaternion> quats, Vector3 p0)
+    // Convert an array of quaternions to rotation vectors
+    public static Vector3[] QuatsToRotVecs(Quaternion[] quats, Vector3 p0)
     {
-        if (quats == null) throw new ArgumentException("Error in QuatstoRotVecs function.");
-
-        var rotVecs = new List<Vector3>();
+        Vector3[] rotVecs = new Vector3[quats.Length + 1];
         Vector3 pLast = p0;
         Vector3 pNew = p0;
-        rotVecs.Add(p0);
-        for (int i = 0; i < quats.Count - 1; i++)
+        rotVecs[0] = p0;
+        for (int i = 0; i < quats.Length - 1; i++)
         {
             pNew = pLast + Disp(quats[i], quats[i + 1]);
-            rotVecs.Add(pNew - pLast);
+            rotVecs[i + 1] = pNew - pLast;
             pLast = pNew;
         }
 
         return rotVecs;
     }
 
-    public static List<Vector3> QuatsToRotVecs(List<Quaternion> quats)
+    // Convert an array of quaternions to rotation vectors
+    public static Vector3[] QuatsToRotVecs(Quaternion[] quats)
     {
         return QuatsToRotVecs(quats, Log(quats[0]));
     }

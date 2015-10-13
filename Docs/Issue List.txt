@@ -1,14 +1,13 @@
 Leap Animation Editor:
 
-#120 [] Head and torso should keep moving until the eyes reach their target (regardless of whether min. head rotation is correctly computed or not, see #119)
+#125 [] Small torso movements and direction discontinuities at the start and end of latency phase, esp. when torso movement is disabled
+  - Torso moves and snaps a bit at the end of the latency phase of a gaze shift that has torso movement disabled!
 
-#119 [] Computing minimal head rotation needed for the eyes to reach the target is wrong; head reaches the target while the eyes are still moving
+#124 [] Stopping an ongoing gaze shift causes discontinuities in gaze body part directions
+  - Following last summer's refactoring, it might make sense to just not interrupt ongoing gaze shifts, but merely delay or cancel new ones
 
-#113 [] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
-  - Refactoring seems to have fixed the problem for the head, but not the torso
-  
-#94 [] Torso snaps to a new pose as we start a new gaze shift in which torso movement is disabled
-  - For example, create a gaze shift toward the diamond in the StealDiamond scenario, set torso align to 0, and watch what happens with the torso at gaze shift start
+#123 [] Root position all wrong when using gaze IK
+  - In TestExpressiveGaze, the root starts off low and then abruptly gets moved to the correct position
   
 #109 [] Baking gaze animation is extremely slow
   - Gaze IK weight computation in AnimationTimeline._InitGazeIK() takes up a lot of time for some reason... or causes something else (IK?) to take a very long time
@@ -34,6 +33,38 @@ Leap Animation Editor:
   - See BookShelf example - target inference might attach the gaze target to a book even at a time when the book should actually be in the character's hand
   
 #62 [] Stopping a gaze shift causes a discontinuity in pose
+
+#94 [X] Torso snaps to a new pose as we start a new gaze shift in which torso movement is disabled
+  - For example, create a gaze shift toward the diamond in the StealDiamond scenario, set torso align to 0, and watch what happens with the torso at gaze shift start
+  
+#122 [X] Torso orientation jitters and snaps between gaze shifts and fixations
+  - See TestExpressiveGaze example
+  - Happens regardless of IK configuration, for both regular, gaze, and no IK
+  - Happens both with and without the root joint
+  - Some weird jump in torso target direction when switching from gaze shift to fixation (even when there is no torso movement at all)
+  - Oddly, taking out trgDir updates fixes the problem
+  - Completely separating posture application from gaze shift updates fixes most problems, but the eyes are messed up now, probably b/c correct OMR-constrained target direction requires the current posture
+  - Possible fix might be to apply the current (previous) posture at the start of gaze shift update, perform the update, then apply new posture
+  - Doesn't really work, but applying source posture might
+  - This helps with head and torso motion, but eyes are all messed up again, both trgDir and trgDirAlign are completely wrong
+  - I guess target directions really do need to be updated for each body part separately, after the preceding body part has moved
+
+#113 [X] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
+  - Refactoring seems to have fixed the problem for the head, but not the torso
+
+#120 [X] Head snaps a bit when switching from gaze shift to fixation
+  - There is a weird, big switch in source gaze directions
+
+#121 [X] Target gaze directions are are always a bit off, eyes look "under" the target instead of directly at it
+  - The problem is *not* in GazeBodyPart.GetTargetDirection()
+  - It's b/c we run IK as post-process
+  - Options: 1) use gaze IK, 2) don't use root IK, or 3) don't use IK at all
+
+#119 [X] When head alignment is zero, head does not rotate far enough to enable both eyes to reach their target
+  - What happens is, both eyes will hit OMR limits, get clamped, and become aligned (since their trgRotAlign is now set just on the edge OMR, and rotParam = 1 at trgRotAlign), so they won't move anymore (except due to updates to trgRotAlign?)
+  - Head still keeps rotating until it reaches its trgRotAlign, which is the minimal rotation computed in _InitHeadTargetDirection()
+  - Since the minimal head rotation is too low, gaze shift will stop before both eyes have actually aligned with the target
+  - Came up with a somewhat hacky, but functional solution to the problem
 
 #115 [X] Huge discontinuities in torso pose
   - See Roman in PassSodaEdits0
@@ -316,18 +347,18 @@ Leap Animation Editor:
   - Might just be a manifestation of #15
   - Fixed when fixing #58
   
-#32 [] Torso sometimes jitters during a gaze shift
+#32 [X] Torso sometimes jitters during a gaze shift
   - Small discontinuities in pose
   - See end of instance InitialPoseGaze2 in InitialPose test case
   - It doesn't always happen - restarting Unity fixed the problem
 
-#31 [] Incorrect eye pose sometimes gets baked into a gaze instance clip for 1 frame
+#31 [X] Incorrect eye pose sometimes gets baked into a gaze instance clip for 1 frame
   - See left eye at frame 38 in InitialPose test case
   
-#20 [] Incongruent eye movements occasionally still happen
+#20 [X] Incongruent eye movements occasionally still happen
   - In InitialPose test case, somewhere between frames 200-300, eye gaze directions become divergent over the course of the gaze shift, though they seem to correct themselves by the end
   
-#15 [] Head joint rotations seem to snap/jitter between frames
+#15 [X] Head joint rotations seem to snap/jitter between frames
   - Should check to make sure this artifact is present in baked animation - otherwise the issue is that animation gets rendered before it's applied
   - Doesn't seem to be present in baked animation
 

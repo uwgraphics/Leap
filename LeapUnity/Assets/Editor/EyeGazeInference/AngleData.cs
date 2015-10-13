@@ -306,23 +306,23 @@ public class AngleData {
         
 
         //set rotation vectors
-        Head_Rotations_Local   = QuaternionUtil.QuatsToRotVecs(Head_Orientations_Local);
-        Head_Rotations_Global  = QuaternionUtil.QuatsToRotVecs(Head_Orientations_Global);
-        Chest_Rotations_Local  = QuaternionUtil.QuatsToRotVecs(Chest_Orientations_Local);
-        Chest_Rotations_Global = QuaternionUtil.QuatsToRotVecs(Chest_Orientations_Global);
-        SpineA_Rotations_Local = QuaternionUtil.QuatsToRotVecs(SpineA_Orientations_Local);
-        SpineA_Rotations_Global= QuaternionUtil.QuatsToRotVecs(SpineA_Orientations_Global);
-        SpineB_Rotations_Local = QuaternionUtil.QuatsToRotVecs(SpineB_Orientations_Local);
-        SpineB_Rotations_Global= QuaternionUtil.QuatsToRotVecs(SpineB_Orientations_Global);
-        Hips_Rotations_Local   = QuaternionUtil.QuatsToRotVecs(Hips_Orientations_Local);
-        Hips_Rotations_Global  = QuaternionUtil.QuatsToRotVecs(Hips_Orientations_Global);
+        Head_Rotations_Local  = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Head_Orientations_Local.ToArray()));
+        Head_Rotations_Global = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Head_Orientations_Global.ToArray()));
+        Chest_Rotations_Local = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Chest_Orientations_Local.ToArray()));
+        Chest_Rotations_Global = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Chest_Orientations_Global.ToArray()));
+        SpineA_Rotations_Local = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(SpineA_Orientations_Local.ToArray()));
+        SpineA_Rotations_Global = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(SpineA_Orientations_Global.ToArray()));
+        SpineB_Rotations_Local = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(SpineB_Orientations_Local.ToArray()));
+        SpineB_Rotations_Global = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(SpineB_Orientations_Global.ToArray()));
+        Hips_Rotations_Local = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Hips_Orientations_Local.ToArray()));
+        Hips_Rotations_Global = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Hips_Orientations_Global.ToArray()));
             //root space
-        Head_Rotations_Root =    QuaternionUtil.QuatsToRotVecs(Head_Orientations_Root);
-        Chest_Rotations_Root =   QuaternionUtil.QuatsToRotVecs(Chest_Orientations_Root);
-        SpineA_Rotations_Root =  QuaternionUtil.QuatsToRotVecs(SpineA_Orientations_Root);
-        SpineB_Rotations_Root =  QuaternionUtil.QuatsToRotVecs(SpineB_Orientations_Root);
+        Head_Rotations_Root = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Head_Orientations_Root.ToArray()));
+        Chest_Rotations_Root = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Chest_Orientations_Root.ToArray()));
+        SpineA_Rotations_Root = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(SpineA_Orientations_Root.ToArray()));
+        SpineB_Rotations_Root = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(SpineB_Orientations_Root.ToArray()));
             //head local space
-        Head_Rotations_HeadL =   QuaternionUtil.QuatsToRotVecs(Head_Orientations_HeadL);
+        Head_Rotations_HeadL = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(Head_Orientations_HeadL.ToArray()));
 
         //set magnitudes
         for (int i = 0; i < Head_Rotations_Local.Count; i++) {
@@ -592,7 +592,7 @@ public static class Filter {
         } 
 
         //convert them all to rotation vectors corresponding to the displacement quaternions
-        var rotVecs = QuaternionUtil.QuatsToRotVecs(orientations, QuaternionUtil.Log(orientations[0]));
+        var rotVecs = new List<Vector3>(QuaternionUtil.QuatsToRotVecs(orientations.ToArray(), QuaternionUtil.Log(orientations[0])));
       
         //manually finish rotVecs?
         rotVecs.Add(new Vector3(0, 0, 0));
@@ -605,7 +605,7 @@ public static class Filter {
 
         Quaternion q0 = orientations[0];
 
-        return QuaternionUtil.RotVecsToQuats(rotVecsFiltered, q0);
+        return new List<Quaternion>(QuaternionUtil.RotVecsToQuats(rotVecsFiltered.ToArray(), q0));
     }
 
     //bilateral filter function for just a List of doubles.  Useful for angular velocities

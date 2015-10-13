@@ -43,6 +43,7 @@ public struct GazeControllerState : IAnimControllerState
         public Vector3 trgDir;
         public Vector3 trgDirAlign;
         public float rotParam;
+        public Vector3 curDir;
         public bool isFix;
         public Quaternion[] fixSrcRots;
         public Vector3 fixSrcDir;
@@ -456,6 +457,7 @@ public class GazeController : AnimController
             }
 
             // Fixate gaze onto the current target
+            _ApplyFixSourceRotations();
             _ApplyFix();
         }
 
@@ -473,27 +475,34 @@ public class GazeController : AnimController
     {
         _InitBaseRotations();
         _UpdateSourceDirections();
+        // TODO: this is a bit of a hacky solution to ensure the eyes fully align with the target
+        // when min. head rotation is insufficient
+        _InitHeadTargetDirection();
+        //
+        _ApplySourceRotations();
 
-        // Advance gaze shift
-        float dt = 0;
-        for (float t = 0; t < DeltaTime; )
+        // Advance torso gaze shift
+        torso._UpdateTargetDirection();
+        bool torsoAligned = _AdvanceGazeShift(torso, deltaTime);
+        torso._ApplyGazeShift();
+
+        // Advance head gaze shift
+        head._UpdateTargetDirection();
+        bool headAligned =  _AdvanceGazeShift(head, deltaTime);
+        head._ApplyGazeShift();
+
+        // Advance eye gaze shifts
+        lEye._UpdateTargetDirection();
+        rEye._UpdateTargetDirection();
+        bool lEyeAligned = _AdvanceGazeShift(lEye, deltaTime);
+        bool rEyeAligned = _AdvanceGazeShift(rEye, deltaTime);
+        lEye._ApplyGazeShift();
+        rEye._ApplyGazeShift();
+
+        if (lEyeAligned && rEyeAligned && headAligned && torsoAligned ||
+            stopGazeShift)
         {
-            // Compute delta time
-            t += LEAPCore.eulerTimeStep;
-            dt = (t <= DeltaTime) ? LEAPCore.eulerTimeStep :
-                DeltaTime - t + LEAPCore.eulerTimeStep;
-
-            if (_AdvanceGazeShift(dt))
-            {
-                // Gaze shift complete, start fixating the target
-                GoToState((int)GazeState.NoGaze);
-                return;
-            }
-        }
-
-        if (stopGazeShift)
-        {
-            // Interrupt ongoing gaze shift
+            // Gaze shift finished, begin gaze fixation
             GoToState((int)GazeState.NoGaze);
             return;
         }
@@ -557,12 +566,7 @@ public class GazeController : AnimController
     // since gaze shift start
     protected virtual void _UpdateSourceDirections()
     {
-        // Apply original posture (before gaze shift started)
-        lEye._ApplySourceRotations();
-        rEye._ApplySourceRotations();
-        head._ApplySourceRotations();
-        if (torso.Defined)
-            torso._ApplySourceRotations();
+        _ApplySourceRotations();
 
         // Update source gaze directions
         lEye._SourceDirection = lEye.Direction;
@@ -571,12 +575,7 @@ public class GazeController : AnimController
         if (torso.Defined)
             torso._SourceDirection = torso.Direction;
 
-        // Apply original posture (before previous gaze shift started)
-        lEye._ApplyFixSourceRotations();
-        rEye._ApplyFixSourceRotations();
-        head._ApplyFixSourceRotations();
-        if (torso.Defined)
-            torso._ApplyFixSourceRotations();
+        _ApplyFixSourceRotations();
 
         // Update source gaze directions
         lEye._FixSourceDirection = lEye.Direction;
@@ -586,6 +585,32 @@ public class GazeController : AnimController
             torso._FixSourceDirection = torso.Direction;
 
         // Reapply current posture
+        _ApplyBaseRotations();
+    }
+
+    // Apply source posture (at the start of the gaze shift)
+    protected virtual void _ApplySourceRotations()
+    {
+        lEye._ApplySourceRotations();
+        rEye._ApplySourceRotations();
+        head._ApplySourceRotations();
+        if (torso.Defined)
+            torso._ApplySourceRotations();
+    }
+
+    // Apply source posture (at the start of the previous gaze shift)
+    protected virtual void _ApplyFixSourceRotations()
+    {
+        lEye._ApplyFixSourceRotations();
+        rEye._ApplyFixSourceRotations();
+        head._ApplyFixSourceRotations();
+        if (torso.Defined)
+            torso._ApplyFixSourceRotations();
+    }
+
+    // Apply current body posture (before gaze is applied)
+    protected virtual void _ApplyBaseRotations()
+    {
         lEye._ApplyBaseRotations();
         rEye._ApplyBaseRotations();
         head._ApplyBaseRotations();
@@ -633,6 +658,8 @@ public class GazeController : AnimController
         CurrentGazeTarget = gazeTarget;
         curMovingTargetPosOff = _MovingTargetPositionOffset;
         curUseTorso = useTorso;
+        if (!curUseTorso)
+            torso.align = 0f;
 
         // Initialize per-body part gaze shift parameters
         if (torso.Defined)
@@ -678,20 +705,19 @@ public class GazeController : AnimController
         if (!torso.Defined)
             return;
 
+        // Compute source and target directions
         Vector3 srcDir = torso._SourceDirection;
-        Vector3 trgDir = srcDir;
+        torso._InitTargetDirection();
+        Vector3 trgDir = torso._TargetDirection;
         Vector3 trgDirAlign = srcDir;
-        if (curUseTorso)
-        {
-            torso._InitTargetDirection();
-            trgDir = torso._TargetDirection;
-            float minDistRot = _ComputeMinTorsoAmplitude();
-            float fullDistRot = Vector3.Angle(srcDir, trgDir);
-            float align = fullDistRot > 0f ?
-                Mathf.Clamp01((minDistRot + (fullDistRot - minDistRot) * torso._Align)/fullDistRot) : 1f;
-            Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDir), align);
+
+        // Compute aligning target direction
+        float minDistRot = curUseTorso ? _ComputeMinTorsoAmplitude() : 0f;
+        float fullDistRot = Vector3.Angle(srcDir, trgDir);
+        float align = fullDistRot > 0f ?
+            Mathf.Clamp01((minDistRot + (fullDistRot - minDistRot) * torso._Align)/fullDistRot) : 1f;
+        Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDir), align);
             trgDirAlign = rotAlign * srcDir;
-        }
         torso._TargetDirectionAlign = trgDirAlign;
     }
 
@@ -727,10 +753,10 @@ public class GazeController : AnimController
         // Compute the maximum rotational difference between OMR-constrained eye target rotation
         // and eye target rotation required to align the eyes with the target
         Quaternion lEyeRotDiff = Quaternion.identity, rEyeRotDiff = Quaternion.identity;
-        float lEyeDistRot = 0f, rEyeDistRot = 0f;
-        _ComputeOMRTargetRotationDiff(lEye, out lEyeRotDiff, out lEyeDistRot);
-        _ComputeOMRTargetRotationDiff(rEye, out lEyeRotDiff, out lEyeDistRot);
-        Quaternion maxRotDiff = lEyeDistRot > rEyeDistRot ? lEyeRotDiff : rEyeRotDiff;
+        lEyeRotDiff = lEye._GetOMRTargetRotationDiff();
+        rEyeRotDiff = rEye._GetOMRTargetRotationDiff();
+        Quaternion maxRotDiff = QuaternionUtil.Angle(lEyeRotDiff) > QuaternionUtil.Angle(rEyeRotDiff) ?
+            lEyeRotDiff : rEyeRotDiff;
 
         // Compute minimal target direction for the head
         Quaternion headCurRot = head.Top.localRotation;
@@ -755,22 +781,7 @@ public class GazeController : AnimController
         Vector3 headTrgDirAlign = rotAlign * head._SourceDirection;
         head._TargetDirectionAlign = headTrgDirAlign;
     }
-
-    // Compute the difference between OMR-constrained eye target rotation and the target rotation
-    // needed to align the eye with the target
-    protected virtual void _ComputeOMRTargetRotationDiff(GazeBodyPart eye,
-        out Quaternion eyeRotDiff, out float eyeDistRot)
-    {
-        Quaternion eyeTrgRot = ModelUtils.LookAtRotation(eye.Top, CurrentGazeTargetPosition);
-        Quaternion eyeCurRot = eye.Top.localRotation;
-        eye.Top.localRotation = eyeTrgRot;
-        eye.ClampOMRToSource();
-        Quaternion eyeTrgRotOMR = eye.Top.localRotation;
-        eye.Top.localRotation = eyeCurRot;
-        eyeRotDiff = Quaternion.Inverse(eyeTrgRotOMR) * eyeTrgRot;
-        eyeDistRot = Quaternion.Angle(eyeTrgRotOMR, eyeTrgRot);
-    }
-
+    
     // Initialize latency times of all gaze body parts
     protected virtual void _InitLatencies()
     {
@@ -877,15 +888,22 @@ public class GazeController : AnimController
         return adjDistRotOMR;
     }
 
-    // Rotate the body parts toward the gaze target
-    protected virtual bool _AdvanceGazeShift(float deltaTime)
+    // Advance the gaze shift movement of the specified body part
+    protected virtual bool _AdvanceGazeShift(GazeBodyPart gazeBodyPart, float deltaTime)
     {
-        bool torsoAligned = !torso.Defined || torso._AdvanceGazeShift(deltaTime);
-        bool headAligned = head._AdvanceGazeShift(deltaTime);
-        bool lEyeAligned = lEye._AdvanceGazeShift(deltaTime);
-        bool rEyeAligned = rEye._AdvanceGazeShift(deltaTime);
+        bool aligned = true;
+        float dt = 0f;
+        for (float t = 0; t < DeltaTime; )
+        {
+            // Compute delta time
+            t += LEAPCore.eulerTimeStep;
+            dt = (t <= DeltaTime) ? LEAPCore.eulerTimeStep :
+                DeltaTime - t + LEAPCore.eulerTimeStep;
 
-        return torsoAligned && headAligned && lEyeAligned && rEyeAligned;
+            aligned = !gazeBodyPart.Defined || gazeBodyPart._AdvanceGazeShift(dt);
+        }
+
+        return aligned;
     }
 
     // Stop any ongoing head movements
