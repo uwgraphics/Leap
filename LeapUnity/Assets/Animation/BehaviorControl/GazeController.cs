@@ -483,19 +483,19 @@ public class GazeController : AnimController
 
         // Advance torso gaze shift
         torso._UpdateTargetDirection();
-        bool torsoAligned = _AdvanceGazeShift(torso, deltaTime);
+        bool torsoAligned = torso._AdvanceGazeShift(deltaTime);
         torso._ApplyGazeShift();
 
         // Advance head gaze shift
         head._UpdateTargetDirection();
-        bool headAligned =  _AdvanceGazeShift(head, deltaTime);
+        bool headAligned = head._AdvanceGazeShift(deltaTime);
         head._ApplyGazeShift();
 
         // Advance eye gaze shifts
         lEye._UpdateTargetDirection();
         rEye._UpdateTargetDirection();
-        bool lEyeAligned = _AdvanceGazeShift(lEye, deltaTime);
-        bool rEyeAligned = _AdvanceGazeShift(rEye, deltaTime);
+        bool lEyeAligned = lEye._AdvanceGazeShift(deltaTime);
+        bool rEyeAligned = rEye._AdvanceGazeShift(deltaTime);
         lEye._ApplyGazeShift();
         rEye._ApplyGazeShift();
 
@@ -886,24 +886,6 @@ public class GazeController : AnimController
         }
 
         return adjDistRotOMR;
-    }
-
-    // Advance the gaze shift movement of the specified body part
-    protected virtual bool _AdvanceGazeShift(GazeBodyPart gazeBodyPart, float deltaTime)
-    {
-        bool aligned = true;
-        float dt = 0f;
-        for (float t = 0; t < DeltaTime; )
-        {
-            // Compute delta time
-            t += LEAPCore.eulerTimeStep;
-            dt = (t <= DeltaTime) ? LEAPCore.eulerTimeStep :
-                DeltaTime - t + LEAPCore.eulerTimeStep;
-
-            aligned = !gazeBodyPart.Defined || gazeBodyPart._AdvanceGazeShift(dt);
-        }
-
-        return aligned;
     }
 
     // Stop any ongoing head movements

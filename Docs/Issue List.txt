@@ -1,7 +1,16 @@
 Leap Animation Editor:
 
-#125 [] Small torso movements and direction discontinuities at the start and end of latency phase, esp. when torso movement is disabled
-  - Torso moves and snaps a bit at the end of the latency phase of a gaze shift that has torso movement disabled!
+#126 [] Torso moves and snaps a bit at the end of the latency phase of a gaze shift that has torso movement disabled
+  - In such cases, torso source and target directions at gaze shift start should be equal to the aligning target direction of the preceding fixation
+  - And yet, they seem to get initialized to *current* gaze direction (from the preceding fixation), which differs from the aligning target direction on account of torso vertical posture that gets preserved
+  - This is likely the same problem as #125
+  - Forgot to refactor latency handling code in _AdvanceGazeShift()
+
+#113 [] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
+  - Refactoring seems to have fixed the problem for the head, but not the torso
+  - Fixed for the torso, but still need to test that it's fixed for torso.postureWeight = 0
+  
+#125 [] Small torso movement at the start and end of gaze shift latency phase
 
 #124 [] Stopping an ongoing gaze shift causes discontinuities in gaze body part directions
   - Following last summer's refactoring, it might make sense to just not interrupt ongoing gaze shifts, but merely delay or cancel new ones
@@ -48,9 +57,6 @@ Leap Animation Editor:
   - Doesn't really work, but applying source posture might
   - This helps with head and torso motion, but eyes are all messed up again, both trgDir and trgDirAlign are completely wrong
   - I guess target directions really do need to be updated for each body part separately, after the preceding body part has moved
-
-#113 [X] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
-  - Refactoring seems to have fixed the problem for the head, but not the torso
 
 #120 [X] Head snaps a bit when switching from gaze shift to fixation
   - There is a weird, big switch in source gaze directions

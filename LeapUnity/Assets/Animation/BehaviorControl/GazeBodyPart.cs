@@ -573,7 +573,7 @@ public class GazeBodyPart
         curUpOMR = adjUpOMR = upOMR;
         curDownOMR = adjDownOMR = downOMR;
         _InitSourceRotations();
-        srcDir = Direction;
+        srcDir = fixTrgDirAlign;
         trgDir = srcDir;
         trgDirAlign = srcDir;
         rotParam = 0f;
@@ -646,33 +646,49 @@ public class GazeBodyPart
     // Rotate the body part's gaze joints toward the current target
     public bool _AdvanceGazeShift(float deltaTime)
     {
-        // Update body part velocity and (if eye) OMR
-        _UpdateVelocity();
-        if (IsEye)
-            _UpdateOMR();
-
-        if (latency > 0f)
-        {
-            // Body part not ready to move yet, just maintain fixation
-            _ApplyFix();
-            _InitSourceRotations();
-
-            // Decrement latency and stop fixation if done
-            latency -= deltaTime;
-            if (latency <= 0f)
-                _StopFix();
-
-            return false;
-        }
+        if (!Defined)
+            return true;
         
-        // Rotate the body part toward the target
-        float distRotDiff = deltaTime * curVelocity;
-        float distRotAlign = Vector3.Angle(_SourceDirection, _TargetDirectionAlign);
-        rotParam = rotParam < 1f ? Mathf.Clamp01(rotParam + distRotDiff / distRotAlign) : 1f;
-        Quaternion rot = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDirAlign), rotParam);
-        curDir = rot * srcDir;
+        float dt = 0f;
+        for (float t = 0; t < deltaTime; )
+        {
+            // Compute delta time
+            t += LEAPCore.eulerTimeStep;
+            dt = (t <= deltaTime) ? LEAPCore.eulerTimeStep :
+                deltaTime - t + LEAPCore.eulerTimeStep;
 
-        return rotParam >= 1f;
+            if (latency > 0f)
+            {
+                // Body part not ready to move yet, just maintain fixation
+                _ApplyFix();
+                _InitSourceRotations();
+
+                // Decrement latency and stop fixation if done
+                latency -= dt;
+                if (latency <= 0f)
+                    _StopFix();
+
+                return false;
+            }
+
+            // Update body part velocity and (if eye) OMR
+            _UpdateVelocity();
+            if (IsEye)
+                _UpdateOMR();
+
+            // Rotate the body part toward the target
+            float distRotDiff = dt * curVelocity;
+            float distRotAlign = Vector3.Angle(_SourceDirection, _TargetDirectionAlign);
+            rotParam = rotParam < 1f ? Mathf.Clamp01(rotParam + distRotDiff / distRotAlign) : 1f;
+            Quaternion rot = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDirAlign), rotParam);
+            curDir = rot * srcDir;
+
+            if (rotParam >= 1f)
+                // Gaze shift finished
+                return true;
+        }
+
+        return false;
     }
 
     // Apply current gaze shift posture
