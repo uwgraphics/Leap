@@ -84,15 +84,15 @@ public class EyeLaserGizmo : MonoBehaviour
         if (showGazeShiftLasers)
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawRay(gazeBodyPart.Position, gazeController.StateId == (int)GazeState.Shifting ?
+            Gizmos.DrawRay(gazeBodyPart.Position, !gazeBodyPart._IsFix ?
                 gazeBodyPart._SourceDirection * gazeTargetDist :
                 gazeBodyPart._FixSourceDirection * gazeTargetDist);
             Gizmos.color = Color.green;
-            Gizmos.DrawRay(gazeBodyPart.Position, gazeController.StateId == (int)GazeState.Shifting ?
+            Gizmos.DrawRay(gazeBodyPart.Position, !gazeBodyPart._IsFix ?
                 gazeBodyPart._TargetDirectionAlign * gazeTargetDist :
                 gazeBodyPart._FixTargetDirectionAlign * gazeTargetDist);
             Gizmos.color = Color.black;
-            Gizmos.DrawRay(gazeBodyPart.Position, gazeController.StateId == (int)GazeState.Shifting ?
+            Gizmos.DrawRay(gazeBodyPart.Position, !gazeBodyPart._IsFix ?
                 gazeBodyPart._TargetDirection * gazeTargetDist :
                 gazeBodyPart._FixTargetDirection * gazeTargetDist);
         }

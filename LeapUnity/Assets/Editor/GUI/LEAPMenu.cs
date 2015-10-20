@@ -210,7 +210,7 @@ public class LEAPMenu
         if (sceneName == "TestExpressiveGaze")
         {
             LEAPCore.gazeConstraintActivationTime = 0f;
-            //testScenes.modelNorman.GetComponent<GazeController>().torsoPostureWeight = 0f;
+            //testScenes.modelNorman.GetComponent<GazeController>().torso.postureWeight = 0f;
 
             testScenes.modelNorman.SetActive(true);
             testScenes.modelTestExpressiveGazeEnv.SetActive(true);

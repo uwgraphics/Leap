@@ -6,11 +6,32 @@ using System.Collections;
 /// </summary>
 public class GeomUtil
 {
+    /// <summary>
+    /// true if two vectors are equal, false otherwise.
+    /// </summary>
+    /// <param name="v1"></param>
+    /// <param name="v2"></param>
+    /// <returns></returns>
     public static bool Equal(Vector3 v1, Vector3 v2)
     {
         return Mathf.Abs(v1.x - v2.x) < 0.001f &&
             Mathf.Abs(v1.y - v2.y) < 0.001f &&
                 Mathf.Abs(v1.z - v2.z) < 0.001f;
+    }
+
+    /// <summary>
+    /// Remap angle to [-180, 180] range.
+    /// </summary>
+    /// <param name="angle">Angle</param>
+    /// <returns>Angle in [-180, 180] range</returns>
+    public static float RemapAngle(float angle)
+    {
+        while (angle > 180f)
+            angle -= 360f;
+        while (angle < -180f)
+            angle += 360f;
+
+        return angle;
     }
 
     /// <summary>
@@ -102,4 +123,3 @@ public class GeomUtil
 		}
 	}
 }
-

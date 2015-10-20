@@ -965,18 +965,7 @@ public static class EyeGazeEditor
         var model = eyeGazeInstance.Model;
         string poseName = eyeGazeInstance.Name + "Pose";
         var gazeController = eyeGazeInstance.GazeController;
-        
-        // Get root joint for the gaze movement
-        Transform root = null;
-        if (gazeController.torso.Defined)
-        {
-            root = gazeController.torso.gazeJoints[gazeController.torso.gazeJoints.Length - 1];
-            root = root.tag == "RootBone" ? root : root.parent;
-        }
-        else
-        {
-            root = gazeController.head.gazeJoints[gazeController.head.gazeJoints.Length - 1].parent;
-        }
+        var root = gazeController.Root;
 
         // Estimate gaze shift duration and gaze shift  end frame
         float estGazeShiftTimeLength = ComputeEstGazeShiftTimeLength(eyeGazeInstance,
@@ -1036,6 +1025,11 @@ public static class EyeGazeEditor
         _PrintEyeGazeBodyPartState(state.rEyeState);
         _PrintEyeGazeBodyPartState(state.headState);
         _PrintEyeGazeBodyPartState(state.torsoState);
+
+        //
+        UnityEngine.Debug.LogWarning(string.Format("torso: direction = ({0}, {1}, {2})",
+            gazeController.torso.Direction.x, gazeController.torso.Direction.y, gazeController.torso.Direction.z));
+        //
     }
 
     // Gaze editing helper operation; remove an eye gaze instance from the animation timeline
@@ -1226,17 +1220,20 @@ public static class EyeGazeEditor
     {
         UnityEngine.Debug.Log(string.Format("{0}: curAlign = {1}, " +
             "curVelocity = {2} [maxVelocity = {3}], latency = {4}, cur*OMR = ({5}, {6}, {7}, {8}), " +
-            "srcDir = ({9}, {10}, {11}), trgDir = ({12}, {13}, {14}), trgDirAlign = ({15}, {16}, {17}), rotParam = {18}, " +
-            "curDir = ({19}, {20}, {21}), " +
-            "isFix = {22}, fixSrcDir = ({23}, {24}, {25}), fixTrgDir = ({26}, {27}, {28}), fixTrgDirAlign = ({29}, {30}, {31})",
+            "srcDir0 = ({9}, {10}, {11}), srcDir = ({12}, {13}, {14}), trgDir = ({15}, {16}, {17}), trgDirAlign = ({18}, {19}, {20}), " +
+            "rotParam = {21}, curDir = ({22}, {23}, {24}), " +
+            "isFix = {25}, fixSrcDir0 = ({26}, {27}, {28}), fixSrcDir = ({29}, {30}, {31}), fixTrgDir = ({32}, {33}, {34}), " +
+            "fixTrgDirAlign = ({35}, {36}, {37})",
             ((GazeBodyPartType)state.gazeBodyPartType).ToString(),
             state.curAlign, state.curVelocity, state.maxVelocity, state.latency,
             state.curInOMR, state.curOutOMR, state.curUpOMR, state.curDownOMR,
+            state.srcDir0.x, state.srcDir0.y, state.srcDir0.z,
             state.srcDir.x, state.srcDir.y, state.srcDir.z,
             state.trgDir.x, state.trgDir.y, state.trgDir.z,
             state.trgDirAlign.x, state.trgDirAlign.y, state.trgDirAlign.z, state.rotParam,
             state.curDir.x, state.curDir.y, state.curDir.z,
-            state.isFix, state.fixSrcDir.x, state.fixSrcDir.y, state.fixSrcDir.z,
+            state.isFix, state.fixSrcDir0.x, state.fixSrcDir0.y, state.fixSrcDir0.z,
+            state.fixSrcDir.x, state.fixSrcDir.y, state.fixSrcDir.z,
             state.fixTrgDir.x, state.fixTrgDir.y, state.fixTrgDir.z,
             state.fixTrgDirAlign.x, state.fixTrgDirAlign.y, state.fixTrgDirAlign.z
             ));

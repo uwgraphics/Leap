@@ -112,11 +112,12 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     protected float _headAlign, _torsoAlign;
-
     protected int _baseStartFrame = 0;
     protected int _baseFixationStartFrame = 0;
     protected int _baseFrameLength = 0;
-    
+
+    // TODO: not happy about having elements of runtime state in this class
+    protected bool _blendIn, _blendOut;
 
     /// <summary>
     /// Constructor.
@@ -166,7 +167,21 @@ public class EyeGazeInstance : AnimationControllerInstance
         // Register handler for gaze controller state changes
         GazeController.StateChange += new StateChangeEvtH(GazeController_StateChange);
 
-        // Initiate gaze shift to target
+        if (!GazeController.fixGaze && GazeController.FixGazeTarget == null)
+        {
+            // This gaze instance is preceded by a period of unconstrained gaze,
+            // so enable gaze fixation and start blending in
+            GazeController.fixGaze = true;
+            _blendIn = true;
+        }
+        else if (Target == null)
+        {
+            // This gaze instance is followed by a period of unconstrained gaze,
+            // so start blending out
+            _blendOut = true;
+        }
+
+        // Initiate gaze shift to the target
         GazeController.head.align = Mathf.Clamp01(HeadAlign);
         if (GazeController.torso != null)
         {
@@ -185,6 +200,16 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// </summary>
     public override void Finish()
     {
+        if (Target == null)
+        {
+            // This gaze instance is followed by a period of unconstrained gaze,
+            // so disable gaze fixation
+            GazeController.fixGaze = false;
+        }
+        
+        // Disable blending
+        _blendIn = _blendOut = false;
+
         // Unregister handler for gaze controller state changes
         GazeController.StateChange -= GazeController_StateChange;
 
@@ -210,12 +235,6 @@ public class EyeGazeInstance : AnimationControllerInstance
     {
         if (GazeController.StateId == (int)GazeState.Shifting)
         {
-            if (!GazeController.fixGaze)
-            {
-                // Make sure gaze remains fixated after gaze shift completion
-                GazeController.fixGaze = true;
-            }
-
             if (frame >= FrameLength - 1)
             {
                 // We have reached the end of the current gaze instance, make sure
@@ -224,13 +243,18 @@ public class EyeGazeInstance : AnimationControllerInstance
             }
         }
 
-        if (Target == null)
+        if (_blendIn || _blendOut)
         {
             // This is a gaze shift ahead, blend it out
             int numFrames = Mathf.Min(FrameLength, Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.gazeAheadBlendTime));
             float t = numFrames > 1 ? Mathf.Clamp01(((float)frame) / (numFrames - 1)) : 0f;
             float t2 = t * t;
-            GazeController.weight = 1f + 2f * t2 * t - 3f * t2;
+            float weight = -2f * t2 * t + 3f * t2;
+            GazeController.weight = _blendIn ? weight : 1f - weight;
+        }
+        else
+        {
+            GazeController.weight = 1f;
         }
     }
 

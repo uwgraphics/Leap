@@ -1,22 +1,48 @@
 Leap Animation Editor:
 
-#126 [] Torso moves and snaps a bit at the end of the latency phase of a gaze shift that has torso movement disabled
+#128 [X] Discontinuities in head and torso directions when using pelvis as part of the torso
+  - See gaze shift at frame 141 of TestExpressiveGaze
+  - When head latency phase ends, head source direction for the gaze shift starts at incorrect value (ditto for torso), even though fixTrgDirAlign (from which it's supposed to be initialized) appears to be correct
+  - srcDir seems to be correctly initialized at first, but srcDir0 is wrong, and then srcDir somehow winds up being equal to srcDir0
+  - The problem was that the character was not in the base pose when updating source directions, but that's fixed now
+
+#123 [] Root position all wrong when using gaze IK
+  - In TestExpressiveGaze, the root starts off low and then abruptly gets moved to the correct position
+  
+#127 [] OMR clamping does not work well when both source and target orientations lie outside valid OMR
+  - See ClampOMRToSource() function
+  - What happens is that the entire *arc* between the two orientations lies outside valid OMR area
+  - We should instead find the closest point on the closed curve that denotes the OMR region to the arc between source and target orientations
+  - No idea how to do this in quaternion space
+  - Might get sufficiently good results if we instead treat the arc as a line in yaw-pitch space and find the closest point on the ellipse that denotes OMR
+
+#126 [X] Torso moves and snaps a bit at the end of the latency phase of a gaze shift that has torso movement disabled
   - In such cases, torso source and target directions at gaze shift start should be equal to the aligning target direction of the preceding fixation
   - And yet, they seem to get initialized to *current* gaze direction (from the preceding fixation), which differs from the aligning target direction on account of torso vertical posture that gets preserved
   - This is likely the same problem as #125
   - Forgot to refactor latency handling code in _AdvanceGazeShift()
+  - The problem is that source gaze direction is not the same thing as the actual body part direction, since layering will alter the latter
+  - Need to do away with storing source gaze joint orientations and instead just keep track of source direction
+  - We can initialize the source direction from fixTrgRotAlign, and we also need to update it on every frame to account for body movement (could compute rigid root offset from gaze shift start and apply it to source direction)
+  - Made the change, and it works well now... when torso posture weight is set to 1
+  - When torso posture weight is 0, there is again a discontinuity in torso posture
+  - First time torso posture is applied in latency phase of the new gaze shift, there is a jump in fixTrgDir and fixTrgDirAlign!
+  - Seems the problem is that GetTargetDirection() gives a different result depending on the current posture of *all gaze body parts* (not just the torso!), so we should make sure that they all have the same posture as they had at the end of the fixation
+  - Fixed, finally
+  - Also, eyes have stopped moving for some reason - weirdly, srcDir, trgDir, and curDir all seem correct, but the eye lasers are clearly wrong (trgDir and current direction are shown the same as srcDir), as are the actual eye orientations
+  - Just a simple bug, fixed now
+  - Must also test when there is torso rotation in the base animation, to see if source directions are correctly updated
+  - There was a discontinuity in torso rotation, which is now fixed!
 
-#113 [] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
+#113 [X] Velocity profile for the torso (and probably other body parts) is wrong - the peak occurs way too late in the gaze shift
   - Refactoring seems to have fixed the problem for the head, but not the torso
   - Fixed for the torso, but still need to test that it's fixed for torso.postureWeight = 0
+  - Seems OK for all body parts now
   
-#125 [] Small torso movement at the start and end of gaze shift latency phase
+#125 [X] Small torso movement at the start and end of gaze shift latency phase
 
 #124 [] Stopping an ongoing gaze shift causes discontinuities in gaze body part directions
   - Following last summer's refactoring, it might make sense to just not interrupt ongoing gaze shifts, but merely delay or cancel new ones
-
-#123 [] Root position all wrong when using gaze IK
-  - In TestExpressiveGaze, the root starts off low and then abruptly gets moved to the correct position
   
 #109 [] Baking gaze animation is extremely slow
   - Gaze IK weight computation in AnimationTimeline._InitGazeIK() takes up a lot of time for some reason... or causes something else (IK?) to take a very long time
