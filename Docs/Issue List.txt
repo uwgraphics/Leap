@@ -1,13 +1,28 @@
 Leap Animation Editor:
 
+#131 [] End-effector constraint times are incorrectly checked, because we fail to consider that animation might be scheduled to begin later than frame 0 (so its start time should be added to the end-effector constraint times)
+
+#130 [] Character root jitters sometimes when using gaze IK
+
+#129 [] Discontinuity in head direction at the start of the gaze shift when using gaze IK
+  - When gaze shift latency phase starts, fixation target direction gets wrong
+
 #128 [X] Discontinuities in head and torso directions when using pelvis as part of the torso
   - See gaze shift at frame 141 of TestExpressiveGaze
   - When head latency phase ends, head source direction for the gaze shift starts at incorrect value (ditto for torso), even though fixTrgDirAlign (from which it's supposed to be initialized) appears to be correct
   - srcDir seems to be correctly initialized at first, but srcDir0 is wrong, and then srcDir somehow winds up being equal to srcDir0
   - The problem was that the character was not in the base pose when updating source directions, but that's fixed now
 
-#123 [] Root position all wrong when using gaze IK
+#123 [X] Root position all wrong when using gaze IK
   - In TestExpressiveGaze, the root starts off low and then abruptly gets moved to the correct position
+  - All term weights seem to be continuous
+  - Doesn't seem to have anything to do with the gaze pose or the gaze term
+  - Even when using _ObjFunc1 (non-gaze objective) root is positioned wrong (except then it doesn't move)
+  - Taking out dynamic gaze IK weight computation seems to get rid of root snapping (though some other issues occur now)
+  - Non-zero gaze weights cause the root to move downward!
+  - The problem seems to be that base pose weights are non-zero only when there are hand constraints, whereas when there are foot constraints, root position is completely free (since gaze controller doesn't constrain it)
+  - Upper body posture should be weighed separately from root position; base upper body posture should be weighed more when there are hand constraints, whereas base root position should be weighed more in presence of *any* constraints
+  - Addressed by using separate root position term
   
 #127 [] OMR clamping does not work well when both source and target orientations lie outside valid OMR
   - See ClampOMRToSource() function

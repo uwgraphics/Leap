@@ -48,9 +48,6 @@ public class LEAPModelPostprocessor : AssetPostprocessor
         // Initialize all animation
         _InitMorphAnimation(gameObj);
         _InitAnimClips(gameObj);
-
-        // Auto-tag the model
-        ModelUtils.AutoTagModel(gameObj);
     }
 
     private void _InitMorphAnimation(GameObject gameObj)

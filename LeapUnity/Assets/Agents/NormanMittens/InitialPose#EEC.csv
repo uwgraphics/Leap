@@ -1,5 +1,5 @@
 EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target
-LWrist,0,702,false,null
-RWrist,0,702,false,null
-LAnkle,0,702,false,null
-RAnkle,0,702,false,null
+LWristBone,0,702,false,null
+RWristBone,0,702,false,null
+LAnkleBone,0,702,false,null
+RAnkleBone,0,702,false,null

@@ -1,7 +1,7 @@
 EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ManipulatedObjectHandle,ManipulationEndFrame
-RWrist,157,160,true,Book1RWrist,Book1Handle,427
-RWrist,428,440,true,Book1RWrist,Book1Handle,440
-RWrist,703,705,true,Book2RWrist,Book2Handle,931
-RWrist,932,945,true,Book2RWrist,Book2Handle,945
-RWrist,1172,1176,true,Book3RWrist,Book3Handle,1427
-RWrist,1428,1435,true,Book3RWrist,Book3Handle,1435
+RWristBone,157,160,true,Book1RWrist,Book1Handle,427
+RWristBone,428,440,true,Book1RWrist,Book1Handle,440
+RWristBone,703,705,true,Book2RWrist,Book2Handle,931
+RWristBone,932,945,true,Book2RWrist,Book2Handle,945
+RWristBone,1172,1176,true,Book3RWrist,Book3Handle,1427
+RWristBone,1428,1435,true,Book3RWrist,Book3Handle,1435

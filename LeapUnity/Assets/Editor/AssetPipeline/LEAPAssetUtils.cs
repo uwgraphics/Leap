@@ -330,7 +330,7 @@ public static class LEAPAssetUtils
         // Get curve data from the animation clip for each bone
         for (int boneIndex = 0; boneIndex < numBones; ++boneIndex)
         {
-            var bone = modelController[boneIndex];
+            var bone = modelController.GetBone(boneIndex);
             string bonePath = ModelUtils.GetBonePath(bone);
             var curveDataForBone = curveData.Where(cd => cd.path == bonePath);
             curveIndex = 3 + boneIndex * 4;
@@ -442,23 +442,27 @@ public static class LEAPAssetUtils
             if (boneIndex == 0)
             {
                 // Set position curves on root bone
-                if (curves[0].keys.Length > 0)
+                if (curves[0] != null && curves[0].keys.Length > 0)
                     clip.SetCurve(bonePath, typeof(Transform), "localPosition.x", curves[0]);
-                if (curves[1].keys.Length > 0)
+                if (curves[1] != null && curves[1].keys.Length > 0)
                     clip.SetCurve(bonePath, typeof(Transform), "localPosition.y", curves[1]);
-                if (curves[2].keys.Length > 0)
+                if (curves[2] != null && curves[2].keys.Length > 0)
                     clip.SetCurve(bonePath, typeof(Transform), "localPosition.z", curves[2]);
             }
 
             // Set rotation curves
-            if (curves[3 + boneIndex * 4].keys.Length > 0)
-                clip.SetCurve(bonePath, typeof(Transform), "localRotation.x", curves[3 + boneIndex * 4]);
-            if (curves[3 + boneIndex * 4 + 1].keys.Length > 0)
-                clip.SetCurve(bonePath, typeof(Transform), "localRotation.y", curves[3 + boneIndex * 4 + 1]);
-            if (curves[3 + boneIndex * 4 + 2].keys.Length > 0)
-                clip.SetCurve(bonePath, typeof(Transform), "localRotation.z", curves[3 + boneIndex * 4 + 2]);
-            if (curves[3 + boneIndex * 4 + 3].keys.Length > 0)
-                clip.SetCurve(bonePath, typeof(Transform), "localRotation.w", curves[3 + boneIndex * 4 + 3]);
+            var curve = curves[3 + boneIndex * 4];
+            if (curve != null && curve.keys.Length > 0)
+                clip.SetCurve(bonePath, typeof(Transform), "localRotation.x", curve);
+            curve = curves[3 + boneIndex * 4 + 1];
+            if (curve != null && curve.keys.Length > 0)
+                clip.SetCurve(bonePath, typeof(Transform), "localRotation.y", curve);
+            curve = curves[3 + boneIndex * 4 + 2];
+            if (curve != null && curve.keys.Length > 0)
+                clip.SetCurve(bonePath, typeof(Transform), "localRotation.z", curve);
+            curve = curves[3 + boneIndex * 4 + 3];
+            if (curve != null && curve.keys.Length > 0)
+                clip.SetCurve(bonePath, typeof(Transform), "localRotation.w", curve);
         }
 
         // Set curves for blend shapes
@@ -472,8 +476,9 @@ public static class LEAPAssetUtils
             string blendShapeName = "blendShape." + meshWithBlendShape.sharedMesh.GetBlendShapeName(blendShapeIndexWithinMesh);
             string blendShapePath = ModelUtils.GetBonePath(meshWithBlendShape.gameObject.transform);
 
-            if (curves[3 + bones.Length * 4 + blendShapeIndex].keys.Length > 0)
-                clip.SetCurve(blendShapePath, typeof(SkinnedMeshRenderer), blendShapeName, curves[3 + bones.Length * 4 + blendShapeIndex]);
+            var curve = curves[3 + bones.Length * 4 + blendShapeIndex];
+            if (curve != null && curve.keys.Length > 0)
+                clip.SetCurve(blendShapePath, typeof(SkinnedMeshRenderer), blendShapeName, curve);
         }
     }
 
@@ -531,6 +536,152 @@ public static class LEAPAssetUtils
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Create default bone masks for animation tracks.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <returns>Bone masks</returns>
+    public static AnimationBoneMask[] CreateDefaultAnimationTrackBoneMasks(GameObject model)
+    {
+        // Get the bones animated by each track
+        var rootBones = ModelUtils.GetAllBonesWithTag(model, "RootBone");
+        var headBones = ModelUtils.GetAllBonesWithTag(model, "HeadBone");
+        var gazeBones = rootBones.Length > 0 && headBones.Length > 0 ?
+            ModelUtils.GetBoneChain(rootBones[0], headBones[0]).Union(ModelUtils.GetAllBonesInSubtree(headBones[0])).ToArray() :
+            new Transform[0];
+        var lShoulderBones = ModelUtils.GetAllBonesWithTag(model, "LShoulderBone");
+        var lArmGestureBones = lShoulderBones.Length > 0 ?
+            ModelUtils.GetAllBonesInSubtree(lShoulderBones[0]) :
+            new Transform[0];
+        var rShoulderBones = ModelUtils.GetAllBonesWithTag(model, "RShoulderBone");
+        var rArmGestureBones = rShoulderBones.Length > 0 ?
+            ModelUtils.GetAllBonesInSubtree(rShoulderBones[0]) :
+            new Transform[0];
+        var postureBones = rootBones.Length > 0 && headBones.Length > 0 ?
+            ModelUtils.GetBoneChain(rootBones[0], headBones[0].parent) :
+            new Transform[0];
+        var lHipBones = ModelUtils.GetAllBonesWithTag(model, "LHipBone");
+        var rHipBones = ModelUtils.GetAllBonesWithTag(model, "RHipBone");
+        var locomotionBones = lHipBones.Length > 0 && rHipBones.Length > 0 ?
+            ModelUtils.GetAllBonesInSubtree(lHipBones[0]).Union(ModelUtils.GetAllBonesInSubtree(rHipBones[0])).ToArray() :
+            new Transform[0];
+
+        // Initialize gaze bone mask
+        AnimationBoneMask gazeBoneMask = null;
+        if (gazeBones.Length > 0)
+        {
+            gazeBoneMask = new AnimationBoneMask();
+            foreach (var gazeBone in gazeBones)
+                gazeBoneMask.SetBoneWeight(gazeBone, 1f);
+        }
+
+
+        // Initialize posture bone mask
+        AnimationBoneMask postureBoneMask = null;
+        if (postureBones.Length > 0)
+        {
+            postureBoneMask = new AnimationBoneMask();
+            /*foreach (var postureBone in postureBones)
+                postureBoneMask.SetBoneWeight(postureBone, 1f);*/
+        }
+
+        // Initialize left arm gesture mask
+        AnimationBoneMask lArmGestureBoneMask = null;
+        if (lArmGestureBones.Length > 0)
+        {
+            lArmGestureBoneMask = new AnimationBoneMask();
+            foreach (var lArmGestureBone in lArmGestureBones)
+                lArmGestureBoneMask.SetBoneWeight(lArmGestureBone, 1f);
+        }
+
+        // Initialize right arm gesture mask
+        AnimationBoneMask rArmGestureBoneMask = null;
+        if (rArmGestureBones.Length > 0)
+        {
+            rArmGestureBoneMask = new AnimationBoneMask();
+            foreach (var rArmGestureBone in rArmGestureBones)
+                rArmGestureBoneMask.SetBoneWeight(rArmGestureBone, 1f);
+        }
+
+        // Initialize locomotion bone mask
+        AnimationBoneMask locomotionBoneMask = null;
+        if (locomotionBones.Length > 0)
+        {
+            locomotionBoneMask = new AnimationBoneMask();
+            foreach (var locomotionBone in locomotionBones)
+                locomotionBoneMask.SetBoneWeight(locomotionBone, 1f);
+            locomotionBoneMask.RootPositionWeight = 1f;
+        }
+
+        // Create an array of bone masks
+        AnimationBoneMask[] boneMasks = new AnimationBoneMask[Enum.GetValues(typeof(AnimationTrackType)).Length];
+        boneMasks[(int)AnimationTrackType.Gaze] = gazeBoneMask;
+        boneMasks[(int)AnimationTrackType.Posture] = postureBoneMask;
+        boneMasks[(int)AnimationTrackType.LArmGesture] = lArmGestureBoneMask;
+        boneMasks[(int)AnimationTrackType.RArmGesture] = rArmGestureBoneMask;
+        boneMasks[(int)AnimationTrackType.Locomotion] = locomotionBoneMask;
+        boneMasks[(int)AnimationTrackType.All] = null;
+
+        return boneMasks;
+    }
+
+    /// <summary>
+    /// Create separate clips for animation tracks in the specified original clip.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="clip">Animation clip</param>
+    /// <param name="boneMasks">Bone masks that define which bones are affected by each track</param>
+    /// <returns>Track animation clips</returns>
+    public static AnimationClip[] CreateAnimationClipsForTracks(GameObject model, AnimationClip clip,
+        AnimationBoneMask[] boneMasks)
+    {
+        // Get model bones and curves
+        var modelController = model.GetComponent<ModelController>();
+        int numBones = modelController == null ? 0 : modelController.NumberOfBones;
+        var curves = GetAnimationCurvesFromClip(model, clip);
+
+        // Create track clips
+        var trackTypes = (AnimationTrackType[])Enum.GetValues(typeof(AnimationTrackType));
+        AnimationClip[] trackClips = new AnimationClip[trackTypes.Length];
+        for (int trackIndex = 0; trackIndex < trackClips.Length; ++trackIndex)
+        {
+            if (boneMasks[trackIndex] == null)
+            {
+                trackClips[trackIndex] = null;
+                continue;
+            }
+
+            trackClips[trackIndex] = CreateAnimationClipOnModel(clip.name + "#" + trackTypes[trackIndex].ToString(), model);
+
+            // Create an array of curves on the current animation track
+            var trackCurves = new AnimationCurve[curves.Length];
+            for (int boneIndex = 0; boneIndex < numBones; ++boneIndex)
+            {
+                var bone = modelController.GetBone(boneIndex);
+
+                if (boneIndex == 0 && boneMasks[trackIndex].RootPositionWeight > 0f)
+                {
+                    trackCurves[0] = curves[0];
+                    trackCurves[1] = curves[1];
+                    trackCurves[2] = curves[2];
+                }
+
+                if (boneMasks[trackIndex].GetBoneWeight(bone) > 0f)
+                {
+                    trackCurves[3 + boneIndex * 4] = curves[3 + boneIndex * 4];
+                    trackCurves[3 + boneIndex * 4 + 1] = curves[3 + boneIndex * 4 + 1];
+                    trackCurves[3 + boneIndex * 4 + 2] = curves[3 + boneIndex * 4 + 2];
+                    trackCurves[3 + boneIndex * 4 + 3] = curves[3 + boneIndex * 4 + 3];
+                }
+            }
+
+            // Set the curves on the track animation clip
+            SetAnimationCurvesOnClip(model, trackClips[trackIndex], trackCurves);
+        }
+
+        return trackClips;
     }
 
     /// <summary>
@@ -628,19 +779,11 @@ public static class LEAPAssetUtils
                         int.Parse(lineElements[attributeIndices["DeactivationFrameLength"]]) :
                         Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.endEffectorConstraintActivationTime);
 
-                    /*if (lastConstraintEndFrames.ContainsKey(endEffector) && lastConstraintEndFrames[endEffector] >= startFrame)
-                    {
-                        UnityEngine.Debug.LogWarning(string.Format("Error in end-effector constraint asset file {0}: constraint ({1}, {2}, {3}) precedes or  overlaps another constraint on the same end-effector",
-                            eecPath, endEffector, startFrame, startFrame + frameLength - 1));
-                    }
-                    else*/
-                    {
-                        // Add constraint
-                        constraints.Add(new EndEffectorConstraint(
-                            endEffector, startFrame, frameLength, preserveAbsoluteRotation, endEffectorTarget,
-                            manipulatedObjectHandle, manipulationFrameLength, activationFrameLength, deactivationFrameLength));
-                        lastConstraintEndFrames[endEffector] = startFrame + frameLength - 1;
-                    }
+                    // Add constraint
+                    constraints.Add(new EndEffectorConstraint(
+                        endEffector, startFrame, frameLength, preserveAbsoluteRotation, endEffectorTarget,
+                        manipulatedObjectHandle, manipulationFrameLength, activationFrameLength, deactivationFrameLength));
+                    lastConstraintEndFrames[endEffector] = startFrame + frameLength - 1;
                 }
             }
         }
@@ -651,5 +794,136 @@ public static class LEAPAssetUtils
         }
 
         return constraints.ToArray();
+    }
+
+    /// <summary>
+    /// Initialize animations of helper targets for end-effector constraints that constrain
+    /// end-effectors to follow trajectories encoded in the original animation.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="clip">Original animation clip</param>
+    /// <param name="endEffectorConstraints">End-effector constraints</param>
+    /// <returns>End-effector target helper animation clips</returns>
+    public static AnimationClip[] InitEndEffectorTargetHelperAnimations(GameObject model, AnimationClip clip,
+        EndEffectorConstraint[] endEffectorConstraints)
+    {
+        if (!endEffectorConstraints.Any(c => c.target == null))
+        {
+            // Targets defined for all end-effector constraints, nothing to initialize
+            return null;
+        }
+
+        var endEffectors = ModelUtils.GetEndEffectors(model);
+        var helpers = new Dictionary<string, GameObject>();
+        var helperClips = new Dictionary<string, AnimationClip>();
+        var helperCurves = new Dictionary<string, AnimationCurve[]>();
+
+        // Create target helper objects and clips for end-effectors constraints
+        foreach (var endEffector in endEffectors)
+        {
+            // Get end-effector target helper
+            string helperName = ModelUtils.GetEndEffectorTargetHelperName(model, endEffector.tag);
+            var endEffectorTargets = GameObject.FindGameObjectsWithTag("EndEffectorTarget");
+            var helper = endEffectorTargets.FirstOrDefault(h => h.name == helperName);
+            if (helper == null)
+            {
+                // Target helper does not exist, create it
+                helper = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                helper.name = helperName;
+                helper.tag = "EndEffectorTarget";
+                GameObject.DestroyImmediate(helper.renderer);
+            }
+            helpers[endEffector.tag] = helper;
+
+            // Set the helper target for each end-effector constraint
+            for (int endEffectorConstraintIndex = 0; endEffectorConstraintIndex < endEffectorConstraints.Length;
+                ++endEffectorConstraintIndex)
+            {
+                var endEffectorConstraint = endEffectorConstraints[endEffectorConstraintIndex];
+                if (endEffectorConstraint.endEffector != endEffector.tag || endEffectorConstraint.target != null)
+                    continue;
+
+                endEffectorConstraint.target = helper;
+                endEffectorConstraints[endEffectorConstraintIndex] = endEffectorConstraint;
+            }
+            
+            // Create a helper target animation clip for the current end-effector (if one does not exist already)
+            if (helper.GetComponent<Animation>() == null)
+                helper.AddComponent<Animation>();
+            string helperClipName = clip.name + "-" + helperName;
+            var helperClip = GetAnimationClipOnModel(helperClipName, helper);
+            if (helperClip == null)
+                helperClip = CreateAnimationClipOnModel(helperClipName, helper);
+            helperClips[endEffector.tag] = helperClip;
+
+            // Also create animation curves for the clip
+            helperCurves[endEffector.tag] = new AnimationCurve[7];
+            for (int helperCurveIndex = 0; helperCurveIndex < helperCurves[endEffector.tag].Length; ++helperCurveIndex)
+                helperCurves[endEffector.tag][helperCurveIndex] = new AnimationCurve();
+        }
+
+        // Bake end-effector movements into helper animations
+        var instance = new AnimationClipInstance(clip.name, model);
+        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+        {
+            instance.Apply(frameIndex, AnimationLayerMode.Override);
+
+            // Compute key time
+            float time = ((float)frameIndex)/LEAPCore.editFrameRate;
+
+            foreach (var kvp in helperClips)
+            {
+                var helperClip = kvp.Value;
+                var helperCurveSet = helperCurves[kvp.Key];
+                var endEffector = ModelUtils.GetAllBonesWithTag(model, kvp.Key)[0];
+
+                // Key the animation
+                helperCurveSet[0].AddKey(time, endEffector.position.x);
+                helperCurveSet[1].AddKey(time, endEffector.position.y);
+                helperCurveSet[2].AddKey(time, endEffector.position.z);
+                helperCurveSet[3].AddKey(time, endEffector.rotation.x);
+                helperCurveSet[4].AddKey(time, endEffector.rotation.y);
+                helperCurveSet[5].AddKey(time, endEffector.rotation.z);
+                helperCurveSet[6].AddKey(time, endEffector.rotation.w);
+            }
+        }
+
+        // Set the animation curves on each helper clip
+        foreach (var kvp in helperClips)
+        {
+            var helper = helpers[kvp.Key];
+            var helperClip = kvp.Value;
+            var helperCurveSet = helperCurves[kvp.Key];
+
+            helperClip.SetCurve("", typeof(Transform), "localPosition.x", helperCurveSet[0]);
+            helperClip.SetCurve("", typeof(Transform), "localPosition.y", helperCurveSet[1]);
+            helperClip.SetCurve("", typeof(Transform), "localPosition.z", helperCurveSet[2]);
+            helperClip.SetCurve("", typeof(Transform), "localRotation.x", helperCurveSet[3]);
+            helperClip.SetCurve("", typeof(Transform), "localRotation.y", helperCurveSet[4]);
+            helperClip.SetCurve("", typeof(Transform), "localRotation.z", helperCurveSet[5]);
+            helperClip.SetCurve("", typeof(Transform), "localRotation.w", helperCurveSet[6]);
+            
+            // Write helper animation clip to file
+            string path = LEAPAssetUtils.GetModelDirectory(model) + helperClip.name + ".anim";
+            if (AssetDatabase.GetAssetPath(helperClip) != path)
+            {
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(helperClip, path);
+            }
+            AssetDatabase.SaveAssets();
+
+            // Re-add the clip to its model
+            LEAPAssetUtils.AddAnimationClipToModel(helperClip, helper);
+        }
+
+        // Return the end-effector target helper animation clips
+        var endEffectorTargetHelperClips = new AnimationClip[endEffectors.Length];
+        for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
+        {
+            var endEffector = endEffectors[endEffectorIndex];
+            endEffectorTargetHelperClips[endEffectorIndex] = helperClips[endEffector.tag];
+        }
+
+        return endEffectorTargetHelperClips;
     }
 }

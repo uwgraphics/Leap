@@ -203,4 +203,23 @@ public class AnimationManager
         }
 
     }
+
+    /// <summary>
+    /// Print animation instances scheduled on the timeline.
+    /// </summary>
+    public void PrintAnimationInstances()
+    {
+        foreach (var layer in Timeline.Layers)
+        {
+            Debug.Log("LAYER " + layer.LayerName);
+
+            foreach (var scheduledInstance in layer.Animations)
+            {
+                var instance = scheduledInstance.Animation;
+
+                Debug.Log(string.Format("{0}::{1}, S = {2}, E = {3}", instance.Model.name, instance.Name,
+                    scheduledInstance.StartFrame, scheduledInstance.EndFrame));
+            }
+        }
+    }
 }

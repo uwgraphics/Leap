@@ -28,7 +28,7 @@ public class LimbIKSolver : IKSolver
 
         base.Start();
 
-        _isLeg = endEffectors[0] == "LAnkle" || endEffectors[0] == "RAnkle";
+        _isLeg = endEffectors[0] == "LAnkleBone" || endEffectors[0] == "RAnkleBone";
         _shoulder = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 2));
         _elbow = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 1));
         _wrist = ModelUtils.FindBoneWithTag(Model.Root, endEffectors[0]);
@@ -119,65 +119,65 @@ public class LimbIKSolver : IKSolver
     /// <summary>
     /// Get tag on the joint that is part of the specified end-effector's limb.
     /// </summary>
-    /// <param name="endEffector">End effector tag</param>
+    /// <param name="endEffectorTag">End effector tag</param>
     /// <param name="jointIndex">Joint index within the limb's chain (0 corresponds to the end-effector itself)</param>
     /// <returns></returns>
-    public static string GetJointTagForLimb(string endEffector, int jointIndex)
+    public static string GetJointTagForLimb(string endEffectorTag, int jointIndex)
     {
-        if (endEffector == "LWrist")
+        if (endEffectorTag == "LWristBone")
         {
             switch (jointIndex)
             {
                 case 0:
-                    return endEffector;
+                    return endEffectorTag;
                 case 1:
-                    return "LElbow";
+                    return "LElbowBone";
                 case 2:
-                    return "LShoulder";
+                    return "LShoulderBone";
                 default:
-                    return endEffector;
+                    return endEffectorTag;
             }
         }
-        else if (endEffector == "RWrist")
+        else if (endEffectorTag == "RWristBone")
         {
             switch (jointIndex)
             {
                 case 0:
-                    return endEffector;
+                    return endEffectorTag;
                 case 1:
-                    return "RElbow";
+                    return "RElbowBone";
                 case 2:
-                    return "RShoulder";
+                    return "RShoulderBone";
                 default:
-                    return endEffector;
+                    return endEffectorTag;
             }
         }
-        else if (endEffector == "LAnkle")
+        else if (endEffectorTag == "LAnkleBone")
         {
             switch (jointIndex)
             {
                 case 0:
-                    return endEffector;
+                    return endEffectorTag;
                 case 1:
-                    return "LKnee";
+                    return "LKneeBone";
                 case 2:
-                    return "LHip";
+                    return "LHipBone";
                 default:
-                    return endEffector;
+                    return endEffectorTag;
             }
         }
-        else // if (endEffector == "RAnkle")
+        else // if (endEffector == "RAnkleBone")
         {
             switch (jointIndex)
             {
                 case 0:
-                    return endEffector;
+                    return endEffectorTag;
                 case 1:
-                    return "RKnee";
+                    return "RKneeBone";
                 case 2:
-                    return "RHip";
+                    return "RHipBone";
                 default:
-                    return endEffector;
+                    return endEffectorTag;
             }
         }
     }

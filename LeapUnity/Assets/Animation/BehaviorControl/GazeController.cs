@@ -736,7 +736,7 @@ public class GazeController : AnimController
         rEye.RotateTowards(rEye._SourceDirection);
     }
 
-    // Update body part target directions for the gaze fixation during latency phase
+    // Update body parts' target directions for the gaze fixation during latency phase
     protected virtual void _UpdateLatencyFixTargetDirections()
     {
         _ApplyFixSourceDirections();
@@ -757,6 +757,7 @@ public class GazeController : AnimController
         rEye._UpdateSourceDirectionOnLatency();
     }
 
+    // Update specified body part's target direction for the gaze fixation during latency phase
     protected virtual void _UpdateLatencyFixTargetDirections(GazeBodyPart gazeBodyPart)
     {
         if (!gazeBodyPart.Defined || gazeBodyPart._Latency <= 0f)

@@ -10,7 +10,7 @@ using System.Linq;
 public struct EndEffectorConstraint
 {
     /// <summary>
-    /// End-effector tag.
+    /// End-effector name.
     /// </summary>
     public string endEffector;
 
@@ -57,7 +57,7 @@ public struct EndEffectorConstraint
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="endEffector">End-effector tag</param>
+    /// <param name="endEffector">End-effector name</param>
     /// <param name="startFrame">Constraint start frame</param>
     /// <param name="frameLength">Length of the constraint in frames</param>
     /// <param name="preserveAbsoluteRotation">If true, absolute rotation of the end-effector should be preserved</param>

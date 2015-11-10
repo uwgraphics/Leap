@@ -68,16 +68,6 @@ public sealed class ModelController : MonoBehaviour
     }
 
     /// <summary>
-    /// Indexer for getting the model bones.
-    /// </summary>
-    /// <param name="boneIndex">Bone index</param>
-    /// <returns>Bone</returns>
-    public Transform this[int boneIndex]
-    {
-        get { return bones[boneIndex]; }
-    }
-
-    /// <summary>
     /// Number of blend shapes in the model.
     /// </summary>
     public int NumberOfBlendShapes
@@ -119,8 +109,8 @@ public sealed class ModelController : MonoBehaviour
     {
         get
         {
-            var lFoot = GameObject.FindGameObjectWithTag("LAnkle").transform;
-            var rFoot = GameObject.FindGameObjectWithTag("RAnkle").transform;
+            var lFoot = GameObject.FindGameObjectWithTag("LAnkleBone").transform;
+            var rFoot = GameObject.FindGameObjectWithTag("RAnkleBone").transform;
 
             return 0.5f * (lFoot.transform.position + rFoot.transform.position);
         }
@@ -134,8 +124,8 @@ public sealed class ModelController : MonoBehaviour
     {
         get
         {
-            var lFoot = GameObject.FindGameObjectWithTag("LAnkle").transform;
-            var rFoot = GameObject.FindGameObjectWithTag("RAnkle").transform;
+            var lFoot = GameObject.FindGameObjectWithTag("LAnkleBone").transform;
+            var rFoot = GameObject.FindGameObjectWithTag("RAnkleBone").transform;
 
             Vector3 bodyRight = (rFoot.position - lFoot.position).normalized;
             Vector3 bodyUp = new Vector3(0f, 1f, 0f);

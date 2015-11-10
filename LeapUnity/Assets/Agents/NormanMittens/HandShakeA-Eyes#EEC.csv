@@ -1,2 +1,2 @@
 EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ActivationFrameLength,DeactivationFrameLength
-RWrist,16,50,true,null,-1,-1
+RWristBone,16,50,true,null,-1,-1

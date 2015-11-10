@@ -224,7 +224,11 @@ public class LEAPMenu
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("TestExpressiveGaze", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0,
+                endEffectorConstraintsNorman);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -233,7 +237,7 @@ public class LEAPMenu
         else if (sceneName == "WindowWashing")
         {
             testScenes.modelNorman.SetActive(true);
-            testScenes.modelNormanette.SetActive(true);
+            //testScenes.modelNormanette.SetActive(true);
             testScenes.modelNormanette.transform.position = new Vector3(2.58f, 0f, -3.72f);
             testScenes.modelNormanette.transform.localScale = new Vector3(0.96f, 0.91f, 0.96f);
             testScenes.modelWindowWashingEnv.SetActive(true);
@@ -247,10 +251,23 @@ public class LEAPMenu
             timeline.OwningManager.SetEnvironment(testScenes.modelWindowWashingEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance("WindowWashingA", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var bodyAnimationNorman = new TimewarpedAnimationClipInstance("WindowWashingA", testScenes.modelNorman);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
             var bodyAnimationNormanette = new AnimationClipInstance("WindowWashingB", testScenes.modelNormanette);
+
+            // Add animations to characters
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman,
+                0, endEffectorConstraintsNorman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsNorman);
             timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNormanette, 0);
+
+            // Add timewarps to the animations
+            bodyAnimationNorman.AddTimewarp(AnimationTrackType.Gaze, new HoldTimewarp(10), 158);
+            bodyAnimationNorman.AddTimewarp(AnimationTrackType.Posture, new HoldTimewarp(10), 158);
+            bodyAnimationNorman.AddTimewarp(AnimationTrackType.RArmGesture, new HoldTimewarp(10), 165);
+            bodyAnimationNorman.AddTimewarp(AnimationTrackType.Locomotion, new HoldTimewarp(10), 171);
+            bodyAnimationNorman.AddTimewarp(AnimationTrackType.LArmGesture, new HoldTimewarp(10), 171);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -295,9 +312,17 @@ public class LEAPMenu
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("PassSodaA", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0,
+                endEffectorConstraintsNorman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsNorman);
             var bodyAnimationRoman = new AnimationClipInstance("PassSodaB", testScenes.modelRoman);
-            int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationRoman, 0, true);
+            var endEffectorConstraintsRoman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationRoman.AnimationClip);
+            var endEffectorTargetHelperClipsRoman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelRoman,
+                bodyAnimationRoman.AnimationClip, endEffectorConstraintsRoman);
+            int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationRoman, 0,
+                endEffectorConstraintsRoman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsRoman);
             var bodyAnimationNormanette = new AnimationClipInstance("PassSodaC", testScenes.modelNormanette);
             timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNormanette, 0);
 
@@ -337,7 +362,11 @@ public class LEAPMenu
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("Walking90deg", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0,
+                endEffectorConstraintsNorman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsNorman);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -367,9 +396,17 @@ public class LEAPMenu
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("HandShakeA", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0,
+                endEffectorConstraintsNorman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsNorman);
             var bodyAnimationRoman = new AnimationClipInstance("HandShakeB", testScenes.modelRoman);
-            int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationRoman, 0, true);
+            var endEffectorConstraintsRoman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationRoman.AnimationClip);
+            var endEffectorTargetHelperClipsRoman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelRoman,
+                bodyAnimationRoman.AnimationClip, endEffectorConstraintsRoman);
+            int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationRoman, 0,
+                endEffectorConstraintsRoman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsRoman);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -399,7 +436,11 @@ public class LEAPMenu
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("BookShelf", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0,
+                endEffectorConstraintsNorman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsNorman);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -439,7 +480,11 @@ public class LEAPMenu
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("StealDiamond", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0,
+                endEffectorConstraintsNorman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsNorman);
 
             // Create environment animations
             var envController = testScenes.modelStealDiamondEnv.GetComponent<EnvironmentController>();
@@ -474,7 +519,11 @@ public class LEAPMenu
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("WaitForBus", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0,
+                endEffectorConstraintsNorman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsNorman);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -499,7 +548,11 @@ public class LEAPMenu
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("InitialPose", testScenes.modelNorman);
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0, true);
+            var endEffectorConstraintsNorman = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(bodyAnimationNorman.AnimationClip);
+            var endEffectorTargetHelperClipsNorman = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(testScenes.modelNorman,
+                bodyAnimationNorman.AnimationClip, endEffectorConstraintsNorman);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNorman, 0,
+                endEffectorConstraintsNorman, LEAPCore.environmentAnimationLayerName, endEffectorTargetHelperClipsNorman);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -843,9 +896,6 @@ public class LEAPMenu
     {
         GameObject obj = Selection.activeGameObject;
 
-        // Tag model parts
-        ModelUtils.AutoTagModel(obj);
-
         // Create default anim. controllers
         LocomotionController lococtr = obj.AddComponent<LocomotionController>();
         BodyIdleController idlectr = obj.AddComponent<BodyIdleController>();
@@ -900,9 +950,6 @@ public class LEAPMenu
     private static void SetupGazeAgent()
     {
         GameObject obj = Selection.activeGameObject;
-
-        // Tag model parts
-        ModelUtils.AutoTagModel(obj);
 
         // Create default anim. controllers
         GazeController gazectr = obj.AddComponent<GazeController>();

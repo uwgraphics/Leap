@@ -1,3 +1,3 @@
 EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ActivationFrameLength,DeactivationFrameLength,ManipulatedObjectHandle,ManipulationEndFrame
-RWrist,68,73,true,PassSodaBHandoff,20,20,SodaBottleBHandle,141
-RWrist,142,179,true,PassSodaBMouth,20,20,SodaBottleBHandle,229
+RWristBone,68,73,true,PassSodaBHandoff,20,20,SodaBottleBHandle,141
+RWristBone,142,179,true,PassSodaBMouth,20,20,SodaBottleBHandle,229

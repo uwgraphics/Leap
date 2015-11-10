@@ -552,6 +552,7 @@ public class AnimationTimeline
     private List<BakedAnimationTimelineContainer> _bakedTimelineContainers;
     private int _activeBakedTimelineContainerIndex = -1;
     private Dictionary<AnimationClip, EndEffectorConstraintContainer> _endEffectorConstraints;
+    private Dictionary<int, List<int>> _endEffectorTargetHelperInstances;
 
     public bool _active = false;
     private float _currentTime = 0;
@@ -570,6 +571,7 @@ public class AnimationTimeline
         _animationInstancesById = new Dictionary<int, ScheduledInstance>();
         _bakedTimelineContainers = new List<BakedAnimationTimelineContainer>();
         _endEffectorConstraints = new Dictionary<AnimationClip, EndEffectorConstraintContainer>();
+        _endEffectorTargetHelperInstances = new Dictionary<int, List<int>>();
         _activeAnimationInstanceIds = new HashSet<int>();
         _storedModelPoses = new Dictionary<string, Dictionary<string, ModelPose>>();
         _activeManipulatedObjectHandles = new Dictionary<GameObject, Transform>();
@@ -648,9 +650,13 @@ public class AnimationTimeline
     /// <param name="layerIndex">Layer name</param>
     /// <param name="animation">Animation instance</param>
     /// <param name="startFrame">Animation start frame on the timeline</param>
-    /// <param name="loadEndEffectorConstraints">If true, end-effector constraints will be loaded for the animation clip of the added instance</param>
+    /// <param name="targetLayerName">Layer name for end-effector target animations</param>
+    /// <param name="endEffectorConstraints">End-effector constraints of the added animation</param>
+    /// <param name="endEffectorTargetHelperClips">Animations of target helpers for end-effector constraints</param>
     /// <returns>Animation instance ID</returns>
-    public int AddAnimation(string layerName, AnimationInstance animation, int startFrame, bool loadEndEffectorConstraints = false)
+    public int AddAnimation(string layerName, AnimationInstance animation, int startFrame,
+        EndEffectorConstraint[] endEffectorConstraints = null, string endEffectorTargetLayerName = "",
+        AnimationClip[] endEffectorTargetHelperClips = null)
     {
         if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
         {
@@ -666,23 +672,48 @@ public class AnimationTimeline
 
         // Schedule the animation instance in the appropriate order (based on start frame)
         var targetLayerContainer = GetLayer(layerName);
-        var newInstance = new ScheduledInstance(_nextInstanceId++, startFrame, animation, targetLayerContainer);
+        int instanceId = _nextInstanceId++;
+        var newInstance = new ScheduledInstance(instanceId, startFrame, animation, targetLayerContainer);
         _AddAnimationToLayerContainer(newInstance, targetLayerContainer);
 
         // Also add the instance so it can be fetched by ID
         _animationInstancesById.Add(newInstance.InstanceId, newInstance);
 
-        // Load end-effector constraints for animation clips
-        if (newInstance.Animation is AnimationClipInstance)
+        if (newInstance.Animation is AnimationClipInstance && endEffectorConstraints != null)
         {
+            // Add the animation's end-effector constraints
             AnimationClipInstance clipInstance = newInstance.Animation as AnimationClipInstance;
-            if (loadEndEffectorConstraints && !_endEffectorConstraints.ContainsKey(clipInstance.AnimationClip))
+            if (!_endEffectorConstraints.ContainsKey(clipInstance.AnimationClip))
             {
-                EndEffectorConstraint[] endEffectorConstraints = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(clipInstance.AnimationClip);
-                if (endEffectorConstraints != null)
+                _endEffectorConstraints.Add(clipInstance.AnimationClip,
+                    new EndEffectorConstraintContainer(clipInstance.AnimationClip, endEffectorConstraints));
+            }
+
+            if (endEffectorTargetHelperClips != null)
+            {
+                // Schedule end-effector target helper animations
+                var endEffectors = ModelUtils.GetEndEffectors(clipInstance.Model);
+                _endEffectorTargetHelperInstances[instanceId] = new List<int>();
+                for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
                 {
-                    _endEffectorConstraints.Add(clipInstance.AnimationClip,
-                        new EndEffectorConstraintContainer(clipInstance.AnimationClip, endEffectorConstraints));
+                    var endEffector = endEffectors[endEffectorIndex];
+                    var endEffectorTargetHelperClip = endEffectorTargetHelperClips[endEffectorIndex];
+                    string endEffectorTargetHelperName = ModelUtils.GetEndEffectorTargetHelperName(animation.Model, endEffector.tag);
+                    var endEffectorTargetHelper = GameObject.FindGameObjectsWithTag("EndEffectorTarget")
+                        .FirstOrDefault(t => t.name == endEffectorTargetHelperName);
+
+                    // Create helper animation instance and associate with the original animation instance
+                    var endEffectorTargetHelperInstance = Activator.CreateInstance(clipInstance.GetType(),
+                        endEffectorTargetHelperClip.name, endEffectorTargetHelper) as AnimationClipInstance;
+                    clipInstance.AddEndEffectorTargetHelperAnimation(endEffector.tag, endEffectorTargetHelperInstance);
+                    
+                    // Schedule helper animation instance
+                    var endEffectorTargetLayerContainer = GetLayer(endEffectorTargetLayerName);
+                    int endEffectorTargetHelperInstanceId = _nextInstanceId++;
+                    var endEffectorTargetHelperScheduledInstance = new ScheduledInstance(endEffectorTargetHelperInstanceId, startFrame,
+                        endEffectorTargetHelperInstance, endEffectorTargetLayerContainer);
+                    _endEffectorTargetHelperInstances[instanceId].Add(endEffectorTargetHelperInstanceId);
+                    _AddAnimationToLayerContainer(endEffectorTargetHelperScheduledInstance, endEffectorTargetLayerContainer);
                 }
             }
         }
@@ -712,6 +743,22 @@ public class AnimationTimeline
                     (inst.Value.Animation as AnimationClipInstance).AnimationClip == animationClip && inst.Value.InstanceId != animationInstanceId))
             {
                 _endEffectorConstraints.Remove(animationClip);
+            }
+
+            if (_endEffectorTargetHelperInstances.ContainsKey(animationInstanceId))
+            {
+                // Also remove end-effector target helper animations
+                foreach (int endEffectorTargetHelperInstanceId in _endEffectorTargetHelperInstances[animationInstanceId])
+                {
+                    if (!_animationInstancesById.ContainsKey(endEffectorTargetHelperInstanceId))
+                        // Helper animation already deleted
+                        continue;
+
+                    var endEffectorTargetHelperInstance = _animationInstancesById[endEffectorTargetHelperInstanceId];
+                    endEffectorTargetHelperInstance.OwningLayer._GetAnimations().Remove(endEffectorTargetHelperInstance);
+                    _animationInstancesById.Remove(endEffectorTargetHelperInstanceId);
+                }
+                _endEffectorTargetHelperInstances.Remove(animationInstanceId);
             }
         }
 
@@ -851,6 +898,7 @@ public class AnimationTimeline
         {
             throw new Exception(string.Format("Animation instance with ID {0} does not exist", animationInstanceId));
         }
+        
         var animationInstance = _animationInstancesById[animationInstanceId].Animation;
         if (!(animationInstance is AnimationClipInstance))
         {
@@ -1046,6 +1094,7 @@ public class AnimationTimeline
         System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
         timer.Start();
 
+        // Initialize timeline
         GoToFrame(0);
         Advance(0);
 
@@ -1199,7 +1248,50 @@ public class AnimationTimeline
             _AddTime(deltaTime * TimeScale);
         }
 
-        ApplyAnimation();
+        if (!IsBaking &&
+            _activeBakedTimelineContainerIndex >= 0 && _activeBakedTimelineContainerIndex < _bakedTimelineContainers.Count)
+        {
+            // We have already evaluated and baked the animation timeline, so apply the baked animation
+            ApplyBakedAnimation();
+        }
+        else
+        {
+            ApplyAnimation();
+        }
+    }
+
+    /// <summary>
+    /// Apply baked animation at the current time to all character models.
+    /// </summary>
+    public void ApplyBakedAnimation()
+    {
+        var bakedTimelineContainer = _bakedTimelineContainers[_activeBakedTimelineContainerIndex];
+
+        // Apply each baked animation
+        foreach (var bakedAnimationContainer in bakedTimelineContainer.AnimationContainers)
+        {
+            bakedAnimationContainer._AnimationInstance.Apply(CurrentFrame, AnimationLayerMode.Override);
+            
+            // Also apply animation controller states
+            foreach (var controllerContainer in bakedAnimationContainer.ControllerContainers)
+            {
+                // TODO: figure out why the hell frame index is sometimes out of range
+                if (CurrentFrame < 0 || CurrentFrame >= controllerContainer.ControllerStates.Count)
+                {
+                    Debug.LogError(string.Format("Frame index out of range. CurrentFrame = {0}, controllerContainer.ControllerStates.Count = {1}",
+                        CurrentFrame, controllerContainer.ControllerStates.Count));
+                    continue;
+                }
+                //
+                controllerContainer.Controller.SetRuntimeState(controllerContainer.ControllerStates[CurrentFrame]);
+            }
+        }
+
+        // Apply baked animations of manipulated objects
+        foreach (var bakedAnimationContainer in bakedTimelineContainer.ManipulatedObjectAnimationContainers)
+        {
+            bakedAnimationContainer._AnimationInstance.Apply(CurrentFrame, AnimationLayerMode.Override);
+        }
     }
 
     /// <summary>
@@ -1207,14 +1299,6 @@ public class AnimationTimeline
     /// </summary>
     public void ApplyAnimation()
     {
-        if (!IsBaking &&
-            _activeBakedTimelineContainerIndex >= 0 && _activeBakedTimelineContainerIndex < _bakedTimelineContainers.Count)
-        {
-            // We have already evaluated and baked the animation timeline, so apply the baked animation
-            _ApplyBakedAnimation();
-            return;
-        }
-
         // Reset models and IK solvers
         _ResetIK();
         ResetModelsAndEnvironment();
@@ -1281,7 +1365,8 @@ public class AnimationTimeline
                     if (layer.isIKEndEffectorConstr && animation.Animation is AnimationClipInstance)
                     {
                         // Set up IK goals for this layer
-                        _SetIKEndEffectorGoals(animation.Animation.Model, (animation.Animation as AnimationClipInstance).AnimationClip);
+                        _SetIKEndEffectorGoals(animation.Animation.Model,
+                            (animation.Animation as AnimationClipInstance).AnimationClip, animation.StartFrame);
                     }
                 }
             }
@@ -1471,38 +1556,6 @@ public class AnimationTimeline
         }
     }
 
-    // Apply baked animation at the current frame to all the models
-    private void _ApplyBakedAnimation()
-    {
-        var bakedTimelineContainer = _bakedTimelineContainers[_activeBakedTimelineContainerIndex];
-
-        // Apply each baked animation
-        foreach (var bakedAnimationContainer in bakedTimelineContainer.AnimationContainers)
-        {
-            bakedAnimationContainer._AnimationInstance.Apply(CurrentFrame, AnimationLayerMode.Override);
-            
-            // Also apply animation controller states
-            foreach (var controllerContainer in bakedAnimationContainer.ControllerContainers)
-            {
-                // TODO: figure out why the hell frame index is sometimes out of range
-                if (CurrentFrame < 0 || CurrentFrame >= controllerContainer.ControllerStates.Count)
-                {
-                    Debug.LogError(string.Format("Frame index out of range. CurrentFrame = {0}, controllerContainer.ControllerStates.Count = {1}",
-                        CurrentFrame, controllerContainer.ControllerStates.Count));
-                    continue;
-                }
-                //
-                controllerContainer.Controller.SetRuntimeState(controllerContainer.ControllerStates[CurrentFrame]);
-            }
-        }
-
-        // Apply baked animations of manipulated objects
-        foreach (var bakedAnimationContainer in bakedTimelineContainer.ManipulatedObjectAnimationContainers)
-        {
-            bakedAnimationContainer._AnimationInstance.Apply(CurrentFrame, AnimationLayerMode.Override);
-        }
-    }
-
     // Initialize animation controllers on all models
     private void _InitControllers()
     {
@@ -1571,27 +1624,30 @@ public class AnimationTimeline
     }
 
     // Set end-effector goals for the IK solver on the specified model
-    private void _SetIKEndEffectorGoals(GameObject model, AnimationClip animationClip)
+    private void _SetIKEndEffectorGoals(GameObject model, AnimationClip animationClip, int animationStartFrame)
     {
         if (!_endEffectorConstraints.ContainsKey(animationClip))
             return;
 
         // Set up end-effector goals
-        EndEffectorConstraint[] activeConstraints = _endEffectorConstraints[animationClip].GetConstraintsAtFrame(CurrentFrame);
+        EndEffectorConstraint[] activeConstraints = _endEffectorConstraints[animationClip]
+            .GetConstraintsAtFrame(CurrentFrame - animationStartFrame);
         if (activeConstraints != null)
         {
             IKSolver[] solvers = model.GetComponents<IKSolver>();
 
             foreach (var constraint in activeConstraints)
             {
-                Transform endEffector = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
+                Transform endEffectorBone = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
 
                 // Compute constraint weight
                 float t = 1f;
-                if (CurrentFrame < constraint.startFrame)
-                    t = Mathf.Clamp01(1f - ((float)(constraint.startFrame - CurrentFrame)) / constraint.activationFrameLength);
-                else if (CurrentFrame > (constraint.startFrame + constraint.frameLength - 1))
-                    t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1))) / constraint.deactivationFrameLength);
+                if (CurrentFrame < constraint.startFrame + animationStartFrame)
+                    t = Mathf.Clamp01(1f - ((float)(constraint.startFrame + animationStartFrame - CurrentFrame)) 
+                        / constraint.activationFrameLength);
+                else if (CurrentFrame > (constraint.startFrame + constraint.frameLength - 1 + animationStartFrame))
+                    t = Mathf.Clamp01(1f - ((float)(CurrentFrame - (constraint.startFrame + constraint.frameLength - 1 + animationStartFrame))) 
+                        / constraint.deactivationFrameLength);
                 float t2 = t * t;
                 float weight = -2f * t2 * t + 3f * t2;
 
@@ -1600,9 +1656,9 @@ public class AnimationTimeline
                 {
                     if (solver.endEffectors.Contains(constraint.endEffector))
                     {
-                        IKGoal goal = new IKGoal(endEffector,
-                            constraint.target == null ? endEffector.position : constraint.target.transform.position,
-                            constraint.target == null ? endEffector.rotation : constraint.target.transform.rotation,
+                        IKGoal goal = new IKGoal(endEffectorBone,
+                            constraint.target == null ? endEffectorBone.position : constraint.target.transform.position,
+                            constraint.target == null ? endEffectorBone.rotation : constraint.target.transform.rotation,
                             weight, constraint.preserveAbsoluteRotation);
                         solver.AddGoal(goal);
                     }
@@ -1612,13 +1668,13 @@ public class AnimationTimeline
         
         // Set up object manipulations
         EndEffectorConstraint[] activeManipulatedObjectConstraints =
-            _endEffectorConstraints[animationClip].GetManipulationConstraintsAtFrame(CurrentFrame);
+            _endEffectorConstraints[animationClip].GetManipulationConstraintsAtFrame(CurrentFrame - animationStartFrame);
         if (LEAPCore.enableObjectManipulation && activeManipulatedObjectConstraints != null)
         {
             foreach (var constraint in activeManipulatedObjectConstraints)
             {
-                Transform endEffector = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
-                _activeManipulatedObjectHandles[constraint.manipulatedObjectHandle] = endEffector;
+                Transform endEffectorBone = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
+                _activeManipulatedObjectHandles[constraint.manipulatedObjectHandle] = endEffectorBone;
             }
         }
     }

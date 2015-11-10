@@ -8,6 +8,22 @@ public class LEAPCore : MonoBehaviour
 	public const string agentModelDirectory = "Assets/Agents";
 	public const string morphAnimationPrefix = "MC";
 	public const string morphTargetPrefix = "MT";
+    public const string lWristTag = "LWristBone";
+    public const string lElbowTag = "LElbowBone";
+    public const string lShoulderTag = "LShoulderBone";
+    public const string rWristTag = "RWristBone";
+    public const string rElbowTag = "RElbowBone";
+    public const string rShoulderTag = "RShoulderBone";
+    public const string lAnkleTag = "LAnkleBone";
+    public const string lKneeTag = "LKneeBone";
+    public const string lHipTag = "LHipBone";
+    public const string rAnkleTag = "RAnkleBone";
+    public const string rKneeTag = "RKneeBone";
+    public const string rHipTag = "RHipBone";
+    public const string lWristTargetHelper = "LWristTargetHelper";
+    public const string rWristTargetHelper = "RWristTargetHelper";
+    public const string lAnkleTargetHelper = "LAnkleTargetHelper";
+    public const string rAnkleTargetHelper = "RAnkleTargetHelper";
 
 	/// <summary>
 	/// Whether morph target import should explicitly look for split
@@ -118,6 +134,11 @@ public class LEAPCore : MonoBehaviour
     public static bool printDetailedGazeControllerState = false;
 
     /// <summary>
+    /// If false, defined timewarps will not be applied to animations.
+    /// </summary>
+    public static bool timewarpsEnabled = false;
+
+    /// <summary>
     /// Load Leap configuration from Leap.cfg file
     /// </summary>
     public static bool LoadConfiguration()
@@ -195,6 +216,11 @@ public class LEAPCore : MonoBehaviour
                     case "printDetailedGazeControllerState":
 
                         printDetailedGazeControllerState = bool.Parse(valueStr);
+                        break;
+
+                    case "timewarpsEnabled":
+
+                        timewarpsEnabled = bool.Parse(valueStr);
                         break;
 
                     default:

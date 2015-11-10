@@ -194,7 +194,7 @@ public class LeapAnimationEditor : EditorWindow
         catch (Exception) { timeScale = 1f; }
         Timeline.TimeScale = timeScale;
 
-        // IK controls
+        // IK and timewarping controls
         {
             bool prevIKEnabled = _ikEnabled;
             _ikEnabled = GUI.Toggle(new Rect(20, 90, 100, 20), _ikEnabled, "IK");
@@ -204,6 +204,7 @@ public class LeapAnimationEditor : EditorWindow
                 SceneView.RepaintAll();
 
             LEAPCore.useGazeIK = GUI.Toggle(new Rect(120, 90, 100, 20), LEAPCore.useGazeIK, "GazeIK");
+            LEAPCore.timewarpsEnabled = GUI.Toggle(new Rect(220, 90, 100, 20), LEAPCore.timewarpsEnabled, "Timewarps");
         }
 
         // Gaze editing controls
@@ -575,6 +576,10 @@ public class LeapAnimationEditor : EditorWindow
                         _animationEditGizmos.showGazeSequence =
                             _animationEditGizmos.showGazeTargets =
                             _animationEditGizmos.showEndEffectorGoals = show;
+                    }
+                    else if (e.shift && e.keyCode == KeyCode.L)
+                    {
+                        AnimationManager.Instance.PrintAnimationInstances();
                     }
 
                     break;

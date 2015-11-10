@@ -52,6 +52,9 @@ public class AnimationClipInstance : AnimationInstance
         protected set;
     }
 
+    protected Dictionary<string, AnimationClipInstance> _endEffectorTargetHelperAnimations =
+        new Dictionary<string,AnimationClipInstance>();
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -101,23 +104,63 @@ public class AnimationClipInstance : AnimationInstance
     }
 
     /// <summary>
+    /// Associate an animation encoding the end-effector trajectory in the current animation clip with
+    /// the animation instance.
+    /// </summary>
+    /// <param name="endEffector">End effector tag</param>
+    /// <param name="helperInstance">End-effector target helper animation</param>
+    public virtual void AddEndEffectorTargetHelperAnimation(string endEffector, AnimationClipInstance helperInstance)
+    {
+        _endEffectorTargetHelperAnimations[endEffector] = helperInstance;
+    }
+
+    /// <summary>
+    /// Dissociate an animation encoding the end-effector trajectory in the current animation clip
+    /// from the animation instance.
+    /// </summary>
+    /// <param name="endEffector">End effector tag</param>
+    public virtual void RemoveEndEffectorTargetHelperAnimation(string endEffector)
+    {
+        _endEffectorTargetHelperAnimations.Remove(endEffector);
+    }
+
+    /// <summary>
+    /// Dissociate all animations encoding the end-effector trajectory in the current animation clip
+    /// from the animation instance.
+    /// </summary>
+    public virtual void RemoveAllEndEffectorTargetHelperAnimations()
+    {
+        _endEffectorTargetHelperAnimations.Clear();
+    }
+
+    /// <summary>
+    /// Get an animation encoding the trajectory of the specified end effector
+    /// in the current animation clip.
+    /// </summary>
+    /// <param name="endEffector">End effector tag</param>
+    /// <returns>End-effector target helper animation</returns>
+    public virtual AnimationClipInstance GetEndEffectorTargetHelperAnimation(string endEffector)
+    {
+        return _endEffectorTargetHelperAnimations[endEffector];
+    }
+
+    /// <summary>
     /// Apply animation instance to the character model at specified frame.
     /// </summary>
     /// <param name="frame">Frame index</param>
     /// <param name="layerMode">Animation layering mode</param>
     public override void Apply(int frame, AnimationLayerMode layerMode)
     {
-        // Configure how the animation clip will be applied to the model
-        Animation[AnimationClip.name].normalizedTime = Mathf.Clamp01(((float)frame) / FrameLength);
-        Animation[AnimationClip.name].weight = Weight;
         if (layerMode == AnimationLayerMode.Additive)
-        {
-            Animation[AnimationClip.name].blendMode = AnimationBlendMode.Additive;
-        }
-        else
-        {
-            Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
-        }
+            throw new Exception("Additive layer mode currently not supported in AnimationClipInstance");
+
+        // Compute animation time
+        float normalizedTime = FrameLength > 1 ? Mathf.Clamp01(((float)frame) / (FrameLength - 1)) : 0f;
+
+        // Configure how the animation clip will be applied to the model
+        Animation[AnimationClip.name].normalizedTime = normalizedTime;
+        Animation[AnimationClip.name].weight = 1f;
+        Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
 
         // Apply the animation clip to the model
         Animation[AnimationClip.name].enabled = true;

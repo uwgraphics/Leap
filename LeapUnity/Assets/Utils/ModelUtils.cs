@@ -45,12 +45,6 @@ public struct ModelPose
 /// </summary>
 public static class ModelUtils
 {
-    public static string[] rootBoneNames = { "root", "pelvis", "hip", "Bip01" };
-    public static string[] lEyeBoneNames = { "lEye" };
-    public static string[] rEyeBoneNames = { "rEye" };
-    public static string[] headBoneNames = { "head" };
-    public static string[] gazeHelperNames = { "GazeHelper", "Dummy" };
-
     /// <summary>
     /// Show/hide character model.
     /// </summary>
@@ -260,6 +254,19 @@ public static class ModelUtils
     }
 
     /// <summary>
+    /// Get all bones that are descendents of the specified bone.
+    /// </summary>
+    /// <param name="obj">Root bone</param>
+    /// <returns>Array of all descendent bones</returns>
+    /// <remarks>Input bone is included in the returned array of bones.</remarks>
+    public static Transform[] GetAllBonesInSubtree(Transform root)
+    {
+        var bones = new List<Transform>();
+        _GetAllBones(root, bones);
+        return bones.ToArray();
+    }
+
+    /// <summary>
     /// Get a chain of bones between a start bone and one of its descendants.
     /// Both start bone and end bone are included in the chain.
     /// </summary>
@@ -291,7 +298,7 @@ public static class ModelUtils
     // Traverse a model's bone hierarchy and add all bones to the list
     private static void _GetAllBones(Transform rootBone, List<Transform> bones)
     {
-        if (rootBone == null || rootBone.tag == "EndEffectorTarget")
+        if (rootBone == null || rootBone.tag != "Untagged" && !rootBone.tag.EndsWith("Bone"))
             return;
 
         bones.Add(rootBone);
@@ -350,112 +357,6 @@ public static class ModelUtils
     }
 
     /// <summary>
-    /// Automatically attaches tags to model parts.
-    /// </summary>
-    /// <param name="gameObj">
-    /// Model to tag. <see cref="GameObject"/>
-    /// </param>
-    public static void AutoTagModel(GameObject gameObj)
-    {
-        // TODO: we could improve this further, e.g. use string matching
-
-        Transform bone = null, hbone = null;
-
-        // Tag the model
-        gameObj.tag = "Agent";
-
-        // Tag the root bone
-        foreach (string name in rootBoneNames)
-        {
-            bone = ModelUtils.FindBoneByKeyword(gameObj.transform, name);
-
-            if (bone != null)
-            {
-                bone.tag = "RootBone";
-
-                break;
-            }
-        }
-
-        if (bone == null || bone.tag != "RootBone")
-        {
-            UnityEngine.Debug.LogWarning("Failed to automatically tag the model Root bone. You will need to identify and tag the bone manually.");
-        }
-
-        // Tag the left eye
-        foreach (string name in lEyeBoneNames)
-        {
-            bone = ModelUtils.FindBoneByKeyword(gameObj.transform, name);
-
-            if (bone != null)
-            {
-                bone.tag = "LEyeBone";
-
-                // Find the helper, too
-                foreach (string hname in gazeHelperNames)
-                {
-                    hbone = ModelUtils.FindBoneByKeyword(bone, name + hname);
-
-                    if (hbone != null)
-                    {
-                        hbone.tag = "LEyeGazeHelper";
-
-                        break;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        if (bone == null || bone.tag != "LEyeBone")
-        {
-            UnityEngine.Debug.LogWarning("Failed to automatically tag the model Left Eye bone. You will need to identify and tag the bone manually.");
-        }
-        if (hbone == null || hbone.tag != "LEyeGazeHelper")
-        {
-            UnityEngine.Debug.LogWarning("Failed to automatically tag the model Left Eye gaze helper bone. You will need to identify and tag the bone manually.");
-        }
-
-        // Tag the right eye
-        foreach (string name in rEyeBoneNames)
-        {
-            bone = ModelUtils.FindBoneByKeyword(gameObj.transform, name);
-
-            if (bone != null)
-            {
-                bone.tag = "REyeBone";
-
-                // Find the helper, too
-                foreach (string hname in gazeHelperNames)
-                {
-                    hbone = ModelUtils.FindBoneByKeyword(bone, name + hname);
-
-                    if (hbone != null)
-                    {
-                        hbone.tag = "REyeGazeHelper";
-
-                        break;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        if (bone == null || bone.tag != "REyeBone")
-        {
-            UnityEngine.Debug.LogWarning("Failed to automatically tag the model Right Eye bone. You will need to identify and tag the bone manually.");
-        }
-        if (hbone == null || hbone.tag != "REyeGazeHelper")
-        {
-            UnityEngine.Debug.LogWarning("Failed to automatically tag the model Right Eye gaze helper bone. You will need to identify and tag the bone manually.");
-        }
-
-        // TODO: tag torso and head bones
-    }
-
-    /// <summary>
     /// Get currently selected character model (or null if no model is selected)
     /// </summary>
     /// <returns>Selected character model</returns>
@@ -468,6 +369,48 @@ public static class ModelUtils
         }
 
         return obj;
+    }
+
+    /// <summary>
+    /// Get all end-effectors in the specified character model
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <returns>Array of all end-effectors</returns>
+    public static Transform[] GetEndEffectors(GameObject model)
+    {
+        List<Transform> endEffectors = new List<Transform>();
+
+        endEffectors.AddRange(GetAllBonesWithTag(model, LEAPCore.lWristTag));
+        endEffectors.AddRange(GetAllBonesWithTag(model, LEAPCore.rWristTag));
+        endEffectors.AddRange(GetAllBonesWithTag(model, LEAPCore.lAnkleTag));
+        endEffectors.AddRange(GetAllBonesWithTag(model, LEAPCore.rAnkleTag));
+
+        return endEffectors.ToArray();
+    }
+
+    /// <summary>
+    /// Get the name of the helper target for the specified end-effector.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="endEffectorTag">End effector tag</param>
+    /// <returns>End-effector helper target</returns>
+    public static string GetEndEffectorTargetHelperName(GameObject model, string endEffectorTag)
+    {
+        string name = "";
+
+        if (endEffectorTag == LEAPCore.lWristTag)
+            name = LEAPCore.lWristTargetHelper;
+        else if (endEffectorTag == LEAPCore.rWristTag)
+            name = LEAPCore.rWristTargetHelper;
+        else if (endEffectorTag == LEAPCore.lAnkleTag)
+            name = LEAPCore.lAnkleTargetHelper;
+        else if (endEffectorTag == LEAPCore.rAnkleTag)
+            name = LEAPCore.rAnkleTargetHelper;
+        else
+            throw new Exception("Unknown end-effector: " + endEffectorTag);
+
+        name = model.name + name;
+        return name;
     }
 
     /// <summary>

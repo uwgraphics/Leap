@@ -73,7 +73,8 @@ public class BodyIKSolver : IKSolver
 
     // Solver results, timing & profiling
     protected Stopwatch _timer = new Stopwatch();
-    protected float _goalTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal;
+    protected float _goalTermFinal, _rootPosTermFinal, _basePoseTermFinal,
+        _gazeDirectionTermFinal, _gazeVelocityTermFinal;
 
     /// <summary>
     /// Set current character pose as the base pose for the IK solver.
@@ -115,7 +116,7 @@ public class BodyIKSolver : IKSolver
     {
         base.Start();
 
-        _upperBodyOnly = !endEffectors.Any(ee => ee == "LAnkle" || ee == "RAnkle");
+        _upperBodyOnly = !endEffectors.Any(ee => ee == "LAnkleBone" || ee == "RAnkleBone");
         _CreateSolver();
     }
 
@@ -144,8 +145,8 @@ public class BodyIKSolver : IKSolver
                 _timer.ElapsedMilliseconds, _rep.iterationscount, _rep.nfev));*/
             //
             /*UnityEngine.Debug.LogWarning(string.Format(
-                "Body IK objective function: goalTerm = {0}, basePoseTerm = {1}, gazeDirectionTerm = {2}, gazeVelocityTerm = {3}",
-                _goalTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal));*/
+                "Body IK objective function: goalTerm = {0}, rootPosTerm = {1}, basePoseTerm = {2}, gazeDirectionTerm = {3}, gazeVelocityTerm = {4}",
+                _goalTermFinal, _rootPosTermFinal, _basePoseTermFinal, _gazeDirectionTermFinal, _gazeVelocityTermFinal));*/
             //
         }
     }
@@ -160,7 +161,8 @@ public class BodyIKSolver : IKSolver
             float maxGoalWeight = 0f;
             foreach (var goal in Goals)
             {
-                if ((goal.endEffector.tag == "LWrist" || goal.endEffector.tag == "RWrist") &&
+                //maxGoalWeight = goal.weight > maxGoalWeight ? goal.weight : maxGoalWeight;
+                if ((goal.endEffector.tag == "LWristBone" || goal.endEffector.tag == "RWristBone") &&
                     goal.weight > maxGoalWeight)
                 {
                     maxGoalWeight = goal.weight;
@@ -445,6 +447,7 @@ public class BodyIKSolver : IKSolver
     {
         float goalTerm = 0f,
             basePoseTerm = 0f,
+            rootPosTerm = 0f,
             gazeDirectionTerm = 0f,
             gazeVelocityTerm = 0f;
 
@@ -507,8 +510,7 @@ public class BodyIKSolver : IKSolver
             // Also add root position term
             Vector3 p0b = _GetRootPosition(_xb);
             Vector3 p0 = _GetRootPosition(x);
-            float rootPosTerm = (p0 - p0b).sqrMagnitude;
-            basePoseTerm += (rootPositionWeight * rootPosTerm);
+            rootPosTerm = rootPositionWeight * (p0 - p0b).sqrMagnitude;
         }
 
         // Compute gaze direction and velocity terms
@@ -549,11 +551,12 @@ public class BodyIKSolver : IKSolver
         _ApplySolverPose(_xb);
 
         // Compute total objective value
-        func = goalTerm + _curBasePoseWeight * basePoseTerm +
+        func = goalTerm + rootPosTerm + _curBasePoseWeight * basePoseTerm +
             _curGazeDirectionWeight * gazeDirectionTerm + _curGazeVelocityWeight * gazeVelocityTerm;
 
         // Log objective values
         _goalTermFinal = goalTerm;
+        _rootPosTermFinal = rootPosTerm;
         _basePoseTermFinal = basePoseTerm * _curBasePoseWeight;
         _gazeDirectionTermFinal = gazeDirectionTerm * _curGazeDirectionWeight;
         _gazeVelocityTermFinal = gazeVelocityTerm * _curGazeVelocityWeight;
