@@ -133,39 +133,72 @@ public class EndEffectorConstraintContainer
     /// <summary>
     /// Get end-effector constraints active at the specified frame.
     /// </summary>
+    /// <param name="endEffector">End-effector tag</param>
     /// <param name="frame">Frame index</param>
     /// <returns>Active end-effector constraints</returns>
-    public EndEffectorConstraint[] GetConstraintsAtFrame(int frame)
+    public EndEffectorConstraint[] GetConstraintsAtFrame(string endEffector, int frame)
     {
-        List<EndEffectorConstraint> activeConstraints = new List<EndEffectorConstraint>();
-        foreach (KeyValuePair<string, List<EndEffectorConstraint>> kvp in _constraints)
-        {
-            var activeConstraintsForEndEffector = kvp.Value.Where(eec =>
-                frame >= (eec.startFrame - eec.activationFrameLength) &&
-                frame <= (eec.startFrame + eec.frameLength - 1 + eec.deactivationFrameLength));
-            activeConstraints.AddRange(activeConstraintsForEndEffector);
-        }
+        if (!_constraints.ContainsKey(endEffector))
+            return null;
 
-        return activeConstraints.Count > 0 ? activeConstraints.ToArray() : null;
+        var activeConstraints = _constraints[endEffector].Where(eec =>
+                frame >= (eec.startFrame - eec.activationFrameLength) &&
+                frame <= (eec.startFrame + eec.frameLength - 1 + eec.deactivationFrameLength)).ToArray();
+
+        return activeConstraints.Length > 0 ? activeConstraints : null;
     }
 
     /// <summary>
     /// Get end-effector constraints with active object manipulation at the specified frame.
     /// </summary>
+    /// <param name="endEffector">End-effector tag</param>
     /// <param name="frame">Frame index</param>
     /// <returns>Active end-effector constraints</returns>
-    public EndEffectorConstraint[] GetManipulationConstraintsAtFrame(int frame)
+    public EndEffectorConstraint[] GetManipulationConstraintsAtFrame(string endEffector, int frame)
     {
-        List<EndEffectorConstraint> activeConstraints = new List<EndEffectorConstraint>();
-        foreach (KeyValuePair<string, List<EndEffectorConstraint>> kvp in _constraints)
-        {
-            var activeConstraintsForEndEffector = kvp.Value.Where(eec =>
+        if (!_constraints.ContainsKey(endEffector))
+            return null;
+
+        var activeConstraints = _constraints[endEffector].Where(eec =>
                 frame >= eec.startFrame &&
                 frame <= (eec.startFrame + eec.manipulationFrameLength - 1) &&
-                eec.manipulatedObjectHandle != null);
-            activeConstraints.AddRange(activeConstraintsForEndEffector);
-        }
+                eec.manipulatedObjectHandle != null).ToArray();
 
-        return activeConstraints.Count > 0 ? activeConstraints.ToArray() : null;
+        return activeConstraints.Length > 0 ? activeConstraints : null;
+    }
+}
+
+/// <summary>
+/// Specifies an animation of a helper target for end-effector constraints that constrain
+/// end-effectors to follow trajectories encoded in the original animation.
+/// </summary>
+public struct EndEffectorTargetHelperAnimation
+{
+    /// <summary>
+    /// End-effector tag.
+    /// </summary>
+    public string endEffectorTag;
+
+    /// <summary>
+    /// End-effector target helper object.
+    /// </summary>
+    public GameObject helper;
+
+    /// <summary>
+    /// End-effector target helper animation clip.
+    /// </summary>
+    public AnimationClip helperAnimationClip;
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="endEffectorTag">End-effector tag</param>
+    /// <param name="helper">End-effector target helper object</param>
+    /// <param name="helperAnimationClip">End-effector target helper animation clip</param>
+    public EndEffectorTargetHelperAnimation(string endEffectorTag, GameObject helper, AnimationClip helperAnimationClip)
+    {
+        this.endEffectorTag = endEffectorTag;
+        this.helper = helper;
+        this.helperAnimationClip = helperAnimationClip;
     }
 }

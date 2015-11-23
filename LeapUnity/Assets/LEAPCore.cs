@@ -6,6 +6,9 @@ using System.IO;
 public class LEAPCore : MonoBehaviour
 {
 	public const string agentModelDirectory = "Assets/Agents";
+    public const string endEffectorConstraintAnnotationsDirectory = "Assets/AnimationAnnotations/EndEffectorConstraints";
+    public const string eyeGazeAnnotationsDirectory = "Assets/AnimationAnnotations/EyeGaze";
+    public const string timewarpAnnotationsDirectory = "Assets/AnimationAnnotations/Timewarps";
 	public const string morphAnimationPrefix = "MC";
 	public const string morphTargetPrefix = "MT";
     public const string lWristTag = "LWristBone";
@@ -52,6 +55,11 @@ public class LEAPCore : MonoBehaviour
     public static string environmentAnimationLayerName = "Environment";
 
     /// <summary>
+    /// Name of the helper animation layer in the animation timeline.
+    /// </summary>
+    public static string helperAnimationLayerName = "Helpers";
+
+    /// <summary>
     /// Default baked animation timeline name.
     /// </summary>
     public static string defaultBakedTimelineName = "Edits";
@@ -86,11 +94,6 @@ public class LEAPCore : MonoBehaviour
     /// (gaze shift + fixation), also minimal length of a gaze-ahead instance.
     /// </summary>
     public static float maxEyeGazeGapLength = 2f;
-
-    /// <summary>
-    /// Asset subdirectory for eye gaze annotations.
-    /// </summary>
-    public static string eyeGazeDirectory = "Assets/EyeGaze";
 
     /// <summary>
     /// Suffix appended to names of the gaze-ahead instance at the start of the animation.
@@ -137,6 +140,16 @@ public class LEAPCore : MonoBehaviour
     /// If false, defined timewarps will not be applied to animations.
     /// </summary>
     public static bool timewarpsEnabled = false;
+
+    /// <summary>
+    /// Start frame of the animation timeline segment that will get baked.
+    /// </summary>
+    public static int timelineBakeRangeStart = 0;
+
+    /// <summary>
+    /// End frame of the animation timeline segment that will get baked.
+    /// </summary>
+    public static int timelineBakeRangeEnd = -1;
 
     /// <summary>
     /// Load Leap configuration from Leap.cfg file
@@ -221,6 +234,16 @@ public class LEAPCore : MonoBehaviour
                     case "timewarpsEnabled":
 
                         timewarpsEnabled = bool.Parse(valueStr);
+                        break;
+
+                    case "timelineBakeRangeStart":
+
+                        timelineBakeRangeStart = int.Parse(valueStr);
+                        break;
+
+                    case "timelineBakeRangeEnd":
+
+                        timelineBakeRangeEnd = int.Parse(valueStr);
                         break;
 
                     default:

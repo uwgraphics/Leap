@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 /// <summary>
 /// Structure holding a character model's skeletal pose.
@@ -411,6 +412,29 @@ public static class ModelUtils
 
         name = model.name + name;
         return name;
+    }
+
+    /// <summary>
+    /// Get/create the helper target object for the specified end-effector.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="endEffectorTag">End-effector tag</param>
+    /// <returns>End-effector target helper</returns>
+    public static GameObject GetEndEffectorTargetHelper(GameObject model, string endEffectorTag)
+    {
+        var endEffectorTargets = GameObject.FindGameObjectsWithTag("EndEffectorTarget");
+        string helperName = GetEndEffectorTargetHelperName(model, endEffectorTag);
+        var helper = endEffectorTargets.FirstOrDefault(h => h.name == helperName);
+        if (helper == null)
+        {
+            // Target helper does not exist, create it
+            helper = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            helper.name = helperName;
+            helper.tag = "EndEffectorTarget";
+            GameObject.DestroyImmediate(helper.renderer);
+        }
+        
+        return helper;
     }
 
     /// <summary>

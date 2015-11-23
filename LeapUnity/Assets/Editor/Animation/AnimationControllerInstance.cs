@@ -39,18 +39,18 @@ public abstract class AnimationControllerInstance : AnimationInstance
     /// <param name="controllerType">AnimController type</param>
     /// <param name="frameLength">Animation controller activity duration.</param>
     public AnimationControllerInstance(string name, GameObject model, Type controllerType,
-        int frameLength = 30) : base(name, model)
+        int frameLength) : base(name, model)
     {
         _controller = model.GetComponent(controllerType) as AnimController;
         FrameLength = frameLength;
     }
 
     /// <summary>
-    /// Apply animation instance to the character model at specified frame.
+    /// Apply animation instance to the character model at the specified frames.
     /// </summary>
-    /// <param name="frame">Frame index</param>
+    /// <param name="frames">Frame indexes</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public override void Apply(int frame, AnimationLayerMode layerMode)
+    public override void Apply(FrameSet frames, AnimationLayerMode layerMode)
     {
         if (layerMode == AnimationLayerMode.Additive)
         {
@@ -60,9 +60,9 @@ public abstract class AnimationControllerInstance : AnimationInstance
         if (!Controller.enabled)
             return;
 
-        _ApplyController(frame);
+        _ApplyController(frames);
     }
 
     // Apply the animation controller at the specified frame
-    protected abstract void _ApplyController(int frame);
+    protected abstract void _ApplyController(FrameSet frames);
 }

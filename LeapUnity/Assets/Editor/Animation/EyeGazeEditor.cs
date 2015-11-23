@@ -475,7 +475,7 @@ public static class EyeGazeEditor
     }
 
     /// <summary>
-    /// Load eye gaze behavior specification for the specified base animation.
+    /// Load eye gaze behavior specification for the specified base animation from a file.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
     /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
@@ -488,8 +488,9 @@ public static class EyeGazeEditor
         var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
         string modelName = baseAnimation.Model.name;
 
-        // Get gaze behavior file path
-        string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
+        // Get gaze annotations file path
+        string path = Application.dataPath + LEAPCore.eyeGazeAnnotationsDirectory.Substring(
+            LEAPCore.eyeGazeAnnotationsDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
             path += '/';
         path += (baseAnimation.Name + fileSuffix + ".csv");
@@ -617,7 +618,8 @@ public static class EyeGazeEditor
         var baseAnimation = timeline.GetAnimation(baseAnimationInstanceId);
 
         // Get gaze behavior file path
-        string path = Application.dataPath + LEAPCore.eyeGazeDirectory.Substring(LEAPCore.eyeGazeDirectory.IndexOfAny(@"/\".ToCharArray()));
+        string path = Application.dataPath + LEAPCore.eyeGazeAnnotationsDirectory.Substring(
+            LEAPCore.eyeGazeAnnotationsDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
             path += '/';
         path += (baseAnimation.Name + fileSuffix + ".csv");
@@ -961,6 +963,7 @@ public static class EyeGazeEditor
             return Vector3.zero;
 
         var baseAnimationInstance = timeline.GetAnimation(baseAnimationInstanceId);
+        var baseAnimationLayer = timeline.GetLayerForAnimation(baseAnimationInstanceId);
         int baseAnimationStartFrame = timeline.GetAnimationStartFrame(baseAnimationInstanceId);
         var model = eyeGazeInstance.Model;
         string poseName = eyeGazeInstance.Name + "Pose";
@@ -977,12 +980,14 @@ public static class EyeGazeEditor
         timeline.StoreModelPose(model.name, poseName);
 
         // Get base position and rotation at the start of the gaze shift
-        baseAnimationInstance.Apply(eyeGazeStartFrame - baseAnimationStartFrame, AnimationLayerMode.Override);
+        var eyeGazeStartFrames = baseAnimationLayer._GetOriginalFrames(model, eyeGazeStartFrame);
+        baseAnimationInstance.Apply(eyeGazeStartFrames - baseAnimationStartFrame, AnimationLayerMode.Override);
         Vector3 pos0 = root.position;
         Quaternion rot0 = root.rotation;
 
         // Get base position and rotation at the end of the gaze shift
-        baseAnimationInstance.Apply(eyeGazeFixationStartFrame - baseAnimationStartFrame, AnimationLayerMode.Override);
+        var eyeGazeFixationStartFrames = baseAnimationLayer._GetOriginalFrames(model, eyeGazeFixationStartFrame);
+        baseAnimationInstance.Apply(eyeGazeFixationStartFrames - baseAnimationStartFrame, AnimationLayerMode.Override);
         Vector3 pos1 = root.position;
         Quaternion rot1 = root.rotation;
 

@@ -95,16 +95,16 @@
   <ItemGroup>
     <Compile Include="Assets\Editor\Animation\AnimationClipInstance.cs" />
     <Compile Include="Assets\Editor\Animation\AnimationControllerInstance.cs" />
+    <Compile Include="Assets\Editor\Animation\AnimationEditorWindow.cs" />
     <Compile Include="Assets\Editor\Animation\AnimationInstance.cs" />
     <Compile Include="Assets\Editor\Animation\AnimationManager.cs" />
     <Compile Include="Assets\Editor\Animation\AnimationTimeline.cs" />
+    <Compile Include="Assets\Editor\Animation\AnimationTimingEditor.cs" />
     <Compile Include="Assets\Editor\Animation\EndEffectorConstraint.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeEditor.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeInstance.cs" />
     <Compile Include="Assets\Editor\Animation\Timewarp.cs" />
-    <Compile Include="Assets\Editor\Animation\LeapAnimationEditor.cs" />
     <Compile Include="Assets\Editor\Animation\SimpleEyeGazeSynthesisInstance.cs" />
-    <Compile Include="Assets\Editor\Animation\TimewarpedAnimationClipInstance.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LEAPAssetUtils.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LEAPModelPostprocessor.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LMCSerializer.cs" />

@@ -117,6 +117,7 @@ public class EyeGazeInstance : AnimationControllerInstance
     protected int _baseFrameLength = 0;
 
     // TODO: not happy about having elements of runtime state in this class
+    protected bool _isActive = false;
     protected bool _blendIn, _blendOut;
 
     /// <summary>
@@ -158,11 +159,59 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     /// <summary>
-    /// <see cref="AnimationInstance.Start"/>
+    /// Set the frame (relative to the start of the gaze instance) when
+    /// the gaze shift is expected to end and the fixation start.
     /// </summary>
-    public override void Start()
+    /// <param name="frame"></param>
+    public virtual void _SetFixationStartFrame(int frame)
     {
-        base.Start();
+        FixationStartTime = ((float)frame) / LEAPCore.editFrameRate;
+        if (FixationStartTime >= TimeLength)
+            FixationStartTime = TimeLength;
+    }
+
+    /// <summary>
+    /// <see cref="AnimationControllerInstance._ApplyController"/>
+    /// </summary>
+    protected override void _ApplyController(FrameSet frames)
+    {
+        // Get current frame on the gaze track
+        int frame = frames[AnimationTrackType.Gaze];
+
+        if (frame == 0 && !_isActive)
+        {
+            // Start current gaze instance
+            _Start();
+        }
+        
+        if (_isActive && frame < FrameLength)
+        {
+            if (_blendIn || _blendOut)
+            {
+                // This is a gaze shift ahead, blend it out
+                int numFrames = Mathf.Min(FrameLength, Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.gazeAheadBlendTime));
+                float t = numFrames > 1 ? Mathf.Clamp01(((float)frame) / (numFrames - 1)) : 0f;
+                float t2 = t * t;
+                float weight = -2f * t2 * t + 3f * t2;
+                GazeController.weight = _blendIn ? weight : 1f - weight;
+            }
+            else
+            {
+                GazeController.weight = 1f;
+            }
+        }
+        
+        if (frame >= FrameLength - 1 && _isActive)
+        {
+            // We have reached the end of the current gaze instance
+            _Finish();
+        }
+    }
+
+    // Start the current gaze instance
+    protected virtual void _Start()
+    {
+        _isActive = true;
 
         // Register handler for gaze controller state changes
         GazeController.StateChange += new StateChangeEvtH(GazeController_StateChange);
@@ -195,80 +244,45 @@ public class EyeGazeInstance : AnimationControllerInstance
         _InitGazeParameters();
     }
 
-    /// <summary>
-    /// <see cref="AnimationInstance.Finish"/>
-    /// </summary>
-    public override void Finish()
+    // Finish the current gaze instance
+    protected virtual void _Finish()
     {
+        _isActive = false;
+
         if (Target == null)
         {
             // This gaze instance is followed by a period of unconstrained gaze,
             // so disable gaze fixation
             GazeController.fixGaze = false;
         }
-        
+
+        if (GazeController.StateId == (int)GazeState.Shifting)
+        {
+            // We have reached the end of the gaze instance, make sure
+            // the gaze shift terminates on this update
+            GazeController.StopGaze();
+        }
+
         // Disable blending
         _blendIn = _blendOut = false;
 
         // Unregister handler for gaze controller state changes
         GazeController.StateChange -= GazeController_StateChange;
-
-        base.Finish();
-    }
-
-    /// <summary>
-    /// Set the frame (relative to the start of the gaze instance) when
-    /// the gaze shift is expected to end and the fixation start.
-    /// </summary>
-    /// <param name="frame"></param>
-    public virtual void _SetFixationStartFrame(int frame)
-    {
-        FixationStartTime = ((float)frame) / LEAPCore.editFrameRate;
-        if (FixationStartTime >= TimeLength)
-            FixationStartTime = TimeLength;
-    }
-
-    /// <summary>
-    /// <see cref="AnimationControllerInstance._ApplyController"/>
-    /// </summary>
-    protected override void _ApplyController(int frame)
-    {
-        if (GazeController.StateId == (int)GazeState.Shifting)
-        {
-            if (frame >= FrameLength - 1)
-            {
-                // We have reached the end of the current gaze instance, make sure
-                // the gaze shift terminates on this update
-                GazeController.StopGaze();
-            }
-        }
-
-        if (_blendIn || _blendOut)
-        {
-            // This is a gaze shift ahead, blend it out
-            int numFrames = Mathf.Min(FrameLength, Mathf.RoundToInt(LEAPCore.editFrameRate * LEAPCore.gazeAheadBlendTime));
-            float t = numFrames > 1 ? Mathf.Clamp01(((float)frame) / (numFrames - 1)) : 0f;
-            float t2 = t * t;
-            float weight = -2f * t2 * t + 3f * t2;
-            GazeController.weight = _blendIn ? weight : 1f - weight;
-        }
-        else
-        {
-            GazeController.weight = 1f;
-        }
     }
 
     // Compute gaze shift parameters to account for anticipated body movement
     protected virtual void _InitGazeParameters()
     {
         // How far ahead do we need to look to anticipate the target?
-        var baseAnimationInstance = AnimationManager.Instance.Timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(
+        var timeline = AnimationManager.Instance.Timeline;
+        var baseAnimationLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
+        var baseAnimationInstance = baseAnimationLayer.Animations.FirstOrDefault(
             inst => inst.Animation.Model == Model);
         GazeController._MovingTargetPositionOffset = EyeGazeEditor.ComputeMovingTargetPositionOffset(
             AnimationManager.Instance.Timeline, baseAnimationInstance.InstanceId, this,
             AnimationManager.Instance.Timeline.CurrentFrame,
             Target == null ? AheadTargetPosition : Target.transform.position);
-        // TODO: base animation should be specified as a parameter of the eye gaze instance!
+        // TODO: this should be computed in some smarter, e.g., base animation could be specified as a parameter of the eye gaze instance
     }
 
     // Handler for gaze controller state changes
