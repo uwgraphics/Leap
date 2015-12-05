@@ -201,6 +201,22 @@ public static class AnimationTimingEditor
                             timewarp = new LinearTimewarp(origFrameLength, newFrameLength);
                             break;
 
+                        case "MovingHold":
+
+                            if (timewarpParams.Length != 4)
+                            {
+                                Debug.LogError("Wrong number of parameters for moving hold timewarp: " + timewarpParams.Length);
+                                continue;
+                            }
+
+                            int origKeyFrame = int.Parse(timewarpParams[0]);
+                            origFrameLength = int.Parse(timewarpParams[1]);
+                            holdFrameLength = int.Parse(timewarpParams[2]);
+                            int easeOutFrameLength = int.Parse(timewarpParams[3]);
+                            timewarp = new MovingHoldTimewarp(origKeyFrame, origFrameLength, holdFrameLength, easeOutFrameLength);
+
+                            break;
+
                         default:
 
                             Debug.LogError("Unknown timewarp type: " + timewarpName);

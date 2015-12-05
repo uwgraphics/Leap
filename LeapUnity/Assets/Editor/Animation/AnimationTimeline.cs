@@ -220,7 +220,7 @@ public class AnimationTimeline
         /// Get frame indexes in the original animation on the specified character model
         /// at the specified time point on the animation timeline.
         /// </summary>
-        /// <param name="model>Character model</param>
+        /// <param name="model">Character model</param>
         /// <param name="frame">Frame index</param>
         /// <returns>Original frame indexes</returns>
         public FrameSet _GetOriginalFrames(GameObject model, int frame)

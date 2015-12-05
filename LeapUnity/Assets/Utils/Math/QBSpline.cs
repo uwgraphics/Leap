@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
 
 /// <summary>
-/// Class representing a niform, quadratic, N-dimensional B-spline.
+/// Class representing a uniform, quadratic, N-dimensional B-spline.
 /// </summary>
 public class QBSpline
 {

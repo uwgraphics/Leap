@@ -1,6 +1,10 @@
 Leap Animation Editor:
 
-#131 [] End-effector constraint times are incorrectly checked, because we fail to consider that animation might be scheduled to begin later than frame 0 (so its start time should be added to the end-effector constraint times)
+#132 [] Frames for timewarped instances incorrectly computed after the end of a timewarp; frame indexes lower than they should be and the timewarped part of the motion is replayed (this time at normal rate)
+  - Observed with MovingHoldTimewarp
+  - Does not seem to happen with LinearTimewarp
+
+#131 [X] End-effector constraint times are incorrectly checked, because we fail to consider that animation might be scheduled to begin later than frame 0 (so its start time should be added to the end-effector constraint times)
 
 #130 [] Character root jitters sometimes when using gaze IK
 

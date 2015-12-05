@@ -146,6 +146,7 @@
     <Compile Include="Assets\ShowSkin.cs" />
     <Compile Include="Assets\Utils\Math\BezierCurve.cs" />
     <Compile Include="Assets\Utils\Math\CatmullRomSpline.cs" />
+    <Compile Include="Assets\Utils\Math\TCBSpline.cs" />
     <Compile Include="Assets\Utils\Math\GeomUtil.cs" />
     <Compile Include="Assets\Utils\Math\PerlinNoise.cs" />
     <Compile Include="Assets\Utils\Math\QBSpline.cs" />
