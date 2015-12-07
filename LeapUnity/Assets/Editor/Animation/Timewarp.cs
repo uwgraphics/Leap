@@ -18,11 +18,11 @@ public interface ITimewarp
     int FrameLength { get; }
     
     /// <summary>
-    /// Get frame index in the original animation segment that corresponds to the input frame index.
+    /// Get time index in the original animation segment that corresponds to the input time index.
     /// </summary>
-    /// <param name="inFrame">Input frame index</param>
-    /// <returns>Frame index in the original animation segment</returns>
-    int GetFrame(int inFrame);
+    /// <param name="inFrame">Input time index</param>
+    /// <returns>Time index in the original animation segment</returns>
+    float GetTime(float inTime);
 }
 
 /// <summary>
@@ -52,11 +52,11 @@ public struct HoldTimewarp : ITimewarp
     }
 
     /// <summary>
-    /// <see cref="ITimewarp.GetFrame"/>
+    /// <see cref="ITimewarp.GetTime"/>
     /// </summary>
-    public int GetFrame(int inFrame)
+    public float GetTime(float inTime)
     {
-        return 0;
+        return 0f;
     }
 }
 
@@ -90,13 +90,13 @@ public struct LinearTimewarp : ITimewarp
     }
 
     /// <summary>
-    /// <see cref="ITimewarp.GetFrame"/>
+    /// <see cref="ITimewarp.GetTime"/>
     /// </summary>
-    public int GetFrame(int inFrame)
+    public float GetTime(float inTime)
     {
-        float t = ((float)inFrame) / (FrameLength - 1);
+        float t = inTime / (((float)(FrameLength - 1)) / LEAPCore.editFrameRate);
         t = Mathf.Clamp01(t);
-        return Mathf.RoundToInt(t * (OrigFrameLength - 1));
+        return t * ((float)(OrigFrameLength - 1)) / LEAPCore.editFrameRate;
     }
 }
 
@@ -155,12 +155,13 @@ public struct MovingHoldTimewarp : ITimewarp
     }
 
     /// <summary>
-    /// <see cref="ITimewarp.GetFrame"/>
+    /// <see cref="ITimewarp.GetTime"/>
     /// </summary>
-    public int GetFrame(int inFrame)
+    public float GetTime(float inTime)
     {
-        int outFrame = Mathf.RoundToInt(_SampleTWCurve((float)inFrame));
-        return outFrame;
+        float inFrame = inTime * LEAPCore.editFrameRate;
+        float outFrame = _SampleTWCurve(inFrame);
+        return outFrame / LEAPCore.editFrameRate;
     }
 
     private float _SampleTWCurve(float x)

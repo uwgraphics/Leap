@@ -54,7 +54,7 @@ public class AnimationTimeline
         /// <summary>Underlying animation instance.</summary>
         public AnimationInstance Animation { get; private set; }
 
-        /// <summary>Animation start time on the timeline.</summary>
+        /// <summary>Animation start frame on the timeline.</summary>
         public int StartFrame { get; private set; }
 
         /// <summary>
@@ -64,6 +64,16 @@ public class AnimationTimeline
         {
             get { return StartFrame + Animation.FrameLength - 1; }
         }
+
+        /// <summary>
+        /// Animation start time on the timeline.
+        /// </summary>
+        public float StartTime { get { return ((float)StartFrame) / LEAPCore.editFrameRate; } }
+
+        /// <summary>
+        /// Animation end time on the timeline.
+        /// </summary>
+        public float EndTime { get { return ((float)EndFrame) / LEAPCore.editFrameRate; } }
 
         /// <summary>Animation instance ID.</summary>
         public int InstanceId { get; private set; }
@@ -217,16 +227,16 @@ public class AnimationTimeline
         }
 
         /// <summary>
-        /// Get frame indexes in the original animation on the specified character model
+        /// Get time indexes in the original animation on the specified character model
         /// at the specified time point on the animation timeline.
         /// </summary>
         /// <param name="model">Character model</param>
-        /// <param name="frame">Frame index</param>
-        /// <returns>Original frame indexes</returns>
-        public FrameSet _GetOriginalFrames(GameObject model, int frame)
+        /// <param name="time">Time index</param>
+        /// <returns>Original time indexes</returns>
+        public TimeSet _GetOriginalTimes(GameObject model, float time)
         {
-            return _timewarpsByModel.ContainsKey(model) ? _timewarpsByModel[model].GetOriginalFrames(frame)
-                : new FrameSet(frame);
+            return _timewarpsByModel.ContainsKey(model) ? _timewarpsByModel[model].GetOriginalTimes(time)
+                : new TimeSet(time);
         }
 
         // Add animation to the current layer container
@@ -682,30 +692,31 @@ public class AnimationTimeline
         }
 
         /// <summary>
-        /// Compute animation track frame indexes in the original animation clip
+        /// Compute animation track time indexes in the original animation clip
         /// </summary>
-        /// <param name="frame"></param>
+        /// <param name="time"></param>
         /// <returns></returns>
-        public FrameSet GetOriginalFrames(int frame)
+        public TimeSet GetOriginalTimes(float time)
         {
-            FrameSet frames = new FrameSet(0);
+            TimeSet times = new TimeSet(0f);
             var trackTypes = Enum.GetValues(typeof(AnimationTrackType));
             foreach (var trackType in trackTypes)
-                frames[(AnimationTrackType)trackType] = _GetOriginalFrame((AnimationTrackType)trackType, frame);
+                times[(AnimationTrackType)trackType] = _GetOriginalTime((AnimationTrackType)trackType, time);
 
-            return frames;
+            return times;
         }
 
-        // Compute the frame index in the original animation clip for the specified animation track
-        private int _GetOriginalFrame(AnimationTrackType track, int frame)
+        // Compute the time index in the original animation clip for the specified animation track
+        private float _GetOriginalTime(AnimationTrackType track, float time)
         {
             var timewarps = _timewarps[track];
             var timewarpStartFrames = _timewarpStartFrames[track];
 
             if (timewarps.Count <= 0 || !LEAPCore.timewarpsEnabled)
-                return frame;
+                return time;
 
-            int origFrame = -1;
+            int frame = Mathf.RoundToInt(time * LEAPCore.editFrameRate);
+            float origTime = -1f;
             int curStartFrame = -1;
             for (int timewarpIndex = 0; timewarpIndex <= timewarps.Count; ++timewarpIndex)
             {
@@ -743,18 +754,19 @@ public class AnimationTimeline
                 if (frame > prevEndFrame && frame < curStartFrame)
                 {
                     // The applied frame is within the non-timewarped interval preceding the current timewarp
-                    origFrame = curOrigStartFrame - (curStartFrame - frame);
+                    origTime = ((float)(curOrigStartFrame - (curStartFrame - frame))) / LEAPCore.editFrameRate;
                     break;
                 }
                 else if (frame >= curStartFrame && frame <= curEndFrame)
                 {
                     // The applied frame is within the interval of the current timewarp
-                    origFrame = timewarps[timewarpIndex].GetFrame(frame - curStartFrame) + curOrigStartFrame;
+                    float inTime = time - ((float)curStartFrame) / LEAPCore.editFrameRate;
+                    origTime = timewarps[timewarpIndex].GetTime(inTime) + ((float)curOrigStartFrame) / LEAPCore.editFrameRate;
                     break;
                 }
             }
 
-            return origFrame;
+            return origTime;
         }
 
         // Initialize timewarps
@@ -1334,14 +1346,14 @@ public class AnimationTimeline
     {
         var layer = GetLayer(layerName);
         var model = OwningManager.Models.FirstOrDefault(m => m.name == modelName);
-        var curFrames = layer._GetOriginalFrames(model, CurrentFrame);
+        var curTimes = layer._GetOriginalTimes(model, CurrentFrame);
 
         foreach (var scheduledInstance in layer.Animations)
         {
             if (scheduledInstance.Animation.Model.name != modelName)
                 continue;
 
-            if (FrameSet.IsBetween(scheduledInstance.StartFrame, scheduledInstance.EndFrame, curFrames))
+            if (TimeSet.IsBetween(scheduledInstance.StartTime, scheduledInstance.EndTime, curTimes))
                 return scheduledInstance.InstanceId;
         }
 
@@ -1630,8 +1642,8 @@ public class AnimationTimeline
             foreach (var animation in animationsInLayer)
             {
                 var model = animation.Animation.Model;
-                var curFrames = layer._GetOriginalFrames(model, CurrentFrame);
-                if (!FrameSet.IsBetween(animation.StartFrame, animation.EndFrame, curFrames))
+                var curTimes = layer._GetOriginalTimes(model, CurrentTime);
+                if (!TimeSet.IsBetween(animation.StartTime, animation.EndTime, curTimes))
                 {
                     // This animation instance is inactive
                     if (_activeAnimationInstanceIds.Contains(animation.InstanceId))
@@ -1640,7 +1652,7 @@ public class AnimationTimeline
                         _activeAnimationInstanceIds.Remove(animation.InstanceId);
                         
                         Debug.Log(string.Format("{0}: Deactivating animation instance {1} on model {2}; original frames {3}",
-                            CurrentFrame, animation.Animation.Name, model.name, curFrames.ToString()));
+                            CurrentFrame, animation.Animation.Name, model.name, curTimes.ToString()));
 
                         // Notify listeners that the animation instance has just become inactive
                         AnimationFinished(animation.InstanceId);
@@ -1654,8 +1666,8 @@ public class AnimationTimeline
             foreach (var animation in animationsInLayer)
             {
                 var model = animation.Animation.Model;
-                var curFrames = layer._GetOriginalFrames(model, CurrentFrame);
-                if (FrameSet.IsBetween(animation.StartFrame, animation.EndFrame, curFrames))
+                var curTimes = layer._GetOriginalTimes(model, CurrentTime);
+                if (TimeSet.IsBetween(animation.StartTime, animation.EndTime, curTimes))
                 {
                     // This animation instance is active, so apply it
                     if (!_activeAnimationInstanceIds.Contains(animation.InstanceId))
@@ -1664,14 +1676,14 @@ public class AnimationTimeline
                         _activeAnimationInstanceIds.Add(animation.InstanceId);
 
                         Debug.Log(string.Format("{0}: Activating animation instance {1} on model {2}; original frames {3}",
-                            CurrentFrame, animation.Animation.Name, model.name, curFrames.ToString()));
+                            CurrentFrame, animation.Animation.Name, model.name, curTimes.ToString()));
 
                         // Notify listeners that the animation instance has just become active
                         AnimationStarted(animation.InstanceId);
                     }
 
                     // Apply the animation instance
-                    animation.Animation.Apply(curFrames - animation.StartFrame, layer.LayerMode);
+                    animation.Animation.Apply(curTimes - animation.StartTime, layer.LayerMode);
                     
                     if (layer.isIKEndEffectorConstr && animation.Animation is AnimationClipInstance &&
                         model.tag == "Agent")
@@ -1737,20 +1749,6 @@ public class AnimationTimeline
             if (frameLength > FrameLength)
                 FrameLength = frameLength;
         }
-    }
-
-    // true if specified animation instance is active at the specified frame, false otherwise
-    public bool _IsAnimationActiveAtFrame(ScheduledInstance instance, int frame)
-    {
-        var frames = instance.OwningLayer._GetOriginalFrames(instance.Animation.Model, frame);
-        for (int trackIndex = 0; trackIndex < frames.NumberOfTracks; ++trackIndex)
-        {
-            int curFrame = frames.GetFrame(trackIndex);
-            if (curFrame >= instance.StartFrame || curFrame <= instance.EndFrame)
-                return true;
-        }
-
-        return false;
     }
 
     // Increment time on the timeline by the specified amount
@@ -1941,13 +1939,13 @@ public class AnimationTimeline
             return;
 
         // Get instance times
-        var curFrames = scheduledInstance.OwningLayer._GetOriginalFrames(instance.Model, CurrentFrame);
-        int instanceStartFrame = scheduledInstance.StartFrame;
+        var curTimes = scheduledInstance.OwningLayer._GetOriginalTimes(instance.Model, CurrentTime);
+        float instanceStartTime = scheduledInstance.StartTime;
 
         // Set up end-effector goals
         EndEffectorConstraint[] activeConstraints = null;
         float[] activeConstraintWeights = null;
-        instance.GetEndEffectorConstraintsAtFrame(curFrames - instanceStartFrame, out activeConstraints, out activeConstraintWeights);
+        instance.GetEndEffectorConstraintsAtTime(curTimes - instanceStartTime, out activeConstraints, out activeConstraintWeights);
         if (activeConstraints != null && activeConstraints.Length > 0)
         {
             IKSolver[] solvers = model.GetComponents<IKSolver>();
@@ -1975,7 +1973,7 @@ public class AnimationTimeline
         
         // Set up object manipulations
         EndEffectorConstraint[] activeManipulatedObjectConstraints =
-            instance.GetManipulationEndEffectorConstraintsAtFrame(curFrames - instanceStartFrame);
+            instance.GetManipulationEndEffectorConstraintsAtTime(curTimes - instanceStartTime);
         if (LEAPCore.enableObjectManipulation &&
             activeManipulatedObjectConstraints != null && activeManipulatedObjectConstraints.Length > 0)
         {
@@ -2005,9 +2003,10 @@ public class AnimationTimeline
     private void _InitGazeIK(GameObject model, LayerContainer gazeLayer)
     {
         float gazeWeight = 0f;
-        int gazeFrame = gazeLayer._GetOriginalFrames(model, CurrentFrame)[AnimationTrackType.Gaze];
+        float gazeTime = gazeLayer._GetOriginalTimes(model, CurrentTime)[AnimationTrackType.Gaze];
+        int gazeFrame = Mathf.RoundToInt(gazeTime * LEAPCore.editFrameRate);
         var curGazeInstance = gazeLayer.Animations.FirstOrDefault(inst =>
-            gazeFrame >= inst.StartFrame && gazeFrame <= inst.EndFrame &&
+            gazeTime >= inst.StartTime && gazeTime <= inst.EndTime &&
             inst.Animation.Model == model);
 
         if (LEAPCore.useGazeIK && LEAPCore.useDynamicGazeIKWeights && curGazeInstance != null)
@@ -2019,7 +2018,7 @@ public class AnimationTimeline
 
             // Get all gaze instances on this model that follow the current one
             var curOrNextGazeInstances = gazeLayer.Animations.Where(inst =>
-                inst.EndFrame >= gazeFrame && inst.Animation.Model == model).ToArray();
+                inst.EndTime >= gazeTime && inst.Animation.Model == model).ToArray();
 
             // Find the first gap in those instances
             int gazeIKEndFrame = OriginalFrameLength - 1;
@@ -2038,7 +2037,7 @@ public class AnimationTimeline
 
             // Get all gaze instances on this model that precede the current one
             var curOrPrevGazeInstances = gazeLayer.Animations.Where(inst =>
-                inst.StartFrame <= gazeFrame && inst.Animation.Model == model).ToArray();
+                inst.StartTime <= gazeTime && inst.Animation.Model == model).ToArray();
 
             // Find the last gap in those instances
             int gazeIKStartFrame = 0;

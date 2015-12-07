@@ -965,6 +965,7 @@ public static class EyeGazeEditor
         var baseAnimationInstance = timeline.GetAnimation(baseAnimationInstanceId);
         var baseAnimationLayer = timeline.GetLayerForAnimation(baseAnimationInstanceId);
         int baseAnimationStartFrame = timeline.GetAnimationStartFrame(baseAnimationInstanceId);
+        float baseAnimationStartTime = ((float)baseAnimationStartFrame) / LEAPCore.editFrameRate;
         var model = eyeGazeInstance.Model;
         string poseName = eyeGazeInstance.Name + "Pose";
         var gazeController = eyeGazeInstance.GazeController;
@@ -980,14 +981,16 @@ public static class EyeGazeEditor
         timeline.StoreModelPose(model.name, poseName);
 
         // Get base position and rotation at the start of the gaze shift
-        var eyeGazeStartFrames = baseAnimationLayer._GetOriginalFrames(model, eyeGazeStartFrame);
-        baseAnimationInstance.Apply(eyeGazeStartFrames - baseAnimationStartFrame, AnimationLayerMode.Override);
+        float eyeGazeStartTime = ((float)eyeGazeStartFrame) / LEAPCore.editFrameRate;
+        var eyeGazeStartTimes = baseAnimationLayer._GetOriginalTimes(model, eyeGazeStartTime);
+        baseAnimationInstance.Apply(eyeGazeStartTimes - baseAnimationStartTime, AnimationLayerMode.Override);
         Vector3 pos0 = root.position;
         Quaternion rot0 = root.rotation;
 
         // Get base position and rotation at the end of the gaze shift
-        var eyeGazeFixationStartFrames = baseAnimationLayer._GetOriginalFrames(model, eyeGazeFixationStartFrame);
-        baseAnimationInstance.Apply(eyeGazeFixationStartFrames - baseAnimationStartFrame, AnimationLayerMode.Override);
+        float eyeGazeFixationStartTime = ((float)eyeGazeFixationStartFrame) / LEAPCore.editFrameRate;
+        var eyeGazeFixationStartTimes = baseAnimationLayer._GetOriginalTimes(model, eyeGazeFixationStartTime);
+        baseAnimationInstance.Apply(eyeGazeFixationStartTimes - baseAnimationStartTime, AnimationLayerMode.Override);
         Vector3 pos1 = root.position;
         Quaternion rot1 = root.rotation;
 

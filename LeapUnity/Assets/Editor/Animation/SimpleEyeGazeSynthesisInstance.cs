@@ -45,10 +45,10 @@ public class SimpleEyeGazeSynthesisInstance : AnimationInstance
     /// <summary>
     /// <see cref="AnimationInstance.Apply"/>
     /// </summary>
-    public override void Apply(FrameSet frame, AnimationLayerMode layerMode)
+    public override void Apply(TimeSet times, AnimationLayerMode layerMode)
     {
-        _ApplyEye(frame[AnimationTrackType.Gaze], layerMode, ModelController.LEye);
-        _ApplyEye(frame[AnimationTrackType.Gaze], layerMode, ModelController.REye);
+        _ApplyEye(Mathf.RoundToInt(times[AnimationTrackType.Gaze] * LEAPCore.editFrameRate), layerMode, ModelController.LEye);
+        _ApplyEye(Mathf.RoundToInt(times[AnimationTrackType.Gaze] * LEAPCore.editFrameRate), layerMode, ModelController.REye);
     }
 
     protected virtual void _ApplyEye(int frame, AnimationLayerMode layerMode, Transform eye)

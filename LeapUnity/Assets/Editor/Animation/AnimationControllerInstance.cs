@@ -46,11 +46,11 @@ public abstract class AnimationControllerInstance : AnimationInstance
     }
 
     /// <summary>
-    /// Apply animation instance to the character model at the specified frames.
+    /// Apply animation instance to the character model at the specified times.
     /// </summary>
-    /// <param name="frames">Frame indexes</param>
+    /// <param name="times">Time indexes</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public override void Apply(FrameSet frames, AnimationLayerMode layerMode)
+    public override void Apply(TimeSet times, AnimationLayerMode layerMode)
     {
         if (layerMode == AnimationLayerMode.Additive)
         {
@@ -60,9 +60,9 @@ public abstract class AnimationControllerInstance : AnimationInstance
         if (!Controller.enabled)
             return;
 
-        _ApplyController(frames);
+        _ApplyController(times);
     }
 
-    // Apply the animation controller at the specified frame
-    protected abstract void _ApplyController(FrameSet frames);
+    // Apply the animation controller at the specified times
+    protected abstract void _ApplyController(TimeSet times);
 }

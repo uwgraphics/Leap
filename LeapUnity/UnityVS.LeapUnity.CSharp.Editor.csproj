@@ -103,6 +103,7 @@
     <Compile Include="Assets\Editor\Animation\EndEffectorConstraint.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeEditor.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeInstance.cs" />
+    <Compile Include="Assets\Editor\Animation\TimeSet.cs" />
     <Compile Include="Assets\Editor\Animation\Timewarp.cs" />
     <Compile Include="Assets\Editor\Animation\SimpleEyeGazeSynthesisInstance.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LEAPAssetUtils.cs" />

@@ -317,11 +317,11 @@ public class AnimationClipInstance : AnimationInstance
     }
 
     /// <summary>
-    /// Apply animation instance to the character model at the specified frames.
+    /// Apply animation instance to the character model at the specified times.
     /// </summary>
-    /// <param name="frames">Frame indexes</param>
+    /// <param name="times">Time indexes</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public override void Apply(FrameSet frames, AnimationLayerMode layerMode)
+    public override void Apply(TimeSet times, AnimationLayerMode layerMode)
     {
         if (layerMode == AnimationLayerMode.Additive)
             throw new Exception("Additive layer mode currently not supported in AnimationClipInstance");
@@ -329,8 +329,8 @@ public class AnimationClipInstance : AnimationInstance
         if (_isTimingControlledByTrack || Model.tag != "Agent")
         {
             // Apply the entire animation with the timing of a pre-specified animation track
-            Animation[AnimationClip.name].normalizedTime = FrameLength > 1 ?
-                Mathf.Clamp01(((float)frames[_timingControlTrack]) / (FrameLength - 1)) : 0f;
+            Animation[AnimationClip.name].normalizedTime = TimeLength > 0.01f ?
+                Mathf.Clamp01(times[_timingControlTrack] / TimeLength) : 0f;
             Animation[AnimationClip.name].weight = 1f;
             Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
             Animation[AnimationClip.name].enabled = true;
@@ -346,7 +346,7 @@ public class AnimationClipInstance : AnimationInstance
         var _trackTimes = new Dictionary<AnimationTrackType, float>();
         foreach (var kvp in _trackClips)
         {
-            float normalizedTime = FrameLength > 1 ? Mathf.Clamp01(((float)frames[kvp.Key]) / (FrameLength - 1)) : 0f;
+            float normalizedTime = TimeLength > 0.01f ? Mathf.Clamp01(times[kvp.Key] / TimeLength) : 0f;
             _trackTimes[kvp.Key] = normalizedTime;
         }
 
@@ -419,12 +419,12 @@ public class AnimationClipInstance : AnimationInstance
     }
 
     /// <summary>
-    /// Get active end-effector constraints at the specified frame.
+    /// Get active end-effector constraints at the specified times.
     /// </summary>
-    /// <param name="frames">Frame indexes</param>
+    /// <param name="times">Time indexes</param>
     /// <param name="constraints">Active end-effector constraints</param>
     /// <param name="weights">Active end-effector constraint weights</param>
-    public virtual void GetEndEffectorConstraintsAtFrame(FrameSet frames,
+    public virtual void GetEndEffectorConstraintsAtTime(TimeSet times,
         out EndEffectorConstraint[] constraints, out float[] weights)
     {
         var activeConstraints = new List<EndEffectorConstraint>();
@@ -434,7 +434,7 @@ public class AnimationClipInstance : AnimationInstance
             if (kvp.Value.Count <= 0)
                 continue;
 
-            int trackFrame = frames[kvp.Key];
+            int trackFrame = Mathf.RoundToInt(times[kvp.Key] * LEAPCore.editFrameRate);
             foreach (string endEffectorTag in kvp.Value)
             {
                 // Get active constraints on the current end-effector and compute their weights
@@ -464,11 +464,11 @@ public class AnimationClipInstance : AnimationInstance
     }
 
     /// <summary>
-    /// Get active end-effector constraints with object manipulation at the specified frame.
+    /// Get active end-effector constraints with object manipulation at the specified times.
     /// </summary>
-    /// <param name="frames">Frame indexes</param>
+    /// <param name="times">Time indexes</param>
     /// <returns>Active end-effector constraints with object manipulation</returns>
-    public virtual EndEffectorConstraint[] GetManipulationEndEffectorConstraintsAtFrame(FrameSet frames)
+    public virtual EndEffectorConstraint[] GetManipulationEndEffectorConstraintsAtTime(TimeSet times)
     {
         var activeConstraints = new List<EndEffectorConstraint>();
         foreach (var kvp in _endEffectorTagsForTracks)
@@ -476,7 +476,7 @@ public class AnimationClipInstance : AnimationInstance
             if (kvp.Value.Count <= 0)
                 continue;
 
-            int trackFrame = frames[kvp.Key];
+            int trackFrame = Mathf.RoundToInt(times[kvp.Key] * LEAPCore.editFrameRate);
             foreach (string endEffectorTag in kvp.Value)
             {
                 // Get active manipulation constraints on the current end-effector
