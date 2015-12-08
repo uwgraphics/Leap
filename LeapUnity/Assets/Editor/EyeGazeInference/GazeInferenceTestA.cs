@@ -66,7 +66,7 @@ public class GazeInferenceTestF
         AnimationTitle = animationTitle;
         CharacterName = characterName;
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel);
+        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel, true, false);
         SceneCollisions = new SceneCollisions(animationTitle);
 
         TagCounter1 = 0;
@@ -559,7 +559,7 @@ public class GazeInferenceTestG
         AnimationTitle = animationTitle;
         CharacterName = characterName;
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel);
+        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel, true, false);
         SceneCollisions = new SceneCollisions(animationTitle);
         GazeTargetObjects = GameObject.FindGameObjectsWithTag("GazeTarget");
 

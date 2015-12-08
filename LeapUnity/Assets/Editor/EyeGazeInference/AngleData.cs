@@ -270,7 +270,7 @@ public class AngleData {
         AnimationName = animationName;
 
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(animationName, Character.CharModel);
+        AnimationClip = new AnimationClipInstance(animationName, Character.CharModel, true, false);
 
         int frame;
         for (int i = 1; i < AnimationClip.FrameLength; i++)

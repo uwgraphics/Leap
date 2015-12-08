@@ -173,7 +173,7 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// <summary>
     /// <see cref="AnimationControllerInstance._ApplyController"/>
     /// </summary>
-    protected override void _ApplyController(TimeSet times)
+    protected override void _ApplyController(TrackTimeSet times)
     {
         // Get current frame on the gaze track
         int frame = Mathf.RoundToInt(times[AnimationTrackType.Gaze] * LEAPCore.editFrameRate);

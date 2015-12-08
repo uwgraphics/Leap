@@ -50,7 +50,7 @@ public abstract class AnimationControllerInstance : AnimationInstance
     /// </summary>
     /// <param name="times">Time indexes</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public override void Apply(TimeSet times, AnimationLayerMode layerMode)
+    public override void Apply(TrackTimeSet times, AnimationLayerMode layerMode)
     {
         if (layerMode == AnimationLayerMode.Additive)
         {
@@ -64,5 +64,5 @@ public abstract class AnimationControllerInstance : AnimationInstance
     }
 
     // Apply the animation controller at the specified times
-    protected abstract void _ApplyController(TimeSet times);
+    protected abstract void _ApplyController(TrackTimeSet times);
 }

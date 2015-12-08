@@ -233,10 +233,10 @@ public class AnimationTimeline
         /// <param name="model">Character model</param>
         /// <param name="time">Time index</param>
         /// <returns>Original time indexes</returns>
-        public TimeSet _GetOriginalTimes(GameObject model, float time)
+        public TrackTimeSet _GetOriginalTimes(GameObject model, float time)
         {
             return _timewarpsByModel.ContainsKey(model) ? _timewarpsByModel[model].GetOriginalTimes(time)
-                : new TimeSet(time);
+                : new TrackTimeSet(time);
         }
 
         // Add animation to the current layer container
@@ -476,7 +476,7 @@ public class AnimationTimeline
             _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(model);
 
             // Create animation clip instance
-            _AnimationInstance = new AnimationClipInstance(clipName, model);
+            _AnimationInstance = new AnimationClipInstance(clipName, model, false, false);
 
             // Create baked controller containers
             AnimController[] controllers = model.GetComponents<AnimController>();
@@ -696,9 +696,9 @@ public class AnimationTimeline
         /// </summary>
         /// <param name="time"></param>
         /// <returns></returns>
-        public TimeSet GetOriginalTimes(float time)
+        public TrackTimeSet GetOriginalTimes(float time)
         {
-            TimeSet times = new TimeSet(0f);
+            TrackTimeSet times = new TrackTimeSet(0f);
             var trackTypes = Enum.GetValues(typeof(AnimationTrackType));
             foreach (var trackType in trackTypes)
                 times[(AnimationTrackType)trackType] = _GetOriginalTime((AnimationTrackType)trackType, time);
@@ -1353,7 +1353,7 @@ public class AnimationTimeline
             if (scheduledInstance.Animation.Model.name != modelName)
                 continue;
 
-            if (TimeSet.IsBetween(scheduledInstance.StartTime, scheduledInstance.EndTime, curTimes))
+            if (TrackTimeSet.IsBetween(scheduledInstance.StartTime, scheduledInstance.EndTime, curTimes))
                 return scheduledInstance.InstanceId;
         }
 
@@ -1467,7 +1467,7 @@ public class AnimationTimeline
 
             // Re-add the clip to its model
             LEAPAssetUtils.AddAnimationClipToModel(bakedAnimationContainer.AnimationClip, model);
-            bakedAnimationContainer._AnimationInstance = new AnimationClipInstance(bakedAnimationContainer.AnimationClip.name, model);
+            bakedAnimationContainer._AnimationInstance = new AnimationClipInstance(bakedAnimationContainer.AnimationClip.name, model, false, false);
         }
     }
 
@@ -1643,7 +1643,7 @@ public class AnimationTimeline
             {
                 var model = animation.Animation.Model;
                 var curTimes = layer._GetOriginalTimes(model, CurrentTime);
-                if (!TimeSet.IsBetween(animation.StartTime, animation.EndTime, curTimes))
+                if (!TrackTimeSet.IsBetween(animation.StartTime, animation.EndTime, curTimes))
                 {
                     // This animation instance is inactive
                     if (_activeAnimationInstanceIds.Contains(animation.InstanceId))
@@ -1667,7 +1667,7 @@ public class AnimationTimeline
             {
                 var model = animation.Animation.Model;
                 var curTimes = layer._GetOriginalTimes(model, CurrentTime);
-                if (TimeSet.IsBetween(animation.StartTime, animation.EndTime, curTimes))
+                if (TrackTimeSet.IsBetween(animation.StartTime, animation.EndTime, curTimes))
                 {
                     // This animation instance is active, so apply it
                     if (!_activeAnimationInstanceIds.Contains(animation.InstanceId))

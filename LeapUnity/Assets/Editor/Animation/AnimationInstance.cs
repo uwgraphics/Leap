@@ -121,7 +121,7 @@ public abstract class AnimationInstance
     /// <param name="layerMode">Animation layering mode</param>
     public void Apply(int frame, AnimationLayerMode layerMode)
     {
-        Apply(new TimeSet(((float)frame) / LEAPCore.editFrameRate), layerMode);
+        Apply(new TrackTimeSet(((float)frame) / LEAPCore.editFrameRate), layerMode);
     }
 
     /// <summary>
@@ -129,6 +129,6 @@ public abstract class AnimationInstance
     /// </summary>
     /// <param name="times">Time indexes</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public abstract void Apply(TimeSet times, AnimationLayerMode layerMode);
+    public abstract void Apply(TrackTimeSet times, AnimationLayerMode layerMode);
     // TODO: handle cases when time index for a particular track is out of range
 }

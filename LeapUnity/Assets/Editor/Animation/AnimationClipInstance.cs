@@ -184,7 +184,8 @@ public class AnimationClipInstance : AnimationInstance
     /// <param name="name">Animation clip name</param>
     /// <param name="model">Character model</param>
     /// <param name="loadEndEffectorConstraints">If true, end-effector constraints will be loaded for the specified animation clip</param>
-    public AnimationClipInstance(string name, GameObject model, bool loadEndEffectorConstraints = true) : base(name, model)
+    public AnimationClipInstance(string name, GameObject model,
+        bool loadEndEffectorConstraints = true, bool createEndEffectorTargetHelperAnimations = false) : base(name, model)
     {
         Animation = model.GetComponent<Animation>();
         if (Animation == null)
@@ -235,7 +236,7 @@ public class AnimationClipInstance : AnimationInstance
                 _endEffectorConstraints = endEffectorConstraints != null ?
                     new EndEffectorConstraintContainer(AnimationClip, endEffectorConstraints) : null;
 
-                if (_endEffectorConstraints != null)
+                if (_endEffectorConstraints != null && createEndEffectorTargetHelperAnimations)
                 {
                     // Create end-effector target helper animations
                     var endEffectorTargetHelperAnimations = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(Model, AnimationClip);
@@ -321,7 +322,7 @@ public class AnimationClipInstance : AnimationInstance
     /// </summary>
     /// <param name="times">Time indexes</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public override void Apply(TimeSet times, AnimationLayerMode layerMode)
+    public override void Apply(TrackTimeSet times, AnimationLayerMode layerMode)
     {
         if (layerMode == AnimationLayerMode.Additive)
             throw new Exception("Additive layer mode currently not supported in AnimationClipInstance");
@@ -424,7 +425,7 @@ public class AnimationClipInstance : AnimationInstance
     /// <param name="times">Time indexes</param>
     /// <param name="constraints">Active end-effector constraints</param>
     /// <param name="weights">Active end-effector constraint weights</param>
-    public virtual void GetEndEffectorConstraintsAtTime(TimeSet times,
+    public virtual void GetEndEffectorConstraintsAtTime(TrackTimeSet times,
         out EndEffectorConstraint[] constraints, out float[] weights)
     {
         var activeConstraints = new List<EndEffectorConstraint>();
@@ -468,7 +469,7 @@ public class AnimationClipInstance : AnimationInstance
     /// </summary>
     /// <param name="times">Time indexes</param>
     /// <returns>Active end-effector constraints with object manipulation</returns>
-    public virtual EndEffectorConstraint[] GetManipulationEndEffectorConstraintsAtTime(TimeSet times)
+    public virtual EndEffectorConstraint[] GetManipulationEndEffectorConstraintsAtTime(TrackTimeSet times)
     {
         var activeConstraints = new List<EndEffectorConstraint>();
         foreach (var kvp in _endEffectorTagsForTracks)

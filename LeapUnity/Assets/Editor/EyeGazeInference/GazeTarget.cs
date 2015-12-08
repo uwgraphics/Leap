@@ -27,7 +27,7 @@ public class GazeTarget  {
         SceneCollisions = new SceneCollisions(animationTitle);
         GazeTargetObjects = GameObject.FindGameObjectsWithTag("GazeTarget");
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel);
+        AnimationClip = new AnimationClipInstance(animationTitle, Character.CharModel, true, false);
         GazeBlocks = gbs;
     }
 

@@ -235,6 +235,90 @@ public static class AnimationTimingEditor
     }
 
     /// <summary>
+    /// Extract key pose times in the specified animation.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="clip">Animation clip</param>
+    /// <returns>Animation key times</returns>
+    public static KeyTimeSet[] ExtractAnimationKeyTimes(GameObject model, AnimationClip clip)
+    {
+        var bones = ModelUtils.GetAllBones(model);
+        var endEffectors = ModelUtils.GetEndEffectors(model);
+        var instance = new AnimationClipInstance(clip.name, model, true, false);
+
+        // Bone transformation differences:
+        Vector3[] dpRoot = new Vector3[instance.FrameLength];
+        Quaternion[,] dqBones = new Quaternion[bones.Length, instance.FrameLength];
+
+        // Compute bone transformation differences
+        Vector3 pRootPrev = Vector3.zero;
+        Quaternion[] qBonesPrev = new Quaternion[bones.Length];
+        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+        {
+            instance.Apply(frameIndex, AnimationLayerMode.Override);
+
+            if (frameIndex == 0)
+            {
+                dpRoot[frameIndex] = Vector3.zero;
+                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                    dqBones[boneIndex, frameIndex] = Quaternion.identity;
+            }
+            else
+            {
+                dpRoot[frameIndex] = bones[0].position - pRootPrev;
+                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                    dqBones[boneIndex, frameIndex] = Quaternion.Inverse(qBonesPrev[boneIndex]) * bones[boneIndex].localRotation;
+            }
+
+            pRootPrev = bones[0].position;
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                qBonesPrev[boneIndex] = bones[boneIndex].localRotation;
+        }
+        ModelUtils.ResetModelToZeroPose(model);
+
+        // Motion trails and their curvatures:
+        Vector3[] mRoot = new Vector3[instance.FrameLength];
+        float[] kRoot = new float[instance.FrameLength];
+        Vector3[][,] mBones = new Vector3[bones.Length][,];
+        float[][,] kBones = new float[bones.Length][,];
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            int numChildren = bones[boneIndex].childCount;
+            mBones[boneIndex] = new Vector3[numChildren, instance.FrameLength];
+            kBones[boneIndex] = new float[numChildren, instance.FrameLength];
+        }
+
+        // Compute motion trails and their curvatures
+        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+        {
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                // TODO
+            }
+        }
+
+        // Probability signals and their weights:
+        float[] p = new float[instance.FrameLength];
+        float[] pRoot = new float[instance.FrameLength];
+        float[,] pBones = new float[bones.Length, instance.FrameLength];
+        float[,] pEndEff = new float[endEffectors.Length, instance.FrameLength];
+        float[] wRoot = new float[instance.FrameLength];
+        float[,] wBones = new float[bones.Length, instance.FrameLength];
+        float[,] wEndEff = new float[endEffectors.Length, instance.FrameLength];
+
+        // Compute probability signals
+        // TODO
+
+        // Smooth the global probability signal
+        // TODO
+
+        // Extract key pose times
+        // TODO
+
+        return null;
+    }
+
+    /// <summary>
     /// Get animation track that controls the specified end-effector.
     /// </summary>
     /// <param name="endEffectorTag">End effector tag</param>
