@@ -101,7 +101,7 @@ public class LEAPModelPostprocessor : AssetPostprocessor
                 // Anim. clip already exists - load it, and save anim. events
 
                 old_clip = AssetDatabase.LoadAssetAtPath(clip_path, typeof(AnimationClip)) as AnimationClip;
-                LEAPAssetUtils.CopyAnimationEvents(old_clip, new_clip);
+                LEAPAssetUtil.CopyAnimationEvents(old_clip, new_clip);
             }
 
             // Save anim. clip to a separate file (so it isn't write-locked)

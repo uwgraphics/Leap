@@ -25,7 +25,7 @@ public struct TimeSet
     public TimeSet(GameObject model)
     {
         rootTime = 0f;
-        boneTimes = new float[ModelUtils.GetAllBones(model).Length];
+        boneTimes = new float[ModelUtil.GetAllBones(model).Length];
     }
 
     /// <summary>

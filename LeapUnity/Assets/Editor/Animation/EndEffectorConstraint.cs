@@ -141,9 +141,10 @@ public class EndEffectorConstraintContainer
         if (!_constraints.ContainsKey(endEffector))
             return null;
 
-        var activeConstraints = _constraints[endEffector].Where(eec =>
-                frame >= (eec.startFrame - eec.activationFrameLength) &&
-                frame <= (eec.startFrame + eec.frameLength - 1 + eec.deactivationFrameLength)).ToArray();
+        var activeConstraints = _constraints[endEffector].Where(c =>
+                frame >= (c.startFrame - c.activationFrameLength) &&
+                frame <= (c.startFrame + c.frameLength - 1 + c.deactivationFrameLength) &&
+                c.manipulatedObjectHandle == null).ToArray();
 
         return activeConstraints.Length > 0 ? activeConstraints : null;
     }
@@ -159,10 +160,10 @@ public class EndEffectorConstraintContainer
         if (!_constraints.ContainsKey(endEffector))
             return null;
 
-        var activeConstraints = _constraints[endEffector].Where(eec =>
-                frame >= eec.startFrame &&
-                frame <= (eec.startFrame + eec.manipulationFrameLength - 1) &&
-                eec.manipulatedObjectHandle != null).ToArray();
+        var activeConstraints = _constraints[endEffector].Where(c =>
+                frame >= c.startFrame &&
+                frame <= (c.startFrame + c.manipulationFrameLength - 1) &&
+                c.manipulatedObjectHandle != null).ToArray();
 
         return activeConstraints.Length > 0 ? activeConstraints : null;
     }

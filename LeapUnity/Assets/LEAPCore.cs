@@ -152,6 +152,36 @@ public class LEAPCore : MonoBehaviour
     public static int timelineBakeRangeEnd = -1;
 
     /// <summary>
+    /// Weight of the end-effector constraint probability signal for keyframe extraction.
+    /// </summary>
+    public static float keyExtractEndEffConstrWeight = 1f;
+
+    /// <summary>
+    /// Number of iterations for Laplacian smoothing of probability signals in keyframe extraction.
+    /// </summary>
+    public static int keyExtractLaplaceNumIterations = 30;
+
+    /// <summary>
+    /// Lambda parameter for Laplacian smoothing of probability signals in keyframe extraction.
+    /// </summary>
+    public static float keyExtractLaplaceLambda = 0.33f;
+
+    /// <summary>
+    /// Mu parameter for Laplacian smoothing of probability signals in keyframe extraction.
+    /// </summary>
+    public static float keyExtractLaplaceMu = -0.34f;
+
+    /// <summary>
+    /// Kernel size for the low-pass filter used for filtering the global probability signal in keyframe extraction.
+    /// </summary>
+    public static int keyExtractLowPassKernelSize = 5;
+
+    /// <summary>
+    /// Maximum width of a cluster of local key times corresponding to a single extracted key pose.
+    /// </summary>
+    public static float keyExtractMaxClusterWidth = 0.5f;
+
+    /// <summary>
     /// Load Leap configuration from Leap.cfg file
     /// </summary>
     public static bool LoadConfiguration()

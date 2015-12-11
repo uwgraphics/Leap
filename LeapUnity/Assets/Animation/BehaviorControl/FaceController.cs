@@ -501,7 +501,7 @@ public class FaceController : AnimController
 
     public static void _InitRandomHeadMotion(GameObject agent)
     {
-        Transform bone = ModelUtils.FindBoneWithTag(agent.transform, "HeadBone");
+        Transform bone = ModelUtil.FindBoneWithTag(agent.transform, "HeadBone");
 
         if (bone == null)
         {

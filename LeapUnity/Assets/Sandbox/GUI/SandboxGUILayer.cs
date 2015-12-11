@@ -108,7 +108,7 @@ public class SandboxGUILayer : MonoBehaviour
 			
 			// Determine icon location
 			Vector3 pos;
-            Transform head = ModelUtils.FindBoneWithTag(selSBAgentObj.gameObject.transform, "HeadBone");
+            Transform head = ModelUtil.FindBoneWithTag(selSBAgentObj.gameObject.transform, "HeadBone");
 			if( head != null )
 				pos = head.position;
 			else

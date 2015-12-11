@@ -100,7 +100,7 @@ public class AnimationEditorWindow : EditorWindow
         }
 
         // Update last selected character model
-        var selectedModel = ModelUtils.GetSelectedModel();
+        var selectedModel = ModelUtil.GetSelectedModel();
         var prevSelectedModel = LastSelectedModel;
         LastSelectedModel = selectedModel != null ? selectedModel : LastSelectedModel;
         LastSelectedModel = Timeline.OwningManager.Models.Contains(LastSelectedModel) ? LastSelectedModel : null;
@@ -154,7 +154,7 @@ public class AnimationEditorWindow : EditorWindow
                 // Show all models
                 var models = Timeline.OwningManager.Models;
                 foreach (var model in models)
-                    ModelUtils.ShowModel(model, true);
+                    ModelUtil.ShowModel(model, true);
 
                 SceneView.RepaintAll();
             }
@@ -496,7 +496,7 @@ public class AnimationEditorWindow : EditorWindow
                 p1 = new Vector3(p1.x, Camera.current.pixelHeight - p1.y, 0f);
                 p2 = Camera.current.WorldToScreenPoint(p2);
                 p2 = new Vector3(p2.x, Camera.current.pixelHeight - p2.y, 0f);
-                Vector3 p = GeomUtil.ProjectPointOntoLine(p1, p2, Event.current.mousePosition);
+                Vector3 p = GeometryUtil.ProjectPointOntoLine(p1, p2, Event.current.mousePosition);
                 float sign = Vector3.Dot(p2 - p1, p - p1);
                 float t = sign > 0f && (p2 - p1).magnitude >= 0.0001f ? (p - p1).magnitude / (p2 - p1).magnitude : 0f;
                 t = Mathf.Clamp01(t);

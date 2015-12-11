@@ -465,15 +465,15 @@ public class AnimationTimeline
 
             // Get baked animation clip
             string clipName = baseAnimation.Animation.Name + "-" + timelineContainer.Name;
-            AnimationClip = LEAPAssetUtils.GetAnimationClipOnModel(clipName, model);
+            AnimationClip = LEAPAssetUtil.GetAnimationClipOnModel(clipName, model);
             if (AnimationClip == null)
             {
                 // Create baked animation clip
-                AnimationClip = LEAPAssetUtils.CreateAnimationClipOnModel(clipName, model);
+                AnimationClip = LEAPAssetUtil.CreateAnimationClipOnModel(clipName, model);
             }
             
             // Create an array of animation curves for the clip
-            _AnimationCurves = LEAPAssetUtils.CreateAnimationCurvesForModel(model);
+            _AnimationCurves = LEAPAssetUtil.CreateAnimationCurvesForModel(model);
 
             // Create animation clip instance
             _AnimationInstance = new AnimationClipInstance(clipName, model, false, false);
@@ -1065,18 +1065,18 @@ public class AnimationTimeline
             _endEffectorTargetHelperInstances[instanceId] = new List<int>();
 
             // Schedule end-effector target helper animations
-            var endEffectors = ModelUtils.GetEndEffectors(clipInstance.Model);
+            var endEffectors = ModelUtil.GetEndEffectors(clipInstance.Model);
             foreach (var endEffector in endEffectors)
             {
                 // Get end-effector helper clip and object
                 var endEffectorTargetHelperClip = clipInstance.GetEndEffectorTargetHelperClip(endEffector.tag);
-                string endEffectorTargetHelperName = ModelUtils.GetEndEffectorTargetHelperName(animation.Model, endEffector.tag);
+                string endEffectorTargetHelperName = ModelUtil.GetEndEffectorTargetHelperName(animation.Model, endEffector.tag);
                 var endEffectorTargetHelper = GameObject.FindGameObjectsWithTag("EndEffectorTarget")
                     .FirstOrDefault(t => t.name == endEffectorTargetHelperName);
 
                 // Create and configure helper animation instance
                 var endEffectorTargetHelperInstance = Activator.CreateInstance(clipInstance.GetType(),
-                    endEffectorTargetHelperClip.name, endEffectorTargetHelper, false) as AnimationClipInstance;
+                    endEffectorTargetHelperClip.name, endEffectorTargetHelper, false, false) as AnimationClipInstance;
                 var endEffectorTargetHelperTrackType = AnimationTimingEditor.GetAnimationTrackForEndEffector(endEffector.tag);
                 endEffectorTargetHelperInstance.InitTimingControlByTrack(endEffectorTargetHelperTrackType);
                 
@@ -1444,13 +1444,13 @@ public class AnimationTimeline
         foreach (var bakedAnimationContainer in allBakedAnimationContainers)
         {
             var model = bakedAnimationContainer.Model;
-            LEAPAssetUtils.SetAnimationCurvesOnClip(model, bakedAnimationContainer.AnimationClip, bakedAnimationContainer._AnimationCurves);
+            LEAPAssetUtil.SetAnimationCurvesOnClip(model, bakedAnimationContainer.AnimationClip, bakedAnimationContainer._AnimationCurves);
 
             // Determine path for the animation clip
             string path = "";
             if (model.GetComponent<ModelController>() != null)
             {
-                path = LEAPAssetUtils.GetModelDirectory(model) + bakedAnimationContainer.AnimationClip.name + ".anim";
+                path = LEAPAssetUtil.GetModelDirectory(model) + bakedAnimationContainer.AnimationClip.name + ".anim";
             }
             else
             {
@@ -1466,8 +1466,9 @@ public class AnimationTimeline
             AssetDatabase.SaveAssets();
 
             // Re-add the clip to its model
-            LEAPAssetUtils.AddAnimationClipToModel(bakedAnimationContainer.AnimationClip, model);
-            bakedAnimationContainer._AnimationInstance = new AnimationClipInstance(bakedAnimationContainer.AnimationClip.name, model, false, false);
+            LEAPAssetUtil.AddAnimationClipToModel(bakedAnimationContainer.AnimationClip, model);
+            bakedAnimationContainer._AnimationInstance = new AnimationClipInstance(bakedAnimationContainer.AnimationClip.name,
+                model, false, false);
         }
     }
 
@@ -1791,7 +1792,7 @@ public class AnimationTimeline
             }
             else
             {
-                bones = ModelUtils.GetAllBones(model);
+                bones = ModelUtil.GetAllBones(model);
             }
 
             // Compute current frame time
@@ -1954,7 +1955,7 @@ public class AnimationTimeline
             {
                 var constraint = activeConstraints[constraintIndex];
                 float weight = activeConstraintWeights[constraintIndex];
-                Transform endEffectorBone = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
+                Transform endEffectorBone = ModelUtil.FindBoneWithTag(model.transform, constraint.endEffector);
 
                 // Set the constraint goal in relevant IK solvers
                 foreach (var solver in solvers)
@@ -1979,7 +1980,7 @@ public class AnimationTimeline
         {
             foreach (var constraint in activeManipulatedObjectConstraints)
             {
-                Transform endEffectorBone = ModelUtils.FindBoneWithTag(model.transform, constraint.endEffector);
+                Transform endEffectorBone = ModelUtil.FindBoneWithTag(model.transform, constraint.endEffector);
                 _activeManipulatedObjectHandles[constraint.manipulatedObjectHandle] = endEffectorBone;
             }
         }
@@ -2142,7 +2143,7 @@ public class AnimationTimeline
                 var obj = objHandle.transform.parent;
 
                 obj.rotation = endEffector.rotation * Quaternion.Inverse(objHandle.localRotation);
-                Vector3 objScale = ModelUtils.GetBoneScale(obj);
+                Vector3 objScale = ModelUtil.GetBoneScale(obj);
                 Vector3 objHandleLocalPosition = objHandle.localPosition;
                 objHandleLocalPosition.Scale(objScale);
                 obj.position = endEffector.position - obj.rotation * objHandleLocalPosition;

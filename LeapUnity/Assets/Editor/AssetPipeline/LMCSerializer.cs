@@ -137,7 +137,7 @@ public class LMCSerializer
 				for( int bone_i = 0; bone_i < mc.bones.Length; ++bone_i )
 				{
 					mc.bones[bone_i] = new MorphChannel.BoneMapping();
-                    mc.bones[bone_i].bone = ModelUtils.FindBone(gameObj.transform, lmc_mc.bones[bone_i].name);
+                    mc.bones[bone_i].bone = ModelUtil.FindBone(gameObj.transform, lmc_mc.bones[bone_i].name);
 					
 					if( mc.bones[bone_i].bone == null )
 					{

@@ -30,14 +30,14 @@ public static class AnimationTimingEditor
             timewarps.AddTimewarp(trackType, timewarp, startFrame);
 
         // Add the same timewarp to end-effector target helper animations associated with the model
-        var endEffectors = ModelUtils.GetEndEffectors(model);
+        var endEffectors = ModelUtil.GetEndEffectors(model);
         var endEffectorTargetHelperLayer = timeline.GetLayer(endEffectorTargetHelperLayerName);
         foreach (var endEffector in endEffectors)
         {
             if (trackType != GetAnimationTrackForEndEffector(endEffector.tag))
                 continue;
 
-            string endEffectorTargetHelperName = ModelUtils.GetEndEffectorTargetHelperName(model, endEffector.tag);
+            string endEffectorTargetHelperName = ModelUtil.GetEndEffectorTargetHelperName(model, endEffector.tag);
             var endEffectorTargetHelperTimewarps = endEffectorTargetHelperLayer.GetTimewarps(endEffectorTargetHelperName);
             endEffectorTargetHelperTimewarps.AddTimewarp(trackType, timewarp, startFrame);
         }
@@ -242,12 +242,59 @@ public static class AnimationTimingEditor
     /// <returns>Animation key times</returns>
     public static KeyTimeSet[] ExtractAnimationKeyTimes(GameObject model, AnimationClip clip)
     {
-        var bones = ModelUtils.GetAllBones(model);
-        var endEffectors = ModelUtils.GetEndEffectors(model);
+        var bones = ModelUtil.GetAllBones(model);
+        var endEffectors = ModelUtil.GetEndEffectors(model);
         var instance = new AnimationClipInstance(clip.name, model, true, false);
+        var boneMask = new bool[bones.Length];
+
+        // Compute mask over bones that aren't animated
+        var curves = AnimationUtility.GetAllCurves(clip);
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            var bone = bones[boneIndex];
+            string bonePath = ModelUtil.GetBonePath(bone);
+            boneMask[boneIndex] = curves.Any(c => c.type == typeof(Transform) && c.path == bonePath);
+        }
+
+        // Create a CSV data table for per-frame data
+        var csvDataPerFrame = new CSVData();
+        csvDataPerFrame.AddAttribute("dRoot", typeof(float));
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            if (boneMask[boneIndex])
+                csvDataPerFrame.AddAttribute("dBones#" + bones[boneIndex].name, typeof(float));
+        csvDataPerFrame.AddAttribute("aRoot", typeof(float));
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            if (boneMask[boneIndex])
+                csvDataPerFrame.AddAttribute("aBones#" + bones[boneIndex].name, typeof(float));
+        csvDataPerFrame.AddAttribute("p0Root", typeof(float));
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            if (boneMask[boneIndex])
+                csvDataPerFrame.AddAttribute("p0Bones#" + bones[boneIndex].name, typeof(float));
+        csvDataPerFrame.AddAttribute("pRoot", typeof(float));
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            if (boneMask[boneIndex])
+                csvDataPerFrame.AddAttribute("pBones#" + bones[boneIndex].name, typeof(float));
+        csvDataPerFrame.AddAttribute("wRoot", typeof(float));
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            if (boneMask[boneIndex]) 
+                csvDataPerFrame.AddAttribute("wBones#" + bones[boneIndex].name, typeof(float));
+        for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
+            csvDataPerFrame.AddAttribute("pEndEff#" + endEffectors[endEffectorIndex].name, typeof(float));
+        for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
+            csvDataPerFrame.AddAttribute("wEndEff#" + endEffectors[endEffectorIndex].name, typeof(float));
+        csvDataPerFrame.AddAttribute("p0", typeof(float));
+        csvDataPerFrame.AddAttribute("p", typeof(float));
+
+        // Create a CSV data table for extracted key data
+        var csvDataPerKey = new CSVData();
+        csvDataPerKey.AddAttribute("keyFrameIndex", typeof(int));
+        csvDataPerKey.AddAttribute("keyFrameIndexRoot", typeof(int));
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            if (boneMask[boneIndex])
+                csvDataPerKey.AddAttribute("keyFrameIndexBone#" + bones[boneIndex].name, typeof(int));
 
         // Bone transformation differences:
-        Vector3[] dpRoot = new Vector3[instance.FrameLength];
+        /*Vector3[] dpRoot = new Vector3[instance.FrameLength];
         Quaternion[,] dqBones = new Quaternion[bones.Length, instance.FrameLength];
 
         // Compute bone transformation differences
@@ -274,10 +321,10 @@ public static class AnimationTimingEditor
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
                 qBonesPrev[boneIndex] = bones[boneIndex].localRotation;
         }
-        ModelUtils.ResetModelToZeroPose(model);
+        ModelUtils.ResetModelToZeroPose(model);*/
 
         // Motion trails and their curvatures:
-        Vector3[] mRoot = new Vector3[instance.FrameLength];
+        /*Vector3[] mRoot = new Vector3[instance.FrameLength];
         float[] kRoot = new float[instance.FrameLength];
         Vector3[][,] mBones = new Vector3[bones.Length][,];
         float[][,] kBones = new float[bones.Length][,];
@@ -286,19 +333,114 @@ public static class AnimationTimingEditor
             int numChildren = bones[boneIndex].childCount;
             mBones[boneIndex] = new Vector3[numChildren, instance.FrameLength];
             kBones[boneIndex] = new float[numChildren, instance.FrameLength];
-        }
+        }*/
 
-        // Compute motion trails and their curvatures
+        // Bone accelerations and movement magnitudes:
+        float[] a0Root = new float[instance.FrameLength];
+        float[,] a0Bones = new float[bones.Length, instance.FrameLength];
+        float[] aRoot = new float[instance.FrameLength];
+        float[,] aBones = new float[bones.Length, instance.FrameLength];
+        float[] dRoot = new float[instance.FrameLength];
+        float[,] dBones = new float[bones.Length, instance.FrameLength];
+
+        // Estimate bone accelerations and movement magnitudes
+        Vector3 pRootm1 = Vector3.zero;
+        Quaternion[] qBonesm1 = new Quaternion[bones.Length];
+        Vector3 pRootm2 = Vector3.zero;
+        Quaternion[] qBonesm2 = new Quaternion[bones.Length];
         for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
         {
+            instance.Apply(frameIndex, AnimationLayerMode.Override);
+
+            // Estimate bone acceleration
+            if (frameIndex >= 2)
+            {
+                aRoot[frameIndex] = aRoot[frameIndex - 1] = (bones[0].position - 2f * pRootm1 + pRootm2).magnitude *
+                    LEAPCore.editFrameRate * LEAPCore.editFrameRate;
+                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                {
+                    Quaternion dq2 = Quaternion.Inverse(Quaternion.Inverse(qBonesm2[boneIndex]) * qBonesm1[boneIndex]) *
+                        (Quaternion.Inverse(qBonesm1[boneIndex]) * bones[boneIndex].localRotation);
+                    aBones[boneIndex, frameIndex] = aBones[boneIndex, frameIndex - 1] =
+                        QuaternionUtil.Angle(dq2) * LEAPCore.editFrameRate * LEAPCore.editFrameRate;
+                }
+
+                if (frameIndex == 2)
+                {
+                    aRoot[frameIndex - 2] = aRoot[frameIndex];
+                    for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                        aBones[boneIndex, frameIndex - 2] = aBones[boneIndex, frameIndex];
+                }
+            }
+
+            // Compute bone movement magnitudes
+            if (frameIndex >= 1)
+            {
+                dRoot[frameIndex] = (bones[0].position - pRootm1).magnitude;
+                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                    dBones[boneIndex, frameIndex] = QuaternionUtil.Angle(Quaternion.Inverse(qBonesm1[boneIndex]) *
+                        bones[boneIndex].localRotation);
+
+                if (frameIndex == 1)
+                {
+                    dRoot[0] = dRoot[frameIndex];
+                    for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                        dBones[boneIndex, 0] = dBones[boneIndex, frameIndex];
+                }
+            }
+
+            pRootm2 = pRootm1;
+            pRootm1 = bones[0].position;
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
-                // TODO
+                qBonesm2[boneIndex] = qBonesm1[boneIndex];
+                qBonesm1[boneIndex] = bones[boneIndex].localRotation;
+            }
+        }
+
+        // Store unnormalized acceleration values
+        aRoot.CopyTo(a0Root, 0);
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            var data = CollectionUtil.GetRow<float>(aBones, boneIndex);
+            CollectionUtil.SetRow<float>(a0Bones, boneIndex, data);
+        }
+
+        // Normalize acceleration values
+        float maxARoot = aRoot.Max();
+        float[] maxABones = new float[bones.Length];
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+                maxABones[boneIndex] = Mathf.Max(maxABones[boneIndex], aBones[boneIndex, frameIndex]);
+        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+        {
+            aRoot[frameIndex] = maxARoot > 0f ? aRoot[frameIndex] / maxARoot : 0f;
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                aBones[boneIndex, frameIndex] = maxABones[boneIndex] > 0f ?
+                    aBones[boneIndex, frameIndex] / maxABones[boneIndex] : 0f;
+        }
+
+        // Limb lengths:
+        float[] limbLengths = new float[bones.Length];
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            var bone = bones[boneIndex];
+            limbLengths[boneIndex] = 0f;
+            for (int childIndex = 0; childIndex < bone.childCount; ++childIndex)
+            {
+                var child = bone.GetChild(childIndex);
+                if (!ModelUtil.IsBone(child))
+                    continue;
+
+                limbLengths[boneIndex] += child.localPosition.magnitude;
             }
         }
 
         // Probability signals and their weights:
+        float[] p0 = new float[instance.FrameLength];
         float[] p = new float[instance.FrameLength];
+        float[] p0Root = new float[instance.FrameLength];
+        float[,] p0Bones = new float[bones.Length, instance.FrameLength];
         float[] pRoot = new float[instance.FrameLength];
         float[,] pBones = new float[bones.Length, instance.FrameLength];
         float[,] pEndEff = new float[endEffectors.Length, instance.FrameLength];
@@ -306,16 +448,310 @@ public static class AnimationTimingEditor
         float[,] wBones = new float[bones.Length, instance.FrameLength];
         float[,] wEndEff = new float[endEffectors.Length, instance.FrameLength];
 
-        // Compute probability signals
-        // TODO
+        // Compute probability signals and their weights
+        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+        {
+            // Compute probabilities for single bone positions and rotations
+            pRoot[frameIndex] = aRoot[frameIndex];
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                pBones[boneIndex, frameIndex] = aBones[boneIndex, frameIndex];
+
+            // Compute weights for bone probability signals
+            wRoot[frameIndex] = limbLengths[0] * dRoot[frameIndex];
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                wBones[boneIndex, frameIndex] = limbLengths[boneIndex] * dBones[boneIndex, frameIndex];
+
+            // Compute end-effector constraint probabilities and weights
+            var time = new TrackTimeSet(((float)frameIndex) / LEAPCore.editFrameRate);
+            EndEffectorConstraint[] activeConstraints = null;
+            float[] activeConstraintWeights = null;
+            instance.GetEndEffectorConstraintsAtTime(time, out activeConstraints, out activeConstraintWeights);
+            for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
+            {
+                var endEffector = endEffectors[endEffectorIndex];
+                int constraintIndex = -1;
+                for (int activeConstraintIndex = 0; activeConstraintIndex < activeConstraints.Length; ++activeConstraintIndex)
+                {
+                    if (activeConstraints[activeConstraintIndex].endEffector == endEffector.tag)
+                    {
+                        constraintIndex = activeConstraintIndex;
+                        break;
+                    }
+                }
+
+                if (constraintIndex < 0)
+                    continue;
+
+                var constraint = activeConstraints[constraintIndex];
+                pEndEff[endEffectorIndex, frameIndex] =
+                    frameIndex == constraint.startFrame || frameIndex == (constraint.startFrame + constraint.frameLength - 1) ?
+                    1f : 0f;
+                wEndEff[endEffectorIndex, frameIndex] =
+                    frameIndex == constraint.startFrame || frameIndex == (constraint.startFrame + constraint.frameLength - 1) ?
+                    LEAPCore.keyExtractEndEffConstrWeight : 0f;
+            }
+        }
+
+        // Store unsmoothed probability signals
+        pRoot.CopyTo(p0Root, 0);
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            var data = CollectionUtil.GetRow<float>(pBones, boneIndex);
+            CollectionUtil.SetRow<float>(p0Bones, boneIndex, data);
+        }
+
+        // Laplacian smoothing of probability signals
+        GeometryUtil.SmoothCurve(pRoot, LEAPCore.keyExtractLaplaceNumIterations,
+            LEAPCore.keyExtractLaplaceLambda, LEAPCore.keyExtractLaplaceMu);
+        float[] pBones0 = new float[instance.FrameLength];
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            System.Buffer.BlockCopy(pBones, boneIndex * instance.FrameLength * sizeof(float),
+                pBones0, 0, instance.FrameLength * sizeof(float));
+            GeometryUtil.SmoothCurve(pBones0, LEAPCore.keyExtractLaplaceNumIterations,
+                LEAPCore.keyExtractLaplaceLambda, LEAPCore.keyExtractLaplaceMu);
+            System.Buffer.BlockCopy(pBones0, 0,
+                pBones, boneIndex * instance.FrameLength * sizeof(float), instance.FrameLength * sizeof(float));
+        }
+
+        // Normalize bone probability signal weights
+        float maxWRoot = wRoot.Max();
+        float[] maxWBones = new float[bones.Length];
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+                maxWBones[boneIndex] = Mathf.Max(maxWBones[boneIndex], wBones[boneIndex, frameIndex]);
+        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+        {
+            wRoot[frameIndex] = maxWRoot > 0f ? wRoot[frameIndex] / maxWRoot : 0f;
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                wBones[boneIndex, frameIndex] = maxWBones[boneIndex] > 0f ?
+                    wBones[boneIndex, frameIndex] / maxWBones[boneIndex] : 0f;
+        }
+
+        // Compute the global probability signal
+        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+        {
+            float sumP = 0f;
+            float sumW = 0f;
+
+            // Add bone probabilities and weights
+            sumP += (wRoot[frameIndex] * pRoot[frameIndex]);
+            sumW += wRoot[frameIndex];
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                sumP += (wBones[boneIndex, frameIndex] * pBones[boneIndex, frameIndex]);
+                sumW += wBones[boneIndex, frameIndex];
+            }
+
+            // Add end-effector constraint probabilities and weights
+            for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
+            {
+                sumP += (wEndEff[endEffectorIndex, frameIndex] * pEndEff[endEffectorIndex, frameIndex]);
+                sumW += wEndEff[endEffectorIndex, frameIndex];
+            }
+
+            // Compute global probability
+            p[frameIndex] = sumP / sumW;
+        }
+
+        // Store unsmoothed global probability signal
+        p.CopyTo(p0, 0);
 
         // Smooth the global probability signal
-        // TODO
+        FilterUtil.Filter(p0, p, FilterUtil.GetTentKernel1D(LEAPCore.keyExtractLowPassKernelSize));
 
-        // Extract key pose times
-        // TODO
+        // Extract global key times
+        List<int> keyFrameIndexes = new List<int>();
+        float lastP = 0f;
+        for (int frameIndex = 1; frameIndex < instance.FrameLength - 1; ++frameIndex)
+        {
+            if (p[frameIndex] > p[frameIndex - 1] && p[frameIndex] > p[frameIndex + 1])
+            {
+                // This is a candidate key time
+                float time = frameIndex / ((float)LEAPCore.editFrameRate);
 
-        return null;
+                if (keyFrameIndexes.Count > 0 &&
+                    (time - keyFrameIndexes[keyFrameIndexes.Count - 1] / ((float)LEAPCore.editFrameRate))
+                    < LEAPCore.keyExtractMaxClusterWidth / 2)
+                {
+                    // Last key time is too close to the current candidate
+                    if (p[frameIndex] < lastP)
+                        // Skip current candidate
+                        continue;
+                    else
+                        // Remove previous key
+                        keyFrameIndexes.RemoveAt(keyFrameIndexes.Count - 1);
+                }
+
+                keyFrameIndexes.Add(frameIndex);
+                lastP = p[frameIndex];
+            }
+        }
+
+        // Extract local key times
+        KeyTimeSet[] keyTimeSets = new KeyTimeSet[keyFrameIndexes.Count];
+        for (int keyFrameIndexIndex = 0; keyFrameIndexIndex < keyFrameIndexes.Count; ++keyFrameIndexIndex)
+        {
+            int keyFrameIndex = keyFrameIndexes[keyFrameIndexIndex];
+            int prevKeyFrameIndex = keyFrameIndexIndex > 0 ? keyFrameIndexes[keyFrameIndexIndex - 1] : -1;
+            int nextKeyFrameIndex = keyFrameIndexIndex < keyFrameIndexes.Count - 1 ? keyFrameIndexes[keyFrameIndexIndex + 1] : -1;
+            int clusterFrameWidth = Mathf.RoundToInt(LEAPCore.keyExtractMaxClusterWidth * LEAPCore.editFrameRate);
+
+            // Compute key times
+            float keyTime = keyFrameIndex / ((float)LEAPCore.editFrameRate);
+            float prevKeyTime = prevKeyFrameIndex >= 0 ? prevKeyFrameIndex / ((float)LEAPCore.editFrameRate) : -float.MaxValue;
+            float nextKeyTime = nextKeyFrameIndex >= 0 ? nextKeyFrameIndex / ((float)LEAPCore.editFrameRate) : float.MaxValue;
+
+            // Find local key time for the root position
+            float keyTimeRoot = keyTime;
+            float pRootMax = 0f;
+            for (int frameIndex = Mathf.Max(keyFrameIndex - clusterFrameWidth / 2, 1);
+                frameIndex <= Mathf.Min(keyFrameIndex + clusterFrameWidth / 2, instance.FrameLength - 2);
+                ++frameIndex)
+            {
+                if (pRoot[frameIndex] > pRoot[frameIndex - 1] && pRoot[frameIndex] > pRoot[frameIndex + 1])
+                {
+                    // This is a candidate local key time
+                    float localKeyTime = frameIndex / ((float)LEAPCore.editFrameRate);
+
+                    if (Mathf.Abs(localKeyTime - prevKeyTime) < Mathf.Abs(localKeyTime - keyTime) ||
+                        Mathf.Abs(nextKeyTime - localKeyTime) < Mathf.Abs(localKeyTime - keyTime))
+                    {
+                        // Candidate is closer to a neighboring key
+                        continue;
+                    }
+
+                    if (pRoot[frameIndex] > pRootMax)
+                    {
+                        pRootMax = pRoot[frameIndex];
+                        keyTimeRoot = localKeyTime;
+                    }
+                }
+            }
+
+            // Find local key times for the bone rotations
+            float[] keyTimeBones = new float[bones.Length];
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                keyTimeBones[boneIndex] = keyTime;
+
+                float pBoneMax = 0f;
+                for (int frameIndex = Mathf.Max(keyFrameIndex - clusterFrameWidth / 2, 1);
+                    frameIndex <= Mathf.Min(keyFrameIndex + clusterFrameWidth / 2, instance.FrameLength - 2);
+                    ++frameIndex)
+                {
+                    if (pBones[boneIndex, frameIndex] > pBones[boneIndex, frameIndex - 1] &&
+                        pBones[boneIndex, frameIndex] > pBones[boneIndex, frameIndex + 1])
+                    {
+                        // This is a candidate local key time
+                        float localKeyTime = frameIndex / ((float)LEAPCore.editFrameRate);
+
+                        if (Mathf.Abs(localKeyTime - prevKeyTime) < Mathf.Abs(localKeyTime - keyTime) ||
+                            Mathf.Abs(nextKeyTime - localKeyTime) < Mathf.Abs(localKeyTime - keyTime))
+                        {
+                            // Candidate is closer to a neighboring key
+                            continue;
+                        }
+
+                        if (pBones[boneIndex, frameIndex] > pBoneMax)
+                        {
+                            pBoneMax = pBones[boneIndex, frameIndex];
+                            keyTimeBones[boneIndex] = localKeyTime;
+                        }
+                    }
+                }
+            }
+
+            // Create and add key time set
+            KeyTimeSet keyTimeSet = new KeyTimeSet(model);
+            keyTimeSet.keyTime = keyTime;
+            keyTimeSet.trackKeyTimes.rootTime = keyTimeRoot;
+            keyTimeSet.trackKeyTimes.boneTimes = keyTimeBones;
+            keyTimeSets[keyFrameIndexIndex] = keyTimeSet;
+        }
+
+        // Get local key times as frame indexes
+        int[] keyFrameIndexesRoot = new int[keyFrameIndexes.Count];
+        int[,] keyFrameIndexesBones = new int[bones.Length, keyFrameIndexes.Count];
+        for (int keyIndex = 0; keyIndex < keyTimeSets.Length; ++keyIndex)
+        {
+            keyFrameIndexesRoot[keyIndex] = Mathf.RoundToInt(keyTimeSets[keyIndex].trackKeyTimes.rootTime * LEAPCore.editFrameRate);
+        }
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            if (!boneMask[boneIndex])
+                continue;
+
+            for (int keyIndex = 0; keyIndex < keyTimeSets.Length; ++keyIndex)
+            {
+                keyFrameIndexesBones[boneIndex, keyIndex] = Mathf.RoundToInt(
+                    keyTimeSets[keyIndex].trackKeyTimes.boneTimes[boneIndex] * LEAPCore.editFrameRate);
+            }
+        }
+        
+
+        // Add and write per-frame CSV data
+        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
+        {
+            List<object> data = new List<object>();
+
+            // Compose a row of data
+            data.Add(dRoot[frameIndex]);
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                if (boneMask[boneIndex])
+                    data.Add(dBones[boneIndex, frameIndex]);
+            data.Add(a0Root[frameIndex]);
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                if (boneMask[boneIndex])
+                    data.Add(a0Bones[boneIndex, frameIndex]);
+            data.Add(p0Root[frameIndex]);
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                if (boneMask[boneIndex])
+                    data.Add(p0Bones[boneIndex, frameIndex]);
+            data.Add(pRoot[frameIndex]);
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                if (boneMask[boneIndex])
+                    data.Add(pBones[boneIndex, frameIndex]);
+            data.Add(wRoot[frameIndex]);
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                if (boneMask[boneIndex])
+                    data.Add(wBones[boneIndex, frameIndex]);
+            for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
+                data.Add(pEndEff[endEffectorIndex, frameIndex]);
+            for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
+                data.Add(wEndEff[endEffectorIndex, frameIndex]);
+            data.Add(p0[frameIndex]);
+            data.Add(p[frameIndex]);
+
+            // Add it to the table
+            csvDataPerFrame.AddData(data.ToArray());
+        }
+        csvDataPerFrame.WriteToFile("../Matlab/KeyExtraction/dataPerFrame.csv");
+
+        // Add and write per-key CSV data
+        for (int keyIndex = 0; keyIndex < keyFrameIndexes.Count; ++keyIndex)
+        {
+            List<object> data = new List<object>();
+
+            // Compose a row of data
+            data.Add(keyFrameIndexes[keyIndex]);
+            int localKeyFrameIndex = Mathf.RoundToInt(keyTimeSets[keyIndex].trackKeyTimes.rootTime * LEAPCore.editFrameRate);
+            data.Add(localKeyFrameIndex);
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                if (!boneMask[boneIndex])
+                    continue;
+
+                localKeyFrameIndex = Mathf.RoundToInt(keyTimeSets[keyIndex].trackKeyTimes.boneTimes[boneIndex] * LEAPCore.editFrameRate);
+                data.Add(localKeyFrameIndex);
+            }
+
+            // Add it to the table
+            csvDataPerKey.AddData(data.ToArray());
+        }
+        csvDataPerKey.WriteToFile("../Matlab/KeyExtraction/dataPerKey.csv");
+
+        return keyTimeSets;
     }
 
     /// <summary>

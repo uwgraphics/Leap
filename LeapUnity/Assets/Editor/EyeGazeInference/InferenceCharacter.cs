@@ -115,12 +115,12 @@ public class InferenceCharacter {
         //HipBone = tBones[2]; // May need to double check that index is correct...
         //NeckBone = tBones[6]; // May need to double check that index is correct...
         //HeadBone = tBones[7]; // May need to double check that index is correct...
-        HipBone = ModelUtils.FindRootBone(charModel);
-        NeckBone = ModelUtils.FindBone(HipBone, "srfBind_Cn_Neck");
-        HeadBone = ModelUtils.FindBone(HipBone, "srfBind_Cn_Head");
-        ChestBone = ModelUtils.FindBone(HipBone, "srfBind_Cn_SpineC");
-        SpineABone = ModelUtils.FindBone(HipBone, "srfBind_Cn_SpineB");
-        SpineBBone = ModelUtils.FindBone(HipBone, "srfBind_Cn_SpineA");
+        HipBone = ModelUtil.FindRootBone(charModel);
+        NeckBone = ModelUtil.FindBone(HipBone, "srfBind_Cn_Neck");
+        HeadBone = ModelUtil.FindBone(HipBone, "srfBind_Cn_Head");
+        ChestBone = ModelUtil.FindBone(HipBone, "srfBind_Cn_SpineC");
+        SpineABone = ModelUtil.FindBone(HipBone, "srfBind_Cn_SpineB");
+        SpineBBone = ModelUtil.FindBone(HipBone, "srfBind_Cn_SpineA");
 
         Transform[] chestJoints = (Transform[])gazeCtrl.torso.gazeJoints.Clone();
 

@@ -106,7 +106,7 @@
     <Compile Include="Assets\Editor\Animation\TimeSet.cs" />
     <Compile Include="Assets\Editor\Animation\Timewarp.cs" />
     <Compile Include="Assets\Editor\Animation\SimpleEyeGazeSynthesisInstance.cs" />
-    <Compile Include="Assets\Editor\AssetPipeline\LEAPAssetUtils.cs" />
+    <Compile Include="Assets\Editor\AssetPipeline\LEAPAssetUtil.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LEAPModelPostprocessor.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LMCSerializer.cs" />
     <Compile Include="Assets\Editor\EyeGazeInference\AngleData.cs" />

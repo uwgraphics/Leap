@@ -102,8 +102,8 @@ public class SceneCollisions
         var head = GameObject.Find("Roman_Head");
         var agents = GameObject.FindGameObjectsWithTag("Agent");
         var roman = agents.FirstOrDefault(m => m.name.Equals("Roman"));
-        var romanRoot = ModelUtils.FindRootBone(roman);
-        var romanHead = ModelUtils.FindBone(romanRoot, "srfBind_Cn_Head");
+        var romanRoot = ModelUtil.FindRootBone(roman);
+        var romanHead = ModelUtil.FindBone(romanRoot, "srfBind_Cn_Head");
         head.transform.position = romanHead.position;
         head.transform.parent = romanHead;
         SceneObjects.Add(new SceneObject("Roman_Head", head));
@@ -121,8 +121,8 @@ public class SceneCollisions
         var head = GameObject.Find("Norman_Head");
         var agents = GameObject.FindGameObjectsWithTag("Agent");
         var norman = agents.FirstOrDefault(m => m.name.Equals("Norman"));
-        var normanRoot = ModelUtils.FindRootBone(norman);
-        var normanHead = ModelUtils.FindBone(normanRoot, "srfBind_Cn_Head");
+        var normanRoot = ModelUtil.FindRootBone(norman);
+        var normanHead = ModelUtil.FindBone(normanRoot, "srfBind_Cn_Head");
         head.transform.position = normanHead.position;
         head.transform.parent = normanHead;
         SceneObjects.Add(new SceneObject("Norman_Head", head));

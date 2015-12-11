@@ -86,7 +86,7 @@ public class GazeBodyPart
     /// </summary>
     public float Pitch
     {
-        get { return GeomUtil.RemapAngle(Top.localEulerAngles.x); }
+        get { return GeometryUtil.RemapAngle(Top.localEulerAngles.x); }
         set { Top.localEulerAngles = new Vector3(value, Top.localEulerAngles.y, Top.localEulerAngles.z); }
     }
 
@@ -95,7 +95,7 @@ public class GazeBodyPart
     /// </summary>
     public float Yaw
     {
-        get { return GeomUtil.RemapAngle(Top.localEulerAngles.y); }
+        get { return GeometryUtil.RemapAngle(Top.localEulerAngles.y); }
         set { Top.localEulerAngles = new Vector3(Top.localEulerAngles.x, value, Top.localEulerAngles.z); }
     }
 
@@ -104,7 +104,7 @@ public class GazeBodyPart
     /// </summary>
     public float Roll
     {
-        get { return GeomUtil.RemapAngle(Top.localEulerAngles.z); }
+        get { return GeometryUtil.RemapAngle(Top.localEulerAngles.z); }
         set { Top.localEulerAngles = new Vector3(Top.localEulerAngles.x, Top.localEulerAngles.y, value); }
     }
 
@@ -368,7 +368,7 @@ public class GazeBodyPart
         // Store current rotation of the top joint
         Quaternion curRot = Top.localRotation;
 
-        Quaternion trgRot = ModelUtils.LookAtRotation(Top, targetPosition);
+        Quaternion trgRot = ModelUtil.LookAtRotation(Top, targetPosition);
         if (!IsEye)
         {
             // Compute target rotation adjusted for offset betwen the eyes and current body part
@@ -616,7 +616,7 @@ public class GazeBodyPart
     {
         trgDirAlign = GetOMRTargetDirection(gazeController.CurrentGazeTargetPosition);
         trgDirAlign = srcDir != trgDir ?
-            GeomUtil.ProjectVectorOntoPlane(trgDirAlign, Vector3.Cross(srcDir, trgDir)).normalized
+            GeometryUtil.ProjectVectorOntoPlane(trgDirAlign, Vector3.Cross(srcDir, trgDir)).normalized
             : trgDir;
     }
 
@@ -659,7 +659,7 @@ public class GazeBodyPart
         {
             trgDirAlign = GetOMRTargetDirection(gazeController.CurrentGazeTargetPosition);
             trgDirAlign = srcDir != trgDir ?
-                GeomUtil.ProjectVectorOntoPlane(trgDirAlign, Vector3.Cross(srcDir, trgDir)).normalized
+                GeometryUtil.ProjectVectorOntoPlane(trgDirAlign, Vector3.Cross(srcDir, trgDir)).normalized
                 : trgDir;
         }
 
@@ -689,7 +689,7 @@ public class GazeBodyPart
         {
             fixTrgDirAlign = GetOMRTargetDirection(gazeController.FixGazeTargetPosition, true);
             fixTrgDirAlign = fixSrcDir != fixTrgDir ?
-                GeomUtil.ProjectVectorOntoPlane(fixTrgDirAlign, Vector3.Cross(fixSrcDir, fixTrgDir)).normalized
+                GeometryUtil.ProjectVectorOntoPlane(fixTrgDirAlign, Vector3.Cross(fixSrcDir, fixTrgDir)).normalized
                 : fixTrgDir;
         }
     }
@@ -788,7 +788,7 @@ public class GazeBodyPart
     // needed to align the eye with the target
     public Quaternion _GetOMRTargetRotationDiff()
     {
-        Quaternion trgRot = ModelUtils.LookAtRotation(Top, gazeController.CurrentGazeTargetPosition);
+        Quaternion trgRot = ModelUtil.LookAtRotation(Top, gazeController.CurrentGazeTargetPosition);
         Quaternion curRot = Top.localRotation;
         Top.localRotation = trgRot;
         ClampOMRToSource();
@@ -803,7 +803,7 @@ public class GazeBodyPart
     {
         // Get source and target eye orientations
         Quaternion srcRot = Top.localRotation;
-        Top.localRotation = ModelUtils.LookAtRotation(Top, gazeController.MovingGazeTargetPosition);
+        Top.localRotation = ModelUtil.LookAtRotation(Top, gazeController.MovingGazeTargetPosition);
         float trgPitch = Pitch;
         float trgYaw = Yaw;
         Top.localRotation = srcRot;

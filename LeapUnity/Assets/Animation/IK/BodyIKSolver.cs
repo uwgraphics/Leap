@@ -184,7 +184,7 @@ public class BodyIKSolver : IKSolver
         _limbShoulderJoints.Clear();
 
         // Get root joint
-        _root = ModelUtils.FindRootBone(gameObject);
+        _root = ModelUtil.FindRootBone(gameObject);
         if (!_upperBodyOnly)
         {
             // Add root to list of body joints
@@ -198,15 +198,15 @@ public class BodyIKSolver : IKSolver
         {
             string endEffectorTag = endEffectors[endEffectorIndex];
 
-            var wrist = ModelUtils.FindBoneWithTag(_root, endEffectorTag);
+            var wrist = ModelUtil.FindBoneWithTag(_root, endEffectorTag);
             _endEffectorIndexes[wrist] = endEffectorIndex;
             _limbWristJoints.Add(wrist);
             string elbowTag = LimbIKSolver.GetJointTagForLimb(endEffectorTag, 1);
-            _limbElbowJoints.Add(ModelUtils.FindBoneWithTag(_root, elbowTag));
+            _limbElbowJoints.Add(ModelUtil.FindBoneWithTag(_root, elbowTag));
             string shoulderTag = LimbIKSolver.GetJointTagForLimb(endEffectorTag, 2);
-            _limbShoulderJoints.Add(ModelUtils.FindBoneWithTag(_root, shoulderTag));
+            _limbShoulderJoints.Add(ModelUtil.FindBoneWithTag(_root, shoulderTag));
 
-            var shoulderBoneChain = ModelUtils.GetBoneChain(_root, _limbShoulderJoints[_limbShoulderJoints.Count - 1].parent);
+            var shoulderBoneChain = ModelUtil.GetBoneChain(_root, _limbShoulderJoints[_limbShoulderJoints.Count - 1].parent);
             bodyJoints = bodyJoints == null ? shoulderBoneChain : bodyJoints.Union(shoulderBoneChain);
         }
 

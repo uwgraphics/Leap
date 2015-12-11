@@ -276,7 +276,7 @@ public class GazeController : AnimController
             {
                 // Is the character cross-eyed or eye-divergent?
                 float lt, rt;
-                GeomUtil.ClosestPointsOn2Lines(
+                GeometryUtil.ClosestPointsOn2Lines(
                     lEye.Position, lEye.Position + lEye.Direction,
                     rEye.Position, rEye.Position + rEye.Direction,
                     out lt, out rt);
@@ -301,7 +301,7 @@ public class GazeController : AnimController
             {
                 // Is the character cross-eyed or eye-divergent?
                 float lt, rt;
-                GeomUtil.ClosestPointsOn2Lines(
+                GeometryUtil.ClosestPointsOn2Lines(
                     lEye.Position, lEye.Position + lEye.Direction,
                     rEye.Position, rEye.Position + rEye.Direction,
                     out lt, out rt);
@@ -862,7 +862,7 @@ public class GazeController : AnimController
         // Compute aligning target direction for the head
         Vector3 headTrgDir = head._TargetDirection;
         Vector3 headSrcDir = head._SourceDirection;
-        headTrgDirMin = GeomUtil.ProjectVectorOntoPlane(headTrgDirMin, Vector3.Cross(headSrcDir, headTrgDir)).normalized;
+        headTrgDirMin = GeometryUtil.ProjectVectorOntoPlane(headTrgDirMin, Vector3.Cross(headSrcDir, headTrgDir)).normalized;
         float headDistRotMin = Vector3.Angle(headSrcDir, headTrgDirMin);
         float headDistRotFull = Vector3.Angle(headSrcDir, headTrgDir);
         float headAlign = headDistRotFull > 0f ?
@@ -1161,10 +1161,10 @@ public class GazeController : AnimController
         states[(int)GazeState.Shifting].nextStates[0].transitionHandler = "Transition_ShiftingNoGaze";
 
         // Get all bones needed for gaze actuation
-        var lEyeBone = ModelUtils.FindBoneWithTag(gameObject.transform, "LEyeBone");
-        var rEyeBone = ModelUtils.FindBoneWithTag(gameObject.transform, "REyeBone");
-        var headBones = ModelUtils.GetAllBonesWithTag(gameObject, "HeadBone");
-        var torsoBones = ModelUtils.GetAllBonesWithTag(gameObject, "TorsoBone");
+        var lEyeBone = ModelUtil.FindBoneWithTag(gameObject.transform, "LEyeBone");
+        var rEyeBone = ModelUtil.FindBoneWithTag(gameObject.transform, "REyeBone");
+        var headBones = ModelUtil.GetAllBonesWithTag(gameObject, "HeadBone");
+        var torsoBones = ModelUtil.GetAllBonesWithTag(gameObject, "TorsoBone");
 
         // Add default eye joints
         lEye.gazeJoints = new Transform[1];

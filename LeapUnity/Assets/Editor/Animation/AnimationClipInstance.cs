@@ -185,7 +185,7 @@ public class AnimationClipInstance : AnimationInstance
     /// <param name="model">Character model</param>
     /// <param name="loadEndEffectorConstraints">If true, end-effector constraints will be loaded for the specified animation clip</param>
     public AnimationClipInstance(string name, GameObject model,
-        bool loadEndEffectorConstraints = true, bool createEndEffectorTargetHelperAnimations = false) : base(name, model)
+        bool loadEndEffectorConstraints = true, bool createEndEffectorTargetHelperAnimations = true) : base(name, model)
     {
         Animation = model.GetComponent<Animation>();
         if (Animation == null)
@@ -224,7 +224,7 @@ public class AnimationClipInstance : AnimationInstance
         if (this.AnimationClip == null)
         {
             // No clip found for this animation instance, create an empty one
-            AnimationClip = LEAPAssetUtils.CreateAnimationClipOnModel(name, model);
+            AnimationClip = LEAPAssetUtil.CreateAnimationClipOnModel(name, model);
         }
 
         if (model.tag == "Agent")
@@ -232,14 +232,14 @@ public class AnimationClipInstance : AnimationInstance
             if (loadEndEffectorConstraints)
             {
                 // Load end-effector constraints on the clip
-                var endEffectorConstraints = LEAPAssetUtils.LoadEndEffectorConstraintsForClip(Model, AnimationClip);
+                var endEffectorConstraints = LEAPAssetUtil.LoadEndEffectorConstraintsForClip(Model, AnimationClip);
                 _endEffectorConstraints = endEffectorConstraints != null ?
                     new EndEffectorConstraintContainer(AnimationClip, endEffectorConstraints) : null;
 
                 if (_endEffectorConstraints != null && createEndEffectorTargetHelperAnimations)
                 {
                     // Create end-effector target helper animations
-                    var endEffectorTargetHelperAnimations = LEAPAssetUtils.InitEndEffectorTargetHelperAnimations(Model, AnimationClip);
+                    var endEffectorTargetHelperAnimations = LEAPAssetUtil.InitEndEffectorTargetHelperAnimations(Model, AnimationClip);
                     foreach (var helperAnimation in endEffectorTargetHelperAnimations)
                     {
                         _endEffectorTargetHelperClips.Add(helperAnimation.endEffectorTag, helperAnimation.helperAnimationClip);
@@ -248,7 +248,7 @@ public class AnimationClipInstance : AnimationInstance
             }
 
             // Initialize default animation track bone masks
-            var boneMasks = LEAPAssetUtils.CreateDefaultAnimationTrackBoneMasks(model);
+            var boneMasks = LEAPAssetUtil.CreateDefaultAnimationTrackBoneMasks(model);
             var trackTypes = (AnimationTrackType[])Enum.GetValues(typeof(AnimationTrackType));
             foreach (AnimationTrackType trackType in trackTypes)
             {
@@ -256,7 +256,7 @@ public class AnimationClipInstance : AnimationInstance
             }
 
             // Initialize default animation track clips
-            var trackClips = LEAPAssetUtils.CreateAnimationClipsForTracks(model, AnimationClip, boneMasks);
+            var trackClips = LEAPAssetUtil.CreateAnimationClipsForTracks(model, AnimationClip, boneMasks);
             foreach (AnimationTrackType trackType in trackTypes)
             {
                 _trackClips[trackType] = trackClips[(int)trackType];

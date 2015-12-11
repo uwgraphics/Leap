@@ -329,6 +329,10 @@ public class AnimationManager
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("WindowWashingA", testScenes.modelNorman);
             var bodyAnimationNormanette = new AnimationClipInstance("WindowWashingB", testScenes.modelNormanette);
+            //
+            // Find key pose times
+            //var keyTimes = AnimationTimingEditor.ExtractAnimationKeyTimes(testScenes.modelNorman, bodyAnimationNorman.AnimationClip);
+            //
 
             // Add animations to characters
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,

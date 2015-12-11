@@ -29,9 +29,9 @@ public class LimbIKSolver : IKSolver
         base.Start();
 
         _isLeg = endEffectors[0] == "LAnkleBone" || endEffectors[0] == "RAnkleBone";
-        _shoulder = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 2));
-        _elbow = ModelUtils.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 1));
-        _wrist = ModelUtils.FindBoneWithTag(Model.Root, endEffectors[0]);
+        _shoulder = ModelUtil.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 2));
+        _elbow = ModelUtil.FindBoneWithTag(Model.Root, GetJointTagForLimb(endEffectors[0], 1));
+        _wrist = ModelUtil.FindBoneWithTag(Model.Root, endEffectors[0]);
     }
 
     /// <summary>

@@ -87,7 +87,7 @@ public class MorphController : MonoBehaviour
             for (int bone_i = 0; bone_i < morphChannels[i].bones.Length; ++bone_i)
             {
                 Transform src_bone = morphChannels[i].bones[bone_i].bone;
-                morphChannels[i].bones[bone_i].bone = ModelUtils.FindBone(transform, src_bone.name);
+                morphChannels[i].bones[bone_i].bone = ModelUtil.FindBone(transform, src_bone.name);
             }
         }
 

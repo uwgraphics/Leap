@@ -216,7 +216,7 @@ public class EyesAliveController : AnimController
         UnityEngine.Quaternion savedRot2 = eye2.localRotation;
         eye1.localRotation = trgEyeRot[0];
         eye2.localRotation = trgEyeRot[1];
-        parallelEyes = GeomUtil.ClosestPointsOn2Lines(
+        parallelEyes = GeometryUtil.ClosestPointsOn2Lines(
             eye1.position, eye1.forward,
             eye2.position, eye2.forward, out p1, out p2);
         if (parallelEyes)
@@ -262,7 +262,7 @@ public class EyesAliveController : AnimController
             UnityEngine.Quaternion savedRot2 = eye2.localRotation;
             eye1.localRotation = srcEyeRot[0];
             eye2.localRotation = srcEyeRot[1];
-            parallelEyes = GeomUtil.ClosestPointsOn2Lines(
+            parallelEyes = GeometryUtil.ClosestPointsOn2Lines(
                 eye1.position, eye1.forward,
                 eye2.position, eye2.forward,
                 out p1, out p2);

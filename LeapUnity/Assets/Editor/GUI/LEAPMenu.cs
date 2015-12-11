@@ -358,7 +358,7 @@ public class LEAPMenu
     private static void FixAnimationClipAssoc()
     {
         GameObject obj = Selection.activeGameObject;
-        LEAPAssetUtils.FixModelAnimationClipAssoc(obj);
+        LEAPAssetUtil.FixModelAnimationClipAssoc(obj);
     }
 
     /// <summary>
@@ -590,7 +590,7 @@ public class LEAPMenu
                EditorUtility.GetPrefabType(new_baseobj) != PrefabType.ModelPrefab)
                 continue;
 
-            LEAPAssetUtils.RefreshAgentModel(new_baseobj, obj);
+            LEAPAssetUtil.RefreshAgentModel(new_baseobj, obj);
             return;
         }
     }
@@ -725,10 +725,10 @@ public class LEAPMenu
         var animationComponent = model.GetComponent<Animation>();
         var clip = animationComponent.GetClip("WindowWashingA-Eyes");
 
-        string blendShapePath = ModelUtils.GetBonePath(ModelUtils.FindBone(model.transform, "srfBind_Cn_Head"));
-        LEAPAssetUtils.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
+        string blendShapePath = ModelUtil.GetBonePath(ModelUtil.FindBone(model.transform, "srfBind_Cn_Head"));
+        LEAPAssetUtil.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
             "blendShape.BottomLidUp_2.L", blendShapePath, "blendShape.BottomLidUp_2.R");
-        LEAPAssetUtils.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
+        LEAPAssetUtil.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
             "blendShape.TopLidDown_2.L", blendShapePath, "blendShape.TopLidDown_2.R");
 
         return;

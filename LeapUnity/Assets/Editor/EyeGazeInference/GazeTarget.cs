@@ -333,7 +333,7 @@ public class GazeTarget  {
     {
         float ut;
         float vt;
-        GeomUtil.ClosestPointsOn2Lines(hv1, hv2, vert1, vert2, out ut, out vt);
+        GeometryUtil.ClosestPointsOn2Lines(hv1, hv2, vert1, vert2, out ut, out vt);
         if (vt < 0) pt1 = vert1;
         else if (vt > 1) pt1 = vert2;
         else pt1 = vert1 + vt * vert2;

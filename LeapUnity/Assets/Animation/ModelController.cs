@@ -323,16 +323,16 @@ public sealed class ModelController : MonoBehaviour
     {
         // Try to find bones by their tags and set them
         if (rootBone == null)
-            rootBone = ModelUtils.FindRootBone(gameObject);
+            rootBone = ModelUtil.FindRootBone(gameObject);
         if (rootBone == null)
             rootBone = gameObject.transform;
         if (lEyeBone == null)
-            lEyeBone = ModelUtils.FindBoneWithTag(rootBone, "LEyeBone");
+            lEyeBone = ModelUtil.FindBoneWithTag(rootBone, "LEyeBone");
         if (rEyeBone == null)
-            rEyeBone = ModelUtils.FindBoneWithTag(rootBone, "REyeBone");
+            rEyeBone = ModelUtil.FindBoneWithTag(rootBone, "REyeBone");
 
         // Get list of all bones and their indexes
-        bones = ModelUtils.GetAllBones(gameObject);
+        bones = ModelUtil.GetAllBones(gameObject);
         boneIndexes.Clear();
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             boneIndexes[bones[boneIndex]] = boneIndex;
@@ -352,7 +352,7 @@ public sealed class ModelController : MonoBehaviour
 
     private void _InitBlendShapes()
     {
-        meshesWithBlendShapes = ModelUtils.GetAllMeshesWithBlendShapes(gameObject);
+        meshesWithBlendShapes = ModelUtil.GetAllMeshesWithBlendShapes(gameObject);
     }
 }
 
