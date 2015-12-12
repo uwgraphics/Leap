@@ -112,7 +112,7 @@ public class AnimationManager
         {
             throw new Exception(string.Format("Character model {0} does not have an InitialPose animation defined", model.name));
         }
-        var initialPoseInstance = new AnimationClipInstance(initialPoseClip.name, model, false, false);
+        var initialPoseInstance = new AnimationClipInstance(initialPoseClip.name, model, false, false, false);
         initialPoseInstance.Apply(0, AnimationLayerMode.Override);
         modelController.Init();
 
@@ -302,7 +302,7 @@ public class AnimationManager
             timeline.OwningManager.SetEnvironment(testScenes.modelTestExpressiveGazeEnv);
 
             // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance("TestExpressiveGaze", testScenes.modelNorman);
+            var bodyAnimationNorman = new AnimationClipInstance("TestExpressiveGaze", testScenes.modelNorman, true, true, false);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
                 bodyAnimationNorman, 0);
 
@@ -330,9 +330,6 @@ public class AnimationManager
             var bodyAnimationNorman = new AnimationClipInstance("WindowWashingA", testScenes.modelNorman);
             var bodyAnimationNormanette = new AnimationClipInstance("WindowWashingB", testScenes.modelNormanette);
             //
-            // Find key pose times
-            //var keyTimes = AnimationTimingEditor.ExtractAnimationKeyTimes(testScenes.modelNorman, bodyAnimationNorman.AnimationClip);
-            //
 
             // Add animations to characters
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
@@ -348,7 +345,7 @@ public class AnimationManager
             timeline.AddManipulatedObjectAnimation("Environment",
                 new AnimationClipInstance(
                     "WindowWashingSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge"),
-                    false, false));
+                    false, false, false));
 
             // Add timewarps to the animations
             AnimationTimingEditor.LoadTimewarps(timeline, testScenes.modelNorman, "WindowWashingA");
@@ -399,7 +396,7 @@ public class AnimationManager
             var envController = testScenes.modelPassSodaEnv.GetComponent<EnvironmentController>();
             timeline.AddManipulatedObjectAnimation("Environment",
                 new AnimationClipInstance("PassSodaBottle", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "SodaBottle"),
-                    false, false));
+                    false, false, false));
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -508,13 +505,13 @@ public class AnimationManager
             var envController = testScenes.modelBookShelfEnv.GetComponent<EnvironmentController>();
             timeline.AddManipulatedObjectAnimation("Environment",
                 new AnimationClipInstance("BookShelfBook1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1"),
-                    false, false));
+                    false, false, false));
             timeline.AddManipulatedObjectAnimation("Environment",
                 new AnimationClipInstance("BookShelfBook2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2"),
-                    false, false));
+                    false, false, false));
             timeline.AddManipulatedObjectAnimation("Environment",
                 new AnimationClipInstance("BookShelfBook3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3"),
-                    false, false));
+                    false, false, false));
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[1];
@@ -548,7 +545,7 @@ public class AnimationManager
             var envController = testScenes.modelStealDiamondEnv.GetComponent<EnvironmentController>();
             timeline.AddManipulatedObjectAnimation("Environment",
                 new AnimationClipInstance("StealDiamondGem", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Gem"),
-                    false, false));
+                    false, false, false));
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
@@ -604,7 +601,7 @@ public class AnimationManager
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("InitialPose", testScenes.modelNorman,
-                false, false);
+                false, false, false);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
                 bodyAnimationNorman, 0, "Helpers");
 

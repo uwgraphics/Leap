@@ -476,7 +476,7 @@ public class AnimationTimeline
             _AnimationCurves = LEAPAssetUtil.CreateAnimationCurvesForModel(model);
 
             // Create animation clip instance
-            _AnimationInstance = new AnimationClipInstance(clipName, model, false, false);
+            _AnimationInstance = new AnimationClipInstance(clipName, model, false, false, false);
 
             // Create baked controller containers
             AnimController[] controllers = model.GetComponents<AnimController>();
@@ -1076,7 +1076,7 @@ public class AnimationTimeline
 
                 // Create and configure helper animation instance
                 var endEffectorTargetHelperInstance = Activator.CreateInstance(clipInstance.GetType(),
-                    endEffectorTargetHelperClip.name, endEffectorTargetHelper, false, false) as AnimationClipInstance;
+                    endEffectorTargetHelperClip.name, endEffectorTargetHelper, false, false, false) as AnimationClipInstance;
                 var endEffectorTargetHelperTrackType = AnimationTimingEditor.GetAnimationTrackForEndEffector(endEffector.tag);
                 endEffectorTargetHelperInstance.InitTimingControlByTrack(endEffectorTargetHelperTrackType);
                 
@@ -1468,7 +1468,7 @@ public class AnimationTimeline
             // Re-add the clip to its model
             LEAPAssetUtil.AddAnimationClipToModel(bakedAnimationContainer.AnimationClip, model);
             bakedAnimationContainer._AnimationInstance = new AnimationClipInstance(bakedAnimationContainer.AnimationClip.name,
-                model, false, false);
+                model, false, false, false);
         }
     }
 

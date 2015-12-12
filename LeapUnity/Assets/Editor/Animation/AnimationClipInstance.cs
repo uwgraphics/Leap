@@ -183,9 +183,12 @@ public class AnimationClipInstance : AnimationInstance
     /// </summary>
     /// <param name="name">Animation clip name</param>
     /// <param name="model">Character model</param>
-    /// <param name="loadEndEffectorConstraints">If true, end-effector constraints will be loaded for the specified animation clip</param>
+    /// <param name="loadEndEffectorConstraints">If true, end-effector constraints will be loaded</param>
+    /// <param name="createEndEffectorTargetHelperAnimations">If true, end-effector target helper animations will be created</param>
+    /// <param name="loadKeyFrames">If true, keyframe indexes will be loaded or extracted</param>
     public AnimationClipInstance(string name, GameObject model,
-        bool loadEndEffectorConstraints = true, bool createEndEffectorTargetHelperAnimations = true) : base(name, model)
+        bool loadEndEffectorConstraints = true, bool createEndEffectorTargetHelperAnimations = true,
+        bool loadOrExtractKeyFrames = true) : base(name, model)
     {
         Animation = model.GetComponent<Animation>();
         if (Animation == null)
@@ -263,6 +266,17 @@ public class AnimationClipInstance : AnimationInstance
             }
             _InitBoneTrackMappings();
             _InitTrackEndEffectorTagMappings();
+
+            if (loadOrExtractKeyFrames)
+            {
+                // Load or extract keyframe indexes
+                KeyFrameSet[] keyFrameSets = null;
+                if (!AnimationTimingEditor.LoadAnimationKeyFrames(model, AnimationClip, out keyFrameSets))
+                {
+                    keyFrameSets = AnimationTimingEditor.ExtractAnimationKeyFrames(model, AnimationClip);
+                    AnimationTimingEditor.SaveAnimationKeyFrames(model, AnimationClip, keyFrameSets);
+                }
+            }
         }
     }
 

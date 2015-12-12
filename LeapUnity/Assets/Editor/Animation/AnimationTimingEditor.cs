@@ -6,6 +6,55 @@ using System.IO;
 using System.Linq;
 
 /// <summary>
+/// Set of frame indexes determining the temporal location of
+/// a key pose in an animation.
+/// </summary>
+public struct KeyFrameSet
+{
+    /// <summary>
+    /// Global keyframe index.
+    /// </summary>
+    public int keyFrame;
+
+    /// <summary>
+    /// Local keyframe index for the root position.
+    /// </summary>
+    public int rootKeyFrame;
+
+    /// <summary>
+    /// Local keyframe indexes for bone rotations.
+    /// </summary>
+    public int[] boneKeyFrames;
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    public KeyFrameSet(GameObject model)
+    {
+        keyFrame = 0;
+        rootKeyFrame = 0;
+        boneKeyFrames = new int[ModelUtil.GetAllBones(model).Length];
+    }
+
+    /// <summary>
+    /// Explicit conversion from a keyframe set to a time set.
+    /// </summary>
+    /// <param name="keyFrameSet">Keyframe set</param>
+    /// <returns>Time set</returns>
+    public static explicit operator TimeSet(KeyFrameSet keyFrameSet)
+    {
+        var timeSet = new TimeSet();
+        timeSet.rootTime = ((float)keyFrameSet.rootKeyFrame) / LEAPCore.editFrameRate;
+        timeSet.boneTimes = new float[keyFrameSet.boneKeyFrames.Length];
+        for (int boneIndex = 0;  boneIndex < keyFrameSet.boneKeyFrames.Length; ++boneIndex)
+            timeSet.boneTimes[boneIndex] = ((float)keyFrameSet.boneKeyFrames[boneIndex]) / LEAPCore.editFrameRate;
+
+        return timeSet;
+    }
+}
+
+/// <summary>
 /// This class has static methods for performing timing editing operations.
 /// </summary>
 public static class AnimationTimingEditor
@@ -235,16 +284,16 @@ public static class AnimationTimingEditor
     }
 
     /// <summary>
-    /// Extract key pose times in the specified animation.
+    /// Extract clusters of key frame indexes in the specified animation.
     /// </summary>
     /// <param name="model">Character model</param>
     /// <param name="clip">Animation clip</param>
-    /// <returns>Animation key times</returns>
-    public static KeyTimeSet[] ExtractAnimationKeyTimes(GameObject model, AnimationClip clip)
+    /// <returns>Sets of key frame indexes</returns>
+    public static KeyFrameSet[] ExtractAnimationKeyFrames(GameObject model, AnimationClip clip)
     {
         var bones = ModelUtil.GetAllBones(model);
         var endEffectors = ModelUtil.GetEndEffectors(model);
-        var instance = new AnimationClipInstance(clip.name, model, true, false);
+        var instance = new AnimationClipInstance(clip.name, model, true, false, false);
         var boneMask = new bool[bones.Length];
 
         // Compute mask over bones that aren't animated
@@ -292,48 +341,6 @@ public static class AnimationTimingEditor
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             if (boneMask[boneIndex])
                 csvDataPerKey.AddAttribute("keyFrameIndexBone#" + bones[boneIndex].name, typeof(int));
-
-        // Bone transformation differences:
-        /*Vector3[] dpRoot = new Vector3[instance.FrameLength];
-        Quaternion[,] dqBones = new Quaternion[bones.Length, instance.FrameLength];
-
-        // Compute bone transformation differences
-        Vector3 pRootPrev = Vector3.zero;
-        Quaternion[] qBonesPrev = new Quaternion[bones.Length];
-        for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
-        {
-            instance.Apply(frameIndex, AnimationLayerMode.Override);
-
-            if (frameIndex == 0)
-            {
-                dpRoot[frameIndex] = Vector3.zero;
-                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-                    dqBones[boneIndex, frameIndex] = Quaternion.identity;
-            }
-            else
-            {
-                dpRoot[frameIndex] = bones[0].position - pRootPrev;
-                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-                    dqBones[boneIndex, frameIndex] = Quaternion.Inverse(qBonesPrev[boneIndex]) * bones[boneIndex].localRotation;
-            }
-
-            pRootPrev = bones[0].position;
-            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-                qBonesPrev[boneIndex] = bones[boneIndex].localRotation;
-        }
-        ModelUtils.ResetModelToZeroPose(model);*/
-
-        // Motion trails and their curvatures:
-        /*Vector3[] mRoot = new Vector3[instance.FrameLength];
-        float[] kRoot = new float[instance.FrameLength];
-        Vector3[][,] mBones = new Vector3[bones.Length][,];
-        float[][,] kBones = new float[bones.Length][,];
-        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-        {
-            int numChildren = bones[boneIndex].childCount;
-            mBones[boneIndex] = new Vector3[numChildren, instance.FrameLength];
-            kBones[boneIndex] = new float[numChildren, instance.FrameLength];
-        }*/
 
         // Bone accelerations and movement magnitudes:
         float[] a0Root = new float[instance.FrameLength];
@@ -461,38 +468,35 @@ public static class AnimationTimingEditor
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
                 wBones[boneIndex, frameIndex] = limbLengths[boneIndex] * dBones[boneIndex, frameIndex];
 
-            // Compute end-effector constraint probabilities and weights
-            var time = new TrackTimeSet(((float)frameIndex) / LEAPCore.editFrameRate);
-            EndEffectorConstraint[] activeConstraints = null;
-            float[] activeConstraintWeights = null;
-            instance.GetEndEffectorConstraintsAtTime(time, out activeConstraints, out activeConstraintWeights);
-            for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
+            if (instance.EndEffectorConstraints != null)
             {
-                var endEffector = endEffectors[endEffectorIndex];
-                int constraintIndex = -1;
-                for (int activeConstraintIndex = 0; activeConstraintIndex < activeConstraints.Length; ++activeConstraintIndex)
+                // Compute end-effector constraint probabilities and weights
+                var time = new TrackTimeSet(((float)frameIndex) / LEAPCore.editFrameRate);
+                EndEffectorConstraint[] activeConstraints = null;
+                float[] activeConstraintWeights = null;
+                instance.GetEndEffectorConstraintsAtTime(time, out activeConstraints, out activeConstraintWeights);
+                for (int endEffectorIndex = 0; endEffectorIndex < endEffectors.Length; ++endEffectorIndex)
                 {
-                    if (activeConstraints[activeConstraintIndex].endEffector == endEffector.tag)
+                    var endEffector = endEffectors[endEffectorIndex];
+                    for (int activeConstraintIndex = 0; activeConstraintIndex < activeConstraints.Length; ++activeConstraintIndex)
                     {
-                        constraintIndex = activeConstraintIndex;
-                        break;
+                        if (activeConstraints[activeConstraintIndex].endEffector != endEffector.tag)
+                            // Ignore constraint on a different end-effector
+                            continue;
+
+                        var constraint = activeConstraints[activeConstraintIndex];
+                        pEndEff[endEffectorIndex, frameIndex] =
+                            frameIndex == constraint.startFrame || frameIndex == (constraint.startFrame + constraint.frameLength - 1) ?
+                            1f : pEndEff[endEffectorIndex, frameIndex];
+                        wEndEff[endEffectorIndex, frameIndex] =
+                            frameIndex == constraint.startFrame || frameIndex == (constraint.startFrame + constraint.frameLength - 1) ?
+                            LEAPCore.keyExtractEndEffConstrWeight : wEndEff[endEffectorIndex, frameIndex];
                     }
                 }
-
-                if (constraintIndex < 0)
-                    continue;
-
-                var constraint = activeConstraints[constraintIndex];
-                pEndEff[endEffectorIndex, frameIndex] =
-                    frameIndex == constraint.startFrame || frameIndex == (constraint.startFrame + constraint.frameLength - 1) ?
-                    1f : 0f;
-                wEndEff[endEffectorIndex, frameIndex] =
-                    frameIndex == constraint.startFrame || frameIndex == (constraint.startFrame + constraint.frameLength - 1) ?
-                    LEAPCore.keyExtractEndEffConstrWeight : 0f;
             }
         }
 
-        // Store unsmoothed probability signals
+        /*// Store unsmoothed probability signals
         pRoot.CopyTo(p0Root, 0);
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
@@ -512,7 +516,7 @@ public static class AnimationTimingEditor
                 LEAPCore.keyExtractLaplaceLambda, LEAPCore.keyExtractLaplaceMu);
             System.Buffer.BlockCopy(pBones0, 0,
                 pBones, boneIndex * instance.FrameLength * sizeof(float), instance.FrameLength * sizeof(float));
-        }
+        }*/
 
         // Normalize bone probability signal weights
         float maxWRoot = wRoot.Max();
@@ -554,27 +558,37 @@ public static class AnimationTimingEditor
             p[frameIndex] = sumP / sumW;
         }
 
-        // Store unsmoothed global probability signal
-        p.CopyTo(p0, 0);
-
         // Smooth the global probability signal
+        p.CopyTo(p0, 0);
         FilterUtil.Filter(p0, p, FilterUtil.GetTentKernel1D(LEAPCore.keyExtractLowPassKernelSize));
 
-        // Extract global key times
+        // Smooth the local probability signals
+        pRoot.CopyTo(p0Root, 0);
+        FilterUtil.Filter(p0Root, pRoot, FilterUtil.GetTentKernel1D(LEAPCore.keyExtractLowPassKernelSize));
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            var data0 = CollectionUtil.GetRow<float>(pBones, boneIndex);
+            CollectionUtil.SetRow<float>(p0Bones, boneIndex, data0);
+            var data = new float[data0.Length];
+            FilterUtil.Filter(data0, data, FilterUtil.GetTentKernel1D(LEAPCore.keyExtractLowPassKernelSize));
+            CollectionUtil.SetRow<float>(pBones, boneIndex, data);
+        }
+
+        // Extract global key frames
         List<int> keyFrameIndexes = new List<int>();
         float lastP = 0f;
         for (int frameIndex = 1; frameIndex < instance.FrameLength - 1; ++frameIndex)
         {
             if (p[frameIndex] > p[frameIndex - 1] && p[frameIndex] > p[frameIndex + 1])
             {
-                // This is a candidate key time
+                // This is a candidate key frame
                 float time = frameIndex / ((float)LEAPCore.editFrameRate);
 
                 if (keyFrameIndexes.Count > 0 &&
                     (time - keyFrameIndexes[keyFrameIndexes.Count - 1] / ((float)LEAPCore.editFrameRate))
                     < LEAPCore.keyExtractMaxClusterWidth / 2)
                 {
-                    // Last key time is too close to the current candidate
+                    // Last key frame is too close to the current candidate
                     if (p[frameIndex] < lastP)
                         // Skip current candidate
                         continue;
@@ -588,22 +602,17 @@ public static class AnimationTimingEditor
             }
         }
 
-        // Extract local key times
-        KeyTimeSet[] keyTimeSets = new KeyTimeSet[keyFrameIndexes.Count];
-        for (int keyFrameIndexIndex = 0; keyFrameIndexIndex < keyFrameIndexes.Count; ++keyFrameIndexIndex)
+        // Extract local keyframe indexes
+        KeyFrameSet[] keyFrameSets = new KeyFrameSet[keyFrameIndexes.Count];
+        for (int keyIndex = 0; keyIndex < keyFrameIndexes.Count; ++keyIndex)
         {
-            int keyFrameIndex = keyFrameIndexes[keyFrameIndexIndex];
-            int prevKeyFrameIndex = keyFrameIndexIndex > 0 ? keyFrameIndexes[keyFrameIndexIndex - 1] : -1;
-            int nextKeyFrameIndex = keyFrameIndexIndex < keyFrameIndexes.Count - 1 ? keyFrameIndexes[keyFrameIndexIndex + 1] : -1;
+            int keyFrameIndex = keyFrameIndexes[keyIndex];
+            int prevKeyFrameIndex = keyIndex > 0 ? keyFrameIndexes[keyIndex - 1] : -1;
+            int nextKeyFrameIndex = keyIndex < keyFrameIndexes.Count - 1 ? keyFrameIndexes[keyIndex + 1] : -1;
             int clusterFrameWidth = Mathf.RoundToInt(LEAPCore.keyExtractMaxClusterWidth * LEAPCore.editFrameRate);
 
-            // Compute key times
-            float keyTime = keyFrameIndex / ((float)LEAPCore.editFrameRate);
-            float prevKeyTime = prevKeyFrameIndex >= 0 ? prevKeyFrameIndex / ((float)LEAPCore.editFrameRate) : -float.MaxValue;
-            float nextKeyTime = nextKeyFrameIndex >= 0 ? nextKeyFrameIndex / ((float)LEAPCore.editFrameRate) : float.MaxValue;
-
-            // Find local key time for the root position
-            float keyTimeRoot = keyTime;
+            // Find local keyframe index for the root position
+            int rootKeyFrameIndex = keyFrameIndex;
             float pRootMax = 0f;
             for (int frameIndex = Mathf.Max(keyFrameIndex - clusterFrameWidth / 2, 1);
                 frameIndex <= Mathf.Min(keyFrameIndex + clusterFrameWidth / 2, instance.FrameLength - 2);
@@ -611,11 +620,9 @@ public static class AnimationTimingEditor
             {
                 if (pRoot[frameIndex] > pRoot[frameIndex - 1] && pRoot[frameIndex] > pRoot[frameIndex + 1])
                 {
-                    // This is a candidate local key time
-                    float localKeyTime = frameIndex / ((float)LEAPCore.editFrameRate);
-
-                    if (Mathf.Abs(localKeyTime - prevKeyTime) < Mathf.Abs(localKeyTime - keyTime) ||
-                        Mathf.Abs(nextKeyTime - localKeyTime) < Mathf.Abs(localKeyTime - keyTime))
+                    // This is a candidate local keyframe index
+                    if (Math.Abs(frameIndex - prevKeyFrameIndex) < Math.Abs(frameIndex - keyFrameIndex) ||
+                        Math.Abs(nextKeyFrameIndex - frameIndex) < Math.Abs(frameIndex - keyFrameIndex))
                     {
                         // Candidate is closer to a neighboring key
                         continue;
@@ -624,16 +631,16 @@ public static class AnimationTimingEditor
                     if (pRoot[frameIndex] > pRootMax)
                     {
                         pRootMax = pRoot[frameIndex];
-                        keyTimeRoot = localKeyTime;
+                        rootKeyFrameIndex = frameIndex;
                     }
                 }
             }
 
-            // Find local key times for the bone rotations
-            float[] keyTimeBones = new float[bones.Length];
+            // Find local keyframe indexes for the bone rotations
+            int[] boneKeyFrameIndexes = new int[bones.Length];
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
-                keyTimeBones[boneIndex] = keyTime;
+                boneKeyFrameIndexes[boneIndex] = keyFrameIndex;
 
                 float pBoneMax = 0f;
                 for (int frameIndex = Mathf.Max(keyFrameIndex - clusterFrameWidth / 2, 1);
@@ -643,11 +650,9 @@ public static class AnimationTimingEditor
                     if (pBones[boneIndex, frameIndex] > pBones[boneIndex, frameIndex - 1] &&
                         pBones[boneIndex, frameIndex] > pBones[boneIndex, frameIndex + 1])
                     {
-                        // This is a candidate local key time
-                        float localKeyTime = frameIndex / ((float)LEAPCore.editFrameRate);
-
-                        if (Mathf.Abs(localKeyTime - prevKeyTime) < Mathf.Abs(localKeyTime - keyTime) ||
-                            Mathf.Abs(nextKeyTime - localKeyTime) < Mathf.Abs(localKeyTime - keyTime))
+                        // This is a candidate local keyframe index
+                        if (Math.Abs(frameIndex - prevKeyFrameIndex) < Math.Abs(frameIndex - keyFrameIndex) ||
+                            Math.Abs(nextKeyFrameIndex - frameIndex) < Math.Abs(frameIndex - keyFrameIndex))
                         {
                             // Candidate is closer to a neighboring key
                             continue;
@@ -656,40 +661,20 @@ public static class AnimationTimingEditor
                         if (pBones[boneIndex, frameIndex] > pBoneMax)
                         {
                             pBoneMax = pBones[boneIndex, frameIndex];
-                            keyTimeBones[boneIndex] = localKeyTime;
+                            boneKeyFrameIndexes[boneIndex] = frameIndex;
                         }
                     }
                 }
             }
 
-            // Create and add key time set
-            KeyTimeSet keyTimeSet = new KeyTimeSet(model);
-            keyTimeSet.keyTime = keyTime;
-            keyTimeSet.trackKeyTimes.rootTime = keyTimeRoot;
-            keyTimeSet.trackKeyTimes.boneTimes = keyTimeBones;
-            keyTimeSets[keyFrameIndexIndex] = keyTimeSet;
-        }
-
-        // Get local key times as frame indexes
-        int[] keyFrameIndexesRoot = new int[keyFrameIndexes.Count];
-        int[,] keyFrameIndexesBones = new int[bones.Length, keyFrameIndexes.Count];
-        for (int keyIndex = 0; keyIndex < keyTimeSets.Length; ++keyIndex)
-        {
-            keyFrameIndexesRoot[keyIndex] = Mathf.RoundToInt(keyTimeSets[keyIndex].trackKeyTimes.rootTime * LEAPCore.editFrameRate);
-        }
-        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-        {
-            if (!boneMask[boneIndex])
-                continue;
-
-            for (int keyIndex = 0; keyIndex < keyTimeSets.Length; ++keyIndex)
-            {
-                keyFrameIndexesBones[boneIndex, keyIndex] = Mathf.RoundToInt(
-                    keyTimeSets[keyIndex].trackKeyTimes.boneTimes[boneIndex] * LEAPCore.editFrameRate);
-            }
+            // Create and add keyframe set
+            KeyFrameSet keyFrameSet = new KeyFrameSet(model);
+            keyFrameSet.keyFrame = keyFrameIndex;
+            keyFrameSet.rootKeyFrame = rootKeyFrameIndex;
+            keyFrameSet.boneKeyFrames = boneKeyFrameIndexes;
+            keyFrameSets[keyIndex] = keyFrameSet;
         }
         
-
         // Add and write per-frame CSV data
         for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
         {
@@ -735,14 +720,14 @@ public static class AnimationTimingEditor
 
             // Compose a row of data
             data.Add(keyFrameIndexes[keyIndex]);
-            int localKeyFrameIndex = Mathf.RoundToInt(keyTimeSets[keyIndex].trackKeyTimes.rootTime * LEAPCore.editFrameRate);
+            int localKeyFrameIndex = keyFrameSets[keyIndex].rootKeyFrame;
             data.Add(localKeyFrameIndex);
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
                 if (!boneMask[boneIndex])
                     continue;
 
-                localKeyFrameIndex = Mathf.RoundToInt(keyTimeSets[keyIndex].trackKeyTimes.boneTimes[boneIndex] * LEAPCore.editFrameRate);
+                localKeyFrameIndex = keyFrameSets[keyIndex].boneKeyFrames[boneIndex];
                 data.Add(localKeyFrameIndex);
             }
 
@@ -751,7 +736,110 @@ public static class AnimationTimingEditor
         }
         csvDataPerKey.WriteToFile("../Matlab/KeyExtraction/dataPerKey.csv");
 
-        return keyTimeSets;
+        Debug.Log(string.Format("Extracted keyframes for animation {0} on character model {1}",
+            clip.name, model.name));
+
+        return keyFrameSets;
+    }
+
+    /// <summary>
+    /// Load a sequence of animation keyframe index sets from a file.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="clip">Animation clip</param>
+    /// <param name="keyFrameSets">Keyframe set sequence</param>
+    /// <returns>true if keyframes were successfully loaded, false otherwise</returns>
+    public static bool LoadAnimationKeyFrames(GameObject model, AnimationClip clip, out KeyFrameSet[] keyFrameSets)
+    {
+        keyFrameSets = null;
+
+        // Get keyframe file path
+        string path = Application.dataPath + LEAPCore.keyFrameAnnotationsDirectory.Substring(
+            LEAPCore.keyFrameAnnotationsDirectory.IndexOfAny(@"/\".ToCharArray()));
+        if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
+            path += '/';
+        path += (clip.name + ".csv");
+
+        // Load keyframes
+        try
+        {
+            var csvData = new CSVData();
+
+            // Define keyframe data attributes
+            csvData.AddAttribute("KeyFrame", typeof(int));
+            csvData.AddAttribute("RootKeyFrame", typeof(int));
+            csvData.AddAttribute("BoneKeyFrames", typeof(int[]));
+
+            // Load keyframe data
+            csvData.ReadFromFile(path);
+            var keyFrameSetList = new List<KeyFrameSet>();
+            for (int keyIndex = 0; keyIndex < csvData.NumberOfRows; ++keyIndex)
+            {
+                int keyFrameIndex = csvData[keyIndex].GetValue<int>(0);
+                int rootKeyFrameIndex = csvData[keyIndex].GetValue<int>(1);
+                int[] boneKeyFrameIndexes = csvData[keyIndex].GetValue<int[]>(2);
+
+                var keyFrameSet = new KeyFrameSet();
+                keyFrameSet.keyFrame = keyFrameIndex;
+                keyFrameSet.rootKeyFrame = rootKeyFrameIndex;
+                keyFrameSet.boneKeyFrames = boneKeyFrameIndexes;
+                keyFrameSetList.Add(keyFrameSet);
+            }
+
+            keyFrameSets = keyFrameSetList.ToArray();
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError(string.Format("Unable to load keyframes from asset file {0}: {1}", path, ex.Message));
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Save a sequence of animation keyframe index sets to a file.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="clip">Animation clip</param>
+    /// <param name="keyFrameSets">Keyframe set sequence</param>
+    /// <returns>true if keyframes were successfully saved, false otherwise</returns>
+    public static bool SaveAnimationKeyFrames(GameObject model, AnimationClip clip, KeyFrameSet[] keyFrameSets)
+    {
+        // Get keyframe file path
+        string path = Application.dataPath + LEAPCore.keyFrameAnnotationsDirectory.Substring(
+            LEAPCore.keyFrameAnnotationsDirectory.IndexOfAny(@"/\".ToCharArray()));
+        if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
+            path += '/';
+        path += (clip.name + ".csv");
+
+        // Save keyframes
+        try
+        {
+            var csvData = new CSVData();
+            
+            // Define keyframe data attributes
+            csvData.AddAttribute("KeyFrame", typeof(int));
+            csvData.AddAttribute("RootKeyFrame", typeof(int));
+            csvData.AddAttribute("BoneKeyFrames", typeof(int[]));
+
+            // Add keyframe data
+            for (int keyIndex = 0; keyIndex < keyFrameSets.Length; ++keyIndex)
+            {
+                csvData.AddData(keyFrameSets[keyIndex].keyFrame, keyFrameSets[keyIndex].rootKeyFrame,
+                    keyFrameSets[keyIndex].boneKeyFrames);
+            }
+
+            // Write keyframe data to file
+            csvData.WriteToFile(path);
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError(string.Format("Unable to save keyframes to asset file {0}: {1}", path, ex.Message));
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>

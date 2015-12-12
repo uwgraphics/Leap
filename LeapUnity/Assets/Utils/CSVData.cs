@@ -327,6 +327,8 @@ public class CSVData
                     }
                 }
             }
+
+            reader.Close();
         }
         catch (Exception ex)
         {
@@ -446,6 +448,28 @@ public class CSVData
             var dataValues = dataStr.Trim('\"').Split(' ');
             return dataValues;
         }
+        else if (dataType == typeof(int[]) || dataType == typeof(uint[]) ||
+            dataType == typeof(short[]) || dataType == typeof(ushort[]) ||
+            dataType == typeof(long[]) || dataType == typeof(ulong[]))
+        {
+            // TODO: obv. should parse these separately, but don't care to right now
+            var dataValuesStr = dataStr.Trim('\"').Split(' ');
+            var dataValues = new int[dataValuesStr.Length];
+            for (int dataValueIndex = 0; dataValueIndex < dataValues.Length; ++dataValueIndex)
+                dataValues[dataValueIndex] = int.Parse(dataValuesStr[dataValueIndex]);
+
+            return dataValues;
+        }
+        else if (dataType == typeof(float[]) || dataType == typeof(double[]))
+        {
+            // TODO: obv. should parse these separately, but don't care to right now
+            var dataValuesStr = dataStr.Trim('\"').Split(' ');
+            var dataValues = new float[dataValuesStr.Length];
+            for (int dataValueIndex = 0; dataValueIndex < dataValues.Length; ++dataValueIndex)
+                dataValues[dataValueIndex] = float.Parse(dataValuesStr[dataValueIndex]);
+
+            return dataValues;
+        }
         else
         {
             throw new Exception("Don't know how to parse strings of type " + dataType.Name);
@@ -478,12 +502,14 @@ public class CSVData
         {
             UnityEngine.Vector3 dcData = (UnityEngine.Vector3)data;
             string dataStr = "\"" + dcData.x + " " + dcData.y + " " + dcData.z + "\"";
+
             return dataStr;
         }
         else if (dataType == typeof(UnityEngine.Vector2))
         {
             UnityEngine.Vector2 dcData = (UnityEngine.Vector2)data;
             string dataStr = "\"" + dcData.x + " " + dcData.y + "\"";
+
             return dataStr;
         }
         else if (dataType == typeof(string[]))
@@ -496,7 +522,58 @@ public class CSVData
                 if (valueIndex < dcData.Length - 1)
                     dataStr += " ";
             }
-            dataStr = "\"" + dcData + "\"";
+            dataStr = "\"" + dataStr + "\"";
+
+            return dataStr;
+        }
+        else if (dataType == typeof(int[]) || dataType == typeof(uint[]) ||
+            dataType == typeof(short[]) || dataType == typeof(ushort[]) ||
+            dataType == typeof(long[]) || dataType == typeof(ulong[]))
+        {
+            // TODO: obv. should write these separately, but don't care to right now
+            int[] dcData = null;
+            if (dataType == typeof(int[]))
+                dcData = (data as int[]).Cast<int>().ToArray();
+            else if (dataType == typeof(uint[]))
+                dcData = (data as uint[]).Cast<int>().ToArray();
+            else if (dataType == typeof(short[]))
+                dcData = (data as short[]).Cast<int>().ToArray();
+            else if (dataType == typeof(ushort[]))
+                dcData = (data as ushort[]).Cast<int>().ToArray();
+            else if (dataType == typeof(long[]))
+                dcData = (data as long[]).Cast<int>().ToArray();
+            else if (dataType == typeof(ulong[]))
+                dcData = (data as ulong[]).Cast<int>().ToArray();
+
+            string dataStr = "";
+            for (int valueIndex = 0; valueIndex < dcData.Length; ++valueIndex)
+            {
+                dataStr += dcData[valueIndex].ToString();
+                if (valueIndex < dcData.Length - 1)
+                    dataStr += " ";
+            }
+            dataStr = "\"" + dataStr + "\"";
+
+            return dataStr;
+        }
+        else if (dataType == typeof(float[]) || dataType == typeof(double[]))
+        {
+            // TODO: obv. should write these separately, but don't care to right now
+            float[] dcData = null;
+            if (dataType == typeof(float[]))
+                dcData = (data as float[]).Cast<float>().ToArray();
+            else if (dataType == typeof(double[]))
+                dcData = (data as double[]).Cast<float>().ToArray();
+
+            string dataStr = "";
+            for (int valueIndex = 0; valueIndex < dcData.Length; ++valueIndex)
+            {
+                dataStr += dcData[valueIndex].ToString();
+                if (valueIndex < dcData.Length - 1)
+                    dataStr += " ";
+            }
+            dataStr = "\"" + dataStr + "\"";
+
             return dataStr;
         }
         else

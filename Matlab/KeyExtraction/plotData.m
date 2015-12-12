@@ -1,13 +1,13 @@
 % Plot configuration:
-boneMask = [];
-endEffectorMask = [];
+boneMask = [5];
+endEffectorMask = [2];
 showDRoot = false;
 showDBones = false;
 showARoot = false;
 showABones = false;
 showP0Root = false;
 showP0Bones = false;
-showPRoot = true;
+showPRoot = false;
 showPBones = true;
 showWRoot = false;
 showWBones = false;
@@ -17,7 +17,7 @@ showP0 = false;
 showP = true;
 showKeyFrames = true;
 showRootKeyFrames = false;
-showBoneKeyFrames = false;
+showBoneKeyFrames = true;
 startFrame = 1;
 endFrame = 300;
 normalizeA = true;
@@ -42,6 +42,13 @@ normalizeA = true;
 % 16. srfBind_Rt_LegA
 % 17. srfBind_Rt_LegC
 % 18. srfBind_Rt_FootA
+%
+% End-effector indexes:
+%
+% 1. LWrist
+% 2. RWrist
+% 3. LFoot
+% 4. RFoot
 %
 % dataPerFrame column index ranges:
 %
@@ -166,23 +173,23 @@ if showWBones
 end
 if showPEndEff
     if size(endEffectorMask, 2) == 0
-        for i = 1:size(showPEndEff, 2)
-            plot(frames, showPEndEff, '-c');
+        for i = 1:size(pEndEff, 2)
+            plot(frames, pEndEff, '-+c');
         end
     else
         for i = 1:size(endEffectorMask, 2)
-            plot(frames, showPEndEff(:,endEffectorMask(:, i)), '-c');
+            plot(frames, pEndEff(:,endEffectorMask(:, i)), '-c');
         end
     end
 end
 if showWEndEff
     if size(endEffectorMask, 2) == 0
-        for i = 1:size(showWEndEff, 2)
-            plot(frames, showWEndEff, '-c');
+        for i = 1:size(wEndEff, 2)
+            plot(frames, wEndEff, '-+c');
         end
     else
         for i = 1:size(endEffectorMask, 2)
-            plot(frames, showWEndEff(:,endEffectorMask(:, i)), '-c');
+            plot(frames, wEndEff(:,endEffectorMask(:, i)), '-c');
         end
     end
 end
@@ -198,8 +205,10 @@ dataPerKey = csvread('dataPerKey.csv', 1);
 keyFrames = dataPerKey(:, 1);
 keyFrameIndexes = find(keyFrames < startFrame | keyFrames > endFrame);
 keyFrames(keyFrameIndexes) = [];
-rootKeyFrames = dataPerKey(keyFrameIndexes, 2);
-boneKeyFrames = dataPerKey(keyFrameIndexes, 3:20);
+rootKeyFrames = dataPerKey(:, 2);
+rootKeyFrames(keyFrameIndexes) = [];
+boneKeyFrames = dataPerKey(:, 3:20);
+boneKeyFrames(keyFrameIndexes, :) = [];
 
 % Plot per-key data
 if showKeyFrames

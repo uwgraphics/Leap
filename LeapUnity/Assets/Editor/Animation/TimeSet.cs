@@ -89,33 +89,6 @@ public struct TimeSet
 }
 
 /// <summary>
-/// Set of time indexes determining the temporal location of
-/// a key pose in an animation.
-/// </summary>
-public struct KeyTimeSet
-{
-    /// <summary>
-    /// Key pose time.
-    /// </summary>
-    public float keyTime;
-
-    /// <summary>
-    /// Key pose times for individual bone tracks.
-    /// </summary>
-    public TimeSet trackKeyTimes;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="model">Character model</param>
-    public KeyTimeSet(GameObject model)
-    {
-        keyTime = 0f;
-        trackKeyTimes = new TimeSet(model);
-    }
-}
-
-/// <summary>
 /// Set of time indexes signifying a specific time point in a multi-track animation.
 /// </summary>
 public struct TrackTimeSet

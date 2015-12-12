@@ -30,7 +30,7 @@ public class FilterData {
     //InferenceAnimation with specific character choice
     public FilterData(string animationName, string characterName) {
         Character = new InferenceCharacter(characterName);
-        AnimationClip = new AnimationClipInstance(animationName, Character.CharModel, true, false);
+        AnimationClip = new AnimationClipInstance(animationName, Character.CharModel, true, false, false);
         this.animationName = animationName;
     }
 

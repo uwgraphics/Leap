@@ -836,7 +836,7 @@ public static class LEAPAssetUtil
         if (helperClipCreated.Any(kvp => kvp.Value))
         {
             // Bake end-effector movements into helper animations
-            var instance = new AnimationClipInstance(clip.name, model, false, false);
+            var instance = new AnimationClipInstance(clip.name, model, false, false, false);
             for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
             {
                 instance.Apply(frameIndex, AnimationLayerMode.Override);
