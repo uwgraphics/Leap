@@ -328,7 +328,8 @@ public class AnimationManager
 
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("WindowWashingA", testScenes.modelNorman);
-            var bodyAnimationNormanette = new AnimationClipInstance("WindowWashingB", testScenes.modelNormanette);
+            var bodyAnimationNormanette = new AnimationClipInstance("WindowWashingB", testScenes.modelNormanette,
+                false, false, false);
             //
 
             // Add animations to characters

@@ -1,12 +1,12 @@
 % Plot configuration:
-boneMask = [5];
+boneMask = [11];
 endEffectorMask = [2];
 showDRoot = false;
 showDBones = false;
 showARoot = false;
 showABones = false;
 showP0Root = false;
-showP0Bones = false;
+showP0Bones = true;
 showPRoot = false;
 showPBones = true;
 showWRoot = false;
@@ -14,7 +14,7 @@ showWBones = false;
 showPEndEff = false;
 showWEndEff = false;
 showP0 = false;
-showP = true;
+showP = false;
 showKeyFrames = true;
 showRootKeyFrames = false;
 showBoneKeyFrames = true;
