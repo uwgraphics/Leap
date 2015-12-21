@@ -60,116 +60,117 @@ public struct KeyFrameSet
 public static class AnimationTimingEditor
 {
     /// <summary>
-    /// Add a timewarp to the animation in the specified layers, on the specified character model.
+    /// Add a timewarp to the animation in the specified layer, on the specified character model.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
     /// <param name="model">Character model</param>
     /// <param name="layerName">Animation layer name</param>
     /// <param name="timewarp">Timewarp</param>
-    /// <param name="startFrame">Timewarp start frame</param>
-    /// <param name="trackType">Animation track type</param>
+    /// <param name="startTime">Timewarp start times</param>
+    /// <param name="origTimeLength">Timewarp length (in original animation time)</param>
+    /// <param name="timeLength">Timewarp length (after timewarping)</param>
     /// <param name="endEffectorTargetHelperLayerName">Layer name for end-effector target helper animations</param>
     public static void AddTimewarp(AnimationTimeline timeline, string layerName, GameObject model,
-        AnimationTrackType trackType, ITimewarp timewarp, int startFrame,
+        ITimewarp timewarp, TimeSet startTime, TimeSet origTimeLength, TimeSet timeLength,
         string endEffectorTargetHelperLayerName = "Helpers")
     {
         var layer = timeline.GetLayer(layerName);
+        var modelController = model.GetComponent<ModelController>();
         var timewarps = layer.GetTimewarps(model.name);
-        if (timewarps != null)
-            timewarps.AddTimewarp(trackType, timewarp, startFrame);
+        if (timewarps == null)
+            return;
+        timewarps.AddTimewarp(timewarp, startTime, origTimeLength, timeLength);
 
         // Add the same timewarp to end-effector target helper animations associated with the model
         var endEffectors = ModelUtil.GetEndEffectors(model);
         var endEffectorTargetHelperLayer = timeline.GetLayer(endEffectorTargetHelperLayerName);
         foreach (var endEffector in endEffectors)
         {
-            if (trackType != GetAnimationTrackForEndEffector(endEffector.tag))
-                continue;
-
+            int endEffectorIndex = modelController.GetBoneIndex(endEffector);
             string endEffectorTargetHelperName = ModelUtil.GetEndEffectorTargetHelperName(model, endEffector.tag);
             var endEffectorTargetHelperTimewarps = endEffectorTargetHelperLayer.GetTimewarps(endEffectorTargetHelperName);
-            endEffectorTargetHelperTimewarps.AddTimewarp(trackType, timewarp, startFrame);
+            var endEffectorTargetHelper = endEffectorTargetHelperTimewarps.Model;
+            var endEffectorStartTime = new TimeSet(endEffectorTargetHelper, startTime.boneTimes[endEffectorIndex]);
+            var endEffectorOrigTimeLength = new TimeSet(endEffectorTargetHelper, origTimeLength.boneTimes[endEffectorIndex]);
+            var endEffectorTimeLength = new TimeSet(endEffectorTargetHelper, timeLength.boneTimes[endEffectorIndex]);
+            endEffectorTargetHelperTimewarps.AddTimewarp(timewarp, endEffectorStartTime, endEffectorOrigTimeLength, endEffectorTimeLength);
         }
 
         Debug.Log(string.Format(
-            "Added {0} timewarp: layer = {1}, model = {2}, track = {3}, startFrame = {4}, origFrameLength = {5}, frameLength = {6}",
-            timewarp.GetType().Name, layerName, model.name, trackType.ToString(),
-            startFrame, timewarp.OrigFrameLength, timewarp.FrameLength));
+            "Added {0}: layer = {1}, model = {2}, startTime = {3}, origTimeLength = {4}, timeLength = {5}",
+            timewarp.GetType().Name, layerName, model.name, startTime.ToString(), origTimeLength.ToString(), timeLength.ToString()));
     }
 
     /// <summary>
-    /// Remove a timewarp from the animation in the specified layer, on the specifeid character model.
+    /// Remove a timewarp from the animation in the specified layer, on the specified character model.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
     /// <param name="model">Character model</param>
     /// <param name="layerName">Animation layer name</param>
     /// <param name="trackType">Animation track type</param>
     /// <param name="timewarpIndex">Timewarp index</param>
-    public static void RemoveTimewarp(AnimationTimeline timeline, string layerName, GameObject model,
-        AnimationTrackType trackType, int timewarpIndex)
+    /// <param name="endEffectorTargetHelperLayerName">Layer name for end-effector target helper animations</param>
+    public static void RemoveTimewarp(AnimationTimeline timeline, string layerName, GameObject model, int timewarpIndex,
+        string endEffectorTargetHelperLayerName = "Helpers")
     {
         var layer = timeline.GetLayer(layerName);
         var timewarps = layer.GetTimewarps(model.name);
-        if (timewarps != null)
-            timewarps.RemoveTimewarp(trackType, timewarpIndex);
+        if (timewarps == null)
+            return;
+        timewarps.RemoveTimewarp(timewarpIndex);
+
+        // Remove the same timewarp from end-effector target helper animations associated with the model
+        var endEffectors = ModelUtil.GetEndEffectors(model);
+        var endEffectorTargetHelperLayer = timeline.GetLayer(endEffectorTargetHelperLayerName);
+        foreach (var endEffector in endEffectors)
+        {
+            string endEffectorTargetHelperName = ModelUtil.GetEndEffectorTargetHelperName(model, endEffector.tag);
+            var endEffectorTargetHelperTimewarps = endEffectorTargetHelperLayer.GetTimewarps(endEffectorTargetHelperName);
+            endEffectorTargetHelperTimewarps.RemoveTimewarp(timewarpIndex);
+        }
 
         Debug.Log(string.Format(
-            "Removed timewarp: layer = {0}, model = {1}, track = {2}, timewarpIndex = {3}",
-            layerName, model.name, trackType.ToString(), timewarpIndex));
+            "Removed timewarp: layer = {0}, model = {1}, timewarpIndex = {2}",
+            layerName, model.name, timewarpIndex));
     }
 
     /// <summary>
-    /// Remove all timewarps from the specified animation track, in the specified layers,
+    /// Remove all timewarps from all animation tracks, in the specified layer,
     /// on the specified character model.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
     /// <param name="model">Character model</param>
-    /// <param name="trackType">Animation track type</param>
-    /// <param name="layerNames">Animation layer names; null manes timewarp will be added to all layers</param>
-    public static void RemoveAllTimewarps(AnimationTimeline timeline, string layerName, GameObject model, AnimationTrackType trackType)
-    {
-        var layer = timeline.GetLayer(layerName);
-        var timewarps = layer.GetTimewarps(model.name);
-        if (timewarps != null)
-            timewarps.RemoveAllTimewarps(trackType);
-
-        Debug.Log(string.Format(
-            "Removed all timewarps: layer = {0}, model = {1}, track = {2}",
-            layerName, model.name, trackType.ToString()));
-    }
-
-    /// <summary>
-    /// Remove all timewarps from all animation tracks, in the specified layers,
-    /// on the specified character model.
-    /// </summary>
-    /// <param name="timeline">Animation timeline</param>
-    /// <param name="model">Character model</param>
-    /// <param name="layerNames">Animation layer names; null manes timewarp will be added to all layers</param>
+    /// <param name="layerName">Animation layer name</param>
     public static void RemoveAllTimewarps(AnimationTimeline timeline, string layerName, GameObject model)
     {
         var layer = timeline.GetLayer(layerName);
         var timewarps = layer.GetTimewarps(model.name);
-        if (timewarps != null)
-            timewarps.RemoveAllTimewarps();
+        if (timewarps == null)
+            return;
+        
+        while (timewarps.Timewarps.Count > 0)
+            timewarps.RemoveTimewarp(timewarps.Timewarps.Count - 1);
 
         Debug.Log(string.Format(
             "Removed all timewarps: layer = {0}, model = {1}", layerName, model.name));
     }
 
     /// <summary>
-    /// Load timewarps from a file.
+    /// Load timewarps from a file associated with a particular base animation.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
-    /// <param name="model">Character model</param>
-    /// <param name="timewarpFileName">Filename containing the timewarp definitions</param>
-    public static void LoadTimewarps(AnimationTimeline timeline, GameObject model, string timewarpFilename)
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    public static void LoadTimewarps(AnimationTimeline timeline, int baseAnimationInstanceId)
     {
+        var instance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
+        int instanceStartFrame = timeline.GetAnimationStartFrame(baseAnimationInstanceId);
+
         // Get timewarp annotations file path
         string path = Application.dataPath + LEAPCore.timewarpAnnotationsDirectory.Substring(
                LEAPCore.timewarpAnnotationsDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
             path += '/';
-        path += (timewarpFilename + ".csv");
+        path += (instance.AnimationClip.name + ".csv");
 
         if (!File.Exists(path))
         {
@@ -179,102 +180,110 @@ public static class AnimationTimingEditor
 
         try
         {
-            var reader = new StreamReader(path);
-            bool firstLine = true;
-            string line = "";
-            string[] lineElements = null;
-            Dictionary<string, int> attributeIndices = new Dictionary<string, int>();
+            var csvData = new CSVData();
 
-            while (!reader.EndOfStream && (line = reader.ReadLine()) != "")
+            // Define timewarp attributes
+            csvData.AddAttribute("Layer", typeof(string));
+            csvData.AddAttribute("Timewarp", typeof(string));
+            csvData.AddAttribute("StartFrame", typeof(int));
+            csvData.AddAttribute("EndFrame", typeof(int));
+            csvData.AddAttribute("OriginalFrameLength", typeof(int));
+            csvData.AddAttribute("FrameLength", typeof(int));
+            csvData.AddAttribute("TimewarpParams", typeof(float[]));
+            
+            // Read timewarp data
+            csvData.ReadFromFile(path);
+            for (int rowIndex = 0; rowIndex < csvData.NumberOfRows; ++rowIndex)
             {
-                if (line[0] == '#')
+                string layerName = csvData[rowIndex].GetValue<string>(0);
+                var layer = timeline.GetLayer(layerName);
+                if (layer == null)
                 {
-                    // Comment line, skip
+                    Debug.LogError("Unable to load timewarp: layer " + layerName + " does not exist");
                     continue;
                 }
-                else if (firstLine)
-                {
-                    // Load attribute names from first line
-                    firstLine = false;
-                    lineElements = line.Split(",".ToCharArray());
-                    for (int attributeIndex = 0; attributeIndex < lineElements.Length; ++attributeIndex)
-                    {
-                        attributeIndices[lineElements[attributeIndex]] = attributeIndex;
-                    }
-                }
-                else
-                {
-                    // Load timewarp specification
-                    lineElements = line.Split(",".ToCharArray());
+                string timewarpName = csvData[rowIndex].GetValue<string>(1);
+                int startFrame = csvData[rowIndex].GetValue<int>(2);
+                int endFrame = csvData[rowIndex].GetValue<int>(3);
+                int origFrameLength = csvData[rowIndex].GetValue<int>(4);
+                int frameLength = csvData[rowIndex].GetValue<int>(5);
+                float[] timewarpParams = csvData[rowIndex].GetValue<float[]>(6);
 
-                    // Get timewarp data
-                    string layerName = lineElements[attributeIndices["Layer"]];
-                    var layer = timeline.GetLayer(layerName);
-                    if (layer == null)
+                // Create timewarp
+                ITimewarp timewarp;
+                switch (timewarpName)
+                {
+                    case "Hold":
+
+                        if (timewarpParams.Length != 0)
+                        {
+                            Debug.LogError("Wrong number of parameters for hold timewarp: " + timewarpParams.Length);
+                            continue;
+                        }
+
+                        timewarp = new HoldTimewarp();
+                        break;
+
+                    case "Linear":
+
+                        if (timewarpParams.Length != 0)
+                        {
+                            Debug.LogError("Wrong number of parameters for linear timewarp: " + timewarpParams.Length);
+                            continue;
+                        }
+
+                        timewarp = new LinearTimewarp();
+                        break;
+
+                    case "MovingHold":
+
+                        if (timewarpParams.Length != 2)
+                        {
+                            Debug.LogError("Wrong number of parameters for moving hold timewarp: " + timewarpParams.Length);
+                            continue;
+                        }
+
+                        timewarp = new MovingHoldTimewarp(timewarpParams[0], timewarpParams[1]);
+                        break;
+
+                    default:
+
+                        Debug.LogError("Unknown timewarp type: " + timewarpName);
+                        continue;
+                }
+
+                // Compute timewarp start times
+                if (!instance.KeyTimes.ContainsKey(startFrame))
+                {
+                    Debug.LogError(string.Format("Timewarp specified to start at keyframe {0}, but that is not a valid keyframe index",
+                        startFrame));
+                    continue;
+                }
+                var startTimes = instance.KeyTimes[startFrame];
+
+                // Compute timewarp lengths
+                var origTimeLength = new TimeSet(instance.Model);
+                var timeLength = new TimeSet(instance.Model, LEAPCore.ToTime(frameLength));
+                if (timewarp is LinearTimewarp)
+                {
+                    if (!instance.KeyTimes.ContainsKey(startFrame))
                     {
-                        Debug.LogError("Unable to load timewarp: layer " + layerName + " does not exist");
+                        Debug.LogError(string.Format("Timewarp specified to end at keyframe {0}, but that is not a valid keyframe index",
+                            startFrame));
                         continue;
                     }
-                    AnimationTrackType trackType = (AnimationTrackType)Enum.Parse(typeof(AnimationTrackType),
-                        lineElements[attributeIndices["Track"]], true);
-                    int startFrame = int.Parse(lineElements[attributeIndices["StartFrame"]]);
-                    string timewarpName = lineElements[attributeIndices["Timewarp"]];
-                    string[] timewarpParams = lineElements[attributeIndices["TimewarpParams"]].Trim('\"').Split(' ');
 
-                    // Create timewarp
-                    ITimewarp timewarp;
-                    switch (timewarpName)
-                    {
-                        case "Hold":
-
-                            if (timewarpParams.Length != 1)
-                            {
-                                Debug.LogError("Wrong number of parameters for hold timewarp: " + timewarpParams.Length);
-                                continue;
-                            }
-
-                            int holdFrameLength = int.Parse(timewarpParams[0]);
-                            timewarp = new HoldTimewarp(holdFrameLength);
-                            break;
-
-                        case "Linear":
-
-                            if (timewarpParams.Length != 2)
-                            {
-                                Debug.LogError("Wrong number of parameters for linear timewarp: " + timewarpParams.Length);
-                                continue;
-                            }
-
-                            int origFrameLength = int.Parse(timewarpParams[0]);
-                            int newFrameLength = int.Parse(timewarpParams[1]);
-                            timewarp = new LinearTimewarp(origFrameLength, newFrameLength);
-                            break;
-
-                        case "MovingHold":
-
-                            if (timewarpParams.Length != 4)
-                            {
-                                Debug.LogError("Wrong number of parameters for moving hold timewarp: " + timewarpParams.Length);
-                                continue;
-                            }
-
-                            int origKeyFrame = int.Parse(timewarpParams[0]);
-                            origFrameLength = int.Parse(timewarpParams[1]);
-                            holdFrameLength = int.Parse(timewarpParams[2]);
-                            int easeOutFrameLength = int.Parse(timewarpParams[3]);
-                            timewarp = new MovingHoldTimewarp(origKeyFrame, origFrameLength, holdFrameLength, easeOutFrameLength);
-
-                            break;
-
-                        default:
-
-                            Debug.LogError("Unknown timewarp type: " + timewarpName);
-                            continue;
-                    }
-
-                    // Add the timewarp
-                    AddTimewarp(timeline, layerName, model, trackType, timewarp, startFrame);
+                    var endTimes = instance.KeyTimes[startFrame];
+                    origTimeLength = endTimes - startTimes;
                 }
+                else if (timewarp is MovingHoldTimewarp)
+                {
+                    origTimeLength = new TimeSet(instance.Model, LEAPCore.ToTime(origFrameLength));
+                    startTimes -= origTimeLength / 2f;
+                }
+
+                // Add timewarp to the layer
+                AddTimewarp(timeline, layerName, instance.Model, timewarp, startTimes, origTimeLength, timeLength);
             }
         }
         catch (Exception ex)
@@ -471,7 +480,7 @@ public static class AnimationTimingEditor
             if (instance.EndEffectorConstraints != null)
             {
                 // Compute end-effector constraint probabilities and weights
-                var time = new TrackTimeSet(((float)frameIndex) / LEAPCore.editFrameRate);
+                var time = new TimeSet(model, LEAPCore.ToTime(frameIndex));
                 EndEffectorConstraint[] activeConstraints = null;
                 float[] activeConstraintWeights = null;
                 instance.GetEndEffectorConstraintsAtTime(time, out activeConstraints, out activeConstraintWeights);
@@ -840,44 +849,5 @@ public static class AnimationTimingEditor
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Get animation track that controls the specified end-effector.
-    /// </summary>
-    /// <param name="endEffectorTag">End effector tag</param>
-    /// <returns>Animation track</returns>
-    public static AnimationTrackType GetAnimationTrackForEndEffector(string endEffectorTag)
-    {
-        AnimationTrackType trackType = AnimationTrackType.Gaze;
-
-        switch (endEffectorTag)
-        {
-            case LEAPCore.lWristTag:
-
-                trackType = AnimationTrackType.LArmGesture;
-                break;
-
-            case LEAPCore.rWristTag:
-
-                trackType = AnimationTrackType.RArmGesture;
-                break;
-
-            case LEAPCore.lAnkleTag:
-
-                trackType = AnimationTrackType.Locomotion;
-                break;
-
-            case LEAPCore.rAnkleTag:
-
-                trackType = AnimationTrackType.Locomotion;
-                break;
-
-            default:
-
-                throw new Exception("Unrecognized end-effector tag: " + endEffectorTag);
-        }
-
-        return trackType;
     }
 }

@@ -2,6 +2,7 @@ Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTarge
 Norman,WindowWashingAGaze1,1,39,44,WindowUpperRight,"0 0 0",1,0.7304586,True
 Norman,WindowWashingAGaze2,45,42,111,WindowUpperLeft1,"0 0 0",1,0.0712577,True
 Norman,WindowWashingAGaze3,112,32,165,WindowCenterRight1,"0 0 0",1,0,True
+Norman,WindowWashingAGaze20,144,32,165,WindowUpperCenter,"0 0 0",0,0,True
 Norman,WindowWashingAGaze4,166,40,206,WindowUpperLeft2,"0 0 0",1,0.09481964,True
 Norman,WindowWashingAGaze5,207,33,240,AboveBucket,"0 0 0",0,0.1766467,True
 Norman,WindowWashingAGaze6,241,35,279,WindowUpperRight,"0 0 0",1,0.4154654,True

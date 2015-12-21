@@ -1033,11 +1033,6 @@ public static class EyeGazeEditor
         _PrintEyeGazeBodyPartState(state.rEyeState);
         _PrintEyeGazeBodyPartState(state.headState);
         _PrintEyeGazeBodyPartState(state.torsoState);
-
-        //
-        UnityEngine.Debug.LogWarning(string.Format("torso: direction = ({0}, {1}, {2})",
-            gazeController.torso.Direction.x, gazeController.torso.Direction.y, gazeController.torso.Direction.z));
-        //
     }
 
     // Gaze editing helper operation; remove an eye gaze instance from the animation timeline

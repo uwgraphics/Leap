@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 /// <summary>
 /// Set of time indexes signifying a specific time point in a multi-track animation.
@@ -22,10 +23,13 @@ public struct TimeSet
     /// Constructor.
     /// </summary>
     /// <param name="model">Character model</param>
-    public TimeSet(GameObject model)
+    /// <param name="time">Time to which all time indexes should be initialized</param>
+    public TimeSet(GameObject model, float time = 0f)
     {
-        rootTime = 0f;
-        boneTimes = new float[ModelUtil.GetAllBones(model).Length];
+        rootTime = time;
+        var modelController = model.GetComponent<ModelController>();
+        boneTimes = modelController != null ?
+            Enumerable.Repeat<float>(time, modelController.NumberOfBones).ToArray() : new float[0];
     }
 
     /// <summary>
@@ -39,190 +43,209 @@ public struct TimeSet
     }
 
     /// <summary>
-    /// true if any time index in the time set lies within the specified time index interval,
-    /// false otherwise.
+    /// true iff all times in time set t1 are strictly greater than time t2.
     /// </summary>
-    /// <param name="s">Start time index</param>
-    /// <param name="e">End time index</param>
-    /// <param name="f">Time set</param>
-    /// <returns>true is time set lies within the interval, false otherwise</returns>
-    public static bool IsBetween(float s, float e, TimeSet f)
+    public static bool operator >(TimeSet t1, float t2)
     {
-        if (f.rootTime >= s && f.rootTime <= e)
-            return true;
+        if (t1.rootTime <= t2)
+            return false;
 
-        for (int trackIndex = 0; trackIndex < f.boneTimes.Length; ++trackIndex)
-            if (f.boneTimes[trackIndex] >= s && f.boneTimes[trackIndex] <= e)
-                return true;
+        if (t1.boneTimes.Any(t => t <= t2))
+            return false;
 
-        return false;
+        return true;
     }
 
     /// <summary>
-    /// Add a time offset to the frame indexes in the time set.
+    /// true iff all times in time set t1 are strictly lesser than time t2.
     /// </summary>
-    public static TimeSet operator +(TimeSet f, float df)
+    public static bool operator <(TimeSet t1, float t2)
     {
-        TimeSet f1 = new TimeSet(f);
-        f1.rootTime += df;
-        for (int trackIndex = 0; trackIndex < f1.boneTimes.Length; ++trackIndex)
-            f1.boneTimes[trackIndex] += df;
+        if (t1.rootTime >= t2)
+            return false;
 
-        return f1;
+        if (t1.boneTimes.Any(t => t >= t2))
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// true iff all times in time set t1 are greater than or equal to time t2.
+    /// </summary>
+    public static bool operator >=(TimeSet t1, float t2)
+    {
+        return !(t1 < t2);
+    }
+
+    /// <summary>
+    /// true iff all times in time set t1 are lesser than or equal to time t2.
+    /// </summary>
+    public static bool operator <=(TimeSet t1, float t2)
+    {
+        return !(t1 > t2);
+    }
+
+    /// <summary>
+    /// true iff all times in time set t1 are strictly greater than corresponding times in time set t2.
+    /// </summary>
+    public static bool operator >(TimeSet t1, TimeSet t2)
+    {
+        if (t1.rootTime <= t2.rootTime)
+            return false;
+
+        for (int boneIndex = 0; boneIndex < t1.boneTimes.Length; ++boneIndex)
+            if (t1.boneTimes[boneIndex] <= t1.boneTimes[boneIndex])
+                return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// true iff all times in time set t1 are strictly lesser than corresponding times in time set t2.
+    /// </summary>
+    public static bool operator <(TimeSet t1, TimeSet t2)
+    {
+        if (t1.rootTime >= t2.rootTime)
+            return false;
+
+        for (int boneIndex = 0; boneIndex < t1.boneTimes.Length; ++boneIndex)
+            if (t1.boneTimes[boneIndex] >= t1.boneTimes[boneIndex])
+                return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// true iff all times in time set t1 are greater than or equal to corresponding times in time set t2.
+    /// </summary>
+    public static bool operator >=(TimeSet t1, TimeSet t2)
+    {
+        return !(t1 < t2);
+    }
+
+    /// <summary>
+    /// true iff all times in time set t1 are lesser than or equal to corresponding times in time set t2.
+    /// </summary>
+    public static bool operator <=(TimeSet t1, TimeSet t2)
+    {
+        return !(t1 > t2);
     }
 
     /// <summary>
     /// Add a time offset to the time indexes in the time set.
     /// </summary>
-    public static TimeSet operator +(float df, TimeSet f)
+    public static TimeSet operator +(TimeSet t, float dt)
     {
-        return f + df;
+        TimeSet t1 = new TimeSet(t);
+        t1.rootTime += dt;
+        for (int trackIndex = 0; trackIndex < t1.boneTimes.Length; ++trackIndex)
+            t1.boneTimes[trackIndex] += dt;
+
+        return t1;
+    }
+
+    /// <summary>
+    /// Add a time offset to the time indexes in the time set.
+    /// </summary>
+    public static TimeSet operator +(float dt, TimeSet t)
+    {
+        return t + dt;
     }
 
     /// <summary>
     /// Subtract a time offset from the time indexes in the time set.
     /// </summary>
-    public static TimeSet operator -(TimeSet f, float df)
+    public static TimeSet operator -(TimeSet t, float dt)
     {
-        return f + (-df);
-    }
-}
-
-/// <summary>
-/// Set of time indexes signifying a specific time point in a multi-track animation.
-/// </summary>
-public struct TrackTimeSet
-{
-    private float[] _times;
-
-    /// <summary>
-    /// Indexer for getting/setting time indexes in the time set.
-    /// </summary>
-    public float this[AnimationTrackType trackType]
-    {
-        get { return _times[(int)trackType]; }
-        set { _times[(int)trackType] = value; }
+        return t + (-dt);
     }
 
     /// <summary>
-    /// Number of animation tracks.
+    /// Add a time offset to the time indexes in the time set.
     /// </summary>
-    public int NumberOfTracks
+    public static TimeSet operator +(TimeSet t, TimeSet dt)
     {
-        get { return _times.Length; }
+        TimeSet t1 = new TimeSet(t);
+        t1.rootTime += dt.rootTime;
+        for (int trackIndex = 0; trackIndex < t1.boneTimes.Length; ++trackIndex)
+            t1.boneTimes[trackIndex] += dt.boneTimes[trackIndex];
+
+        return t1;
     }
 
     /// <summary>
-    /// Constructor.
+    /// Subtract a time offset from the time indexes in the time set.
     /// </summary>
-    /// <param name="frame">Time indexes on all tracks will be initialized to this time index</param>
-    public TrackTimeSet(float time)
+    public static TimeSet operator -(TimeSet t, TimeSet dt)
     {
-        _times = new float[Enum.GetValues(typeof(AnimationTrackType)).Length];
-        for (int trackIndex = 0; trackIndex < _times.Length; ++trackIndex)
-            _times[trackIndex] = time;
+        TimeSet t1 = new TimeSet(t);
+        t1.rootTime -= dt.rootTime;
+        for (int trackIndex = 0; trackIndex < t1.boneTimes.Length; ++trackIndex)
+            t1.boneTimes[trackIndex] -= dt.boneTimes[trackIndex];
+
+        return t1;
     }
 
     /// <summary>
-    /// Copy constructor.
+    /// Multiply all time indexes with the specified scalar value.
     /// </summary>
-    /// <param name="other">Original time set</param>
-    public TrackTimeSet(TrackTimeSet other)
-        : this(0)
+    public static TimeSet operator *(TimeSet t, float m)
     {
-        for (int trackIndex = 0; trackIndex < _times.Length; ++trackIndex)
-            _times[trackIndex] = other.GetTime((AnimationTrackType)trackIndex);
+        TimeSet t1 = new TimeSet(t);
+        t1.rootTime *= m;
+        for (int trackIndex = 0; trackIndex < t1.boneTimes.Length; ++trackIndex)
+            t1.boneTimes[trackIndex] *= m;
+
+        return t1;
     }
 
     /// <summary>
-    /// Get time index at the specified track.
+    /// Multiply all time indexes with the specified scalar value.
     /// </summary>
-    /// <param name="trackIndex">Animation track index</param>
-    /// <returns>Time index</returns>
-    public float GetTime(int trackIndex)
+    public static TimeSet operator *(float m, TimeSet t)
     {
-        return _times[trackIndex];
+        TimeSet t1 = new TimeSet(t);
+        t1.rootTime *= m;
+        for (int trackIndex = 0; trackIndex < t1.boneTimes.Length; ++trackIndex)
+            t1.boneTimes[trackIndex] *= m;
+
+        return t1;
     }
 
     /// <summary>
-    /// Get time index at the specified track.
+    /// Divide all time indexes by the specified scalar value.
     /// </summary>
-    /// <param name="trackType">Animation track</param>
-    /// <returns>Time index</returns>
-    public float GetTime(AnimationTrackType trackType)
+    public static TimeSet operator /(TimeSet t, float m)
     {
-        return _times[(int)trackType];
+        return t * (1f / m);
     }
 
     /// <summary>
-    /// Set time index at the specified track.
+    /// Divide all time indexes by the specified scalar value.
     /// </summary>
-    /// <param name="trackType">Animation track</param>
-    /// <param name="frame">Time index</param>
-    public void SetTime(AnimationTrackType trackType, float time)
+    public static TimeSet operator /(float m, TimeSet t)
     {
-        _times[(int)trackType] = time;
+        return t * (1f / m);
     }
 
     /// <summary>
-    /// Get time set as string.
+    /// Get frame indexes in the time set as a string.
     /// </summary>
-    /// <returns>Time set as string</returns>
     public override string ToString()
     {
-        string str = "";
-        for (int trackIndex = 0; trackIndex < _times.Length; ++trackIndex)
+        var sb = new StringBuilder();
+        sb.Append("(");
+        sb.Append(LEAPCore.ToFrame(rootTime));
+        sb.Append(", ");
+        for (int boneIndex = 0; boneIndex < boneTimes.Length; ++boneIndex)
         {
-            str += Mathf.RoundToInt(LEAPCore.editFrameRate * _times[trackIndex]).ToString();
-            if (trackIndex < _times.Length - 1)
-                str += ",";
+            sb.Append(LEAPCore.ToFrame(boneTimes[boneIndex]));
+            if (boneIndex < boneTimes.Length - 1)
+                sb.Append(", ");
         }
+        sb.Append(")");
 
-        return str;
-    }
-
-    /// <summary>
-    /// true if any time index in the time set lies within the specified time index interval,
-    /// false otherwise.
-    /// </summary>
-    /// <param name="s">Start time index</param>
-    /// <param name="e">End time index</param>
-    /// <param name="f">Time set</param>
-    /// <returns>true is time set lies within the interval, false otherwise</returns>
-    public static bool IsBetween(float s, float e, TrackTimeSet f)
-    {
-        for (int trackIndex = 0; trackIndex < f._times.Length; ++trackIndex)
-            if (f._times[trackIndex] >= s && f._times[trackIndex] <= e)
-                return true;
-
-        return false;
-    }
-
-    /// <summary>
-    /// Add a time offset to the frame indexes in the time set.
-    /// </summary>
-    public static TrackTimeSet operator +(TrackTimeSet f, float df)
-    {
-        TrackTimeSet f1 = new TrackTimeSet(f);
-        for (int trackIndex = 0; trackIndex < f1._times.Length; ++trackIndex)
-            f1._times[trackIndex] += df;
-
-        return f1;
-    }
-
-    /// <summary>
-    /// Add a time offset to the time indexes in the time set.
-    /// </summary>
-    public static TrackTimeSet operator +(float df, TrackTimeSet f)
-    {
-        return f + df;
-    }
-
-    /// <summary>
-    /// Subtract a time offset from the time indexes in the time set.
-    /// </summary>
-    public static TrackTimeSet operator -(TrackTimeSet f, float df)
-    {
-        return f + (-df);
+        return sb.ToString();
     }
 }

@@ -17,18 +17,6 @@ public enum AnimationLayerMode
 }
 
 /// <summary>
-/// Animation track types.
-/// </summary>
-public enum AnimationTrackType
-{
-    Gaze,
-    Posture,
-    LArmGesture,
-    RArmGesture,
-    Locomotion
-}
-
-/// <summary>
 /// Animation instance. This can be either an existing animation clip
 /// or a procedural animation that can be baked into an animation clip.
 /// </summary>
@@ -121,7 +109,7 @@ public abstract class AnimationInstance
     /// <param name="layerMode">Animation layering mode</param>
     public void Apply(int frame, AnimationLayerMode layerMode)
     {
-        Apply(new TrackTimeSet(((float)frame) / LEAPCore.editFrameRate), layerMode);
+        Apply(new TimeSet(Model, LEAPCore.ToTime(frame)), layerMode);
     }
 
     /// <summary>
@@ -129,6 +117,6 @@ public abstract class AnimationInstance
     /// </summary>
     /// <param name="times">Time indexes</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public abstract void Apply(TrackTimeSet times, AnimationLayerMode layerMode);
+    public abstract void Apply(TimeSet times, AnimationLayerMode layerMode);
     // TODO: handle cases when time index for a particular track is out of range
 }

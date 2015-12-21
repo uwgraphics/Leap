@@ -183,6 +183,26 @@ public class LEAPCore : MonoBehaviour
     public static float keyExtractMaxClusterWidth = 0.5f;
 
     /// <summary>
+    /// Convert time in seconds to time in frames.
+    /// </summary>
+    /// <param name="time">Time (in seconds)</param>
+    /// <returns>Time in frames</returns>
+    public static int ToFrame(float time)
+    {
+        return Mathf.RoundToInt(time * editFrameRate);
+    }
+
+    /// <summary>
+    /// Convert time in frames to time in seconds.
+    /// </summary>
+    /// <param name="frame">Time (in frames)</param>
+    /// <returns>Time in seconds</returns>
+    public static float ToTime(int frame)
+    {
+        return ((float)frame) / editFrameRate;
+    }
+
+    /// <summary>
     /// Load Leap configuration from Leap.cfg file
     /// </summary>
     public static bool LoadConfiguration()

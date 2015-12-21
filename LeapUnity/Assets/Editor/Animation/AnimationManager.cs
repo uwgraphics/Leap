@@ -349,7 +349,7 @@ public class AnimationManager
                     false, false, false));
 
             // Add timewarps to the animations
-            AnimationTimingEditor.LoadTimewarps(timeline, testScenes.modelNorman, "WindowWashingA");
+            AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[2];

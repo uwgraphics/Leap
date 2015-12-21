@@ -8,20 +8,10 @@ using UnityEngine;
 public interface ITimewarp
 {
     /// <summary>
-    /// Length of the animation segment before timewarping.
-    /// </summary>
-    int OrigFrameLength { get; }
-
-    /// <summary>
-    /// Length of the animation segment after timewarping.
-    /// </summary>
-    int FrameLength { get; }
-    
-    /// <summary>
     /// Get time index in the original animation segment that corresponds to the input time index.
     /// </summary>
-    /// <param name="inFrame">Input time index</param>
-    /// <returns>Time index in the original animation segment</returns>
+    /// <param name="inTime">Input time index (in 0-1 range)</param>
+    /// <returns>Time index in the original animation segment (in 0-1 range)</returns>
     float GetTime(float inTime);
 }
 
@@ -30,27 +20,6 @@ public interface ITimewarp
 /// </summary>
 public struct HoldTimewarp : ITimewarp
 {
-    /// <summary>
-    /// <see cref="ITimewarp.OrigFrameLength"/>
-    /// </summary>
-    public int OrigFrameLength { get { return 1; } }
-
-    /// <summary>
-    /// <see cref="ITimewarp.FrameLength"/>
-    /// </summary>
-    public int FrameLength { get { return _holdFrameLength; } }
-
-    private int _holdFrameLength;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="holdFrameLength">Animation hold length in frames</param>
-    public HoldTimewarp(int holdFrameLength)
-    {
-        _holdFrameLength = holdFrameLength;
-    }
-
     /// <summary>
     /// <see cref="ITimewarp.GetTime"/>
     /// </summary>
@@ -66,37 +35,11 @@ public struct HoldTimewarp : ITimewarp
 public struct LinearTimewarp : ITimewarp
 {
     /// <summary>
-    /// <see cref="ITimewarp.OrigFrameLength"/>
-    /// </summary>
-    public int OrigFrameLength { get { return _origFrameLength; } }
-
-    /// <summary>
-    /// <see cref="ITimewarp.FrameLength"/>
-    /// </summary>
-    public int FrameLength { get { return _newFrameLength; } }
-
-    private int _origFrameLength;
-    private int _newFrameLength;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="origFrameLength">Original animation length in frames</param>
-    /// <param name="newFrameLength">Timewarped animation length in frames</param>
-    public LinearTimewarp(int origFrameLength, int newFrameLength)
-    {
-        _origFrameLength = origFrameLength;
-        _newFrameLength = newFrameLength;
-    }
-
-    /// <summary>
     /// <see cref="ITimewarp.GetTime"/>
     /// </summary>
     public float GetTime(float inTime)
     {
-        float t = inTime / (((float)(FrameLength - 1)) / LEAPCore.editFrameRate);
-        t = Mathf.Clamp01(t);
-        return t * ((float)(OrigFrameLength - 1)) / LEAPCore.editFrameRate;
+        return inTime;
     }
 }
 
@@ -105,37 +48,20 @@ public struct LinearTimewarp : ITimewarp
 /// </summary>
 public struct MovingHoldTimewarp : ITimewarp
 {
-    /// <summary>
-    /// <see cref="ITimewarp.OrigFrameLength"/>
-    /// </summary>
-    public int OrigFrameLength { get { return _origFrameLength; } }
-
-    /// <summary>
-    /// <see cref="ITimewarp.FrameLength"/>
-    /// </summary>
-    public int FrameLength { get { return _holdFrameLength; } }
-
-    private int _origFrameLength;
-    private int _holdFrameLength;
     private BezierCurve _twCurve;
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="origKeyFrame">Index in the original animation keyframe which is held</param>
-    /// <param name="origFrameLength">Original animation length in frames</param>
-    /// <param name="holdFrameLength">Animation hold length in frames</param>
-    /// <param name="easeOutFrameLength">Frame length over which animation eases out and into the hold</param>
-    public MovingHoldTimewarp(int origKeyFrame, int origFrameLength,
-        int holdFrameLength, int easeOutFrameLength)
+    /// <param name="origTime">Time index of the original animation keyframe which is held (in 0-1 range)</param>
+    /// <param name="easeOutFrameLength">Normalized time length in the timewarped animation segment
+    /// over which animation eases out and into the hold (in 0-1 range)</param>
+    public MovingHoldTimewarp(float origKeyTime, float easeOutLength)
     {
-        _origFrameLength = origFrameLength;
-        _holdFrameLength = holdFrameLength;
-
         // Compute control points of the timewarp curve
         Vector2 p0 = new Vector2(0f, 0f);
-        Vector2 p1 = new Vector2(easeOutFrameLength, origKeyFrame);
-        Vector2 p3 = new Vector2(holdFrameLength, origFrameLength);
+        Vector2 p1 = new Vector2(easeOutLength, origKeyTime);
+        Vector2 p3 = new Vector2(1f, 1f);
         Vector2 b0 = p0 + 0.5f * (p1 - p0).magnitude * (new Vector2(1f, 1f)).normalized;
         Vector2 a1 = p1 - 0.1f * (p1 - p0).magnitude * (new Vector2(1f, 0f)).normalized;
         Vector2 b1 = p1 + 0.1f * (p3 - p1).magnitude * (new Vector2(1f, 0f)).normalized;
@@ -159,9 +85,8 @@ public struct MovingHoldTimewarp : ITimewarp
     /// </summary>
     public float GetTime(float inTime)
     {
-        float inFrame = inTime * LEAPCore.editFrameRate;
-        float outFrame = _SampleTWCurve(inFrame);
-        return outFrame / LEAPCore.editFrameRate;
+        float outTime = _SampleTWCurve(inTime);
+        return outTime;
     }
 
     private float _SampleTWCurve(float x)

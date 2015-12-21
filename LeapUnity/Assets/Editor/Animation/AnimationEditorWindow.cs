@@ -87,7 +87,7 @@ public class AnimationEditorWindow : EditorWindow
         float deltaTime = _frameTimer.ElapsedMilliseconds / 1000f;
         if (deltaTime < 1f / LEAPCore.editFrameRate)
             return;
-        deltaTime = Mathf.Min(deltaTime, 1f / LEAPCore.editFrameRate);
+        deltaTime = 1f / LEAPCore.editFrameRate;
         _frameTimer.Reset();
         _frameTimer.Start();
 

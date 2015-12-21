@@ -1,25 +1,7 @@
-Layer,Track,StartFrame,Timewarp,TimewarpParams
+Layer,Timewarp,StartFrame,EndFrame,OriginalFrameLength,FrameLength,TimewarpParams
 # Hold 1
-BaseAnimation,Gaze,38,MovingHold,"5 10 30 20"
-Gaze,Gaze,38,MovingHold,"5 10 30 20"
-BaseAnimation,Posture,41,MovingHold,"5 10 30 20"
-Gaze,Posture,39,MovingHold,"5 10 30 20"
-BaseAnimation,LArmGesture,42,MovingHold,"5 10 30 20"
-BaseAnimation,RArmGesture,41,MovingHold,"5 10 30 20"
-BaseAnimation,Locomotion,41,MovingHold,"5 10 30 20"
-# Slow-down
-#BaseAnimation,Gaze,129,Linear,"26 76"
-#Gaze,Gaze,129,Linear,"26 76"
-#BaseAnimation,Posture,129,Linear,"26 76"
-#Gaze,Posture,129,Linear,"26 76"
-#BaseAnimation,LArmGesture,142,Linear,"26 76"
-#BaseAnimation,RArmGesture,137,Linear,"26 76"
-#BaseAnimation,Locomotion,145,Linear,"26 76"
+BaseAnimation,MovingHold,41,-1,8,32,"0.5 0.67"
+Gaze,MovingHold,41,-1,8,32,"0.5 0.67"
 # Hold 2
-BaseAnimation,Gaze,153,MovingHold,"10 20 50 30"
-Gaze,Gaze,153,MovingHold,"10 20 50 30"
-BaseAnimation,Posture,153,MovingHold,"10 20 50 30"
-Gaze,Posture,153,MovingHold,"10 20 50 30"
-BaseAnimation,LArmGesture,153,MovingHold,"10 20 50 30"
-BaseAnimation,RArmGesture,150,MovingHold,"10 20 50 30"
-BaseAnimation,Locomotion,149,MovingHold,"10 20 50 30"
+BaseAnimation,MovingHold,153,-1,20,80,"0.5 0.67"
+Gaze,MovingHold,153,-1,20,60,"0.5 0.67"

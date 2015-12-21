@@ -1,6 +1,9 @@
 Leap Animation Editor:
 
-#132 [] Frames for timewarped instances incorrectly computed after the end of a timewarp; frame indexes lower than they should be and the timewarped part of the motion is replayed (this time at normal rate)
+#133 [] Gaze instances do not seem to activate or deactivate correctly around timewarps
+  - In WindowWashing example, see how WindowWashingAGaze20 activates before WindowWashingAGaze3 has deactivated
+
+#132 [X] Frames for timewarped instances incorrectly computed after the end of a timewarp; frame indexes lower than they should be and the timewarped part of the motion is replayed (this time at normal rate)
   - Observed with MovingHoldTimewarp
   - Does not seem to happen with LinearTimewarp
 

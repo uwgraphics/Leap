@@ -5,106 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 /// <summary>
-/// Animation bone mask, specifying the blend weights with which
-/// an animation is applied to bones.
-/// </summary>
-public class AnimationBoneMask
-{
-    public struct BoneWeightPair
-    {
-        public Transform bone;
-        public float weight;
-
-        public BoneWeightPair(Transform bone, float weight)
-        {
-            this.bone = bone;
-            this.weight = weight;
-        }
-    }
-
-    private List<BoneWeightPair> _boneWeights = new List<BoneWeightPair>();
-    private float _rootPositionWeight = 0f;
-
-    /// <summary>
-    /// List of bone-weight pairs.
-    /// </summary>
-    public IList<BoneWeightPair> BoneWeights
-    {
-        get { return _boneWeights.AsReadOnly(); }
-    }
-
-    /// <summary>
-    /// Root position weight.
-    /// </summary>
-    public float RootPositionWeight
-    {
-        get { return _rootPositionWeight; }
-        set { _rootPositionWeight = Mathf.Clamp01(value); }
-    }
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    public AnimationBoneMask()
-    {
-    }
-
-    /// <summary>
-    /// Get blend weight for bone.
-    /// </summary>
-    /// <param name="bone">Bone</param>
-    /// <returns>Blend weight</returns>
-    public float GetBoneWeight(Transform bone)
-    {
-        for (int boneWeightIndex = 0; boneWeightIndex < _boneWeights.Count; ++boneWeightIndex)
-        {
-            if (_boneWeights[boneWeightIndex].bone == bone)
-            {
-                return _boneWeights[boneWeightIndex].weight;
-            }
-        }
-
-        return 0f;
-    }
-
-    /// <summary>
-    /// Set blend weight for bone.
-    /// </summary>
-    /// <param name="bone">Bone</param>
-    /// <param name="weight">Blend weight</param>
-    public void SetBoneWeight(Transform bone, float weight)
-    {
-        weight = Mathf.Clamp01(weight);
-        for (int boneWeightIndex = 0; boneWeightIndex < _boneWeights.Count; ++boneWeightIndex)
-        {
-            if (_boneWeights[boneWeightIndex].bone == bone)
-            {
-                if (weight > 0f)
-                {
-                    _boneWeights[boneWeightIndex] = new BoneWeightPair(bone, weight);
-                }
-                else
-                {
-                    _boneWeights.RemoveAt(boneWeightIndex);
-                }
-
-                return;
-            }
-        }
-
-        _boneWeights.Add(new BoneWeightPair(bone, weight));
-    }
-
-    /// <summary>
-    /// Clear all bone-weight pairs.
-    /// </summary>
-    public void Clear()
-    {
-        _boneWeights.Clear();
-    }
-}
-
-/// <summary>
 /// Animation instance corresponding to a pre-made animation clip.
 /// </summary>
 public class AnimationClipInstance : AnimationInstance
@@ -114,15 +14,8 @@ public class AnimationClipInstance : AnimationInstance
     /// </summary>
     public override string Name
     {
-        get
-        {
-            return AnimationClip.name;
-        }
-
-        protected set
-        {
-            return;
-        }
+        get { return AnimationClip.name; }
+        protected set { return; }
     }
 
     /// <summary>
@@ -160,23 +53,21 @@ public class AnimationClipInstance : AnimationInstance
         get { return _endEffectorConstraints; }
     }
 
-    // Animation tracks:
-    protected Dictionary<AnimationTrackType, AnimationClip> _trackClips =
-        new Dictionary<AnimationTrackType, AnimationClip>();
-    protected Dictionary<AnimationTrackType, AnimationBoneMask> _boneMasks =
-        new Dictionary<AnimationTrackType, AnimationBoneMask>();
-    protected Dictionary<Transform, List<AnimationTrackType>> _tracksPerBone =
-        new Dictionary<Transform, List<AnimationTrackType>>();
-    protected List<AnimationTrackType> _rootPositionTracks = new List<AnimationTrackType>();
-    protected Dictionary<AnimationTrackType, List<string>> _endEffectorTagsForTracks =
-        new Dictionary<AnimationTrackType, List<string>>();
-    protected bool _isTimingControlledByTrack = false;
-    protected AnimationTrackType _timingControlTrack = AnimationTrackType.Gaze;
+    /// <summary>
+    /// Timings of key poses in the animation.
+    /// </summary>
+    public virtual IDictionary<int, TimeSet> KeyTimes
+    {
+        get { return new ReadOnlyDictionary<int, TimeSet>(_keyTimes); }
+    }
 
     // End-effector constraints:
     protected EndEffectorConstraintContainer _endEffectorConstraints = null;
     protected Dictionary<string, AnimationClip> _endEffectorTargetHelperClips =
         new Dictionary<string,AnimationClip>();
+
+    // Animation segmentation:
+    protected Dictionary<int, TimeSet> _keyTimes = new Dictionary<int, TimeSet>();
 
     /// <summary>
     /// Constructor.
@@ -250,23 +141,6 @@ public class AnimationClipInstance : AnimationInstance
                 }
             }
 
-            // Initialize default animation track bone masks
-            var boneMasks = LEAPAssetUtil.CreateDefaultAnimationTrackBoneMasks(model);
-            var trackTypes = (AnimationTrackType[])Enum.GetValues(typeof(AnimationTrackType));
-            foreach (AnimationTrackType trackType in trackTypes)
-            {
-                _boneMasks[trackType] = boneMasks[(int)trackType];
-            }
-
-            // Initialize default animation track clips
-            var trackClips = LEAPAssetUtil.CreateAnimationClipsForTracks(model, AnimationClip, boneMasks);
-            foreach (AnimationTrackType trackType in trackTypes)
-            {
-                _trackClips[trackType] = trackClips[(int)trackType];
-            }
-            _InitBoneTrackMappings();
-            _InitTrackEndEffectorTagMappings();
-
             if (loadOrExtractKeyFrames)
             {
                 // Load or extract keyframe indexes
@@ -276,6 +150,10 @@ public class AnimationClipInstance : AnimationInstance
                     keyFrameSets = AnimationTimingEditor.ExtractAnimationKeyFrames(model, AnimationClip);
                     AnimationTimingEditor.SaveAnimationKeyFrames(model, AnimationClip, keyFrameSets);
                 }
+
+                // Initialize key times
+                foreach (var keyFrameSet in keyFrameSets)
+                    _keyTimes.Add(keyFrameSet.keyFrame, (TimeSet)keyFrameSet);
             }
         }
     }
@@ -293,144 +171,52 @@ public class AnimationClipInstance : AnimationInstance
     }
 
     /// <summary>
-    /// Get bone mask for the specified animation track.
-    /// </summary>
-    /// <param name="track">Animation track</param>
-    /// <returns>Bone mask</returns>
-    public virtual AnimationBoneMask GetBoneMask(AnimationTrackType track)
-    {
-        return _boneMasks[track];
-    }
-
-    /// <summary>
-    /// Set bone mask for the specified animation track.
-    /// </summary>
-    /// <param name="track">Animation track</param>
-    /// <param name="boneMask">Bone mask</param>
-    public virtual void SetBoneMask(AnimationTrackType track, AnimationBoneMask boneMask)
-    {
-        _boneMasks[track] = boneMask;
-    }
-
-    /// <summary>
-    /// Enable mode where the global timing of the animation instance (across all tracks) is controlled
-    /// by the timing of a single animation track.
-    /// </summary>
-    /// <param name="trackType">Animation track that will control the timing of the instance</param>
-    public virtual void InitTimingControlByTrack(AnimationTrackType trackType)
-    {
-        _isTimingControlledByTrack = true;
-        _timingControlTrack = trackType;
-    }
-
-    /// <summary>
-    /// Enable mode where the timing of each animation track in the instance is separately controlled.
-    /// </summary>
-    public virtual void StopTimingControlByTrack()
-    {
-        _isTimingControlledByTrack = false;
-    }
-
-    /// <summary>
     /// Apply animation instance to the character model at the specified times.
     /// </summary>
     /// <param name="times">Time indexes</param>
     /// <param name="layerMode">Animation layering mode</param>
-    public override void Apply(TrackTimeSet times, AnimationLayerMode layerMode)
+    public override void Apply(TimeSet times, AnimationLayerMode layerMode)
     {
         if (layerMode == AnimationLayerMode.Additive)
             throw new Exception("Additive layer mode currently not supported in AnimationClipInstance");
 
-        if (_isTimingControlledByTrack || Model.tag != "Agent")
+        var root = ModelController != null ? ModelController.Root : Model.transform;
+
+        // Compute timings of all animation tracks
+        float rootTrackTime = TimeLength > 0.01f ? Mathf.Clamp01(times.rootTime / TimeLength) : 0f;
+        var boneTrackTimes = new List<float>();
+        for (int boneIndex = 0; boneIndex < times.boneTimes.Length; ++boneIndex)
+            boneTrackTimes.Add(TimeLength > 0.01f ? Mathf.Clamp01(times.boneTimes[boneIndex] / TimeLength) : 0f);
+
+        // Apply root animation track to the model
+        Animation[AnimationClip.name].normalizedTime = rootTrackTime;
+        Animation[AnimationClip.name].weight = 1f;
+        Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
+        Animation[AnimationClip.name].AddMixingTransform(root);
+        Animation[AnimationClip.name].enabled = true;
+        Animation.Sample();
+        Animation[AnimationClip.name].enabled = false;
+        Animation[AnimationClip.name].RemoveMixingTransform(root);
+
+        // Store root position
+        Vector3 rootPosition = root.position;
+
+        // Apply bone animation tracks to the model
+        for (int boneIndex = 0; boneIndex < times.boneTimes.Length; ++boneIndex)
         {
-            // Apply the entire animation with the timing of a pre-specified animation track
-            Animation[AnimationClip.name].normalizedTime = TimeLength > 0.01f ?
-                Mathf.Clamp01(times[_timingControlTrack] / TimeLength) : 0f;
+            var bone = ModelController.GetBone(boneIndex);
+            Animation[AnimationClip.name].normalizedTime = boneTrackTimes[boneIndex];
             Animation[AnimationClip.name].weight = 1f;
             Animation[AnimationClip.name].blendMode = AnimationBlendMode.Blend;
+            Animation[AnimationClip.name].AddMixingTransform(bone);
             Animation[AnimationClip.name].enabled = true;
             Animation.Sample();
             Animation[AnimationClip.name].enabled = false;
-
-            return;
-        }
-
-        _NormalizeBoneMaskWeights();
-
-        // Compute timings of all animation tracks
-        var _trackTimes = new Dictionary<AnimationTrackType, float>();
-        foreach (var kvp in _trackClips)
-        {
-            float normalizedTime = TimeLength > 0.01f ? Mathf.Clamp01(times[kvp.Key] / TimeLength) : 0f;
-            _trackTimes[kvp.Key] = normalizedTime;
-        }
-
-        if (_rootPositionTracks.Count > 0)
-        {
-            // Apply animation tracks to root position
-            foreach (AnimationTrackType trackType in _rootPositionTracks)
-            {
-                var trackClip = _trackClips[trackType];
-
-                // Configure how the animation clip will be applied to the model
-                Animation[trackClip.name].normalizedTime = _trackTimes[trackType];
-                Animation[trackClip.name].weight = _boneMasks[trackType].RootPositionWeight;
-                Animation[trackClip.name].blendMode = AnimationBlendMode.Blend;
-                Animation[trackClip.name].AddMixingTransform(ModelController.Root);
-                Animation[trackClip.name].enabled = true;
-            }
-
-            // Apply animation clips to the model
-            Animation.Sample();
-
-            // Disable animations and clean up mixing transforms
-            foreach (AnimationTrackType trackType in _rootPositionTracks)
-            {
-                var trackClip = _trackClips[trackType];
-
-                // Configure how the animation clip will be applied to the model
-                Animation[trackClip.name].enabled = false;
-                Animation[trackClip.name].RemoveMixingTransform(ModelController.Root);
-            }
-        }
-
-        // Store root position
-        Vector3 rootPosition = ModelController != null ? ModelController.Root.localPosition : Model.transform.localPosition;
-
-        // Apply animation tracks to each bone
-        foreach (var kvp in _tracksPerBone)
-        {
-            foreach (AnimationTrackType trackType in kvp.Value)
-            {
-                var trackClip = _trackClips[trackType];
-
-                // Configure how the animation clip will be applied to the model
-                Animation[trackClip.name].normalizedTime = _trackTimes[trackType];
-                Animation[trackClip.name].weight = _boneMasks[trackType].GetBoneWeight(kvp.Key);
-                Animation[trackClip.name].blendMode = AnimationBlendMode.Blend;
-                Animation[trackClip.name].AddMixingTransform(kvp.Key);
-                Animation[trackClip.name].enabled = true;
-            }
-
-            // Apply animation clips to the model
-            Animation.Sample();
-
-            // Disable animations and clean up mixing transforms
-            foreach (AnimationTrackType trackType in kvp.Value)
-            {
-                var trackClip = _trackClips[trackType];
-
-                // Configure how the animation clip will be applied to the model
-                Animation[trackClip.name].enabled = false;
-                Animation[trackClip.name].RemoveMixingTransform(kvp.Key);
-            }
+            Animation[AnimationClip.name].RemoveMixingTransform(bone);
         }
 
         // Reapply root position
-        if (ModelController != null)
-            ModelController.Root.localPosition = rootPosition;
-        else
-            Model.transform.localPosition = rootPosition;
+        root.position = rootPosition;
     }
 
     /// <summary>
@@ -439,37 +225,33 @@ public class AnimationClipInstance : AnimationInstance
     /// <param name="times">Time indexes</param>
     /// <param name="constraints">Active end-effector constraints</param>
     /// <param name="weights">Active end-effector constraint weights</param>
-    public virtual void GetEndEffectorConstraintsAtTime(TrackTimeSet times,
+    public virtual void GetEndEffectorConstraintsAtTime(TimeSet times,
         out EndEffectorConstraint[] constraints, out float[] weights)
     {
         var activeConstraints = new List<EndEffectorConstraint>();
         var activeConstraintWeights = new List<float>();
-        foreach (var kvp in _endEffectorTagsForTracks)
+        var endEffectors = ModelUtil.GetEndEffectors(Model);
+        foreach (var endEffector in endEffectors)
         {
-            if (kvp.Value.Count <= 0)
-                continue;
-
-            int trackFrame = Mathf.RoundToInt(times[kvp.Key] * LEAPCore.editFrameRate);
-            foreach (string endEffectorTag in kvp.Value)
+            int endEffectorIndex = ModelController.GetBoneIndex(endEffector);
+            int trackFrame = LEAPCore.ToFrame(times.boneTimes[endEffectorIndex]);
+            
+            // Get active constraints on the current end-effector and compute their weights
+            var activeConstraintsForEndEffector = _endEffectorConstraints.GetConstraintsAtFrame(endEffector.tag, trackFrame);
+            if (activeConstraintsForEndEffector != null)
             {
-                // Get active constraints on the current end-effector and compute their weights
-                var activeConstraintsForEndEffector = _endEffectorConstraints
-                    .GetConstraintsAtFrame(endEffectorTag, trackFrame);
-                if (activeConstraintsForEndEffector != null)
+                activeConstraints.AddRange(activeConstraintsForEndEffector);
+                foreach (var activeConstraint in activeConstraintsForEndEffector)
                 {
-                    activeConstraints.AddRange(activeConstraintsForEndEffector);
-                    foreach (var activeConstraint in activeConstraintsForEndEffector)
-                    {
-                        float t = 1f;
-                        if (trackFrame < activeConstraint.startFrame)
-                            t = Mathf.Clamp01(1f - ((float)(activeConstraint.startFrame - trackFrame))
-                                / activeConstraint.activationFrameLength);
-                        else if (trackFrame > activeConstraint.startFrame + activeConstraint.frameLength - 1)
-                            t = Mathf.Clamp01(1f - ((float)(trackFrame - (activeConstraint.startFrame + activeConstraint.frameLength - 1)))
-                                / activeConstraint.deactivationFrameLength);
-                        float t2 = t * t;
-                        activeConstraintWeights.Add(-2f * t2 * t + 3f * t2);
-                    }
+                    float t = 1f;
+                    if (trackFrame < activeConstraint.startFrame)
+                        t = Mathf.Clamp01(1f - ((float)(activeConstraint.startFrame - trackFrame))
+                            / activeConstraint.activationFrameLength);
+                    else if (trackFrame > activeConstraint.startFrame + activeConstraint.frameLength - 1)
+                        t = Mathf.Clamp01(1f - ((float)(trackFrame - (activeConstraint.startFrame + activeConstraint.frameLength - 1)))
+                            / activeConstraint.deactivationFrameLength);
+                    float t2 = t * t;
+                    activeConstraintWeights.Add(-2f * t2 * t + 3f * t2);
                 }
             }
         }
@@ -483,114 +265,22 @@ public class AnimationClipInstance : AnimationInstance
     /// </summary>
     /// <param name="times">Time indexes</param>
     /// <returns>Active end-effector constraints with object manipulation</returns>
-    public virtual EndEffectorConstraint[] GetManipulationEndEffectorConstraintsAtTime(TrackTimeSet times)
+    public virtual EndEffectorConstraint[] GetManipulationEndEffectorConstraintsAtTime(TimeSet times)
     {
         var activeConstraints = new List<EndEffectorConstraint>();
-        foreach (var kvp in _endEffectorTagsForTracks)
+        var endEffectors = ModelUtil.GetEndEffectors(Model);
+        foreach (var endEffector in endEffectors)
         {
-            if (kvp.Value.Count <= 0)
-                continue;
+            int endEffectorIndex = ModelController.GetBoneIndex(endEffector);
+            int trackFrame = LEAPCore.ToFrame(times.boneTimes[endEffectorIndex]);
 
-            int trackFrame = Mathf.RoundToInt(times[kvp.Key] * LEAPCore.editFrameRate);
-            foreach (string endEffectorTag in kvp.Value)
-            {
-                // Get active manipulation constraints on the current end-effector
-                var activeConstraintsForEndEffector = _endEffectorConstraints
-                    .GetManipulationConstraintsAtFrame(endEffectorTag, trackFrame);
-                if (activeConstraintsForEndEffector != null)
-                    activeConstraints.AddRange(activeConstraintsForEndEffector);
-            }
+            // Get active manipulation constraints on the current end-effector
+            var activeConstraintsForEndEffector = _endEffectorConstraints
+                .GetManipulationConstraintsAtFrame(endEffector.tag, trackFrame);
+            if (activeConstraintsForEndEffector != null)
+                activeConstraints.AddRange(activeConstraintsForEndEffector);
         }
 
         return activeConstraints.ToArray();
-    }
-
-    // Initialize and store mappings of bones to animation tracks for efficiency
-    protected virtual void _InitBoneTrackMappings()
-    {
-        for (int boneIndex = 0; ModelController != null && boneIndex < ModelController.NumberOfBones; ++boneIndex)
-        {
-            var bone = ModelController.GetBone(boneIndex);
-            foreach (var kvp in _boneMasks)
-            {
-                var boneMask = kvp.Value;
-                if (boneMask == null)
-                    continue;
-
-                if (boneIndex == 0 && boneMask.RootPositionWeight > 0f)
-                {
-                    _rootPositionTracks.Add(kvp.Key);
-                }
-
-                if (boneMask.GetBoneWeight(bone) > 0f)
-                {
-                    if (!_tracksPerBone.ContainsKey(bone))
-                        _tracksPerBone[bone] = new List<AnimationTrackType>();
-
-                    _tracksPerBone[bone].Add(kvp.Key);
-                }
-            }
-        }
-    }
-
-    // Initialize and store mappings of animation tracks to affected end effector tags for efficiency
-    protected virtual void _InitTrackEndEffectorTagMappings()
-    {
-        _endEffectorTagsForTracks[AnimationTrackType.Gaze] = new List<string>();
-        _endEffectorTagsForTracks[AnimationTrackType.Posture] = new List<string>();
-        _endEffectorTagsForTracks[AnimationTrackType.LArmGesture] = new List<string>();
-        _endEffectorTagsForTracks[AnimationTrackType.LArmGesture].Add(LEAPCore.lWristTag);
-        _endEffectorTagsForTracks[AnimationTrackType.RArmGesture] = new List<string>();
-        _endEffectorTagsForTracks[AnimationTrackType.RArmGesture].Add(LEAPCore.rWristTag);
-        _endEffectorTagsForTracks[AnimationTrackType.Locomotion] = new List<string>();
-        _endEffectorTagsForTracks[AnimationTrackType.Locomotion].Add(LEAPCore.lAnkleTag);
-        _endEffectorTagsForTracks[AnimationTrackType.Locomotion].Add(LEAPCore.rAnkleTag);
-    }
-
-    // Normalize the non-zero blend weights on bones defined in bone masks, so that they sum to 1
-    protected virtual void _NormalizeBoneMaskWeights()
-    {
-        foreach (var kvp in _tracksPerBone)
-        {
-            // Compute sum of blend weights for the current bone
-            float sum = 0f;
-            foreach (AnimationTrackType trackType in kvp.Value)
-            {
-                if (_boneMasks[trackType] == null)
-                    continue;
-
-                sum += _boneMasks[trackType].GetBoneWeight(kvp.Key);
-            }
-
-            if (sum > 0f)
-            {
-                // Normalize weights on the current bone
-                foreach (AnimationTrackType trackType in kvp.Value)
-                {
-                    if (_boneMasks[trackType] == null)
-                        continue;
-
-                    float weight = _boneMasks[trackType].GetBoneWeight(kvp.Key);
-                    _boneMasks[trackType].SetBoneWeight(kvp.Key, weight / sum);
-                }
-            }
-        }
-
-        // Compute sum of blend weights for the root position
-        float sumRootPos = 0f;
-        foreach (AnimationTrackType trackType in _rootPositionTracks)
-        {
-            sumRootPos += _boneMasks[trackType].RootPositionWeight;
-        }
-
-        if (sumRootPos > 0f)
-        {
-            // Normalize weights on the root position
-            foreach (AnimationTrackType trackType in _rootPositionTracks)
-            {
-                float weight = _boneMasks[trackType].RootPositionWeight;
-                _boneMasks[trackType].RootPositionWeight = weight / sumRootPos;
-            }
-        }
     }
 }

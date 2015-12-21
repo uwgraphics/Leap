@@ -156,6 +156,7 @@
     <Compile Include="Assets\Utils\Math\SphericalBezierCurve.cs" />
     <Compile Include="Assets\Utils\ModelUtil.cs" />
     <Compile Include="Assets\Utils\PerlinMotionGenerator.cs" />
+    <Compile Include="Assets\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Assets\Utils\SignalProcessing\Filter.cs" />
     <Compile Include="Assets\Utils\StateMachine.cs" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coinsurance.txt" />

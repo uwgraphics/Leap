@@ -325,6 +325,8 @@ public class CSVData
                         Type dataType = Attributes[attributeIndex].Type;
                         data[attributeIndex] = _ParseData(dataType, lineElements[attributeIndex]);
                     }
+
+                    AddData(data);
                 }
             }
 

@@ -100,6 +100,268 @@ public class AnimationTimeline
     }
 
     /// <summary>
+    /// Container for timewarps applied to animation on a specific character.
+    /// </summary>
+    public class TimewarpContainer
+    {
+        /// <summary>
+        /// Timeline which owns the current timewarp container.
+        /// </summary>
+        public LayerContainer OwningLayer
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Character model to which the timewarps apply.
+        /// </summary>
+        public GameObject Model
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// List of timewarps in the container.
+        /// </summary>
+        public IList<ITimewarp> Timewarps
+        {
+            get { return _timewarps.AsReadOnly(); }
+        }
+
+        private List<ITimewarp> _timewarps = new List<ITimewarp>();
+        private List<TimeSet> _timewarpStartTimes = new List<TimeSet>();
+        private List<TimeSet> _origTimewarpLengths = new List<TimeSet>();
+        private List<TimeSet> _timewarpLengths = new List<TimeSet>();
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public TimewarpContainer(LayerContainer layer, GameObject model)
+        {
+            OwningLayer = layer;
+            Model = model;
+        }
+
+        /// <summary>
+        /// Apply a timewarp to the animation.
+        /// </summary>
+        /// <param name="timewarp">Timewarp</param>
+        /// <param name="startTime">Timewarp start time indexes (in the original animation time)</param>
+        /// <param name="origTimeLength">Timewarp time lengths (in the original animation time)</param>
+        /// <param name="tTimeLength">Timewarp time lengths (after timewarping)</param>
+        public void AddTimewarp(ITimewarp timewarp, TimeSet startTime, TimeSet origTimeLength, TimeSet timeLength)
+        {
+            // Find the timewarp that will follow the new timewarp
+            int nextTimewarpIndex = -1;
+            for (int timewarpIndex = 0; timewarpIndex < _timewarps.Count; ++timewarpIndex)
+            {
+                if (_timewarpStartTimes[timewarpIndex] > startTime)
+                {
+                    nextTimewarpIndex = timewarpIndex;
+                    break;
+                }
+            }
+
+            // Add the new timewarp
+            int newTimewarpIndex = -1;
+            if (nextTimewarpIndex >= 0)
+            {
+                _timewarps.Insert(nextTimewarpIndex, timewarp);
+                _timewarpStartTimes.Insert(nextTimewarpIndex, startTime);
+                _origTimewarpLengths.Insert(nextTimewarpIndex, origTimeLength);
+                _timewarpLengths.Insert(nextTimewarpIndex, timeLength);
+                newTimewarpIndex = nextTimewarpIndex;
+            }
+            else
+            {
+                _timewarps.Add(timewarp);
+                _timewarpStartTimes.Add(startTime);
+                _origTimewarpLengths.Add(origTimeLength);
+                _timewarpLengths.Add(timeLength);
+                newTimewarpIndex = _timewarps.Count - 1;
+            }
+
+            // Remove any timewarps that overlap the new timewarp
+            for (int timewarpIndex = 0; timewarpIndex < _timewarps.Count; ++timewarpIndex)
+            {
+                ITimewarp curTimewarp = _timewarps[timewarpIndex];
+                var curStartTime = _timewarpStartTimes[timewarpIndex];
+                var curOrigTimeLength = _origTimewarpLengths[timewarpIndex];
+
+                if (timewarpIndex != newTimewarpIndex &&
+                    curStartTime + curOrigTimeLength > startTime &&
+                    curStartTime < startTime + origTimeLength)
+                {
+                    RemoveTimewarp(timewarpIndex);
+                    newTimewarpIndex = timewarpIndex < newTimewarpIndex ? newTimewarpIndex - 1 : newTimewarpIndex;
+                    --timewarpIndex;
+                }
+            }
+
+            OwningLayer.OwningTimeline._UpdateTimeLength();
+        }
+
+        /// <summary>
+        /// Remove a timewarp applied to the animation.
+        /// </summary>
+        /// <param name="timewarpIndex">Timewarp index</param>
+        public void RemoveTimewarp(int timewarpIndex)
+        {
+            _timewarps.RemoveAt(timewarpIndex);
+            _timewarpStartTimes.RemoveAt(timewarpIndex);
+            _origTimewarpLengths.RemoveAt(timewarpIndex);
+            _timewarpLengths.RemoveAt(timewarpIndex);
+
+            OwningLayer.OwningTimeline._UpdateTimeLength();
+        }
+
+        /// <summary>
+        /// Remove all timewarps applied to the animation.
+        /// </summary>
+        public void RemoveAllTimewarps()
+        {
+            _timewarps.Clear();
+            _timewarpStartTimes.Clear();
+            _origTimewarpLengths.Clear();
+            _timewarpLengths.Clear();
+
+            OwningLayer.OwningTimeline._UpdateTimeLength();
+        }
+
+        /// <summary>
+        /// Get a timewarp applied to the animation.
+        /// </summary>
+        /// <param name="timewarpIndex">Timewarp index</param>
+        /// <returns>Timewarp</returns>
+        public ITimewarp GetTimewarp(int timewarpIndex)
+        {
+            return _timewarps[timewarpIndex];
+        }
+
+        /// <summary>
+        /// Get the start time of a timewarp applied to the animation.
+        /// </summary>
+        /// <param name="timewarpIndex">Timewarp index</param>
+        /// <returns>Timewarp start time</returns>
+        public TimeSet GetTimewarpStartTime(int timewarpIndex)
+        {
+            return _timewarpStartTimes[timewarpIndex];
+        }
+
+        /// <summary>
+        /// Get the length of a timewarp in original animation time.
+        /// </summary>
+        /// <param name="timewarpIndex">Timewarp index</param>
+        /// <returns>Timewarp length in original animation time</returns>
+        public TimeSet GetOrigTimewarpLength(int timewarpIndex)
+        {
+            return _origTimewarpLengths[timewarpIndex];
+        }
+
+        /// <summary>
+        /// Get the length of a timewarp.
+        /// </summary>
+        /// <param name="timewarpIndex">Timewarp index</param>
+        /// <returns>Timewarp length</returns>
+        public TimeSet GetTimewarpLength(int timewarpIndex)
+        {
+            return _timewarpLengths[timewarpIndex];
+        }
+
+        /// <summary>
+        /// Compute animation time indexes in the original animation clip.
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public TimeSet GetOriginalTimes(float time)
+        {
+            var modelController = Model.GetComponent<ModelController>();
+            var times = new TimeSet(Model);
+            times.rootTime = _GetOriginalTime(0, time, true);
+            for (int boneIndex = 0; boneIndex < times.boneTimes.Length; ++boneIndex)
+                times.boneTimes[boneIndex] = _GetOriginalTime(boneIndex, time);
+
+            return times;
+        }
+
+        // Compute the time index in the original animation clip for the specified animation track
+        private float _GetOriginalTime(int boneIndex, float time, bool isRootPosition = false)
+        {
+            if (_timewarps.Count <= 0 || !LEAPCore.timewarpsEnabled)
+                return time;
+
+            float origTime = -1f;
+            float curStartTime = -1f;
+            for (int timewarpIndex = 0; timewarpIndex <= _timewarps.Count; ++timewarpIndex)
+            {
+                float prevEndTime = -1f;
+                float curEndTime = -1f;
+                float curOrigStartTime = -1f;
+                float curTimeLength = -1f;
+
+                // Compute time intervals of the current timewarp, as well as the non-timewarped interval that might precede it
+                if (timewarpIndex <= 0)
+                {
+                    curTimeLength = isRootPosition ? _timewarpLengths[timewarpIndex].rootTime :
+                        _timewarpLengths[timewarpIndex].boneTimes[boneIndex];
+                    curOrigStartTime = isRootPosition ? _timewarpStartTimes[timewarpIndex].rootTime :
+                        _timewarpStartTimes[timewarpIndex].boneTimes[boneIndex];
+                    curStartTime = curOrigStartTime;
+                    curEndTime = curStartTime + curTimeLength;
+                }
+                else
+                {
+                    float prevTimeLength = isRootPosition ? _timewarpLengths[timewarpIndex - 1].rootTime :
+                        _timewarpLengths[timewarpIndex - 1].boneTimes[boneIndex];
+                    prevEndTime = curStartTime + prevTimeLength;
+                    float prevOrigStartTime = isRootPosition ? _timewarpStartTimes[timewarpIndex - 1].rootTime :
+                        _timewarpStartTimes[timewarpIndex - 1].boneTimes[boneIndex];
+                    float prevOrigTimeLength = isRootPosition ? _origTimewarpLengths[timewarpIndex - 1].rootTime :
+                        _origTimewarpLengths[timewarpIndex - 1].boneTimes[boneIndex];
+
+                    if (timewarpIndex >= _timewarps.Count)
+                    {
+                        curOrigStartTime = OwningLayer.OwningTimeline.OriginalTimeLength;
+                        curStartTime = prevEndTime + OwningLayer.OwningTimeline.OriginalTimeLength - prevOrigStartTime - prevOrigTimeLength;
+                        curEndTime = curStartTime;
+                    }
+                    else
+                    {
+                        curTimeLength = isRootPosition ? _timewarpLengths[timewarpIndex].rootTime :
+                            _timewarpLengths[timewarpIndex].boneTimes[boneIndex];
+                        curOrigStartTime = isRootPosition ? _timewarpStartTimes[timewarpIndex].rootTime :
+                            _timewarpStartTimes[timewarpIndex].boneTimes[boneIndex];
+                        curStartTime = prevEndTime + curOrigStartTime - prevOrigStartTime - prevOrigTimeLength;
+                        curEndTime = curStartTime + curTimeLength;
+                    }
+                }
+
+                if (time > prevEndTime && time < curStartTime)
+                {
+                    // The applied frame is within the non-timewarped interval preceding the current timewarp
+                    origTime = curOrigStartTime - (curStartTime - time);
+                    break;
+                }
+                else if (time >= curStartTime && time <= curEndTime)
+                {
+                    // The applied frame is within the interval of the current timewarp
+                    curTimeLength = isRootPosition ? _timewarpLengths[timewarpIndex].rootTime :
+                            _timewarpLengths[timewarpIndex].boneTimes[boneIndex];
+                    float curOrigTimeLength = isRootPosition ? _origTimewarpLengths[timewarpIndex].rootTime :
+                        _origTimewarpLengths[timewarpIndex].boneTimes[boneIndex];
+                    float inTime = curTimeLength >= 0.0001f ? (time - curStartTime) / curTimeLength : 0f;
+                    origTime = _timewarps[timewarpIndex].GetTime(inTime) * curOrigTimeLength + curOrigStartTime;
+                    break;
+                }
+            }
+
+            return origTime;
+        }
+    }
+
+    /// <summary>
     /// Layer container holds scheduled animation instances on
     /// the current layer of the timeline.
     /// </summary>
@@ -233,10 +495,10 @@ public class AnimationTimeline
         /// <param name="model">Character model</param>
         /// <param name="time">Time index</param>
         /// <returns>Original time indexes</returns>
-        public TrackTimeSet _GetOriginalTimes(GameObject model, float time)
+        public TimeSet _GetOriginalTimes(GameObject model, float time)
         {
             return _timewarpsByModel.ContainsKey(model) ? _timewarpsByModel[model].GetOriginalTimes(time)
-                : new TrackTimeSet(time);
+                : new TimeSet(model, time);
         }
 
         // Add animation to the current layer container
@@ -260,7 +522,7 @@ public class AnimationTimeline
             if (!_timewarpsByModel.ContainsKey(newInstance.Animation.Model))
             {
                 // Add a container for timewarps on this model's animations
-                _timewarpsByModel[newInstance.Animation.Model] = new TimewarpContainer(this);
+                _timewarpsByModel[newInstance.Animation.Model] = new TimewarpContainer(this, newInstance.Animation.Model);
             }
         }
 
@@ -270,8 +532,8 @@ public class AnimationTimeline
             _animationInstances.Remove(instanceToRemove);
         }
 
-        // Get total length of animations in the layer in frames before timewarping has been applied
-        public int _GetOriginalFrameLength()
+        // Get total length of animations in the layer in seconds before timewarping has been applied
+        public float _GetOriginalTimeLength()
         {
             int maxFrameLength = -1;
             ScheduledInstance lastInstance = null;
@@ -286,37 +548,34 @@ public class AnimationTimeline
                 }
             }
 
-            return maxFrameLength;
+            return LEAPCore.ToTime(maxFrameLength);
         }
 
-        // Get total length of animations in the layer in frames after timewarping has been applied
-        public int _GetFrameLength()
+        // Get total length of animations in the layer in seconds after timewarping has been applied
+        public float _GetTimeLength()
         {
-            int originalFrameLength = _GetOriginalFrameLength();
-            int maxFrameLength = -1;
+            float maxTimeLength = 0f;
 
             foreach (var kvp in _timewarpsByModel)
             {
-                int numTrackTypes = Enum.GetValues(typeof(AnimationTrackType)).Length;
-                for (int trackTypeIndex = 0; trackTypeIndex < numTrackTypes; ++trackTypeIndex)
-                {
-                    AnimationTrackType trackType = (AnimationTrackType)trackTypeIndex;
-                    int numTimewarps = kvp.Value.GetNumberOfTimewarps(trackType);
-                    int timewarpLength = 0;
-                    int origTimewarpLength = 0;
-                    for (int timewarpIndex = 0; timewarpIndex < numTimewarps; ++timewarpIndex)
-                    {
-                        var timewarp = kvp.Value.GetTimewarp(trackType, timewarpIndex);
-                        timewarpLength += timewarp.FrameLength;
-                        origTimewarpLength += timewarp.OrigFrameLength;
-                    }
+                var origTimeLength = new TimeSet(kvp.Key, _GetOriginalTimeLength());
+                var timewarpLength = new TimeSet(kvp.Key);
+                var origTimewarpLength = new TimeSet(kvp.Key);
+                int numTimewarps = kvp.Value.Timewarps.Count;
 
-                    int frameLength = originalFrameLength - origTimewarpLength + timewarpLength;
-                    maxFrameLength = Mathf.Max(frameLength, maxFrameLength);
+                for (int timewarpIndex = 0; timewarpIndex < numTimewarps; ++timewarpIndex)
+                {
+                    timewarpLength += kvp.Value.GetTimewarpLength(timewarpIndex);
+                    origTimewarpLength += kvp.Value.GetOrigTimewarpLength(timewarpIndex);
                 }
+                
+                var timeLength = origTimeLength - origTimewarpLength + timewarpLength;
+                maxTimeLength = Mathf.Max(
+                    Mathf.Max(timeLength.rootTime, timeLength.boneTimes.Length > 0 ? timeLength.boneTimes.Max() : 0f),
+                    maxTimeLength);
             }
 
-            return maxFrameLength;
+            return maxTimeLength;
         }
     }
 
@@ -538,255 +797,6 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// Container for timewarps applied to animation on a specific character.
-    /// </summary>
-    public class TimewarpContainer
-    {
-        /// <summary>
-        /// Timeline which owns the current timewarp container.
-        /// </summary>
-        public LayerContainer OwningLayer
-        {
-            get;
-            private set;
-        }
-
-        private Dictionary<AnimationTrackType, List<ITimewarp>> _timewarps = new Dictionary<AnimationTrackType, List<ITimewarp>>();
-        private Dictionary<AnimationTrackType, List<int>> _timewarpStartFrames = new Dictionary<AnimationTrackType, List<int>>();
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public TimewarpContainer(LayerContainer layer)
-        {
-            OwningLayer = layer;
-            _InitTimewarps();
-        }
-
-        /// <summary>
-        /// Apply a timewarp to the animation.
-        /// </summary>
-        /// <param name="timewarp">Timewarp</param>
-        /// <param name="startFrame">Timewarp start frame index (in the original animation time)</param>
-        /// <param name="track">Animation track to which the timewarp applies</param>
-        public void AddTimewarp(AnimationTrackType track, ITimewarp timewarp, int startFrame)
-        {
-            var timewarps = _timewarps[track];
-            var timewarpStartFrames = _timewarpStartFrames[track];
-
-            // Find the timewarp that will follow the new timewarp
-            int nextTimewarpIndex = -1;
-            for (int timewarpIndex = 0; timewarpIndex < timewarps.Count; ++timewarpIndex)
-            {
-                if (timewarpStartFrames[timewarpIndex] > startFrame)
-                {
-                    nextTimewarpIndex = timewarpIndex;
-                    break;
-                }
-            }
-
-            // Add the new timewarp
-            int newTimewarpIndex = -1;
-            if (nextTimewarpIndex >= 0)
-            {
-                timewarps.Insert(nextTimewarpIndex, timewarp);
-                timewarpStartFrames.Insert(nextTimewarpIndex, startFrame);
-                newTimewarpIndex = nextTimewarpIndex;
-            }
-            else
-            {
-                timewarps.Add(timewarp);
-                timewarpStartFrames.Add(startFrame);
-                newTimewarpIndex = timewarps.Count - 1;
-            }
-
-            // Remove any timewarps that overlap the new timewarp
-            for (int timewarpIndex = 0; timewarpIndex < timewarps.Count; ++timewarpIndex)
-            {
-                ITimewarp curTimewarp = timewarps[timewarpIndex];
-                int curStartFrame = timewarpStartFrames[timewarpIndex];
-
-                if (timewarpIndex != newTimewarpIndex &&
-                    curStartFrame <= startFrame + timewarp.OrigFrameLength &&
-                    curStartFrame + curTimewarp.OrigFrameLength >= startFrame + timewarp.OrigFrameLength)
-                {
-                    RemoveTimewarp(track, timewarpIndex);
-                    newTimewarpIndex = timewarpIndex < newTimewarpIndex ? newTimewarpIndex - 1 : newTimewarpIndex;
-                    --timewarpIndex;
-                }
-            }
-
-            OwningLayer.OwningTimeline._UpdateFrameLength();
-        }
-
-        /// <summary>
-        /// Remove a timewarp applied to the animation.
-        /// </summary>
-        /// <param name="track">Animation track</param>
-        /// <param name="timewarpIndex">Timewarp index</param>
-        public void RemoveTimewarp(AnimationTrackType track, int timewarpIndex)
-        {
-            var timewarps = _timewarps[track];
-            var timewarpStartFrames = _timewarpStartFrames[track];
-            timewarps.RemoveAt(timewarpIndex);
-            timewarpStartFrames.RemoveAt(timewarpIndex);
-
-            OwningLayer.OwningTimeline._UpdateFrameLength();
-        }
-
-        /// <summary>
-        /// Remove all timewarps applied to the specified track of the animation.
-        /// </summary>
-        /// <param name="trackType">Animation track type</param>
-        public void RemoveAllTimewarps(AnimationTrackType trackType)
-        {
-            _timewarps[trackType].Clear();
-            _timewarpStartFrames[trackType].Clear();
-
-            OwningLayer.OwningTimeline._UpdateFrameLength();
-        }
-
-        /// <summary>
-        /// Remove all timewarps applied to the animation.
-        /// </summary>
-        public void RemoveAllTimewarps()
-        {
-            foreach (KeyValuePair<AnimationTrackType, List<ITimewarp>> kvp in _timewarps)
-                kvp.Value.Clear();
-            foreach (KeyValuePair<AnimationTrackType, List<int>> kvp in _timewarpStartFrames)
-                kvp.Value.Clear();
-
-            OwningLayer.OwningTimeline._UpdateFrameLength();
-        }
-
-        /// <summary>
-        /// Get a timewarp applied to the animation.
-        /// </summary>
-        /// <param name="track">Animation track</param>
-        /// <param name="timewarpIndex">Timewarp index</param>
-        /// <returns>Timewarp</returns>
-        public ITimewarp GetTimewarp(AnimationTrackType track, int timewarpIndex)
-        {
-            return _timewarps[track][timewarpIndex];
-        }
-
-        /// <summary>
-        /// Get the start frame of a timewarp applied to the animation.
-        /// </summary>
-        /// <param name="track">Animation track</param>
-        /// <param name="timewarpIndex">Timewarp index</param>
-        /// <returns>Timewarp</returns>
-        public int GetTimewarpStartFrame(AnimationTrackType track, int timewarpIndex)
-        {
-            return _timewarpStartFrames[track][timewarpIndex];
-        }
-
-        /// <summary>
-        /// Get the number of timewarps applied to the specified animation track.
-        /// </summary>
-        /// <param name="track">Animation track</param>
-        /// <returns>Number of timewarps</returns>
-        public int GetNumberOfTimewarps(AnimationTrackType track)
-        {
-            return _timewarps[track].Count;
-        }
-
-        /// <summary>
-        /// Compute animation track time indexes in the original animation clip
-        /// </summary>
-        /// <param name="time"></param>
-        /// <returns></returns>
-        public TrackTimeSet GetOriginalTimes(float time)
-        {
-            TrackTimeSet times = new TrackTimeSet(0f);
-            var trackTypes = Enum.GetValues(typeof(AnimationTrackType));
-            foreach (var trackType in trackTypes)
-                times[(AnimationTrackType)trackType] = _GetOriginalTime((AnimationTrackType)trackType, time);
-
-            return times;
-        }
-
-        // Compute the time index in the original animation clip for the specified animation track
-        private float _GetOriginalTime(AnimationTrackType track, float time)
-        {
-            var timewarps = _timewarps[track];
-            var timewarpStartFrames = _timewarpStartFrames[track];
-
-            if (timewarps.Count <= 0 || !LEAPCore.timewarpsEnabled)
-                return time;
-
-            int frame = Mathf.RoundToInt(time * LEAPCore.editFrameRate);
-            float origTime = -1f;
-            int curStartFrame = -1;
-            for (int timewarpIndex = 0; timewarpIndex <= timewarps.Count; ++timewarpIndex)
-            {
-                int prevEndFrame = -1;
-                int curEndFrame = -1;
-                int curOrigStartFrame = -1;
-
-                // Compute time intervals of the current timewarp, as well as the non-timewarped interval that might precede it
-                if (timewarpIndex <= 0)
-                {
-                    curOrigStartFrame = timewarpStartFrames[timewarpIndex];
-                    curStartFrame = curOrigStartFrame;
-                    curEndFrame = curStartFrame + timewarps[timewarpIndex].FrameLength - 1;
-                }
-                else
-                {
-                    prevEndFrame = curStartFrame + timewarps[timewarpIndex - 1].FrameLength - 1;
-                    int prevOrigStartFrame = timewarpStartFrames[timewarpIndex - 1];
-                    int prevOrigFrameLength = timewarps[timewarpIndex - 1].OrigFrameLength;
-
-                    if (timewarpIndex >= timewarps.Count)
-                    {
-                        curOrigStartFrame = OwningLayer.OwningTimeline.OriginalFrameLength;
-                        curStartFrame = prevEndFrame + OwningLayer.OwningTimeline.OriginalFrameLength - prevOrigStartFrame - prevOrigFrameLength + 1;
-                        curEndFrame = curStartFrame;
-                    }
-                    else
-                    {
-                        curOrigStartFrame = timewarpStartFrames[timewarpIndex];
-                        curStartFrame = prevEndFrame + curOrigStartFrame - prevOrigStartFrame - prevOrigFrameLength + 1;
-                        curEndFrame = curStartFrame + timewarps[timewarpIndex].FrameLength - 1;
-                    }
-                }
-
-                if (frame > prevEndFrame && frame < curStartFrame)
-                {
-                    // The applied frame is within the non-timewarped interval preceding the current timewarp
-                    origTime = ((float)(curOrigStartFrame - (curStartFrame - frame))) / LEAPCore.editFrameRate;
-                    break;
-                }
-                else if (frame >= curStartFrame && frame <= curEndFrame)
-                {
-                    // The applied frame is within the interval of the current timewarp
-                    float inTime = time - ((float)curStartFrame) / LEAPCore.editFrameRate;
-                    origTime = timewarps[timewarpIndex].GetTime(inTime) + ((float)curOrigStartFrame) / LEAPCore.editFrameRate;
-                    break;
-                }
-            }
-
-            return origTime;
-        }
-
-        // Initialize timewarps
-        private void _InitTimewarps()
-        {
-            _timewarps[AnimationTrackType.Gaze] = new List<ITimewarp>();
-            _timewarpStartFrames[AnimationTrackType.Gaze] = new List<int>();
-            _timewarps[AnimationTrackType.LArmGesture] = new List<ITimewarp>();
-            _timewarpStartFrames[AnimationTrackType.LArmGesture] = new List<int>();
-            _timewarps[AnimationTrackType.RArmGesture] = new List<ITimewarp>();
-            _timewarpStartFrames[AnimationTrackType.RArmGesture] = new List<int>();
-            _timewarps[AnimationTrackType.Posture] = new List<ITimewarp>();
-            _timewarpStartFrames[AnimationTrackType.Posture] = new List<int>();
-            _timewarps[AnimationTrackType.Locomotion] = new List<ITimewarp>();
-            _timewarpStartFrames[AnimationTrackType.Locomotion] = new List<int>();
-        }
-    }
-
-
-    /// <summary>
     /// Owning animation manager.
     /// </summary>
     public AnimationManager OwningManager
@@ -894,6 +904,14 @@ public class AnimationTimeline
     /// </summary>
     public int OriginalFrameLength
     {
+        get { return LEAPCore.ToFrame(OriginalTimeLength); }
+    }
+
+    /// <summary>
+    /// Length of the timeline in seconds (before timewarping).
+    /// </summary>
+    public float OriginalTimeLength
+    {
         get;
         private set;
     }
@@ -903,16 +921,16 @@ public class AnimationTimeline
     /// </summary>
     public int FrameLength
     {
-        get;
-        private set;
+        get { return LEAPCore.ToFrame(TimeLength); }
     }
 
     /// <summary>
-    /// Length of the timeline in seconds.
+    /// Length of the timeline in seconds (after timewarping).
     /// </summary>
     public float TimeLength
     {
-        get { return (1f / LEAPCore.editFrameRate) * FrameLength; }
+        get;
+        private set;
     }
 
     /// <summary>
@@ -959,8 +977,8 @@ public class AnimationTimeline
         Playing = false;
         TimeScale = 1f;
         CurrentFrame = 0;
-        FrameLength = 0;
-        OriginalFrameLength = 0;
+        TimeLength = 0f;
+        OriginalTimeLength = 0f;
     }
 
     /// <summary>
@@ -1077,8 +1095,6 @@ public class AnimationTimeline
                 // Create and configure helper animation instance
                 var endEffectorTargetHelperInstance = Activator.CreateInstance(clipInstance.GetType(),
                     endEffectorTargetHelperClip.name, endEffectorTargetHelper, false, false, false) as AnimationClipInstance;
-                var endEffectorTargetHelperTrackType = AnimationTimingEditor.GetAnimationTrackForEndEffector(endEffector.tag);
-                endEffectorTargetHelperInstance.InitTimingControlByTrack(endEffectorTargetHelperTrackType);
                 
                 // Schedule helper animation instance
                 var endEffectorTargetLayerContainer = GetLayer(endEffectorTargetHelperLayerName);
@@ -1091,7 +1107,7 @@ public class AnimationTimeline
         }
 
         // Ensure cached timeline length is up to date
-        _UpdateFrameLength();
+        _UpdateTimeLength();
 
         return newInstance.InstanceId;
     }
@@ -1136,7 +1152,7 @@ public class AnimationTimeline
         }
 
         // Ensure cached timeline length is up to date
-        _UpdateFrameLength();
+        _UpdateTimeLength();
     }
 
     /// <summary>
@@ -1353,7 +1369,7 @@ public class AnimationTimeline
             if (scheduledInstance.Animation.Model.name != modelName)
                 continue;
 
-            if (TrackTimeSet.IsBetween(scheduledInstance.StartTime, scheduledInstance.EndTime, curTimes))
+            if (_IsBetweenFrames(curTimes, scheduledInstance.StartTime, scheduledInstance.EndTime))
                 return scheduledInstance.InstanceId;
         }
 
@@ -1644,7 +1660,7 @@ public class AnimationTimeline
             {
                 var model = animation.Animation.Model;
                 var curTimes = layer._GetOriginalTimes(model, CurrentTime);
-                if (!TrackTimeSet.IsBetween(animation.StartTime, animation.EndTime, curTimes))
+                if (!_IsBetweenFrames(curTimes, animation.StartTime, animation.EndTime))
                 {
                     // This animation instance is inactive
                     if (_activeAnimationInstanceIds.Contains(animation.InstanceId))
@@ -1668,7 +1684,7 @@ public class AnimationTimeline
             {
                 var model = animation.Animation.Model;
                 var curTimes = layer._GetOriginalTimes(model, CurrentTime);
-                if (TrackTimeSet.IsBetween(animation.StartTime, animation.EndTime, curTimes))
+                if (_IsBetweenFrames(curTimes, animation.StartTime, animation.EndTime))
                 {
                     // This animation instance is active, so apply it
                     if (!_activeAnimationInstanceIds.Contains(animation.InstanceId))
@@ -1731,24 +1747,24 @@ public class AnimationTimeline
     }
 
     // Update the cached length of the animation timeline in frames
-    public void _UpdateFrameLength()
+    public void _UpdateTimeLength()
     {
-        // Update original frame length
-        OriginalFrameLength = 0;
+        // Update original time length
+        OriginalTimeLength = 0f;
         foreach (var layer in Layers)
         {
-            int originalFrameLength = layer._GetOriginalFrameLength();
-            if (originalFrameLength > OriginalFrameLength)
-                OriginalFrameLength = originalFrameLength;
+            float origTimeLength = layer._GetOriginalTimeLength();
+            if (origTimeLength > OriginalTimeLength)
+                OriginalTimeLength = origTimeLength;
         }
 
-        // Update frame length with timewarps applied
-        FrameLength = 0;
+        // Update time length with timewarps applied
+        TimeLength = 0;
         foreach (var layer in Layers)
         {
-            int frameLength = layer._GetFrameLength();
-            if (frameLength > FrameLength)
-                FrameLength = frameLength;
+            float timeLength = layer._GetTimeLength();
+            if (timeLength > TimeLength)
+                TimeLength = timeLength;
         }
     }
 
@@ -2003,8 +2019,17 @@ public class AnimationTimeline
     // Set up gaze constraints for the IK solver on the specified model
     private void _InitGazeIK(GameObject model, LayerContainer gazeLayer)
     {
+        var gazeController = model.GetComponent<GazeController>();
+        if (gazeController == null)
+        {
+            Debug.LogWarning(string.Format("Unable to set up gaze IK on model {0}, no GazeController found", model.name));
+            return;
+        }
+        var modelController = model.GetComponent<ModelController>();
+        int headIndex = modelController.GetBoneIndex(gazeController.head.Top);
+
         float gazeWeight = 0f;
-        float gazeTime = gazeLayer._GetOriginalTimes(model, CurrentTime)[AnimationTrackType.Gaze];
+        float gazeTime = gazeLayer._GetOriginalTimes(model, CurrentTime).boneTimes[headIndex];
         int gazeFrame = Mathf.RoundToInt(gazeTime * LEAPCore.editFrameRate);
         var curGazeInstance = gazeLayer.Animations.FirstOrDefault(inst =>
             gazeTime >= inst.StartTime && gazeTime <= inst.EndTime &&
@@ -2160,5 +2185,15 @@ public class AnimationTimeline
             if (morphController != null && morphController.enabled)
                 morphController.Apply();
         }
+    }
+
+    // Checks if a set of time indexes overlaps a particular time interval,
+    // while rounding all time values to nearest frame indexes
+    private bool _IsBetweenFrames(TimeSet t, float s, float e)
+    {
+        int sf = LEAPCore.ToFrame(s);
+        int ef = LEAPCore.ToFrame(e);
+        return sf <= LEAPCore.ToFrame(t.rootTime) && LEAPCore.ToFrame(t.rootTime) <= ef ||
+            t.boneTimes.Any(t1 => sf <= LEAPCore.ToFrame(t1) && LEAPCore.ToFrame(t1) <= ef);
     }
 }
