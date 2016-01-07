@@ -2039,6 +2039,9 @@ public class AnimationTimeline
     // Set up gaze constraints for the IK solver on the specified model
     private void _InitGazeIK(GameObject model, LayerContainer gazeLayer)
     {
+        if (!LEAPCore.useGazeIK)
+            return;
+
         var gazeController = model.GetComponent<GazeController>();
         if (gazeController == null)
         {
@@ -2055,7 +2058,7 @@ public class AnimationTimeline
             gazeTime >= inst.StartTime && gazeTime <= inst.EndTime &&
             inst.Animation.Model == model);
 
-        if (LEAPCore.useGazeIK && LEAPCore.useDynamicGazeIKWeights && curGazeInstance != null)
+        if (LEAPCore.useDynamicGazeIKWeights && curGazeInstance != null)
         {
             // Gaze is constrained by the current gaze instance
 
@@ -2165,7 +2168,7 @@ public class AnimationTimeline
             {
                 // Solve for body posture
                 var bodySolver = model.GetComponent<BodyIKSolver>();
-                if (bodySolver.enabled)
+                if (bodySolver != null && bodySolver.enabled)
                     bodySolver.Solve();
             }
 

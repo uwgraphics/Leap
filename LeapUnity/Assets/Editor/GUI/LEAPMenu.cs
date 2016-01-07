@@ -267,13 +267,13 @@ public class LEAPMenu
         UnityEngine.Debug.Log("Loaded morph channel mappings for model " + obj.name);
     }
 
-    [MenuItem("LEAP/Scenarios/ExpressiveGaze", false)]
+    [MenuItem("LEAP/Scenes/ExpressiveGaze", false)]
     private static void TestExpressiveGaze()
     {
         AnimationManager.LoadExampleScene("TestExpressiveGaze");
     }
 
-    [MenuItem("LEAP/Scenarios/InitialPose", true)]
+    [MenuItem("LEAP/Scenes/InitialPose", true)]
     private static bool ValidateTestInitialPose()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -285,7 +285,7 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenarios/WindowWashing", true)]
+    [MenuItem("LEAP/Scenes/WindowWashing", true)]
     private static bool ValidateTestWindowWashing()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -297,13 +297,13 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenarios/WindowWashing", false)]
+    [MenuItem("LEAP/Scenes/WindowWashing", false)]
     private static void TestWindowWashing()
     {
         AnimationManager.LoadExampleScene("WindowWashing");
     }
 
-    [MenuItem("LEAP/Scenarios/PassSoda", true)]
+    [MenuItem("LEAP/Scenes/PassSoda", true)]
     private static bool ValidateTestPassSoda()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -315,13 +315,13 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenarios/PassSoda", false)]
+    [MenuItem("LEAP/Scenes/PassSoda", false)]
     private static void TestPassSoda()
     {
         AnimationManager.LoadExampleScene("PassSoda");
     }
 
-    [MenuItem("LEAP/Scenarios/Walking90deg", true)]
+    [MenuItem("LEAP/Scenes/Walking90deg", true)]
     private static bool ValidateTestWalking90deg()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -333,13 +333,13 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenarios/Walking90deg", false)]
+    [MenuItem("LEAP/Scenes/Walking90deg", false)]
     private static void TestWalking90deg()
     {
         AnimationManager.LoadExampleScene("Walking90deg");
     }
 
-    [MenuItem("LEAP/Scenarios/HandShake", true)]
+    [MenuItem("LEAP/Scenes/HandShake", true)]
     private static bool ValidateTestHandShake()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -351,13 +351,13 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenarios/HandShake", false)]
+    [MenuItem("LEAP/Scenes/HandShake", false)]
     private static void TesHandShake()
     {
         AnimationManager.LoadExampleScene("HandShake");
     }
 
-    [MenuItem("LEAP/Scenarios/BookShelf", true)]
+    [MenuItem("LEAP/Scenes/BookShelf", true)]
     private static bool ValidateTestBookShelf()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -369,13 +369,13 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenarios/BookShelf", false)]
+    [MenuItem("LEAP/Scenes/BookShelf", false)]
     private static void TestBookShelf()
     {
         AnimationManager.LoadExampleScene("BookShelf");
     }
 
-    [MenuItem("LEAP/Scenarios/StealDiamond", true)]
+    [MenuItem("LEAP/Scenes/StealDiamond", true)]
     private static bool ValidateTestStealDiamond()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -387,13 +387,13 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenarios/StealDiamond", false)]
+    [MenuItem("LEAP/Scenes/StealDiamond", false)]
     private static void TestStealDiamond()
     {
         AnimationManager.LoadExampleScene("StealDiamond");
     }
 
-    [MenuItem("LEAP/Scenarios/WaitForBus", true)]
+    [MenuItem("LEAP/Scenes/WaitForBus", true)]
     private static bool ValidateTestWaitForBus()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -405,10 +405,28 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenarios/WaitForBus", false)]
+    [MenuItem("LEAP/Scenes/WaitForBus", false)]
     private static void TestWaitForBus()
     {
         AnimationManager.LoadExampleScene("WaitForBus");
+    }
+
+    [MenuItem("LEAP/Scenes/EyeTrackMocapTest1-1", true)]
+    private static bool ValidateTestEyeTrackMocapTest11()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/EyeTrackMocapTest1-1", false)]
+    private static void TestEyeTrackMocapTest11()
+    {
+        AnimationManager.LoadExampleScene("EyeTrackMocapTest1-1");
     }
 
     /// <summary>

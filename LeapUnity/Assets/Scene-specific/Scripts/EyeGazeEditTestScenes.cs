@@ -26,4 +26,7 @@ public class EyeGazeEditTestScenes : MonoBehaviour
     public Camera cameraStealDiamond1 = null;
     public Camera cameraStealDiamond2 = null;
     public Camera cameraWaitForBus = null;
+    public GameObject modelKinect = null;
+    public GameObject modelEyeTrackMocapTest1Env = null;
+    public Camera cameraEyeTrackMocapTest1 = null;
 }

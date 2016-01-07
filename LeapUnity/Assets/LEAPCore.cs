@@ -183,6 +183,11 @@ public class LEAPCore : MonoBehaviour
     public static float keyExtractMaxClusterWidth = 0.5f;
 
     /// <summary>
+    /// Scaling factor for bone visualization gizmos.
+    /// </summary>
+    public static float boneGizmoScale = 2f;
+
+    /// <summary>
     /// Convert time in seconds to time in frames.
     /// </summary>
     /// <param name="time">Time (in seconds)</param>

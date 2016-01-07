@@ -98,7 +98,7 @@ public static class ModelUtil
             // Position, orient, and scale the bone gizmo
             Vector3 gizmoPosition = 0.5f * bone.localPosition;
             Quaternion gizmoRotation = Quaternion.FromToRotation(new Vector3(0f, 1f, 0f), bone.localPosition.normalized);
-            Vector3 gizmoScale = new Vector3(1f, bone.localPosition.magnitude, 1f);
+            Vector3 gizmoScale = new Vector3(2f, bone.localPosition.magnitude, 2f);
             gizmo.localPosition = gizmoPosition;
             gizmo.localRotation = gizmoRotation;
             gizmo.localScale = gizmoScale;

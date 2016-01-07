@@ -260,6 +260,9 @@ public class AnimationManager
         testScenes.cameraStealDiamond1.enabled = false;
         testScenes.cameraStealDiamond2.enabled = false;
         testScenes.cameraWaitForBus.enabled = false;
+        testScenes.modelKinect.SetActive(false);
+        testScenes.modelEyeTrackMocapTest1Env.SetActive(false);
+        testScenes.cameraEyeTrackMocapTest1.enabled = false;
 
         // Create and configure animation layers
         timeline.AddLayer(AnimationLayerMode.Override, 0, LEAPCore.baseAnimationLayerName);
@@ -588,6 +591,33 @@ public class AnimationManager
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "WaitForBus-" + LEAPCore.defaultBakedTimelineName;
+        }
+        else if (sceneName == "EyeTrackMocapTest1-1")
+        {
+            testScenes.modelKinect.SetActive(true);
+            testScenes.modelEyeTrackMocapTest1Env.SetActive(true);
+            testScenes.cameraEyeTrackMocapTest1.enabled = true;
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelKinect);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelEyeTrackMocapTest1Env);
+
+            // Create animation instances
+            var bodyAnimation = new AnimationClipInstance("EyeTrackMocapTest1-1", testScenes.modelKinect);
+            int bodyAnimationInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimation, 0, "Helpers");
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationInstanceId, "Gaze");
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelKinect;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "EyeTrackMocapTest1-1-" + LEAPCore.defaultBakedTimelineName;
         }
         else // if (sceneName == "InitialPose")
         {
