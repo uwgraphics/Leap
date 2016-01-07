@@ -319,6 +319,10 @@ public sealed class ModelController : MonoBehaviour
     {
     }
 
+    public void LateUpdate()
+    {
+    }
+
     private void _InitBones()
     {
         // Try to find bones by their tags and set them

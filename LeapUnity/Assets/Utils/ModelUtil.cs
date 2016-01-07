@@ -63,6 +63,62 @@ public static class ModelUtil
     }
 
     /// <summary>
+    /// Show/hide skeleton visualization gizmos.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="show">If true, the skeleton will be shown, otherwise it will be hidden</param>
+    public static void ShowBoneGizmos(GameObject model, bool show = true)
+    {
+        var root = FindBoneWithTag(model.transform, "RootBone");
+        _ShowBoneGizmos(root, show);
+    }
+
+    // Show bone visualization gizmos in a specific subtree
+    private static void _ShowBoneGizmos(Transform bone, bool show = true)
+    {
+        if (bone.tag != "RootBone")
+        {
+            string gizmoName = bone.name + "Gizmo";
+            var gizmo = FindChild(bone.parent, gizmoName);
+            if (gizmo != null)
+            {
+                gizmo.parent = null;
+                GameObject.DestroyImmediate(gizmo.gameObject);
+            }
+
+            // Create bone gizmo
+            var gizmoObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            gizmoObj.name = gizmoName;
+            gizmoObj.renderer.material = Resources.Load("BoneGizmo", typeof(Material)) as Material;
+            gizmo = gizmoObj.transform;
+            gizmo.tag = "BoneGizmo";
+            gizmo.parent = bone.parent;
+            Component.DestroyImmediate(gizmo.collider);
+
+            // Position, orient, and scale the bone gizmo
+            Vector3 gizmoPosition = 0.5f * bone.localPosition;
+            Quaternion gizmoRotation = Quaternion.FromToRotation(new Vector3(0f, 1f, 0f), bone.localPosition.normalized);
+            Vector3 gizmoScale = new Vector3(1f, bone.localPosition.magnitude, 1f);
+            gizmo.localPosition = gizmoPosition;
+            gizmo.localRotation = gizmoRotation;
+            gizmo.localScale = gizmoScale;
+
+            var gizmoComponent = gizmoObj.AddComponent<BoneGizmo>();
+            gizmoComponent.bone = bone;
+            gizmoObj.active = show;
+        }
+
+        for (int childIndex = 0; childIndex < bone.childCount; ++childIndex)
+        {
+            var child = bone.GetChild(childIndex);
+            if (child.tag == "BoneGizmo" || child.tag == "Untagged")
+                continue;
+
+            _ShowBoneGizmos(child, show);
+        }
+    }
+
+    /// <summary>
     /// Set all of character's models transformations to zero.
     /// </summary>
     /// <param name="model">Character model</param>
@@ -316,6 +372,24 @@ public static class ModelUtil
     public static bool IsBone(Transform bone)
     {
         return bone.tag == "Untagged" || bone.tag != "Untagged" && bone.tag.EndsWith("Bone");
+    }
+
+    /// <summary>
+    /// Find a child of the specified bone by name.
+    /// </summary>
+    /// <param name="bone">Bone</param>
+    /// <param name="childName">Child name</param>
+    /// <returns>Child or null if the child could not be found</returns>
+    public static Transform FindChild(Transform bone, string childName)
+    {
+        for (int childIndex = 0; childIndex < bone.childCount; ++childIndex)
+        {
+            var child = bone.GetChild(childIndex);
+            if (child.name == childName)
+                return child;
+        }
+
+        return null;
     }
 
     // Traverse a model's bone hierarchy and add all bones to the list

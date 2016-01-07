@@ -6,158 +6,14 @@ using System.Linq;
 
 public class LEAPMenu
 {
-    [MenuItem("LEAP/Animation/E: ExpressiveGaze", false, 30)]
-    private static void TestExpressiveGaze()
-    {
-        AnimationManager.LoadExampleScene("TestExpressiveGaze");
-    }
-
-    [MenuItem("LEAP/Animation/E: InitialPose", true, 30)]
-    private static bool ValidateTestInitialPose()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/E: WindowWashing", true, 31)]
-    private static bool ValidateTestWindowWashing()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/E: WindowWashing", false, 31)]
-    private static void TestWindowWashing()
-    {
-        AnimationManager.LoadExampleScene("WindowWashing");
-    }
-
-    [MenuItem("LEAP/Animation/E: PassSoda", true, 32)]
-    private static bool ValidateTestPassSoda()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/E: PassSoda", false, 32)]
-    private static void TestPassSoda()
-    {
-        AnimationManager.LoadExampleScene("PassSoda");
-    }
-
-    [MenuItem("LEAP/Animation/E: Walking90deg", true, 33)]
-    private static bool ValidateTestWalking90deg()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/E: Walking90deg", false, 33)]
-    private static void TestWalking90deg()
-    {
-        AnimationManager.LoadExampleScene("Walking90deg");
-    }
-
-    [MenuItem("LEAP/Animation/E: HandShake", true, 34)]
-    private static bool ValidateTestHandShake()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/E: HandShake", false, 34)]
-    private static void TesHandShake()
-    {
-        AnimationManager.LoadExampleScene("HandShake");
-    }
-
-    [MenuItem("LEAP/Animation/E: BookShelf", true, 35)]
-    private static bool ValidateTestBookShelf()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/E: BookShelf", false, 35)]
-    private static void TestBookShelf()
-    {
-        AnimationManager.LoadExampleScene("BookShelf");
-    }
-
-    [MenuItem("LEAP/Animation/E: StealDiamond", true, 36)]
-    private static bool ValidateTestStealDiamond()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/E: StealDiamond", false, 36)]
-    private static void TestStealDiamond()
-    {
-        AnimationManager.LoadExampleScene("StealDiamond");
-    }
-
-    [MenuItem("LEAP/Animation/E: WaitForBus", true, 37)]
-    private static bool ValidateTestWaitForBus()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Animation/E: WaitForBus", false, 37)]
-    private static void TestWaitForBus()
-    {
-        AnimationManager.LoadExampleScene("WaitForBus");
-    }
-
-    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true, 5)]
+    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true)]
     private static bool ValidateResetModelsToInitialPose()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", false, 5)]
+    [MenuItem("LEAP/Animation/Reset Models to Initial Pose", false)]
     private static void ResetModelsToInitialPose()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -167,14 +23,14 @@ public class LEAPMenu
         SceneView.RepaintAll();
     }
 
-    [MenuItem("LEAP/Animation/Bake Animation", true, 6)]
+    [MenuItem("LEAP/Animation/Bake Animation", true)]
     private static bool ValidateBakeAnimation()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Bake Animation", false, 6)]
+    [MenuItem("LEAP/Animation/Bake Animation", false)]
     private static void BakeAnimation()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -187,14 +43,14 @@ public class LEAPMenu
             timeline.FrameLength);
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", true, 7)]
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", true)]
     private static bool ValidateInferEyeGazeInstances()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", false, 7)]
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", false)]
     private static void InferEyeGazeInstances()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -217,14 +73,14 @@ public class LEAPMenu
         SceneView.RepaintAll();
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", true, 7)]
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", true)]
     private static bool ValidateInferEyeGazeAlignments()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", false, 7)]
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", false)]
     private static void InferEyeGazeAlignments()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -248,14 +104,14 @@ public class LEAPMenu
         SceneView.RepaintAll();
     }
 
-    [MenuItem("LEAP/Animation/Load Eye Gaze/Hand-annotated", true, 10)]
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Hand-annotated", true)]
     private static bool ValidateLoadEyeGaze()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Load Eye Gaze/Hand-annotated", false, 10)]
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Hand-annotated", false)]
     private static void LoadEyeGaze()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -272,14 +128,14 @@ public class LEAPMenu
         EyeGazeEditor.PrintEyeGaze(timeline);
     }
 
-    [MenuItem("LEAP/Animation/Load Eye Gaze/Inferred", true, 11)]
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Inferred", true)]
     private static bool ValidateLoadEyeGazeInferred()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Load Eye Gaze/Inferred", false, 11)]
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Inferred", false)]
     private static void LoadEyeGazeInferred()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -296,14 +152,14 @@ public class LEAPMenu
         EyeGazeEditor.PrintEyeGaze(timeline);
     }
 
-    [MenuItem("LEAP/Animation/Load Eye Gaze/Edits", true, 12)]
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Edits", true)]
     private static bool ValidateLoadEyeGazeEdits()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         return wnd.Timeline != null;
     }
 
-    [MenuItem("LEAP/Animation/Load Eye Gaze/Edits", false, 12)]
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Edits", false)]
     private static void LoadEyeGazeEdits()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -320,14 +176,14 @@ public class LEAPMenu
         EyeGazeEditor.PrintEyeGaze(timeline);
     }
 
-    [MenuItem("LEAP/Animation/Save Eye Gaze", true, 13)]
+    [MenuItem("LEAP/Animation/Save Eye Gaze", true)]
     private static bool ValidateSaveEyeGaze()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
     }
 
-    [MenuItem("LEAP/Animation/Save Eye Gaze", false, 13)]
+    [MenuItem("LEAP/Animation/Save Eye Gaze", false)]
     private static void SaveEyeGaze()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -342,7 +198,7 @@ public class LEAPMenu
         }
     }
 
-    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true, 15)]
+    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true)]
     private static bool ValidateFixAnimationClipAssoc()
     {
         GameObject obj = Selection.activeGameObject;
@@ -354,12 +210,13 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", false, 15)]
+    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", false)]
     private static void FixAnimationClipAssoc()
     {
         GameObject obj = Selection.activeGameObject;
         LEAPAssetUtil.FixModelAnimationClipAssoc(obj);
     }
+
 
     /// <summary>
     /// Validates the specified menu item.
@@ -383,7 +240,7 @@ public class LEAPMenu
     /// Saves morph channel mappings for the selected agent
     /// when user clicks a menu item.
     /// </summary>
-    [MenuItem("LEAP/Animation/Load Morph Channels")]
+    [MenuItem("LEAP/Animation/Load Morph Channels", false)]
     private static void LoadMorphChannels()
     {
         GameObject obj = Selection.activeGameObject;
@@ -410,6 +267,150 @@ public class LEAPMenu
         UnityEngine.Debug.Log("Loaded morph channel mappings for model " + obj.name);
     }
 
+    [MenuItem("LEAP/Scenarios/ExpressiveGaze", false)]
+    private static void TestExpressiveGaze()
+    {
+        AnimationManager.LoadExampleScene("TestExpressiveGaze");
+    }
+
+    [MenuItem("LEAP/Scenarios/InitialPose", true)]
+    private static bool ValidateTestInitialPose()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenarios/WindowWashing", true)]
+    private static bool ValidateTestWindowWashing()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenarios/WindowWashing", false)]
+    private static void TestWindowWashing()
+    {
+        AnimationManager.LoadExampleScene("WindowWashing");
+    }
+
+    [MenuItem("LEAP/Scenarios/PassSoda", true)]
+    private static bool ValidateTestPassSoda()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenarios/PassSoda", false)]
+    private static void TestPassSoda()
+    {
+        AnimationManager.LoadExampleScene("PassSoda");
+    }
+
+    [MenuItem("LEAP/Scenarios/Walking90deg", true)]
+    private static bool ValidateTestWalking90deg()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenarios/Walking90deg", false)]
+    private static void TestWalking90deg()
+    {
+        AnimationManager.LoadExampleScene("Walking90deg");
+    }
+
+    [MenuItem("LEAP/Scenarios/HandShake", true)]
+    private static bool ValidateTestHandShake()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenarios/HandShake", false)]
+    private static void TesHandShake()
+    {
+        AnimationManager.LoadExampleScene("HandShake");
+    }
+
+    [MenuItem("LEAP/Scenarios/BookShelf", true)]
+    private static bool ValidateTestBookShelf()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenarios/BookShelf", false)]
+    private static void TestBookShelf()
+    {
+        AnimationManager.LoadExampleScene("BookShelf");
+    }
+
+    [MenuItem("LEAP/Scenarios/StealDiamond", true)]
+    private static bool ValidateTestStealDiamond()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenarios/StealDiamond", false)]
+    private static void TestStealDiamond()
+    {
+        AnimationManager.LoadExampleScene("StealDiamond");
+    }
+
+    [MenuItem("LEAP/Scenarios/WaitForBus", true)]
+    private static bool ValidateTestWaitForBus()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenarios/WaitForBus", false)]
+    private static void TestWaitForBus()
+    {
+        AnimationManager.LoadExampleScene("WaitForBus");
+    }
+
     /// <summary>
     /// Validates the specified menu item.
     /// </summary>
@@ -432,7 +433,7 @@ public class LEAPMenu
     /// Saves morph channel mappings for the selected agent
     /// when user clicks a menu item.
     /// </summary>
-    [MenuItem("LEAP/Animation/Save Morph Channels")]
+    [MenuItem("LEAP/Animation/Save Morph Channels", false)]
     private static void SaveMorphChannels()
     {
         GameObject obj = Selection.activeGameObject;
@@ -466,6 +467,34 @@ public class LEAPMenu
     /// <returns>
     /// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
     /// </returns>
+    [MenuItem("LEAP/Models/Show Bone Gizmos", true)]
+    private static bool ValidateShowBoneGizmos()
+    {
+        GameObject obj = Selection.activeGameObject;
+        if (obj == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Show bone visualization gizmos for the selected character model.
+    /// </summary>
+    [MenuItem("LEAP/Models/Show Bone Gizmos", false)]
+    private static void ShowBoneGizmos()
+    {
+        GameObject obj = Selection.activeGameObject;
+        ModelUtil.ShowBoneGizmos(obj);
+    }
+
+    /// <summary>
+    /// Validates the specified menu item.
+    /// </summary>
+    /// <returns>
+    /// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
+    /// </returns>
     [MenuItem("LEAP/Agent Setup/Set Up Default Agent", true)]
     private static bool ValidateSetupDefaultAgent()
     {
@@ -482,7 +511,7 @@ public class LEAPMenu
     /// Automatically tags the selected agent and adds default
     /// functional components when user clicks a menu item.
     /// </summary>
-    [MenuItem("LEAP/Agent Setup/Set Up Default Agent")]
+    [MenuItem("LEAP/Agent Setup/Set Up Default Agent", false)]
     private static void SetupDefaultAgent()
     {
         GameObject obj = Selection.activeGameObject;
@@ -537,7 +566,7 @@ public class LEAPMenu
     /// Automatically tags the selected agent and adds default
     /// functional components when user clicks a menu item.
     /// </summary>
-    [MenuItem("LEAP/Agent Setup/Set Up Gaze Agent")]
+    [MenuItem("LEAP/Agent Setup/Set Up Gaze Agent", false)]
     private static void SetupGazeAgent()
     {
         GameObject obj = Selection.activeGameObject;
@@ -576,7 +605,7 @@ public class LEAPMenu
     /// Automatically tags the selected agent and adds default
     /// functional components when user clicks a menu item.
     /// </summary>
-    [MenuItem("LEAP/Agent Setup/Refresh Agent")]
+    [MenuItem("LEAP/Agent Setup/Refresh Agent", false)]
     private static void RefreshAgent()
     {
         GameObject obj = Selection.activeGameObject;
@@ -617,7 +646,7 @@ public class LEAPMenu
     /// Initializes default state definitions of the 
     /// animation controllers defined on the selected agent.
     /// </summary>
-    [MenuItem("LEAP/Agent Setup/Init. Controller States")]
+    [MenuItem("LEAP/Agent Setup/Init. Controller States", false)]
     private static void CreateFSMStates()
     {
         GameObject obj = Selection.activeGameObject;

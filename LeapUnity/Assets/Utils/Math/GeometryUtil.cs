@@ -90,7 +90,8 @@ public class GeometryUtil
 	/// <param name="u2"></param>
 	/// <param name="v2"></param>
 	/// <returns></returns>
-	public static bool ClosestPointsOn2Lines(Vector3 u1, Vector3 v1, Vector3 u2, Vector3 v2, out Vector3 p1, out Vector3 p2)
+	public static bool ClosestPointsOn2Lines(Vector3 u1, Vector3 v1, Vector3 u2, Vector3 v2,
+        out Vector3 p1, out Vector3 p2)
     {
 		p1 = Vector3.zero;
 		p2 = Vector3.zero;

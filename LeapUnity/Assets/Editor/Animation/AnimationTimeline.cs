@@ -1917,6 +1917,16 @@ public class AnimationTimeline
                 controller.Update();
             }
         }
+
+        // Update model controllers
+        foreach (var model in OwningManager.Models)
+        {
+            var modelController = model.GetComponent<ModelController>();
+            if (modelController == null)
+                continue;
+
+            modelController.Update();
+        }
     }
 
     // Update animation controllers after all animation is applied
@@ -1933,6 +1943,16 @@ public class AnimationTimeline
                 var controller = component as AnimController;
                 controller.LateUpdate();
             }
+        }
+
+        // Update model controllers
+        foreach (var model in OwningManager.Models)
+        {
+            var modelController = model.GetComponent<ModelController>();
+            if (modelController == null)
+                continue;
+
+            modelController.LateUpdate();
         }
     }
 
