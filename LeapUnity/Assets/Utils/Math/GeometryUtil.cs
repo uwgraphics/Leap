@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 /// <summary>
 /// Some useful geometry algorithms.
@@ -151,5 +152,150 @@ public class GeometryUtil
                 pts[index] = pts0[index] + mu * lp;
             }
         }
+    }
+
+    /// <summary>
+    /// Compute affine transformation that aligns the "left" point set
+    /// to the "right" point  set.
+    /// </summary>
+    /// <param name="pl">Left point set</param>
+    /// <param name="pr">Right point set</param>
+    /// <param name="t">Translation</param>
+    /// <param name="R">Rotation</param>
+    /// <param name="s">Scale</param>
+    public static void AlignPointSets(Vector3[] pl, Vector3[] pr, out Vector3 t, out Matrix3x3 R, out float s)
+    {
+        if (pl.Length != pr.Length)
+            throw new ArgumentException("Left and right point sets have different cardinality", "pl");
+
+        int n = pl.Length;
+        if (n < 3)
+            throw new ArgumentException("Point sets have too few points: " + n, "pl");
+
+        // Set initial transformation
+        t = new Vector3(0f, 0f, 0f);
+        R = Matrix3x3.zero;
+        s = 1f;
+
+        // Compute centroids of the point sets
+        Vector3 pl0 = Vector3.zero;
+        Vector3 pr0 = Vector3.zero;
+        for (int i = 0; i < n; ++i)
+        {
+            pl0 += pl[i];
+            pr0 += pr[i];
+        }
+        pl0 /= ((float)n);
+        pr0 /= ((float)n);
+
+        // Recenter the point sets
+        Vector3[] plc = new Vector3[n];
+        Vector3[] prc = new Vector3[n];
+        for (int i = 0; i < n; ++i)
+        {
+            plc[i] = pl[i] - pl0;
+            prc[i] = pr[i] - pr0;
+        }
+
+        // Compute matrix of correlations H
+        /*Matrix3x3 H = Matrix3x3.zero;
+        for (int i = 0; i < n; ++i)
+            H += Matrix3x3.MultiplyVectors(plc[i], prc[i]);
+
+        // Solve for SVD(H)
+        double[,] aH = new double[3, 3];
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                aH[i, j] = (double)H[i, j];
+        double[] aw = new double[3];
+        double[,] aU = new double[3,3];
+        double[,] aVt = new double[3, 3];
+        alglib.rmatrixsvd(aH, 3, 3, 2, 2, 2, out aw, out aU, out aVt);
+        Matrix3x3 U = Matrix3x3.zero;
+        Matrix3x3 Vt = Matrix3x3.zero;
+        float[] w = new float[3];
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < 3; ++j)
+            {
+                U[i, j] = (float)aU[i, j];
+                Vt[i, j] = (float)aVt[i, j];
+            }
+            w[i] = (float)aw[i];
+        }
+        
+        // Compute rotation
+        Matrix3x3 V = Vt.transpose;
+        R = V * U.transpose;
+        if (R.determinant < 0f)
+        {
+            Matrix3x3 V1 = Matrix3x3.zero;
+            V1.SetColumn(0, V.GetColumn(0));
+            V1.SetColumn(1, V.GetColumn(1));
+            V1.SetColumn(2, -V.GetColumn(2));
+            R = V1 * U.transpose;
+        }
+
+        // Compute scale
+        s = 1f;
+
+        // Compute translation
+        t = pr0 - s * R.MultiplyPoint(pl0);*/
+
+        // Compute scale
+        s = 1f;
+        float s1 = 0f, s2 = 0f;
+        for (int i = 0; i < n; ++i)
+        {
+            s1 += prc[i].sqrMagnitude;
+            s2 += plc[i].sqrMagnitude;
+        }
+        s = Mathf.Sqrt(s1 / s2);
+
+        // Compute matrix MtM
+        Matrix3x3 M = Matrix3x3.zero;
+        for (int i = 0; i < n; ++i)
+            M += Matrix3x3.MultiplyVectors(prc[i], plc[i]);
+        Matrix3x3 MtM = M.transpose * M;
+        Vector3 u1, u2, u3;
+        float l1, l2, l3;
+
+        // Solve for eigenvalues and eigenvectors of MtM
+        double[,] aMtM = new double[3, 3];
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                aMtM[i, j] = (double)MtM[i, j];
+        double[] al = new double[3];
+        double[,] au = new double[3, 3];
+        alglib.evd.smatrixevd(aMtM, 3, 1, false, ref al, ref au);
+        l3 = (float)al[0];
+        l2 = (float)al[1];
+        l1 = (float)al[2];
+        u3 = new Vector3((float)au[0, 0], (float)au[1, 0], (float)au[2, 0]);
+        u2 = new Vector3((float)au[0, 1], (float)au[1, 1], (float)au[2, 1]);
+        u1 = new Vector3((float)au[0, 2], (float)au[1, 2], (float)au[2, 2]);
+        
+        // Compute rotation
+        Matrix3x3 R1, R2;
+        if (Mathf.Abs(l3) < 0.01f)
+        {
+            R1 = Matrix3x3.MultiplyVectors(u1, u1) / Mathf.Sqrt(l1) +
+                Matrix3x3.MultiplyVectors(u2, u2) / Mathf.Sqrt(l2);
+            R1 = M * R1;
+            R2 = Matrix3x3.MultiplyVectors(u3, u3);
+            R = R1 + R2;
+            if (R.determinant <= 0f)
+                R = R1 - R2;
+        }
+        else
+        {
+            R1 = Matrix3x3.MultiplyVectors(u1, u1) / Mathf.Sqrt(l1) +
+                Matrix3x3.MultiplyVectors(u2, u2) / Mathf.Sqrt(l2) +
+                Matrix3x3.MultiplyVectors(u3, u3) / Mathf.Sqrt(l3);
+            R = M * R1;
+        }
+
+        // Compute translation
+        t = pr0 - s * R.MultiplyPoint(pl0);
     }
 }

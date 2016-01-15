@@ -768,17 +768,22 @@ public class LEAPMenu
     [MenuItem("LEAP/Custom Scripts/Run Script 1")]
     private static void RunScript1()
     {
-        var model = Selection.activeGameObject;
-        var animationComponent = model.GetComponent<Animation>();
-        var clip = animationComponent.GetClip("WindowWashingA-Eyes");
+        var animationEditorWindow = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var timeline = AnimationManager.Instance.Timeline;
+        var model = animationEditorWindow.LastSelectedModel;
+        var target = Selection.activeGameObject;
 
-        string blendShapePath = ModelUtil.GetBonePath(ModelUtil.FindBone(model.transform, "srfBind_Cn_Head"));
-        LEAPAssetUtil.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
-            "blendShape.BottomLidUp_2.L", blendShapePath, "blendShape.BottomLidUp_2.R");
-        LEAPAssetUtil.CopyAnimationCurveFromToProperty(clip, typeof(SkinnedMeshRenderer), blendShapePath,
-            "blendShape.TopLidDown_2.L", blendShapePath, "blendShape.TopLidDown_2.R");
+        if (model != null && target != null && target.tag == "GazeTarget")
+        {
+            int baseAnimationInstanceId = timeline.GetCurrentAnimationInstanceId(
+                LEAPCore.baseAnimationLayerName, model.name);
+            var instance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
 
-        return;
+            Vector3 wPos = target.transform.position;
+            Vector2 pPos = instance.EyeTracker.GetImagePosition(wPos);
+            Debug.LogWarning(string.Format("Target {0} ({1}, {2}, {3}) has eye tracker image position of ({4}, {5})",
+                target.name, wPos.x, wPos.y, wPos.z, pPos.x, pPos.y));
+        }
     }
 
     /// <summary>
@@ -799,29 +804,5 @@ public class LEAPMenu
     [MenuItem("LEAP/Custom Scripts/Run Script 2")]
     private static void RunScript2()
     {
-        // Create output files for velocities
-        System.IO.StreamWriter swh = new System.IO.StreamWriter("../Matlab/GazeController/HeadVelocities.csv", false);
-        System.IO.StreamWriter swt = new System.IO.StreamWriter("../Matlab/GazeController/TorsoVelocities.csv", false);
-
-        // Get logged gaze controller states and print out velocities
-        var timeline = AnimationManager.Instance.Timeline;
-        var controllerContainer = timeline.BakedTimelineContainers[0].AnimationContainers[0].ControllerContainers
-            .FirstOrDefault(c => c.Controller is GazeController);
-        for (int frameIndex = 0; frameIndex < controllerContainer.ControllerStates.Count; ++frameIndex)
-        {
-            GazeControllerState gazeControllerState = (GazeControllerState)controllerContainer.ControllerStates[frameIndex];
-            float curHeadVelocity = gazeControllerState.stateId == (int)GazeState.Shifting &&
-                gazeControllerState.headState.latency <= 0f ?
-                gazeControllerState.headState.curVelocity : 0f; ;
-            float curTorsoVelocity = gazeControllerState.stateId == (int)GazeState.Shifting &&
-                gazeControllerState.torsoState.latency <= 0f ?
-                gazeControllerState.torsoState.curVelocity : 0f; ;
-            swh.WriteLine(string.Format("{0},{1}", frameIndex, curHeadVelocity));
-            swt.WriteLine(string.Format("{0},{1}", frameIndex, curTorsoVelocity));
-        }
-        swh.Close();
-        swt.Close();
-
-        return;
     }
 }

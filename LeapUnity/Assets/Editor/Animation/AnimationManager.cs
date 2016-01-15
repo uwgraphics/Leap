@@ -57,8 +57,8 @@ public class AnimationManager
         get { return _controllersByExecOrder.AsReadOnly(); }
     }
 
-    private List<GameObject> _models;
-    private GameObject _environment;
+    private List<GameObject> _models = new List<GameObject>();
+    private GameObject _environment = null;
     private List<Type> _controllersByExecOrder = null;
 
     /// <summary>
@@ -67,8 +67,6 @@ public class AnimationManager
     private AnimationManager()
     {
         Timeline = new AnimationTimeline(this);
-        _models = new List<GameObject>();
-        _environment = null;
     }
 
     /// <summary>
@@ -230,6 +228,7 @@ public class AnimationManager
     public static void LoadExampleScene(string sceneName)
     {
         var timeline = AnimationManager.Instance.Timeline;
+        var gazeTargets = GameObject.FindGameObjectsWithTag("GazeTarget");
 
         var editTestScenario = GameObject.FindGameObjectWithTag("ScenarioManager").GetComponent<GazeEditTestScenario>();
         var testScenes = GameObject.Find("EyeGazeEditor").GetComponent<EyeGazeEditTestScenes>();
@@ -333,7 +332,6 @@ public class AnimationManager
             var bodyAnimationNorman = new AnimationClipInstance("WindowWashingA", testScenes.modelNorman);
             var bodyAnimationNormanette = new AnimationClipInstance("WindowWashingB", testScenes.modelNormanette,
                 false, false, false);
-            //
 
             // Add animations to characters
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
@@ -612,6 +610,18 @@ public class AnimationManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Initialize eye tracking data
+            var eyeTrackAlignPoints = new EyeTrackAlignPoint[3];
+            eyeTrackAlignPoints[0] = new EyeTrackAlignPoint(
+                gazeTargets.FirstOrDefault(o => o.name == "LeftHandSpot"), new Vector2(447f, 653f));
+            eyeTrackAlignPoints[1] = new EyeTrackAlignPoint(
+                gazeTargets.FirstOrDefault(o => o.name == "RightHandSpot"), new Vector2(1034f, 712f));
+            eyeTrackAlignPoints[2] = new EyeTrackAlignPoint(
+                gazeTargets.FirstOrDefault(o => o.name == "MidTarget"), new Vector2(816f, 249f));
+            /*eyeTrackAlignPoints[3] = new EyeTrackAlignPoint(
+                gazeTargets.FirstOrDefault(o => o.name == "LeftTarget"), new Vector2(205f, 293f));*/
+            bodyAnimation.InitEyeTracker(eyeTrackAlignPoints, 66, 1280, 960, 9, -115);
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[1];

@@ -1353,7 +1353,8 @@ public class AnimationTimeline
     }
 
     /// <summary>
-    /// Get the ID of the animation instance applied to the specified model at the current frame in the specified layer.
+    /// Get the ID of the animation instance applied to the specified model
+    /// at the current time in the specified layer.
     /// </summary>
     /// <param name="layerName">Layer name</param>
     /// <param name="modelName">Character model name</param>
@@ -1362,7 +1363,7 @@ public class AnimationTimeline
     {
         var layer = GetLayer(layerName);
         var model = OwningManager.Models.FirstOrDefault(m => m.name == modelName);
-        var curTimes = layer._GetOriginalTimes(model, CurrentFrame);
+        var curTimes = layer._GetOriginalTimes(model, CurrentTime);
 
         foreach (var scheduledInstance in layer.Animations)
         {

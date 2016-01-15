@@ -10,6 +10,7 @@ public class LEAPCore : MonoBehaviour
     public const string eyeGazeAnnotationsDirectory = "Assets/AnimationAnnotations/EyeGaze";
     public const string timewarpAnnotationsDirectory = "Assets/AnimationAnnotations/Timewarps";
     public const string keyFrameAnnotationsDirectory = "Assets/AnimationAnnotations/KeyFrames";
+    public const string eyeTrackDataDirectory = "Assets/AnimationAnnotations/EyeTrack";
 	public const string morphAnimationPrefix = "MC";
 	public const string morphTargetPrefix = "MT";
     public const string lWristTag = "LWristBone";

@@ -145,16 +145,17 @@
     <Compile Include="Assets\Scene-specific\Scripts\TorsoExperiment2.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\TwoAgentsGazeAversion.cs" />
     <Compile Include="Assets\ShowSkin.cs" />
-    <Compile Include="Assets\Utils\CollectionUtil.cs" />
     <Compile Include="Assets\Utils\CSVData.cs" />
+    <Compile Include="Assets\Utils\CollectionUtil.cs" />
     <Compile Include="Assets\Utils\Math\BezierCurve.cs" />
     <Compile Include="Assets\Utils\Math\CatmullRomSpline.cs" />
     <Compile Include="Assets\Utils\Math\GeometryUtil.cs" />
-    <Compile Include="Assets\Utils\Math\TCBSpline.cs" />
+    <Compile Include="Assets\Utils\Math\Matrix3x3.cs" />
     <Compile Include="Assets\Utils\Math\PerlinNoise.cs" />
     <Compile Include="Assets\Utils\Math\QBSpline.cs" />
     <Compile Include="Assets\Utils\Math\QuaternionUtil.cs" />
     <Compile Include="Assets\Utils\Math\SphericalBezierCurve.cs" />
+    <Compile Include="Assets\Utils\Math\TCBSpline.cs" />
     <Compile Include="Assets\Utils\ModelUtil.cs" />
     <Compile Include="Assets\Utils\PerlinMotionGenerator.cs" />
     <Compile Include="Assets\Utils\ReadOnlyDictionary.cs" />
@@ -249,6 +250,8 @@
     <None Include="Assets\Agents\Shaders\TransparentCutoutDiffuse2Sided.shader" />
     <None Include="Assets\Agents\Shaders\TransparentDiffuse2Sided.shader" />
     <None Include="Assets\Agents\Shaders\VertexColorUnlit.shader" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Events.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Samples.txt" />
     <None Include="Assets\Scene-specific\Agents\GazeAversion\thinkingInputs.txt" />
     <None Include="Assets\Scene-specific\Agents\GazeAversion\thinkingResponses.txt" />
     <None Include="Assets\Scene-specific\Agents\GazeAversion\thoughtfulInputs.txt" />
@@ -404,6 +407,5 @@
     <None Include="Assets\Extensions\alglibnet2.dll" />
     <None Include="Assets\Extensions\MathNet.Iridium.dll" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
 </Project>
