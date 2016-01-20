@@ -225,6 +225,15 @@ public struct Matrix3x3
         axis = new Vector3(m2112 / s, m0220 / s, m1001 / s);
     }
 
+    public Quaternion ToRotation()
+    {
+        float angle;
+        Vector3 axis;
+        ToAngleAxis(out angle, out axis);
+
+        return Quaternion.AngleAxis(angle, axis);
+    }
+
     public override string ToString()
     {
         return string.Format("({0} {1} {2}; {3} {4} {5}; {6} {7} {8})",

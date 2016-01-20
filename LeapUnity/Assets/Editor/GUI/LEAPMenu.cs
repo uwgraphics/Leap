@@ -768,22 +768,6 @@ public class LEAPMenu
     [MenuItem("LEAP/Custom Scripts/Run Script 1")]
     private static void RunScript1()
     {
-        var animationEditorWindow = EditorWindow.GetWindow<AnimationEditorWindow>();
-        var timeline = AnimationManager.Instance.Timeline;
-        var model = animationEditorWindow.LastSelectedModel;
-        var target = Selection.activeGameObject;
-
-        if (model != null && target != null && target.tag == "GazeTarget")
-        {
-            int baseAnimationInstanceId = timeline.GetCurrentAnimationInstanceId(
-                LEAPCore.baseAnimationLayerName, model.name);
-            var instance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
-
-            Vector3 wPos = target.transform.position;
-            Vector2 pPos = instance.EyeTracker.GetImagePosition(wPos);
-            Debug.LogWarning(string.Format("Target {0} ({1}, {2}, {3}) has eye tracker image position of ({4}, {5})",
-                target.name, wPos.x, wPos.y, wPos.z, pPos.x, pPos.y));
-        }
     }
 
     /// <summary>

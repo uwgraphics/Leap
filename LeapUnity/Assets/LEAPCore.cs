@@ -189,6 +189,11 @@ public class LEAPCore : MonoBehaviour
     public static float boneGizmoScale = 2f;
 
     /// <summary>
+    /// Eye tracking sample rate.
+    /// </summary>
+    public static int eyeTrackSampleRate = 30;
+
+    /// <summary>
     /// Convert time in seconds to time in frames.
     /// </summary>
     /// <param name="time">Time (in seconds)</param>
@@ -206,6 +211,26 @@ public class LEAPCore : MonoBehaviour
     public static float ToTime(int frame)
     {
         return ((float)frame) / editFrameRate;
+    }
+
+    /// <summary>
+    /// Convert eye tracking sample time in seconds to time in frames.
+    /// </summary>
+    /// <param name="time">Time (in seconds)</param>
+    /// <returns>Time in frames</returns>
+    public static int ToEyeTrackFrame(float time)
+    {
+        return Mathf.RoundToInt(time * eyeTrackSampleRate);
+    }
+
+    /// <summary>
+    /// Convert eye tracking sample time in frames to time in seconds.
+    /// </summary>
+    /// <param name="frame">Time (in frames)</param>
+    /// <returns>Time in seconds</returns>
+    public static float ToEyeTrackTime(int frame)
+    {
+        return ((float)frame) / eyeTrackSampleRate;
     }
 
     /// <summary>

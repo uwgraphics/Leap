@@ -155,6 +155,90 @@ public class GeometryUtil
     }
 
     /// <summary>
+    /// Compute rigid transformation that aligns the "left" point set
+    /// to the "right" point  set.
+    /// </summary>
+    /// <param name="pl">Left point set</param>
+    /// <param name="pr">Right point set</param>
+    /// <param name="t">Translation</param>
+    /// <param name="R">Rotation</param>
+    public static void AlignPointSets(Vector3[] pl, Vector3[] pr, out Vector3 t, out Matrix3x3 R)
+    {
+        if (pl.Length != pr.Length)
+            throw new ArgumentException("Left and right point sets have different cardinality", "pl");
+
+        int n = pl.Length;
+        if (n < 3)
+            throw new ArgumentException("Point sets have too few points: " + n, "pl");
+
+        // Set initial transformation
+        t = new Vector3(0f, 0f, 0f);
+        R = Matrix3x3.zero;
+
+        // Compute centroids of the point sets
+        Vector3 pl0 = Vector3.zero;
+        Vector3 pr0 = Vector3.zero;
+        for (int i = 0; i < n; ++i)
+        {
+            pl0 += pl[i];
+            pr0 += pr[i];
+        }
+        pl0 /= ((float)n);
+        pr0 /= ((float)n);
+
+        // Recenter the point sets
+        Vector3[] plc = new Vector3[n];
+        Vector3[] prc = new Vector3[n];
+        for (int i = 0; i < n; ++i)
+        {
+            plc[i] = pl[i] - pl0;
+            prc[i] = pr[i] - pr0;
+        }
+
+        // Compute matrix of correlations H
+        Matrix3x3 H = Matrix3x3.zero;
+        for (int i = 0; i < n; ++i)
+            H += Matrix3x3.MultiplyVectors(plc[i], prc[i]);
+
+        // Solve for SVD(H)
+        double[,] aH = new double[3, 3];
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                aH[i, j] = (double)H[i, j];
+        double[] aw = new double[3];
+        double[,] aU = new double[3,3];
+        double[,] aVt = new double[3, 3];
+        alglib.rmatrixsvd(aH, 3, 3, 2, 2, 2, out aw, out aU, out aVt);
+        Matrix3x3 U = Matrix3x3.zero;
+        Matrix3x3 Vt = Matrix3x3.zero;
+        float[] w = new float[3];
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < 3; ++j)
+            {
+                U[i, j] = (float)aU[i, j];
+                Vt[i, j] = (float)aVt[i, j];
+            }
+            w[i] = (float)aw[i];
+        }
+        
+        // Compute rotation
+        Matrix3x3 V = Vt.transpose;
+        R = V * U.transpose;
+        if (R.determinant < 0f)
+        {
+            Matrix3x3 V1 = Matrix3x3.zero;
+            V1.SetColumn(0, V.GetColumn(0));
+            V1.SetColumn(1, V.GetColumn(1));
+            V1.SetColumn(2, -V.GetColumn(2));
+            R = V1 * U.transpose;
+        }
+
+        // Compute translation
+        t = pr0 - R.MultiplyPoint(pl0);
+    }
+
+    /// <summary>
     /// Compute affine transformation that aligns the "left" point set
     /// to the "right" point  set.
     /// </summary>
@@ -196,51 +280,6 @@ public class GeometryUtil
             plc[i] = pl[i] - pl0;
             prc[i] = pr[i] - pr0;
         }
-
-        // Compute matrix of correlations H
-        /*Matrix3x3 H = Matrix3x3.zero;
-        for (int i = 0; i < n; ++i)
-            H += Matrix3x3.MultiplyVectors(plc[i], prc[i]);
-
-        // Solve for SVD(H)
-        double[,] aH = new double[3, 3];
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
-                aH[i, j] = (double)H[i, j];
-        double[] aw = new double[3];
-        double[,] aU = new double[3,3];
-        double[,] aVt = new double[3, 3];
-        alglib.rmatrixsvd(aH, 3, 3, 2, 2, 2, out aw, out aU, out aVt);
-        Matrix3x3 U = Matrix3x3.zero;
-        Matrix3x3 Vt = Matrix3x3.zero;
-        float[] w = new float[3];
-        for (int i = 0; i < 3; ++i)
-        {
-            for (int j = 0; j < 3; ++j)
-            {
-                U[i, j] = (float)aU[i, j];
-                Vt[i, j] = (float)aVt[i, j];
-            }
-            w[i] = (float)aw[i];
-        }
-        
-        // Compute rotation
-        Matrix3x3 V = Vt.transpose;
-        R = V * U.transpose;
-        if (R.determinant < 0f)
-        {
-            Matrix3x3 V1 = Matrix3x3.zero;
-            V1.SetColumn(0, V.GetColumn(0));
-            V1.SetColumn(1, V.GetColumn(1));
-            V1.SetColumn(2, -V.GetColumn(2));
-            R = V1 * U.transpose;
-        }
-
-        // Compute scale
-        s = 1f;
-
-        // Compute translation
-        t = pr0 - s * R.MultiplyPoint(pl0);*/
 
         // Compute scale
         s = 1f;

@@ -1,23 +1,3 @@
-[BeGaze]
-Converted from:	D:\Recorded Data\Experiment Data\EyeTrackMocapTest1\T-[82df3710-777d-459f-badf-b2f5e417ba82]\T-1-recording.idf
-Date:	04.01.2016 17:52:00
-Version:	BeGaze 3.5.101
-Sample Rate:	30
-Subject:	T
-Description:	Run1
-
-Table Header for Fixations:
-Event Type,Trial,Number,Start,End,Duration,Location X,Location Y,Dispersion X,Dispersion Y,Plane,Avg. Pupil Size X,Avg. Pupil Size Y
-
-Table Header for Saccades:
-Event Type,Trial,Number,Start,End,Duration,Start Loc.X,Start Loc.Y,End Loc.X,End Loc.Y,Amplitude,Peak Speed,Peak Speed At,Average Speed,Peak Accel.,Peak Decel.,Average Accel.
-
-Table Header for Blinks:
-Event Type,Trial,Number,Start,End,Duration
-
-Table Header for User Events:
-Event Type,Trial,Number,Start,Description
-
 Fixation B,1,1,657319109,657485164,166055,764.73,308.40,58,18,-1,123.20,81.70
 Blink B,1,1,657518839,658084086,565247
 Saccade B,1,1,658117412,658184449,67037,388.49,698.19,493.90,643.70,6.54,163.47,0.50,97.55,4446.14,2635.15,3540.64

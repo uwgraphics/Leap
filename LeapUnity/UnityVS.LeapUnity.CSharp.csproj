@@ -57,6 +57,60 @@
     <Reference Include="MathNet.Iridium">
       <HintPath>Assets\Extensions\MathNet.Iridium.dll</HintPath>
     </Reference>
+    <Reference Include="Emgu.CV.Contrib">
+      <HintPath>Assets\Plugins\Emgu.CV.Contrib.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.Cuda">
+      <HintPath>Assets\Plugins\Emgu.CV.Cuda.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.DebuggerVisualizers.VS2010">
+      <HintPath>Assets\Plugins\Emgu.CV.DebuggerVisualizers.VS2010.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.DebuggerVisualizers.VS2012">
+      <HintPath>Assets\Plugins\Emgu.CV.DebuggerVisualizers.VS2012.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.DebuggerVisualizers.VS2013">
+      <HintPath>Assets\Plugins\Emgu.CV.DebuggerVisualizers.VS2013.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.DebuggerVisualizers.VS2015">
+      <HintPath>Assets\Plugins\Emgu.CV.DebuggerVisualizers.VS2015.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV">
+      <HintPath>Assets\Plugins\Emgu.CV.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.ML">
+      <HintPath>Assets\Plugins\Emgu.CV.ML.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.OCR">
+      <HintPath>Assets\Plugins\Emgu.CV.OCR.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.Shape">
+      <HintPath>Assets\Plugins\Emgu.CV.Shape.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.Stitching">
+      <HintPath>Assets\Plugins\Emgu.CV.Stitching.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.Superres">
+      <HintPath>Assets\Plugins\Emgu.CV.Superres.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.UI">
+      <HintPath>Assets\Plugins\Emgu.CV.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.UI.GL">
+      <HintPath>Assets\Plugins\Emgu.CV.UI.GL.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.VideoStab">
+      <HintPath>Assets\Plugins\Emgu.CV.VideoStab.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.Util">
+      <HintPath>Assets\Plugins\Emgu.Util.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <HintPath>Assets\Plugins\System.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="ZedGraph">
+      <HintPath>Assets\Plugins\ZedGraph.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-UnityScript-firstpass">
       <HintPath>Library\ScriptAssemblies\Assembly-UnityScript-firstpass.dll</HintPath>
     </Reference>
@@ -161,6 +215,7 @@
     <Compile Include="Assets\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Assets\Utils\SignalProcessing\Filter.cs" />
     <Compile Include="Assets\Utils\StateMachine.cs" />
+    <Compile Include="Assets\Utils\Vision\CameraModel.cs" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coinsurance.txt" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coverage.txt" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_history.txt" />
@@ -407,5 +462,6 @@
     <None Include="Assets\Extensions\alglibnet2.dll" />
     <None Include="Assets\Extensions\MathNet.Iridium.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
 </Project>

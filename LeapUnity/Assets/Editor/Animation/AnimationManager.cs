@@ -612,16 +612,8 @@ public class AnimationManager
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize eye tracking data
-            var eyeTrackAlignPoints = new EyeTrackAlignPoint[3];
-            eyeTrackAlignPoints[0] = new EyeTrackAlignPoint(
-                gazeTargets.FirstOrDefault(o => o.name == "LeftHandSpot"), new Vector2(447f, 653f));
-            eyeTrackAlignPoints[1] = new EyeTrackAlignPoint(
-                gazeTargets.FirstOrDefault(o => o.name == "RightHandSpot"), new Vector2(1034f, 712f));
-            eyeTrackAlignPoints[2] = new EyeTrackAlignPoint(
-                gazeTargets.FirstOrDefault(o => o.name == "MidTarget"), new Vector2(816f, 249f));
-            /*eyeTrackAlignPoints[3] = new EyeTrackAlignPoint(
-                gazeTargets.FirstOrDefault(o => o.name == "LeftTarget"), new Vector2(205f, 293f));*/
-            bodyAnimation.InitEyeTracker(eyeTrackAlignPoints, 66, 1280, 960, 9, -115);
+            var eyeTrackData = new EyeTrackData(testScenes.modelKinect, bodyAnimation.AnimationClip,
+                174, 1280, 960, 9, -115);
 
             // Initialize test scenario
             editTestScenario.models = new GameObject[1];

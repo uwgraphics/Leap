@@ -61,15 +61,6 @@ public class AnimationClipInstance : AnimationInstance
         get { return new ReadOnlyDictionary<int, TimeSet>(_keyTimes); }
     }
 
-    /// <summary>
-    /// Eye tracker providing eye tracking data for the current animation.
-    /// </summary>
-    public virtual EyeTracker EyeTracker
-    {
-        get;
-        protected set;
-    }
-
     // End-effector constraints:
     protected EndEffectorConstraintContainer _endEffectorConstraints = null;
     protected Dictionary<string, AnimationClip> _endEffectorTargetHelperClips =
@@ -291,21 +282,5 @@ public class AnimationClipInstance : AnimationInstance
         }
 
         return activeConstraints.ToArray();
-    }
-
-    /// <summary>
-    /// Initialize the eye tracker using eye tracking data accompanying this animation.
-    /// </summary>
-    /// <param name="alignPoints">Eye tracker alignment points</param>
-    /// <param name="frameIndex">Frame in the base animation at which the alignment point set is viewed</param>
-    /// <param name="imgWidth">Eye tracker image width</param>
-    /// <param name="imgHeight">Eye tracker image height</param>
-    /// <param name="imgXCor">Correction along x direction in eye tracker image space</param>
-    /// <param name="imgYCor">Correction along y direction in eye tracker image space</param>
-    public void InitEyeTracker(EyeTrackAlignPoint[] alignPoints, int frameIndex,
-        int imgWidth = 1280, int imgHeight = 960, int imgXCor = 0, int imgYCor = 0)
-    {
-        EyeTracker = new EyeTracker(this, imgWidth, imgHeight, imgXCor, imgYCor);
-        EyeTracker.Init(alignPoints, frameIndex);
     }
 }
