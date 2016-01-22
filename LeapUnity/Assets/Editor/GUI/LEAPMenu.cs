@@ -429,6 +429,42 @@ public class LEAPMenu
         AnimationManager.LoadExampleScene("EyeTrackMocapTest1-1");
     }
 
+    [MenuItem("LEAP/Scenes/WindowWashingNew", true)]
+    private static bool ValidateTestWindowWashingNew()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/WindowWashingNew", false)]
+    private static void TestWindowWashingNew()
+    {
+        AnimationManager.LoadExampleScene("WindowWashingNew");
+    }
+
+    [MenuItem("LEAP/Scenes/StackBoxes", true)]
+    private static bool ValidateTestStackBoxes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StackBoxes", false)]
+    private static void TestStackBoxes()
+    {
+        AnimationManager.LoadExampleScene("StackBoxes");
+    }
+
     /// <summary>
     /// Validates the specified menu item.
     /// </summary>

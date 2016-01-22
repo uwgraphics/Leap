@@ -515,7 +515,7 @@ public static class LEAPAssetUtil
     public static void FixModelAnimationClipAssoc(GameObject model)
     {
         AnimationClip[] clips = GetAllAnimationClipsOnModel(model);
-        Transform rootBone = ModelUtil.FindRootBone(model);
+        Transform rootBone = model.tag == "Agent" ? ModelUtil.FindRootBone(model) : model.transform;
 
         foreach (var clip in clips)
         {

@@ -151,9 +151,18 @@ public class EyeTrackData
         get { return _events.AsReadOnly(); }
     }
 
+    /// <summary>
+    /// Eye gaze instances generated from eye tracking events.
+    /// </summary>
+    public IList<EyeGazeInstance> EyeGazeInstances
+    {
+        get { return _eyeGazeInstances.AsReadOnly(); }
+    }
+
     // Eye tracking dataset:
     private List<EyeTrackSample> _samples = new List<EyeTrackSample>();
     private List<EyeTrackEvent> _events = new List<EyeTrackEvent>();
+    private List<EyeGazeInstance> _eyeGazeInstances = new List<EyeGazeInstance>();
 
     /// <summary>
     /// Constructor.
@@ -178,6 +187,8 @@ public class EyeTrackData
         _LoadSamples(imgXCor, imgYCor);
         _LoadEvents();
         _FillEventGaps();
+        _RemoveBlinkEvents();
+        _MergeSaccadeFixationPairs();
         _PrintEvents();
     }
 
@@ -379,11 +390,164 @@ public class EyeTrackData
     // Fill gaps between eye tracking events
     private void _FillEventGaps()
     {
+        Debug.Log("Filling gaps between eye tracking events...");
+
         for (int eventIndex = 0; eventIndex < Events.Count - 1; ++eventIndex)
         {
             var curEvt = _events[eventIndex];
             curEvt.frameLength = _events[eventIndex + 1].startFrame - _events[eventIndex].startFrame;
             _events[eventIndex] = curEvt;
+        }
+    }
+
+    // Remove eye blink events from the event data
+    private void _RemoveBlinkEvents()
+    {
+        Debug.Log("Removing eye blink events...");
+
+        // Merge adjacent blinks
+        for (int eventIndex = 0; eventIndex < Events.Count - 1; ++eventIndex)
+        {
+            var curEvt = _events[eventIndex];
+            var nextEvt = _events[eventIndex + 1];
+
+            if (curEvt.eventType == EyeTrackEventType.Blink && nextEvt.eventType == EyeTrackEventType.Blink)
+            {
+                curEvt.frameLength += nextEvt.frameLength;
+                _events.RemoveAt(eventIndex + 1);
+                _events[eventIndex] = curEvt;
+                --eventIndex;
+            }
+        }
+
+        // Remove or replace each blink
+        for (int eventIndex = 0; eventIndex < Events.Count; ++eventIndex)
+        {
+            var curEvt = _events[eventIndex];
+            if (curEvt.eventType != EyeTrackEventType.Blink)
+                continue;
+
+            if (eventIndex == 0)
+            {
+                var nextEvt = _events[eventIndex + 1];
+
+                if (nextEvt.eventType == EyeTrackEventType.Fixation)
+                {
+                    // Extend next fixation
+                    nextEvt.startFrame = curEvt.startFrame;
+                    nextEvt.frameLength += curEvt.frameLength;
+                    _events[eventIndex + 1] = nextEvt;
+                    
+                    // Remove blink
+                    _events.RemoveAt(eventIndex);
+                    --eventIndex;
+                }
+                else // if (nextEvt.eventType == EyeTrackEventType.Saccade)
+                {
+                    // Replace blink with a fixation
+                    curEvt.eventType = EyeTrackEventType.Fixation;
+                    curEvt.imageStartPosition = curEvt.imageEndPosition = nextEvt.imageStartPosition;
+                    _events[eventIndex] = curEvt;
+                }
+            }
+            else if (eventIndex > 0 && eventIndex < Events.Count - 1)
+            {
+                var prevEvt = _events[eventIndex - 1];
+                var nextEvt = _events[eventIndex + 1];
+
+                if (prevEvt.eventType == EyeTrackEventType.Fixation)
+                {
+                    // Extend previous fixation
+                    prevEvt.frameLength += curEvt.frameLength;
+                    _events[eventIndex - 1] = prevEvt;
+
+                    // Remove blink
+                    _events.RemoveAt(eventIndex);
+                    --eventIndex;
+                }
+                else if (nextEvt.eventType == EyeTrackEventType.Fixation)
+                {
+                    // Extend next fixation
+                    nextEvt.startFrame = curEvt.startFrame;
+                    nextEvt.frameLength += curEvt.frameLength;
+                    _events[eventIndex + 1] = nextEvt;
+
+                    // Remove blink
+                    _events.RemoveAt(eventIndex);
+                    --eventIndex;
+                }
+                else // if (prevEvt.eventType == EyeTrackEventType.Saccade && nextEvt.eventType == EyeTrackEventType.Saccade)
+                {
+                    // Replace blink with a fixation
+                    curEvt.eventType = EyeTrackEventType.Fixation;
+                    curEvt.imageStartPosition = curEvt.imageEndPosition = prevEvt.imageEndPosition;
+                    _events[eventIndex] = curEvt;
+                }
+            }
+            else // if (eventIndex == Events.Count - 1)
+            {
+                var prevEvt = _events[eventIndex - 1];
+
+                if (prevEvt.eventType == EyeTrackEventType.Fixation)
+                {
+                    // Extend previous fixation
+                    prevEvt.frameLength += curEvt.frameLength;
+                    _events[eventIndex - 1] = prevEvt;
+
+                    // Remove blink
+                    _events.RemoveAt(eventIndex);
+                    --eventIndex;
+                }
+                else // if (prevEvt.eventType == EyeTrackEventType.Saccade)
+                {
+                    // Replace blink with a fixation
+                    curEvt.eventType = EyeTrackEventType.Fixation;
+                    curEvt.imageStartPosition = curEvt.imageEndPosition = prevEvt.imageEndPosition;
+                    _events[eventIndex] = curEvt;
+                }
+            }
+        }
+    }
+
+    // Merge saccade-fixation pairs
+    private void _MergeSaccadeFixationPairs()
+    {
+        Debug.Log("Merging saccade-fixation pairs...");
+
+        for (int eventIndex = 0; eventIndex < _events.Count; ++eventIndex)
+        {
+            var curEvt = _events[eventIndex];
+            if (curEvt.eventType != EyeTrackEventType.Saccade)
+                continue;
+
+            if (eventIndex < _events.Count - 1)
+            {
+                var nextEvt = _events[eventIndex + 1];
+
+                if (nextEvt.eventType == EyeTrackEventType.Fixation)
+                {
+                    // Merge saccade-fixation into a single fixation
+                    nextEvt.startFrame = curEvt.startFrame;
+                    nextEvt.frameLength += curEvt.frameLength;
+                    _events[eventIndex + 1] = nextEvt;
+                    _events.RemoveAt(eventIndex);
+                    --eventIndex;
+                }
+                else // if (nextEvt.eventType == EyeTrackEventType.Saccade)
+                {
+                    // Replace the saccade with a fixation
+                    curEvt.eventType = EyeTrackEventType.Fixation;
+                    curEvt.imageStartPosition = curEvt.imageEndPosition;
+                    _events[eventIndex] = curEvt;
+                }
+            }
+            else
+            {
+                // Replace the saccade with a fixation
+                curEvt.eventType = EyeTrackEventType.Fixation;
+                curEvt.imageStartPosition = curEvt.imageEndPosition;
+                _events[eventIndex] = curEvt;
+            }
         }
     }
 

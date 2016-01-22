@@ -259,9 +259,13 @@ public class AnimationManager
         testScenes.cameraStealDiamond1.enabled = false;
         testScenes.cameraStealDiamond2.enabled = false;
         testScenes.cameraWaitForBus.enabled = false;
+        testScenes.cameraStackBoxes.enabled = false;
         testScenes.modelKinect.SetActive(false);
         testScenes.modelEyeTrackMocapTest1Env.SetActive(false);
         testScenes.cameraEyeTrackMocapTest1.enabled = false;
+        testScenes.modelNormanNew.SetActive(false);
+        testScenes.modelWindowWashingNewEnv.SetActive(false);
+        testScenes.modelStackBoxesEnv.SetActive(false);
 
         // Create and configure animation layers
         timeline.AddLayer(AnimationLayerMode.Override, 0, LEAPCore.baseAnimationLayerName);
@@ -282,6 +286,8 @@ public class AnimationManager
         testScenes.modelNorman.GetComponent<GazeController>().torso.postureWeight = 1f;
         testScenes.modelRoman.GetComponent<GazeController>().head.postureWeight = 0f;
         testScenes.modelRoman.GetComponent<GazeController>().torso.postureWeight = 1f;
+        testScenes.modelNormanNew.GetComponent<GazeController>().head.postureWeight = 0f;
+        testScenes.modelNormanNew.GetComponent<GazeController>().torso.postureWeight = 1f;
 
         // Reset test scenario
         editTestScenario.models = null;
@@ -620,6 +626,79 @@ public class AnimationManager
             editTestScenario.models[0] = testScenes.modelKinect;
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "EyeTrackMocapTest1-1-" + LEAPCore.defaultBakedTimelineName;
+        }
+        else if (sceneName == "WindowWashingNew")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelWindowWashingNewEnv.SetActive(true);
+            testScenes.cameraWindowWashing.enabled = true;
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelWindowWashingEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("WindowWashingNew", testScenes.modelNormanNew);
+
+            // Add animations to characters
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            var envController = testScenes.modelWindowWashingEnv.GetComponent<EnvironmentController>();
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance(
+                    "WindowWashingNewSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge"),
+                    false, false, false));
+
+            // Add timewarps to the animations
+            AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNormanNew;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "WindowWashingNew-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations = new string[1];
+            editTestScenario.objectAnimations[0] = "WindowWashingNewSponge-" + LEAPCore.defaultBakedTimelineName;
+        }
+        else if (sceneName == "StackBoxes")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelStackBoxesEnv.SetActive(true);
+            testScenes.cameraStackBoxes.enabled = true;
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelStackBoxesEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("StackBoxes", testScenes.modelNormanNew);
+
+            // Add animations to characters
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add timewarps to the animations
+            AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNormanNew;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "StackBoxes-" + LEAPCore.defaultBakedTimelineName;
         }
         else // if (sceneName == "InitialPose")
         {
