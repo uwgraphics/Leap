@@ -54,7 +54,10 @@ public class AnimationEditorWindow : EditorWindow
     private bool _changeGazeHeadAlign = false;
     private bool _changeGazeTorsoAlign = false;
 
-    private void OnEnable()
+    /// <summary>
+    /// Initialize the animation editor.
+    /// </summary>
+    public void Init()
     {
         _InitTimeline();
 
@@ -76,7 +79,12 @@ public class AnimationEditorWindow : EditorWindow
         _newSelectedGazeTarget = null;
         _changeGazeHeadAlign = _changeGazeTorsoAlign = false;
 
-        UnityEngine.Debug.Log("AnimationEditorWindow successfully initialized");
+        UnityEngine.Debug.Log("Leap Animation Editor successfully initialized");
+    }
+
+    private void OnEnable()
+    {
+        Init();
     }
 
     private void Update()

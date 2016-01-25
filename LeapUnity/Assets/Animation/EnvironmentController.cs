@@ -8,9 +8,9 @@ using System.Collections.Generic;
 /// </summary>
 public sealed class EnvironmentController : MonoBehaviour
 {
-    private List<GameObject> manipulatedObjects = new List<GameObject>();
-    private Dictionary<GameObject, Vector3> initObjPositions = new Dictionary<GameObject,Vector3>();
-    private Dictionary<GameObject, Quaternion> initObjRotations = new Dictionary<GameObject,Quaternion>();
+    private List<GameObject> _manipulatedObjects = new List<GameObject>();
+    private Dictionary<GameObject, Vector3> _initObjPositions = new Dictionary<GameObject,Vector3>();
+    private Dictionary<GameObject, Quaternion> _initObjRotations = new Dictionary<GameObject,Quaternion>();
 
     /// <summary>
     /// Root environment object.
@@ -26,7 +26,7 @@ public sealed class EnvironmentController : MonoBehaviour
     /// </summary>
     public IList<GameObject> ManipulatedObjects
     {
-        get { return manipulatedObjects.AsReadOnly(); }
+        get { return _manipulatedObjects.AsReadOnly(); }
     }
 
     /// <summary>
@@ -42,19 +42,19 @@ public sealed class EnvironmentController : MonoBehaviour
     /// </summary>
     public void ResetToInitialLayout()
     {
-        foreach (var obj in manipulatedObjects)
+        foreach (var obj in _manipulatedObjects)
         {
-            obj.transform.localPosition = initObjPositions[obj];
-            obj.transform.localRotation = initObjRotations[obj];
+            obj.transform.localPosition = _initObjPositions[obj];
+            obj.transform.localRotation = _initObjRotations[obj];
         }
     }
 
     private void _InitObjects()
     {
         RootObject = gameObject;
-        manipulatedObjects.Clear();
-        initObjPositions.Clear();
-        initObjRotations.Clear();
+        _manipulatedObjects.Clear();
+        _initObjPositions.Clear();
+        _initObjRotations.Clear();
 
         _InitObjects(RootObject);
     }
@@ -63,9 +63,9 @@ public sealed class EnvironmentController : MonoBehaviour
     {
         if (obj.tag == "ManipulatedObject")
         {
-            manipulatedObjects.Add(obj);
-            initObjPositions[obj] = obj.transform.localPosition;
-            initObjRotations[obj] = obj.transform.localRotation;
+            _manipulatedObjects.Add(obj);
+            _initObjPositions[obj] = obj.transform.localPosition;
+            _initObjRotations[obj] = obj.transform.localRotation;
         }
 
         var transf = obj.transform;

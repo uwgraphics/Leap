@@ -6,6 +6,20 @@ using System.Linq;
 
 public class LEAPMenu
 {
+    [MenuItem("LEAP/Animation/Init Editor", true)]
+    private static bool ValidateInitAnimationEditor()
+    {
+        return true;
+    }
+
+    [MenuItem("LEAP/Animation/Init Editor", false)]
+    private static void InitAnimationEditor()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        wnd.Init();
+        SceneView.RepaintAll();
+    }
+
     [MenuItem("LEAP/Animation/Reset Models to Initial Pose", true)]
     private static bool ValidateResetModelsToInitialPose()
     {

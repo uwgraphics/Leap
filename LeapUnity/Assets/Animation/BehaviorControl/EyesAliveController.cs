@@ -212,17 +212,19 @@ public class EyesAliveController : AnimController
         Vector3 p2 = new Vector3();
         var eye1 = gazeCtrl.lEye.Top;
         var eye2 = gazeCtrl.rEye.Top;
+        var eye1Dir = gazeCtrl.lEye.Direction;
+        var eye2Dir = gazeCtrl.rEye.Direction;
         UnityEngine.Quaternion savedRot1 = eye1.localRotation;
         UnityEngine.Quaternion savedRot2 = eye2.localRotation;
         eye1.localRotation = trgEyeRot[0];
         eye2.localRotation = trgEyeRot[1];
         parallelEyes = GeometryUtil.ClosestPointsOn2Lines(
-            eye1.position, eye1.forward,
-            eye2.position, eye2.forward, out p1, out p2);
+            eye1.position, eye1Dir,
+            eye2.position, eye2Dir, out p1, out p2);
         if (parallelEyes)
         {
-            p1 = eye1.position + 10f * eye1.forward;
-            p2 = eye2.position + 10f * eye2.forward;
+            p1 = eye1.position + 10f * eye1Dir;
+            p2 = eye2.position + 10f * eye2Dir;
         }
         targetPos = 0.5f * (p1 + p2);
         eye1.localRotation = savedRot1;
@@ -258,18 +260,20 @@ public class EyesAliveController : AnimController
             Vector3 p2 = new Vector3();
             var eye1 = gazeCtrl.lEye.Top;
             var eye2 = gazeCtrl.rEye.Top;
+            var eye1Dir = gazeCtrl.lEye.Direction;
+            var eye2Dir = gazeCtrl.rEye.Direction;
             UnityEngine.Quaternion savedRot1 = eye1.localRotation;
             UnityEngine.Quaternion savedRot2 = eye2.localRotation;
             eye1.localRotation = srcEyeRot[0];
             eye2.localRotation = srcEyeRot[1];
             parallelEyes = GeometryUtil.ClosestPointsOn2Lines(
-                eye1.position, eye1.forward,
-                eye2.position, eye2.forward,
+                eye1.position, eye1Dir,
+                eye2.position, eye2Dir,
                 out p1, out p2);
             if (parallelEyes)
             {
-                p1 = eye1.position + 10f * eye1.forward;
-                p2 = eye2.position + 10f * eye2.forward;
+                p1 = eye1.position + 10f * eye1Dir;
+                p2 = eye2.position + 10f * eye2Dir;
             }
             targetPos = 0.5f * (p1 + p2);
             eye1.localRotation = savedRot1;

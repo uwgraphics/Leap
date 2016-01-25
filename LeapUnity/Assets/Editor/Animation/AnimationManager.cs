@@ -691,6 +691,25 @@ public class AnimationManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
+            // Create environment animations
+            var envController = testScenes.modelStackBoxesEnv.GetComponent<EnvironmentController>();
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance(
+                    "StackBoxes1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube1"),
+                    false, false, false));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance(
+                    "StackBoxes2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube2"),
+                    false, false, false));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance(
+                    "StackBoxes3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube3"),
+                    false, false, false));
+            timeline.AddManipulatedObjectAnimation("Environment",
+                new AnimationClipInstance(
+                    "StackBoxes4", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube4"),
+                    false, false, false));
+
             // Add timewarps to the animations
             AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
 

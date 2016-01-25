@@ -75,9 +75,10 @@ public class EyeLaserGizmo : MonoBehaviour
 
         if (showGazeJointLasers)
         {
-            foreach (var gazeJoint in gazeBodyPart.gazeJoints)
+            for( int gazeJointIndex = 0; gazeJointIndex < gazeBodyPart.gazeJoints.Length; ++gazeJointIndex)
             {
-                Gizmos.DrawRay(gazeJoint.position, gazeJoint.forward * gazeTargetDist);
+                var gazeJoint = gazeBodyPart.gazeJoints[gazeJointIndex];
+                Gizmos.DrawRay(gazeJoint.position, gazeBodyPart.GetDirection(gazeJointIndex) * gazeTargetDist);
             }
         }
 

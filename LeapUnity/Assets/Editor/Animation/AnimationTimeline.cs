@@ -1457,7 +1457,8 @@ public class AnimationTimeline
         IsBaking = false;
 
         // Set the curves to their animation clips on each model and write them out
-        var allBakedAnimationContainers = bakedTimelineContainer.AnimationContainers.Union(bakedTimelineContainer.ManipulatedObjectAnimationContainers);
+        var allBakedAnimationContainers = bakedTimelineContainer.AnimationContainers
+            .Union(bakedTimelineContainer.ManipulatedObjectAnimationContainers);
         foreach (var bakedAnimationContainer in allBakedAnimationContainers)
         {
             var model = bakedAnimationContainer.Model;
@@ -1617,14 +1618,6 @@ public class AnimationTimeline
             // Also apply animation controller states
             foreach (var controllerContainer in bakedAnimationContainer.ControllerContainers)
             {
-                // TODO: figure out why the hell frame index is sometimes out of range
-                if (CurrentFrame < 0 || CurrentFrame >= controllerContainer.ControllerStates.Count)
-                {
-                    Debug.LogError(string.Format("Frame index out of range. CurrentFrame = {0}, controllerContainer.ControllerStates.Count = {1}",
-                        CurrentFrame, controllerContainer.ControllerStates.Count));
-                    continue;
-                }
-                //
                 controllerContainer.Controller.SetRuntimeState(controllerContainer.ControllerStates[CurrentFrame]);
             }
         }
@@ -1794,7 +1787,8 @@ public class AnimationTimeline
     // Bake the current animation frame
     private void _BakeCurrentFrame(BakedAnimationTimelineContainer bakedTimelineContainer)
     {
-        var allBakedAnimationContainers = bakedTimelineContainer.AnimationContainers.Union(bakedTimelineContainer.ManipulatedObjectAnimationContainers);
+        var allBakedAnimationContainers = bakedTimelineContainer.AnimationContainers
+            .Union(bakedTimelineContainer.ManipulatedObjectAnimationContainers);
         foreach (var bakedAnimationContainer in allBakedAnimationContainers)
         {
             var model = bakedAnimationContainer.Model;
@@ -1862,21 +1856,14 @@ public class AnimationTimeline
                 var keyFrame = new Keyframe();
                 keyFrame.time = time;
                 keyFrame.value = modelController.GetBlendShapeWeight(blendShapeIndex);
-                bakedAnimationContainer._AnimationCurves[3 + modelController.NumberOfBones * 4 + blendShapeIndex].AddKey(keyFrame);
+                int curveIndex = 3 + modelController.NumberOfBones * 4 + blendShapeIndex;
+                bakedAnimationContainer._AnimationCurves[curveIndex].AddKey(keyFrame);
             }
 
             // Finally, bake the animation controller states
             for (int controllerIndex = 0; controllerIndex < bakedAnimationContainer.ControllerContainers.Count; ++controllerIndex)
             {
                 var controllerContainer = bakedAnimationContainer.ControllerContainers[controllerIndex];
-                // TODO: figure out why the hell frame index is sometimes out of range
-                if (CurrentFrame < 0 || CurrentFrame >= controllerContainer.ControllerStates.Count)
-                {
-                    Debug.LogError(string.Format("Frame index out of range. CurrentFrame = {0}, controllerContainer.ControllerStates.Count = {1}",
-                        CurrentFrame, controllerContainer.ControllerStates.Count));
-                    continue;
-                }
-                //
                 controllerContainer.ControllerStates[CurrentFrame] = controllerContainer.Controller.GetRuntimeState();
             }
         }
@@ -2010,14 +1997,13 @@ public class AnimationTimeline
         }
         
         // Set up object manipulations
-        EndEffectorConstraint[] activeManipulatedObjectConstraints =
-            instance.GetManipulationEndEffectorConstraintsAtTime(curTimes - instanceStartTime);
+        var activeManipulatedObjectConstraints = instance.GetManipulationEndEffectorConstraintsAtTime(curTimes - instanceStartTime);
         if (LEAPCore.enableObjectManipulation &&
             activeManipulatedObjectConstraints != null && activeManipulatedObjectConstraints.Length > 0)
         {
             foreach (var constraint in activeManipulatedObjectConstraints)
             {
-                Transform endEffectorBone = ModelUtil.FindBoneWithTag(model.transform, constraint.endEffector);
+                var endEffectorBone = ModelUtil.FindBoneWithTag(model.transform, constraint.endEffector);
                 _activeManipulatedObjectHandles[constraint.manipulatedObjectHandle] = endEffectorBone;
             }
         }

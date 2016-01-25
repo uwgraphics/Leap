@@ -545,7 +545,7 @@ public static class ModelUtil
     {
         Quaternion q0 = bone.localRotation;
 
-        // Get rotational plane for the shortest-arc gaze shift
+        // Get rotational plane for the shortest-arc rotation
         bone.localRotation = qs;
         Vector3 vs = bone.forward;
         bone.localRotation = qt;
