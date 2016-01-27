@@ -136,6 +136,24 @@ public class EyeTrackData
     }
 
     /// <summary>
+    /// Eye tracking image-space location correction along x-axis.
+    /// </summary>
+    public int ImageXCorrection
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
+    /// Eye tracking image-space location correction along y-axis.
+    /// </summary>
+    public int ImageYCorrection
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
     /// Eye tracking samples.
     /// </summary>
     public IList<EyeTrackSample> Samples
@@ -169,22 +187,20 @@ public class EyeTrackData
     /// </summary>
     /// <param name="model">Character model</param>
     /// <param name="baseAnimationClip">Base animation clip</param>
-    /// <param name="frameOffset">Frame offset of eye tracking data relative to the animation data</param>
-    /// <param name="imgWidth">Eye tracker image width</param>
-    /// <param name="imgHeight">Eye tracker image height</param>
-    /// <param name="imgXCor">Correction along x direction in eye tracker image space</param>
-    /// <param name="imgYCor">Correction along y direction in eye tracker image space</param>
-    public EyeTrackData(GameObject model, AnimationClip baseAnimationClip,
-        int frameOffset = 0, int imgWidth = 1280, int imgHeight = 960,
-        int imgXCor = 0, int imgYCor = 0)
+    public EyeTrackData(GameObject model, AnimationClip baseAnimationClip)
     {
         Model = model;
         BaseAnimationClip = baseAnimationClip;
-        FrameOffset = frameOffset;
-        ImageWidth = imgWidth;
-        ImageHeight = imgHeight;
 
-        _LoadSamples(imgXCor, imgYCor);
+        // Set default parameter values
+        FrameOffset = 0;
+        ImageWidth = 1280;
+        ImageHeight = 960;
+        ImageXCorrection = 0;
+        ImageYCorrection = 0;
+
+        _LoadParams();
+        _LoadSamples();
         _LoadEvents();
         _FillEventGaps();
         _RemoveBlinkEvents();
@@ -192,8 +208,52 @@ public class EyeTrackData
         _PrintEvents();
     }
 
+    /// <summary>
+    /// Generate eye gaze instances from eye tracking events.
+    /// </summary>
+    public void GenerateEyeGazeInstances()
+    {
+        // TODO
+    }
+
+    // Load eye tracking data parameters
+    private void _LoadParams()
+    {
+        // Get eye tracking parameters file path
+        string path = Application.dataPath + LEAPCore.eyeTrackDataDirectory.Substring(
+               LEAPCore.eyeTrackDataDirectory.IndexOfAny(@"/\".ToCharArray()));
+        if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
+            path += '/';
+        path += (BaseAnimationClip.name + "#Params.txt");
+
+        if (!File.Exists(path))
+        {
+            UnityEngine.Debug.LogError(string.Format("No eye tracking parameters file at path " + path));
+            return;
+        }
+
+        Debug.Log("Loading eye tracking parameters...");
+
+        var paramFile = new ConfigFile();
+
+        // Define parameters
+        paramFile.AddParam("frameOffset", typeof(int));
+        paramFile.AddParam("imageWidth", typeof(int));
+        paramFile.AddParam("imageHeight", typeof(int));
+        paramFile.AddParam("imageXCorrection", typeof(int));
+        paramFile.AddParam("imageYCorrection", typeof(int));
+
+        // Read parameter values
+        paramFile.ReadFromFile(path);
+        FrameOffset = paramFile.HasValue("frameOffset") ? paramFile.GetValue<int>("frameOffset") : FrameOffset;
+        ImageWidth = paramFile.HasValue("imageWidth") ? paramFile.GetValue<int>("imageWidth") : ImageWidth;
+        ImageHeight = paramFile.HasValue("imageHeight") ? paramFile.GetValue<int>("imageHeight") : ImageHeight;
+        ImageXCorrection = paramFile.HasValue("imageXCorrection") ? paramFile.GetValue<int>("imageXCorrection") : ImageXCorrection;
+        ImageYCorrection = paramFile.HasValue("imageYCorrection") ? paramFile.GetValue<int>("imageYCorrection") : ImageYCorrection;
+    }
+
     // Load eye tracking samples for the current animation clip
-    private void _LoadSamples(int imgXCor, int imgYCor)
+    private void _LoadSamples()
     {
         // Get eye tracking samples file path
         string path = Application.dataPath + LEAPCore.eyeTrackDataDirectory.Substring(
@@ -212,7 +272,7 @@ public class EyeTrackData
 
         try
         {
-            var csvData = new CSVData();
+            var csvData = new CSVDataFile();
 
             // Define sample attributes
             csvData.AddAttribute("Time", typeof(int));
@@ -294,7 +354,7 @@ public class EyeTrackData
 
                 // Add sample
                 var sample = new EyeTrackSample(
-                    new Vector2(imgPosX + imgXCor, imgPosY + imgYCor),
+                    new Vector2(imgPosX + ImageXCorrection, imgPosY + ImageYCorrection),
                     new Vector3(lEyeDirX, lEyeDirY, lEyeDirZ),
                     new Vector3(rEyeDirX, rEyeDirY, rEyeDirZ),
                     eventType);
@@ -304,7 +364,7 @@ public class EyeTrackData
             Debug.Log(string.Format("Loaded {0} eye track samples", _samples.Count));
 
             // Write out the samples for MATLAB visualization
-            var outCsvData = new CSVData();
+            var outCsvData = new CSVDataFile();
             outCsvData.AddAttribute("imagePositionX", typeof(float));
             outCsvData.AddAttribute("imagePositionY", typeof(float));
             outCsvData.AddAttribute("eventType", typeof(int));
@@ -317,7 +377,8 @@ public class EyeTrackData
         }
         catch (Exception ex)
         {
-            UnityEngine.Debug.LogError(string.Format("Unable to load eye tracking samples from asset file {0}: {1}", path, ex.Message));
+            UnityEngine.Debug.LogError(string.Format("Unable to load eye tracking samples from asset file {0}: {1}",
+                path, ex.Message));
         }
     }
 

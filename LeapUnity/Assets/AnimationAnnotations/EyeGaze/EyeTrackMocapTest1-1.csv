@@ -1,0 +1,2 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+KinectSkeleton,EyeTrackMocapTest1-1Start,1,20,27,null,"-0.336 4.296 4.086",0,0,True

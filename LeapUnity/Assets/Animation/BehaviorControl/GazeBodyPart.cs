@@ -417,8 +417,14 @@ public class GazeBodyPart
     /// <param name="dir">Forward direction vector</param>
     public void SetDirection(int gazeJointIndex, Vector3 direction)
     {
-        var rot = Quaternion.FromToRotation(GetDirection(gazeJointIndex), direction);
-        gazeJoints[gazeJointIndex].rotation *= rot;
+        var gazeJoint = gazeJoints[gazeJointIndex];
+        var gazeForwardHelper = _HasHelpersForGazeJoint(gazeJointIndex) ?
+            _gazeForwardHelpers[gazeJointIndex] : null;
+        var dir0 = gazeForwardHelper != null ? gazeForwardHelper.localPosition.normalized :
+            gazeJoint.InverseTransformDirection(gazeJoint.forward).normalized;
+        var dir1 = gazeJoint.InverseTransformDirection(direction).normalized;
+        var rot = Quaternion.FromToRotation(dir0, dir1);
+        gazeJoint.localRotation *= rot;
     }
 
     /// <summary>
@@ -435,6 +441,10 @@ public class GazeBodyPart
             if (IsEye) Roll = 0f;
             return;
         }
+        // TODO: remove this
+        if (!IsEye)
+            return;
+        //
 
         // Gaze directions and joint rotations
         Vector3 trgDir, trgDirAlign, srcDir, baseDir;
@@ -607,8 +617,10 @@ public class GazeBodyPart
     {
         Vector3 trgDir = Direction;
         SetDirection(0, _SourceDirection);
+        Roll = 0f;
         Quaternion srcRot = Top.localRotation;
         SetDirection(0, trgDir);
+        Roll = 0f;
         ClampOMR(srcRot);
     }
 
@@ -620,8 +632,10 @@ public class GazeBodyPart
     {
         Vector3 trgDir = Direction;
         SetDirection(0, _FixSourceDirection);
+        Roll = 0f;
         Quaternion srcRot = Top.localRotation;
         SetDirection(0, trgDir);
+        Roll = 0f;
         ClampOMR(srcRot);
     }
 

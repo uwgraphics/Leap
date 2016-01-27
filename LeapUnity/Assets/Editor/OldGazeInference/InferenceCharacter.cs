@@ -60,6 +60,26 @@ public class InferenceCharacter {
         set;
     }
 
+    public Vector3 HeadDirection
+    {
+        get
+        {
+            Transform forwardHelper = null;
+            for (int childIndex = 0; childIndex < HeadBone.childCount; ++childIndex)
+            {
+                var child = HeadBone.GetChild(childIndex);
+                if (child.tag == "GazeForwardHelper")
+                {
+                    forwardHelper = child;
+                    break;
+                }
+            }
+
+            return forwardHelper != null ? (forwardHelper.position - HeadBone.position).normalized :
+                HeadBone.forward.normalized;
+        }
+    }
+
     public Transform ChestBone
     {
         get;
@@ -99,12 +119,12 @@ public class InferenceCharacter {
         GameObject[] models = GameObject.FindGameObjectsWithTag("Agent");
         BoneRenderers = new Renderer[5]; //changed to 5 from 4 when hips were aded
         GameObject charModel = models.FirstOrDefault(m => m.name == charName);
+        var gazeController = charModel.GetComponent<GazeController>();
 
         CharModel = charModel;
         //create SpineBones array
         var inferenceBones = new Transform[5]; //changed to 5 from 4 when neck was added (?)
         var gazeCtrl = charModel.GetComponent<GazeController>();
-        var headBone = gazeCtrl.head.Top;
 
         Transform[] headJoints = (Transform[])gazeCtrl.head.gazeJoints.Clone();
         int headJointIndex = 0; //last I checked, there were two headJoints to pick from...
@@ -116,11 +136,11 @@ public class InferenceCharacter {
         //NeckBone = tBones[6]; // May need to double check that index is correct...
         //HeadBone = tBones[7]; // May need to double check that index is correct...
         HipBone = ModelUtil.FindRootBone(charModel);
-        NeckBone = ModelUtil.FindBone(HipBone, "srfBind_Cn_Neck");
-        HeadBone = ModelUtil.FindBone(HipBone, "srfBind_Cn_Head");
-        ChestBone = ModelUtil.FindBone(HipBone, "srfBind_Cn_SpineC");
-        SpineABone = ModelUtil.FindBone(HipBone, "srfBind_Cn_SpineB");
-        SpineBBone = ModelUtil.FindBone(HipBone, "srfBind_Cn_SpineA");
+        NeckBone = gazeController.head.gazeJoints[1];
+        HeadBone = gazeController.head.gazeJoints[0];
+        ChestBone = gazeController.torso.gazeJoints[0];
+        SpineABone = gazeController.torso.gazeJoints[2];
+        SpineBBone = gazeController.torso.gazeJoints[1];
 
         Transform[] chestJoints = (Transform[])gazeCtrl.torso.gazeJoints.Clone();
 

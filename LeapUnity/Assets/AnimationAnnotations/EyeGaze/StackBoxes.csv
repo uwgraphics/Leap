@@ -1,0 +1,7 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+NormanNew,StackBoxesGazeStart,1,20,27,null,"-0.336 4.296 4.086",0,0,True
+NormanNew,StackBoxesGaze1,28,46,44,EyeTrackAlign1,"0 0 0",1,1,True
+NormanNew,StackBoxesGaze2,51,77,77,EyeTrackAlign2,"0 0 0",1,0.3,True
+NormanNew,StackBoxesGaze3,78,97,125,Floor1,"0 0 0",1,0,True
+NormanNew,StackBoxesGaze6,126,138,166,StackBoxesEnv1,"0 0 0",1,0,True
+NormanNew,StackBoxesGaze6,167,186,252,pCube1Top,"0 0 0",0.5,0,True

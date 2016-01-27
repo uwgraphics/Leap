@@ -236,113 +236,50 @@ public class LEAPCore : MonoBehaviour
     /// <summary>
     /// Load Leap configuration from Leap.cfg file
     /// </summary>
-    public static bool LoadConfiguration()
+    public static void LoadConfiguration()
     {
-        try
-        {
-            var reader = new StreamReader(Application.dataPath + "/../Leap/Leap.cfg");
-            string line;
-            int lineIndex = -1;
-            while (!reader.EndOfStream)
-            {
-                line = reader.ReadLine().Trim();
-                ++lineIndex;
-                if (line == "")
-                    continue;
+        var cfgFile = new ConfigFile();
 
-                int commentStartIndex = line.IndexOf('#');
-                line = commentStartIndex >= 0 ? line.Substring(0, commentStartIndex) : line;
-                if (line.IndexOf('=') <= 0)
-                {
-                    Debug.LogError("Error reading Leap.cfg at line " + lineIndex);
-                    continue;
-                }
+        // Define configuration parameters
+        cfgFile.AddParam("editFrameRate", typeof(int));
+        cfgFile.AddParam("endEffectorConstraintActivationTime", typeof(float));
+        cfgFile.AddParam("enableObjectManipulation", typeof(bool));
+        cfgFile.AddParam("minEyeGazeLength", typeof(float));
+        cfgFile.AddParam("maxEyeGazeGapLength", typeof(float));
+        cfgFile.AddParam("useGazeIK", typeof(bool));
+        cfgFile.AddParam("useDynamicGazeIKWeights", typeof(bool));
+        cfgFile.AddParam("gazeConstraintActivationTime", typeof(float));
+        cfgFile.AddParam("adjustGazeTargetForMovingBase", typeof(bool));
+        cfgFile.AddParam("printDetailedGazeControllerState", typeof(bool));
+        cfgFile.AddParam("timewarpsEnabled", typeof(bool));
+        cfgFile.AddParam("timelineBakeRangeStart", typeof(int));
+        cfgFile.AddParam("timelineBakeRangeEnd", typeof(int));
 
-                string[] lineElements = line.Split('=');
-                string keyStr = lineElements[0].Trim();
-                string valueStr = lineElements[1].Trim();
-                switch (keyStr)
-                {
-                    case "editFrameRate":
-
-                        editFrameRate = int.Parse(valueStr);
-                        break;
-
-                    case "endEffectorConstraintActivationTime":
-
-                        endEffectorConstraintActivationTime = float.Parse(valueStr);
-                        break;
-
-                    case "enableObjectManipulation":
-
-                        enableObjectManipulation = bool.Parse(valueStr);
-                        break;
-
-                    case "minEyeGazeLength":
-
-                        minEyeGazeLength = float.Parse(valueStr);
-                        break;
-
-                    case "maxEyeGazeGapLength":
-
-                        maxEyeGazeGapLength = float.Parse(valueStr);
-                        break;
-
-                    case "useGazeIK":
-
-                        useGazeIK = bool.Parse(valueStr);
-                        break;
-
-                    case "useDynamicGazeIKWeights":
-
-                        useDynamicGazeIKWeights = bool.Parse(valueStr);
-                        break;
-
-                    case "gazeConstraintActivationTime":
-
-                        gazeConstraintActivationTime = float.Parse(valueStr);
-                        break;
-
-                    case "adjustGazeTargetForMovingBase":
-
-                        adjustGazeTargetForMovingBase = bool.Parse(valueStr);
-                        break;
-
-                    case "printDetailedGazeControllerState":
-
-                        printDetailedGazeControllerState = bool.Parse(valueStr);
-                        break;
-
-                    case "timewarpsEnabled":
-
-                        timewarpsEnabled = bool.Parse(valueStr);
-                        break;
-
-                    case "timelineBakeRangeStart":
-
-                        timelineBakeRangeStart = int.Parse(valueStr);
-                        break;
-
-                    case "timelineBakeRangeEnd":
-
-                        timelineBakeRangeEnd = int.Parse(valueStr);
-                        break;
-
-                    default:
-
-                        Debug.LogError("Unknown configuration option in Leap.cfg at line " + lineIndex);
-                        break;
-                }
-            }
-
-            reader.Close();
-        }
-        catch (Exception ex)
-        {
-            UnityEngine.Debug.LogError(string.Format("Unable to load Leap.cfg", ex.Message));
-            return false;
-        }
-
-        return true;
+        // Read parameter values
+        cfgFile.ReadFromFile(Application.dataPath + "/../Leap/Leap.cfg");
+        editFrameRate = cfgFile.HasValue("editFrameRate") ?
+            cfgFile.GetValue<int>("editFrameRate") : editFrameRate;
+        endEffectorConstraintActivationTime = cfgFile.HasValue("endEffectorConstraintActivationTime") ?
+            cfgFile.GetValue<float>("endEffectorConstraintActivationTime") : endEffectorConstraintActivationTime;
+        enableObjectManipulation = cfgFile.HasValue("enableObjectManipulation") ?
+            cfgFile.GetValue<bool>("enableObjectManipulation") : enableObjectManipulation;
+        minEyeGazeLength = cfgFile.HasValue("minEyeGazeLength") ?
+            cfgFile.GetValue<float>("minEyeGazeLength") : minEyeGazeLength;
+        maxEyeGazeGapLength = cfgFile.HasValue("maxEyeGazeGapLength") ?
+            cfgFile.GetValue<float>("maxEyeGazeGapLength") : maxEyeGazeGapLength;
+        useGazeIK = cfgFile.HasValue("useGazeIK") ?
+            cfgFile.GetValue<bool>("useGazeIK") : useGazeIK;
+        useDynamicGazeIKWeights = cfgFile.HasValue("useDynamicGazeIKWeights") ?
+            cfgFile.GetValue<bool>("useDynamicGazeIKWeights") : useDynamicGazeIKWeights;
+        gazeConstraintActivationTime = cfgFile.HasValue("gazeConstraintActivationTime") ?
+            cfgFile.GetValue<float>("gazeConstraintActivationTime") : gazeConstraintActivationTime;
+        adjustGazeTargetForMovingBase = cfgFile.HasValue("adjustGazeTargetForMovingBase") ?
+            cfgFile.GetValue<bool>("adjustGazeTargetForMovingBase") : adjustGazeTargetForMovingBase;
+        timewarpsEnabled = cfgFile.HasValue("timewarpsEnabled") ?
+            cfgFile.GetValue<bool>("timewarpsEnabled") : timewarpsEnabled;
+        timelineBakeRangeStart = cfgFile.HasValue("timelineBakeRangeStart") ?
+            cfgFile.GetValue<int>("timelineBakeRangeStart") : timelineBakeRangeStart;
+        timelineBakeRangeEnd = cfgFile.HasValue("timelineBakeRangeEnd") ?
+            cfgFile.GetValue<int>("timelineBakeRangeEnd") : timelineBakeRangeEnd;
     }
 }

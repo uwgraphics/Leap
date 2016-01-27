@@ -617,10 +617,6 @@ public class AnimationManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationInstanceId, "Gaze");
             EyeGazeEditor.PrintEyeGaze(timeline);
 
-            // Initialize eye tracking data
-            var eyeTrackData = new EyeTrackData(testScenes.modelKinect, bodyAnimation.AnimationClip,
-                174, 1280, 960, 9, -115);
-
             // Initialize test scenario
             editTestScenario.models = new GameObject[1];
             editTestScenario.models[0] = testScenes.modelKinect;

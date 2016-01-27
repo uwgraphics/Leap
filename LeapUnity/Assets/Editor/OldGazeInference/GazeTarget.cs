@@ -50,6 +50,7 @@ public class GazeTarget  {
             AnimationClip.Animation.Sample();
             //////////////////////////////////////////////////////////////
             headTransform = Character.HeadBone.transform;
+            var headDirection = Character.HeadDirection;
             //////////////////////////////////////////////////////////////
             AnimationClip.Animation[AnimationTitle].enabled = false;
 
@@ -61,7 +62,7 @@ public class GazeTarget  {
 
             //findTarget function takes care of looping through the scene collisions to find the point and target
             findTarget(frame, out fp, out tn, out t, SceneCollisions, headTransform.position,
-                headTransform.position + (headTransform.forward.normalized * headDrawDistance), headTransform.forward.normalized);
+                headTransform.position + (headDirection * headDrawDistance), headDirection);
 
             gbs_.Add(new GazeBlock(gb.StartFrame, gb.FixationStartFrame, gb.CharacterName, gb.AnimationClip, tn, t, gb.TurnBody, fp));
 
@@ -191,6 +192,7 @@ public class GazeTarget  {
         AnimationClip.Animation.Sample();
         //////////////////////////////////////////////////////////////
         headTransform = Character.HeadBone.transform;
+        var headDirection = Character.HeadDirection;
         //////////////////////////////////////////////////////////////
         AnimationClip.Animation[AnimationTitle].enabled = false;
 
@@ -209,7 +211,7 @@ public class GazeTarget  {
             var st = SceneTargets[i];
             var targetPos = st.transform.position;
             var hv1 = headTransform.position;
-            var hv2 = headTransform.position + (headTransform.forward.normalized * headDrawDistance);
+            var hv2 = headTransform.position + (headDirection * headDrawDistance);
 
             edgeDistanceTest(hv1, hv2, targetPos, targetPos, out pt1, out pt2, out dist);
             if (dist < minDis) {

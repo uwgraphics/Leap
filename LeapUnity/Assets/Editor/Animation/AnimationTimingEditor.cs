@@ -180,7 +180,7 @@ public static class AnimationTimingEditor
 
         try
         {
-            var csvData = new CSVData();
+            var csvData = new CSVDataFile();
 
             // Define timewarp attributes
             csvData.AddAttribute("Layer", typeof(string));
@@ -315,7 +315,7 @@ public static class AnimationTimingEditor
         }
 
         // Create a CSV data table for per-frame data
-        var csvDataPerFrame = new CSVData();
+        var csvDataPerFrame = new CSVDataFile();
         csvDataPerFrame.AddAttribute("dRoot", typeof(float));
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             if (boneMask[boneIndex])
@@ -344,7 +344,7 @@ public static class AnimationTimingEditor
         csvDataPerFrame.AddAttribute("p", typeof(float));
 
         // Create a CSV data table for extracted key data
-        var csvDataPerKey = new CSVData();
+        var csvDataPerKey = new CSVDataFile();
         csvDataPerKey.AddAttribute("keyFrameIndex", typeof(int));
         csvDataPerKey.AddAttribute("keyFrameIndexRoot", typeof(int));
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
@@ -772,7 +772,7 @@ public static class AnimationTimingEditor
         // Load keyframes
         try
         {
-            var csvData = new CSVData();
+            var csvData = new CSVDataFile();
 
             // Define keyframe data attributes
             csvData.AddAttribute("KeyFrame", typeof(int));
@@ -825,7 +825,7 @@ public static class AnimationTimingEditor
         // Save keyframes
         try
         {
-            var csvData = new CSVData();
+            var csvData = new CSVDataFile();
             
             // Define keyframe data attributes
             csvData.AddAttribute("KeyFrame", typeof(int));

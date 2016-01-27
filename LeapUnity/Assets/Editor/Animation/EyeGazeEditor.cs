@@ -784,28 +784,30 @@ public static class EyeGazeEditor
         GameObject[] models = GameObject.FindGameObjectsWithTag("Agent");
         GameObject model = models.FirstOrDefault(m => m.name.Equals(characterName));
 
-        //gaze inference object
+        // Infer and add gaze instances
         var gi = new GazeInference(animName, characterName, GlobalVars.InferenceIteration);
         var inferenceTimeline = gi.InferenceTimeline;
         var gazeBlocks = inferenceTimeline.GazeBlocks;
-
-        // Infer gaze shift and fixation timings and targets
-        //var eyeGazeInstance = new EyeGazeInstance(model, ...);
-        //AddEyeGaze(timeline, eyeGazeInstance, newStartFrame);
-
-        for (int i = 0; i < gazeBlocks.Count - 1; i++) {
-            var gb = gazeBlocks[i];
-            var gb_next = gazeBlocks[i + 1];
+        for (int gazeBlockIndex = 0; gazeBlockIndex < gazeBlocks.Count - 1; gazeBlockIndex++)
+        {
+            var gb = gazeBlocks[gazeBlockIndex];
+            var gb_next = gazeBlocks[gazeBlockIndex + 1];
             //var eyeGazeInstance = new EyeGazeInstance(model, gb.AnimationClip, frameLength: gb_next.StartFrame - gb.StartFrame, target: gb.Target, fixationStartFrame: gb.FixationStartFrame - gb.StartFrame);
-            var eyeGazeInstance = new EyeGazeInstance(gb.AnimationClip, model, frameLength: gb.FixationEndFrame - gb.StartFrame, target: gb.Target, fixationStartFrame: gb.FixationStartFrame - gb.StartFrame);
+            var eyeGazeInstance = new EyeGazeInstance(gb.AnimationClip, model,
+                frameLength: gb.FixationEndFrame - gb.StartFrame,
+                target: gb.Target,
+                fixationStartFrame: gb.FixationStartFrame - gb.StartFrame);
             AddEyeGaze(timeline, eyeGazeInstance, gb.StartFrame);
         }
 
-        //add last manually
-        var gb_last = gazeBlocks[gazeBlocks.Count - 1];
-        UnityEngine.Debug.Log("last: " + gb_last.FixationEndFrame);
-        var eyeGazeInstance_last = new EyeGazeInstance(gb_last.AnimationClip, model, frameLength: gb_last.FixationEndFrame - gb_last.StartFrame, target: gb_last.Target, fixationStartFrame: gb_last.FixationStartFrame - gb_last.StartFrame);
-        AddEyeGaze(timeline, eyeGazeInstance_last, gb_last.StartFrame);
+        // Add last gaze instance
+        var gazeBlockLast = gazeBlocks[gazeBlocks.Count - 1];
+        UnityEngine.Debug.Log("last: " + gazeBlockLast.FixationEndFrame);
+        var eyeGazeInstanceLast = new EyeGazeInstance(gazeBlockLast.AnimationClip, model,
+            frameLength: gazeBlockLast.FixationEndFrame - gazeBlockLast.StartFrame,
+            target: gazeBlockLast.Target,
+            fixationStartFrame: gazeBlockLast.FixationStartFrame - gazeBlockLast.StartFrame);
+        AddEyeGaze(timeline, eyeGazeInstanceLast, gazeBlockLast.StartFrame);
 
     }
 

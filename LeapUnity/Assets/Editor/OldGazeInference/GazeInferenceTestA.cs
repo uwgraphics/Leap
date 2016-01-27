@@ -304,6 +304,7 @@ public class GazeInferenceTestF
         AnimationClip.Animation.Sample();
         //////////////////////////////////////////////////////////////
         headTransform = Character.HeadBone.transform;
+        var headDirection = Character.HeadDirection;
         //////////////////////////////////////////////////////////////
         AnimationClip.Animation[AnimationTitle].enabled = false;
 
@@ -315,7 +316,7 @@ public class GazeInferenceTestF
 
         //findTarget function takes care of looping through the scene collisions to find the point and target
         findTarget(frame, out fp, out tn, out t, sc, headTransform.position,
-            headTransform.position + (headTransform.forward.normalized * headDrawDistance), headTransform.forward.normalized);
+            headTransform.position + (headDirection * headDrawDistance), headDirection);
 
         fixationPoint = fp;
         targetName = tn;
@@ -863,6 +864,7 @@ public class GazeInferenceTestG
         AnimationClip.Animation.Sample();
         //////////////////////////////////////////////////////////////
         headTransform = Character.HeadBone.transform;
+        var headDirection = Character.HeadDirection;
         //////////////////////////////////////////////////////////////
         AnimationClip.Animation[AnimationTitle].enabled = false;
 
@@ -874,7 +876,7 @@ public class GazeInferenceTestG
 
         //findTarget function takes care of looping through the scene collisions to find the point and target
         findTarget(frame, out fp, out tn, out t, sc, headTransform.position,
-            headTransform.position + (headTransform.forward.normalized * headDrawDistance), headTransform.forward.normalized);
+            headTransform.position + (headDirection * headDrawDistance), headDirection);
 
         fixationPoint = fp;
         targetName = tn;

@@ -1,5 +1,12 @@
 Leap Animation Editor:
 
+#135 [] If the character continues to rotate their body toward the target during the gaze fixation (b/c rotation is part of the body motion), torso may overshoot the target
+  - See example StackBoxesGaze3
+  - Probably b/c torsoAlign = 0, so torso direction will always be (nearly) fixSrcDir, but fixSrcDir doesn't get updated to reflect root movement, resulting in a state of increasing body torque
+
+#134 [] Discontinuity in head pose sometimes occurs when a gaze shift gets interrupted
+  - See example StackBoxesGaze1 -> StackBoxesGaze2
+
 #133 [] Gaze instances do not seem to activate or deactivate correctly around timewarps
   - In WindowWashing example, see how WindowWashingAGaze20 activates before WindowWashingAGaze3 has deactivated
 
