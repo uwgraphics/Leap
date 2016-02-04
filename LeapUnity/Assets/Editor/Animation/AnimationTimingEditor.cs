@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Collections;
 
 /// <summary>
 /// Set of frame indexes determining the temporal location of
@@ -35,6 +36,20 @@ public struct KeyFrameSet
         keyFrame = 0;
         rootKeyFrame = 0;
         boneKeyFrames = new int[ModelUtil.GetAllBones(model).Length];
+    }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="defaultKeyFrameIndex">Default key frame index for each track in the set</param>
+    public KeyFrameSet(GameObject model, int defaultKeyFrameIndex)
+    {
+        keyFrame = defaultKeyFrameIndex;
+        rootKeyFrame = defaultKeyFrameIndex;
+        boneKeyFrames = new int[ModelUtil.GetAllBones(model).Length];
+        for (int boneIndex = 0; boneIndex < boneKeyFrames.Length; ++boneIndex)
+            boneKeyFrames[boneIndex] = defaultKeyFrameIndex;
     }
 
     /// <summary>
@@ -298,12 +313,15 @@ public static class AnimationTimingEditor
     /// <param name="model">Character model</param>
     /// <param name="clip">Animation clip</param>
     /// <returns>Sets of key frame indexes</returns>
-    public static KeyFrameSet[] ExtractAnimationKeyFrames(GameObject model, AnimationClip clip)
+    public static KeyFrameSet[] ExtractAnimationKeyFrames(GameObject model, AnimationClip clip,
+        bool useEndEffectorConstraints = true, bool useRootPosition = true, BitArray boneMask = null,
+        float maxClusterWidth = 0.5f)
     {
         var bones = ModelUtil.GetAllBones(model);
         var endEffectors = ModelUtil.GetEndEffectors(model);
         var instance = new AnimationClipInstance(clip.name, model, true, false, false);
-        var boneMask = new bool[bones.Length];
+        if (boneMask == null)
+            boneMask = new BitArray(bones.Length, true);
 
         // Compute mask over bones that aren't animated
         var curves = AnimationUtility.GetAllCurves(clip);
@@ -311,7 +329,8 @@ public static class AnimationTimingEditor
         {
             var bone = bones[boneIndex];
             string bonePath = ModelUtil.GetBonePath(bone);
-            boneMask[boneIndex] = curves.Any(c => c.type == typeof(Transform) && c.path == bonePath);
+            if (!curves.Any(c => c.type == typeof(Transform) && c.path == bonePath))
+                boneMask[boneIndex] = false;
         }
 
         // Create a CSV data table for per-frame data
@@ -371,10 +390,15 @@ public static class AnimationTimingEditor
             // Estimate bone acceleration
             if (frameIndex >= 2)
             {
-                aRoot[frameIndex] = aRoot[frameIndex - 1] = (bones[0].position - 2f * pRootm1 + pRootm2).magnitude *
-                    LEAPCore.editFrameRate * LEAPCore.editFrameRate;
+                if (useRootPosition)
+                    aRoot[frameIndex] = aRoot[frameIndex - 1] = (bones[0].position - 2f * pRootm1 + pRootm2).magnitude *
+                        LEAPCore.editFrameRate * LEAPCore.editFrameRate;
+
                 for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
                 {
+                    if (!boneMask[boneIndex])
+                        continue;
+
                     Quaternion dq2 = Quaternion.Inverse(Quaternion.Inverse(qBonesm2[boneIndex]) * qBonesm1[boneIndex]) *
                         (Quaternion.Inverse(qBonesm1[boneIndex]) * bones[boneIndex].localRotation);
                     aBones[boneIndex, frameIndex] = aBones[boneIndex, frameIndex - 1] =
@@ -383,63 +407,110 @@ public static class AnimationTimingEditor
 
                 if (frameIndex == 2)
                 {
-                    aRoot[frameIndex - 2] = aRoot[frameIndex];
+                    if (useRootPosition)
+                        aRoot[frameIndex - 2] = aRoot[frameIndex];
+
                     for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                    {
+                        if (!boneMask[boneIndex])
+                            continue;
+
                         aBones[boneIndex, frameIndex - 2] = aBones[boneIndex, frameIndex];
+                    }
                 }
             }
 
             // Compute bone movement magnitudes
             if (frameIndex >= 1)
             {
-                dRoot[frameIndex] = (bones[0].position - pRootm1).magnitude;
+                if (useRootPosition)
+                    dRoot[frameIndex] = (bones[0].position - pRootm1).magnitude;
+
                 for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                {
+                    if (!boneMask[boneIndex])
+                        continue;
+
                     dBones[boneIndex, frameIndex] = QuaternionUtil.Angle(Quaternion.Inverse(qBonesm1[boneIndex]) *
                         bones[boneIndex].localRotation);
+                }
 
                 if (frameIndex == 1)
                 {
-                    dRoot[0] = dRoot[frameIndex];
+                    if (useRootPosition)
+                        dRoot[0] = dRoot[frameIndex];
+
                     for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                    {
+                        if (!boneMask[boneIndex])
+                            continue;
+
                         dBones[boneIndex, 0] = dBones[boneIndex, frameIndex];
+                    }
                 }
             }
 
-            pRootm2 = pRootm1;
-            pRootm1 = bones[0].position;
+            if (useRootPosition)
+            {
+                pRootm2 = pRootm1;
+                pRootm1 = bones[0].position;
+            }
+
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
+                if (!boneMask[boneIndex])
+                    continue;
+
                 qBonesm2[boneIndex] = qBonesm1[boneIndex];
                 qBonesm1[boneIndex] = bones[boneIndex].localRotation;
             }
         }
 
         // Store unnormalized acceleration values
-        aRoot.CopyTo(a0Root, 0);
+        if (useRootPosition)
+            aRoot.CopyTo(a0Root, 0);
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
+            if (!boneMask[boneIndex])
+                continue;
+
             var data = CollectionUtil.GetRow<float>(aBones, boneIndex);
             CollectionUtil.SetRow<float>(a0Bones, boneIndex, data);
         }
 
         // Normalize acceleration values
-        float maxARoot = aRoot.Max();
+        float maxARoot = useRootPosition ? aRoot.Max() : 0f;
         float[] maxABones = new float[bones.Length];
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            if (!boneMask[boneIndex])
+                continue;
+
             for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
                 maxABones[boneIndex] = Mathf.Max(maxABones[boneIndex], aBones[boneIndex, frameIndex]);
+        }
         for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
         {
-            aRoot[frameIndex] = maxARoot > 0f ? aRoot[frameIndex] / maxARoot : 0f;
+            if (useRootPosition)
+                aRoot[frameIndex] = maxARoot > 0f ? aRoot[frameIndex] / maxARoot : 0f;
+
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                if (!boneMask[boneIndex])
+                    continue;
+
                 aBones[boneIndex, frameIndex] = maxABones[boneIndex] > 0f ?
                     aBones[boneIndex, frameIndex] / maxABones[boneIndex] : 0f;
+            }
         }
 
         // Limb lengths:
         float[] limbLengths = new float[bones.Length];
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
+            if (!boneMask[boneIndex])
+                continue;
+
             var bone = bones[boneIndex];
             limbLengths[boneIndex] = 0f;
             for (int childIndex = 0; childIndex < bone.childCount; ++childIndex)
@@ -468,16 +539,26 @@ public static class AnimationTimingEditor
         for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
         {
             // Compute probabilities for single bone positions and rotations
-            pRoot[frameIndex] = aRoot[frameIndex];
+            pRoot[frameIndex] = useRootPosition ? aRoot[frameIndex] : 0f;
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                if (!boneMask[boneIndex])
+                    continue;
+
                 pBones[boneIndex, frameIndex] = aBones[boneIndex, frameIndex];
+            }
 
             // Compute weights for bone probability signals
-            wRoot[frameIndex] = limbLengths[0] * dRoot[frameIndex];
+            wRoot[frameIndex] = useRootPosition ? limbLengths[0] * dRoot[frameIndex] : 0f;
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-                wBones[boneIndex, frameIndex] = limbLengths[boneIndex] * dBones[boneIndex, frameIndex];
+            {
+                if (!boneMask[boneIndex])
+                    continue;
 
-            if (instance.EndEffectorConstraints != null)
+                wBones[boneIndex, frameIndex] = limbLengths[boneIndex] * dBones[boneIndex, frameIndex];
+            }
+
+            if (useEndEffectorConstraints && instance.EndEffectorConstraints != null)
             {
                 // Compute end-effector constraint probabilities and weights
                 var time = new TimeSet(model, LEAPCore.ToTime(frameIndex));
@@ -506,19 +587,27 @@ public static class AnimationTimingEditor
         }
 
         /*// Store unsmoothed probability signals
-        pRoot.CopyTo(p0Root, 0);
+        if (useRootPosition)
+            pRoot.CopyTo(p0Root, 0);
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
+            if (!boneMask[boneIndex])
+                continue;
+
             var data = CollectionUtil.GetRow<float>(pBones, boneIndex);
             CollectionUtil.SetRow<float>(p0Bones, boneIndex, data);
         }
 
         // Laplacian smoothing of probability signals
-        GeometryUtil.SmoothCurve(pRoot, LEAPCore.keyExtractLaplaceNumIterations,
-            LEAPCore.keyExtractLaplaceLambda, LEAPCore.keyExtractLaplaceMu);
+        if (useRootPosition)
+            GeometryUtil.SmoothCurve(pRoot, LEAPCore.keyExtractLaplaceNumIterations,
+                LEAPCore.keyExtractLaplaceLambda, LEAPCore.keyExtractLaplaceMu);
         float[] pBones0 = new float[instance.FrameLength];
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
+            if (!boneMask[boneIndex])
+                continue;
+
             System.Buffer.BlockCopy(pBones, boneIndex * instance.FrameLength * sizeof(float),
                 pBones0, 0, instance.FrameLength * sizeof(float));
             GeometryUtil.SmoothCurve(pBones0, LEAPCore.keyExtractLaplaceNumIterations,
@@ -528,17 +617,29 @@ public static class AnimationTimingEditor
         }*/
 
         // Normalize bone probability signal weights
-        float maxWRoot = wRoot.Max();
+        float maxWRoot = useRootPosition ? wRoot.Max() : 0f;
         float[] maxWBones = new float[bones.Length];
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+        {
+            if (!boneMask[boneIndex])
+                continue;
+
             for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
                 maxWBones[boneIndex] = Mathf.Max(maxWBones[boneIndex], wBones[boneIndex, frameIndex]);
+        }
         for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
         {
-            wRoot[frameIndex] = maxWRoot > 0f ? wRoot[frameIndex] / maxWRoot : 0f;
+            if (useRootPosition)
+                wRoot[frameIndex] = maxWRoot > 0f ? wRoot[frameIndex] / maxWRoot : 0f;
+
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+            {
+                if (!boneMask[boneIndex])
+                    continue;
+
                 wBones[boneIndex, frameIndex] = maxWBones[boneIndex] > 0f ?
                     wBones[boneIndex, frameIndex] / maxWBones[boneIndex] : 0f;
+            }
         }
 
         // Compute the global probability signal
@@ -548,10 +649,13 @@ public static class AnimationTimingEditor
             float sumW = 0f;
 
             // Add bone probabilities and weights
-            sumP += (wRoot[frameIndex] * pRoot[frameIndex]);
-            sumW += wRoot[frameIndex];
+            sumP += (useRootPosition ? (wRoot[frameIndex] * pRoot[frameIndex]) : 0f);
+            sumW += (useRootPosition ? wRoot[frameIndex] : 0f);
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
+                if (!boneMask[boneIndex])
+                    continue;
+
                 sumP += (wBones[boneIndex, frameIndex] * pBones[boneIndex, frameIndex]);
                 sumW += wBones[boneIndex, frameIndex];
             }
@@ -572,10 +676,16 @@ public static class AnimationTimingEditor
         FilterUtil.Filter(p0, p, FilterUtil.GetTentKernel1D(LEAPCore.keyExtractLowPassKernelSize));
 
         // Smooth the local probability signals
-        pRoot.CopyTo(p0Root, 0);
-        FilterUtil.Filter(p0Root, pRoot, FilterUtil.GetTentKernel1D(LEAPCore.keyExtractLowPassKernelSize));
+        if (useRootPosition)
+        {
+            pRoot.CopyTo(p0Root, 0);
+            FilterUtil.Filter(p0Root, pRoot, FilterUtil.GetTentKernel1D(LEAPCore.keyExtractLowPassKernelSize));
+        }
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
+            if (!boneMask[boneIndex])
+                continue;
+
             var data0 = CollectionUtil.GetRow<float>(pBones, boneIndex);
             CollectionUtil.SetRow<float>(p0Bones, boneIndex, data0);
             var data = new float[data0.Length];
@@ -595,7 +705,7 @@ public static class AnimationTimingEditor
 
                 if (keyFrameIndexes.Count > 0 &&
                     (time - keyFrameIndexes[keyFrameIndexes.Count - 1] / ((float)LEAPCore.editFrameRate))
-                    < LEAPCore.keyExtractMaxClusterWidth / 2)
+                    < maxClusterWidth / 2)
                 {
                     // Last key frame is too close to the current candidate
                     if (p[frameIndex] < lastP)
@@ -618,29 +728,32 @@ public static class AnimationTimingEditor
             int keyFrameIndex = keyFrameIndexes[keyIndex];
             int prevKeyFrameIndex = keyIndex > 0 ? keyFrameIndexes[keyIndex - 1] : -1;
             int nextKeyFrameIndex = keyIndex < keyFrameIndexes.Count - 1 ? keyFrameIndexes[keyIndex + 1] : -1;
-            int clusterFrameWidth = Mathf.RoundToInt(LEAPCore.keyExtractMaxClusterWidth * LEAPCore.editFrameRate);
+            int clusterFrameWidth = Mathf.RoundToInt(maxClusterWidth * LEAPCore.editFrameRate);
 
             // Find local keyframe index for the root position
             int rootKeyFrameIndex = keyFrameIndex;
-            float pRootMax = 0f;
-            for (int frameIndex = Mathf.Max(keyFrameIndex - clusterFrameWidth / 2, 1);
-                frameIndex <= Mathf.Min(keyFrameIndex + clusterFrameWidth / 2, instance.FrameLength - 2);
-                ++frameIndex)
+            if (useRootPosition)
             {
-                if (pRoot[frameIndex] > pRoot[frameIndex - 1] && pRoot[frameIndex] > pRoot[frameIndex + 1])
+                float pRootMax = 0f;
+                for (int frameIndex = Mathf.Max(keyFrameIndex - clusterFrameWidth / 2, 1);
+                    frameIndex <= Mathf.Min(keyFrameIndex + clusterFrameWidth / 2, instance.FrameLength - 2);
+                    ++frameIndex)
                 {
-                    // This is a candidate local keyframe index
-                    if (Math.Abs(frameIndex - prevKeyFrameIndex) < Math.Abs(frameIndex - keyFrameIndex) ||
-                        Math.Abs(nextKeyFrameIndex - frameIndex) < Math.Abs(frameIndex - keyFrameIndex))
+                    if (pRoot[frameIndex] > pRoot[frameIndex - 1] && pRoot[frameIndex] > pRoot[frameIndex + 1])
                     {
-                        // Candidate is closer to a neighboring key
-                        continue;
-                    }
+                        // This is a candidate local keyframe index
+                        if (Math.Abs(frameIndex - prevKeyFrameIndex) < Math.Abs(frameIndex - keyFrameIndex) ||
+                            Math.Abs(nextKeyFrameIndex - frameIndex) < Math.Abs(frameIndex - keyFrameIndex))
+                        {
+                            // Candidate is closer to a neighboring key
+                            continue;
+                        }
 
-                    if (pRoot[frameIndex] > pRootMax)
-                    {
-                        pRootMax = pRoot[frameIndex];
-                        rootKeyFrameIndex = frameIndex;
+                        if (pRoot[frameIndex] > pRootMax)
+                        {
+                            pRootMax = pRoot[frameIndex];
+                            rootKeyFrameIndex = frameIndex;
+                        }
                     }
                 }
             }
@@ -649,6 +762,9 @@ public static class AnimationTimingEditor
             int[] boneKeyFrameIndexes = new int[bones.Length];
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
+                if (!boneMask[boneIndex])
+                    continue;
+
                 boneKeyFrameIndexes[boneIndex] = keyFrameIndex;
 
                 float pBoneMax = 0f;
@@ -677,7 +793,7 @@ public static class AnimationTimingEditor
             }
 
             // Create and add keyframe set
-            KeyFrameSet keyFrameSet = new KeyFrameSet(model);
+            var keyFrameSet = new KeyFrameSet(model);
             keyFrameSet.keyFrame = keyFrameIndex;
             keyFrameSet.rootKeyFrame = rootKeyFrameIndex;
             keyFrameSet.boneKeyFrames = boneKeyFrameIndexes;

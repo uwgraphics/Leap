@@ -92,16 +92,6 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     /// <summary>
-    /// If false, this eye gaze instance is an edit; otherwise,
-    /// represents a gaze shift from the base animation.
-    /// </summary>
-    public virtual bool IsBase
-    {
-        get;
-        protected set;
-    }
-
-    /// <summary>
     /// Position towards which the character should gaze in order to gaze straight ahead.
     /// </summary>
     /// <remarks>This property is only used is gaze instances where Target is set to null</remarks>
@@ -111,10 +101,27 @@ public class EyeGazeInstance : AnimationControllerInstance
         set;
     }
 
+    /// <summary>
+    /// Base animation clip.
+    /// </summary>
+    public virtual AnimationClip BaseAnimationClip
+    {
+        get { return _baseInstance.AnimationClip; }
+    }
+
+    /// <summary>
+    /// Gaze target animation clip.
+    /// </summary>
+    public virtual AnimationClip TargetAnimationClip
+    {
+        get
+        {
+            return _targetInstance != null ? _targetInstance.AnimationClip : null;
+        }
+    }
+
     protected float _headAlign, _torsoAlign;
-    protected int _baseStartFrame = 0;
-    protected int _baseFixationStartFrame = 0;
-    protected int _baseFrameLength = 0;
+    protected AnimationClipInstance _baseInstance, _targetInstance;
 
     // TODO: not happy about having elements of runtime state in this class
     protected bool _isActive = false;
@@ -126,7 +133,7 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// <param name="name">Animation instance name</param>
     /// <param name="model">Character model</param>
     /// <param name="frameLength">Duration of the fixation on the target</param>
-    /// <param name="target">Gaze target (null will generate a random gaze aversion)</param>
+    /// <param name="target">Gaze target (null will look ahead)</param>
     /// <param name="headAlign">Head alignment</param>
     /// <param name="torsoAlign">Torso alignment</param>
     /// <param name="fixationStartFrame">Frame (relative to the start of the gaze instance) when the gaze shift
@@ -137,25 +144,21 @@ public class EyeGazeInstance : AnimationControllerInstance
     /// represents a gaze shift from the base animation.</param>
     /// <param name="baseStartFrame">Start frame of the eye gaze instance in the base animation;
     /// only relevant when the gaze instance is not a novel edit</param>
-    public EyeGazeInstance(string name, GameObject model,
-        int frameLength = 30, GameObject target = null, float headAlign = 0f, float torsoAlign = 0f,
-        int fixationStartFrame = -1, bool turnBody = true, bool isBase = false, int baseStartFrame = 0)
+    public EyeGazeInstance(string name, GameObject model, int frameLength = 30, int fixationStartFrame = -1,
+        GameObject target = null, float headAlign = 0f, float torsoAlign = 0f, bool turnBody = true,
+        AnimationClip baseAnimationClip = null, AnimationClip targetAnimationClip = null)
         : base(name, model, typeof(GazeController), frameLength)
     {
+        _SetFixationStartFrame(fixationStartFrame);
         Target = target;
         HeadAlign = headAlign;
         TorsoAlign = torsoAlign;
-        _SetFixationStartFrame(fixationStartFrame);
         TurnBody = turnBody;
-        IsBase = isBase;
 
-        if (isBase)
-        {
-            // Initialize base gaze shift timings
-            _baseStartFrame = baseStartFrame;
-            _baseFixationStartFrame = fixationStartFrame;
-            _baseFrameLength = frameLength;
-        }
+        _baseInstance = baseAnimationClip != null ?
+            new AnimationClipInstance(baseAnimationClip.name, Model, false, false, false) : null;
+        _targetInstance = targetAnimationClip != null && Target != null ?
+            new AnimationClipInstance(targetAnimationClip.name, Target, false, false, false) : null;
     }
 
     /// <summary>
@@ -171,6 +174,16 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     /// <summary>
+    /// Set gaze target animation clip.
+    /// </summary>
+    /// <param name="targetAnimationClip">Gaze target animation clip</param>
+    public virtual void _SetTargetAnimationClip(AnimationClip targetAnimationClip)
+    {
+        _targetInstance = Target != null && targetAnimationClip != null ?
+                new AnimationClipInstance(targetAnimationClip.name, Target, false, false, false) : null;
+    }
+
+    /// <summary>
     /// <see cref="AnimationControllerInstance._ApplyController"/>
     /// </summary>
     protected override void _ApplyController(TimeSet times)
@@ -182,7 +195,7 @@ public class EyeGazeInstance : AnimationControllerInstance
         if (frame == 0 && !_isActive)
         {
             // Start current gaze instance
-            _Start();
+            _Start(times);
         }
         
         if (_isActive && frame < FrameLength)
@@ -210,7 +223,7 @@ public class EyeGazeInstance : AnimationControllerInstance
     }
 
     // Start the current gaze instance
-    protected virtual void _Start()
+    protected virtual void _Start(TimeSet times)
     {
         _isActive = true;
 
@@ -234,15 +247,15 @@ public class EyeGazeInstance : AnimationControllerInstance
         // Initiate gaze shift to the target
         GazeController.head.align = Mathf.Clamp01(HeadAlign);
         if (GazeController.torso != null)
-        {
             GazeController.torso.align = Mathf.Clamp01(TorsoAlign);
-        }
         GazeController.useTorso = TurnBody;
+        var movingTargetPosOff = _baseInstance != null ?
+            EyeGazeEditor.ComputeMovingGazeTargetPositionOffset(this, times, _baseInstance, _targetInstance) :
+            Vector3.zero;
         if (Target != null)
-            GazeController.GazeAt(Target);
+            GazeController.GazeAt(Target, movingTargetPosOff);
         else
-            GazeController.GazeAt(AheadTargetPosition);
-        _InitGazeParameters();
+            GazeController.GazeAt(AheadTargetPosition, movingTargetPosOff);
     }
 
     // Finish the current gaze instance
@@ -269,21 +282,6 @@ public class EyeGazeInstance : AnimationControllerInstance
 
         // Unregister handler for gaze controller state changes
         GazeController.StateChange -= GazeController_StateChange;
-    }
-
-    // Compute gaze shift parameters to account for anticipated body movement
-    protected virtual void _InitGazeParameters()
-    {
-        // How far ahead do we need to look to anticipate the target?
-        var timeline = AnimationManager.Instance.Timeline;
-        var baseAnimationLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
-        var baseAnimationInstance = baseAnimationLayer.Animations.FirstOrDefault(
-            inst => inst.Animation.Model == Model);
-        GazeController._MovingTargetPositionOffset = EyeGazeEditor.ComputeMovingTargetPositionOffset(
-            AnimationManager.Instance.Timeline, baseAnimationInstance.InstanceId, this,
-            AnimationManager.Instance.Timeline.CurrentFrame,
-            Target == null ? AheadTargetPosition : Target.transform.position);
-        // TODO: this should be computed in some smarter, e.g., base animation could be specified as a parameter of the eye gaze instance
     }
 
     // Handler for gaze controller state changes

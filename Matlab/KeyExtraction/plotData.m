@@ -1,30 +1,33 @@
 % Plot configuration:
-boneMask = [11];
-endEffectorMask = [2];
+boneMask = [1];
+endEffectorMask = [];
+numberOfBones = 6;
+numberOfEndEffectors = 4;
 showDRoot = false;
 showDBones = false;
 showARoot = false;
 showABones = false;
 showP0Root = false;
-showP0Bones = true;
+showP0Bones = false;
 showPRoot = false;
-showPBones = true;
+showPBones = false;
 showWRoot = false;
 showWBones = false;
 showPEndEff = false;
 showWEndEff = false;
 showP0 = false;
-showP = false;
+showP = true;
 showKeyFrames = true;
 showRootKeyFrames = false;
-showBoneKeyFrames = true;
+showBoneKeyFrames = false;
 startFrame = 1;
 endFrame = 300;
 normalizeA = true;
 
-% Norman bone indexes:
+% Bone indexes:
 %
-% 1. srfBind_Cn_Pelvis
+% Norman
+% 1. srfBind_Cn_Pelvis	 
 % 2. srfBind_Cn_SpineA
 % 3. srfBind_Cn_SpineB
 % 4. srfBind_Cn_SpineC
@@ -43,44 +46,70 @@ normalizeA = true;
 % 17. srfBind_Rt_LegC
 % 18. srfBind_Rt_FootA
 %
+% NormanNew (gaze only)
+% 1. Bone_Hips
+% 2. Bone_SpineA
+% 3. Bone_SpineB
+% 4. Bone_SpineC
+% 5. Bone_Neck
+% 6. Bone_Head
+%
 % End-effector indexes:
 %
 % 1. LWrist
 % 2. RWrist
 % 3. LFoot
 % 4. RFoot
-%
-% dataPerFrame column index ranges:
-%
-% 1         dRoot
-% 2:19      dBones
-% 20        aRoot
-% 21:38     aBones
-% 39        p0Root
-% 40:57     p0Bones
-% 58        pRoot
-% 59:76     pBones
-% 77        wRoot
-% 78:95     wBones
-% 96:99     pEndEff
-% 100:103   wEndEff
-% 104       p0
-% 105       p
-%
-% dataPerKey column index ranges:
-%
-% 1         keyFrame
-% 2         rootKeyFrame
-% 3:20      boneKeyFrame
+
+% Compute array index ranges for per-frame data
+indexDRoot = 1;
+startIndexDBones = indexDRoot + 1;
+endIndexDBones = startIndexDBones + numberOfBones - 1;
+indexARoot = endIndexDBones + 1;
+startIndexABones = indexARoot + 1;
+endIndexABones = startIndexABones + numberOfBones - 1;
+indexP0Root = endIndexABones + 1;
+startIndexP0Bones = indexP0Root + 1;
+endIndexP0Bones = startIndexP0Bones + numberOfBones - 1;
+indexPRoot = endIndexP0Bones + 1;
+startIndexPBones = indexPRoot + 1;
+endIndexPBones = startIndexPBones + numberOfBones - 1;
+indexWRoot = endIndexPBones + 1;
+startIndexWBones = indexWRoot + 1;
+endIndexWBones = startIndexWBones + numberOfBones - 1;
+startIndexPEndEff = endIndexWBones + 1;
+endIndexPEndEff = startIndexPEndEff + numberOfEndEffectors - 1;
+startIndexWEndEff = endIndexPEndEff + 1;
+endIndexWEndEff = startIndexWEndEff + numberOfEndEffectors - 1;
+indexP0 = endIndexWEndEff + 1;
+indexP = indexP0 + 1;
+
+% Compute array index ranges for per-key data
+indexKeyFrame = 1;
+indexRootKeyFrame = indexKeyFrame + 1;
+startIndexBoneKeyFrame = indexRootKeyFrame + 1;
+endIndexBoneKeyFrame = startIndexBoneKeyFrame + numberOfBones - 1;
 
 % Load per-frame data
 dataPerFrame = csvread('dataPerFrame.csv', 1);
 frameLength = size(dataPerFrame, 1);
 frames = [startFrame:endFrame];
-dRoot = dataPerFrame(startFrame:endFrame, 1);
-dBones = dataPerFrame(startFrame:endFrame, 2:19);
-aRoot = dataPerFrame(startFrame:endFrame, 20);
-aBones = dataPerFrame(startFrame:endFrame, 21:38);
+dRoot = dataPerFrame(startFrame:endFrame, indexDRoot);
+dBones = dataPerFrame(startFrame:endFrame, startIndexDBones:endIndexDBones);
+aRoot = dataPerFrame(startFrame:endFrame, indexARoot);
+aBones = dataPerFrame(startFrame:endFrame, startIndexABones:endIndexABones);
+p0Root = dataPerFrame(startFrame:endFrame, indexP0Root);
+p0Bones = dataPerFrame(startFrame:endFrame, startIndexP0Bones:endIndexP0Bones);
+pRoot = dataPerFrame(startFrame:endFrame, indexPRoot);
+pBones = dataPerFrame(startFrame:endFrame, startIndexPBones:endIndexPBones);
+wRoot = dataPerFrame(startFrame:endFrame, indexWRoot);
+wBones = dataPerFrame(startFrame:endFrame, startIndexWBones:endIndexWBones);
+pEndEff = dataPerFrame(startFrame:endFrame, startIndexPEndEff:endIndexPEndEff);
+wEndEff = dataPerFrame(startFrame:endFrame, startIndexWEndEff:endIndexWEndEff);
+p0 = dataPerFrame(startFrame:endFrame, indexP0);
+p = dataPerFrame(startFrame:endFrame, indexP);
+
+% Normalize accelerations
 if normalizeA
     aRoot = aRoot / max(aRoot);
     for i = 1:size(aBones, 2)
@@ -88,16 +117,6 @@ if normalizeA
         aBones(:, i) = aBonesSub / max(aBonesSub);
     end
 end
-p0Root = dataPerFrame(startFrame:endFrame, 39);
-p0Bones = dataPerFrame(startFrame:endFrame, 40:57);
-pRoot = dataPerFrame(startFrame:endFrame, 58);
-pBones = dataPerFrame(startFrame:endFrame, 59:76);
-wRoot = dataPerFrame(startFrame:endFrame, 77);
-wBones = dataPerFrame(startFrame:endFrame, 1);
-pEndEff = dataPerFrame(startFrame:endFrame, 96:99);
-wEndEff = dataPerFrame(startFrame:endFrame, 100:103);
-p0 = dataPerFrame(startFrame:endFrame, 104);
-p = dataPerFrame(startFrame:endFrame, 105);
 
 % Plot per-frame data
 hold on;
@@ -200,14 +219,29 @@ if showP
     plot(frames, p, '-r');
 end
 
+% TODO: remove this
+% Show gaze joint velocities
+dataPerFrame = csvread('gazeJointVelocities.csv', 1);
+vBones = dataPerFrame(startFrame:endFrame, 1:numberOfBones);
+if size(boneMask, 2) == 0
+    for i = 1:size(vBones, 2)
+        plot(frames, vBones, '-b');
+    end
+else
+    for i = 1:size(boneMask, 2)
+        plot(frames, vBones(:,boneMask(:, i)), '-b');
+    end
+end
+%
+
 % Load per-key data
 dataPerKey = csvread('dataPerKey.csv', 1);
-keyFrames = dataPerKey(:, 1);
+keyFrames = dataPerKey(:, indexKeyFrame);
 keyFrameIndexes = find(keyFrames < startFrame | keyFrames > endFrame);
 keyFrames(keyFrameIndexes) = [];
-rootKeyFrames = dataPerKey(:, 2);
+rootKeyFrames = dataPerKey(:, indexRootKeyFrame);
 rootKeyFrames(keyFrameIndexes) = [];
-boneKeyFrames = dataPerKey(:, 3:20);
+boneKeyFrames = dataPerKey(:, startIndexBoneKeyFrame:endIndexBoneKeyFrame);
 boneKeyFrames(keyFrameIndexes, :) = [];
 
 % Plot per-key data

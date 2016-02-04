@@ -267,19 +267,19 @@ public class AnimationManager
         testScenes.modelWindowWashingNewEnv.SetActive(false);
         testScenes.modelStackBoxesEnv.SetActive(false);
 
-        // Create and configure animation layers
-        timeline.AddLayer(AnimationLayerMode.Override, 0, LEAPCore.baseAnimationLayerName);
+        // Create and configure animation layers:
+        timeline.AddLayer(AnimationLayerMode.Override, 0, LEAPCore.helperAnimationLayerName);
+        timeline.GetLayer(LEAPCore.helperAnimationLayerName).isBase = false;
+        timeline.GetLayer(LEAPCore.helperAnimationLayerName).isIKEndEffectorConstr = false;
+        timeline.AddLayer(AnimationLayerMode.Override, 5, LEAPCore.environmentAnimationLayerName);
+        timeline.GetLayer(LEAPCore.environmentAnimationLayerName).isBase = false;
+        timeline.GetLayer(LEAPCore.environmentAnimationLayerName).isIKEndEffectorConstr = false;
+        timeline.AddLayer(AnimationLayerMode.Override, 10, LEAPCore.baseAnimationLayerName);
         timeline.GetLayer(LEAPCore.baseAnimationLayerName).isIKEndEffectorConstr = true;
         timeline.GetLayer(LEAPCore.baseAnimationLayerName).isBase = true;
-        timeline.AddLayer(AnimationLayerMode.Override, 7, "Gaze");
-        timeline.GetLayer("Gaze").isBase = false;
-        timeline.GetLayer("Gaze").isGaze = true;
-        timeline.AddLayer(AnimationLayerMode.Override, 10, "Environment");
-        timeline.GetLayer("Environment").isBase = false;
-        timeline.GetLayer("Environment").isIKEndEffectorConstr = false;
-        timeline.AddLayer(AnimationLayerMode.Override, -10, "Helpers");
-        timeline.GetLayer("Helpers").isBase = false;
-        timeline.GetLayer("Helpers").isIKEndEffectorConstr = false;
+        timeline.AddLayer(AnimationLayerMode.Override, 15, LEAPCore.eyeGazeAnimationLayerName);
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).isBase = false;
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).isGaze = true;
 
         // Configure gaze controllers
         testScenes.modelNorman.GetComponent<GazeController>().head.postureWeight = 0f;
@@ -315,7 +315,7 @@ public class AnimationManager
                 bodyAnimationNorman, 0);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
         }
         else if (sceneName == "WindowWashing")
@@ -342,15 +342,15 @@ public class AnimationManager
             // Add animations to characters
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
                 bodyAnimationNorman, 0);
-            timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNormanette, 0, "Helpers");
+            timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNormanette, 0, LEAPCore.helperAnimationLayerName);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Create environment animations
             var envController = testScenes.modelWindowWashingEnv.GetComponent<EnvironmentController>();
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "WindowWashingSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge"),
                     false, false, false));
@@ -380,7 +380,7 @@ public class AnimationManager
 
             // Some end-effector goals are affected by gaze, so reconfigure IK for layers
             /*timeline.GetLayer(LEAPCore.baseAnimationLayerName).isIKEndEffectorConstr = false;
-            timeline.GetLayer("Gaze").isIKEndEffectorConstr = true;*/
+            timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).isIKEndEffectorConstr = true;*/
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNorman);
@@ -393,22 +393,22 @@ public class AnimationManager
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("PassSodaA", testScenes.modelNorman);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationNorman, 0, "Helpers");
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
             var bodyAnimationRoman = new AnimationClipInstance("PassSodaB", testScenes.modelRoman);
             int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationRoman, 0, "Helpers");
+                bodyAnimationRoman, 0, LEAPCore.helperAnimationLayerName);
             var bodyAnimationNormanette = new AnimationClipInstance("PassSodaC", testScenes.modelNormanette);
             timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNormanette, 0);
 
             // Create environment animations
             var envController = testScenes.modelPassSodaEnv.GetComponent<EnvironmentController>();
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance("PassSodaBottle", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "SodaBottle"),
                     false, false, false));
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -438,10 +438,10 @@ public class AnimationManager
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("Walking90deg", testScenes.modelNorman);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationNorman, 0, "Helpers");
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -469,14 +469,14 @@ public class AnimationManager
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("HandShakeA", testScenes.modelNorman);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationNorman, 0, "Helpers");
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
             var bodyAnimationRoman = new AnimationClipInstance("HandShakeB", testScenes.modelRoman);
             int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationRoman, 0, "Helpers");
+                bodyAnimationRoman, 0, LEAPCore.helperAnimationLayerName);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -503,21 +503,21 @@ public class AnimationManager
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("BookShelf", testScenes.modelNorman);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationNorman, 0, "Helpers");
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Create environment animations
             var envController = testScenes.modelBookShelfEnv.GetComponent<EnvironmentController>();
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance("BookShelfBook1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1"),
                     false, false, false));
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance("BookShelfBook2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2"),
                     false, false, false));
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance("BookShelfBook3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3"),
                     false, false, false));
 
@@ -547,16 +547,16 @@ public class AnimationManager
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("StealDiamond", testScenes.modelNorman);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationNorman, 0, "Helpers");
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
 
             // Create environment animations
             var envController = testScenes.modelStealDiamondEnv.GetComponent<EnvironmentController>();
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance("StealDiamondGem", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Gem"),
                     false, false, false));
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -584,10 +584,10 @@ public class AnimationManager
             // Create animation instances
             var bodyAnimationNorman = new AnimationClipInstance("WaitForBus", testScenes.modelNorman);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationNorman, 0, "Helpers");
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -611,10 +611,10 @@ public class AnimationManager
             // Create animation instances
             var bodyAnimation = new AnimationClipInstance("EyeTrackMocapTest1-1", testScenes.modelKinect);
             int bodyAnimationInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimation, 0, "Helpers");
+                bodyAnimation, 0, LEAPCore.helperAnimationLayerName);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Initialize test scenario
@@ -643,12 +643,12 @@ public class AnimationManager
                 bodyAnimationNorman, 0);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Create environment animations
             var envController = testScenes.modelWindowWashingEnv.GetComponent<EnvironmentController>();
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "WindowWashingNewSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge"),
                     false, false, false));
@@ -684,24 +684,24 @@ public class AnimationManager
                 bodyAnimationNorman, 0);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Create environment animations
             var envController = testScenes.modelStackBoxesEnv.GetComponent<EnvironmentController>();
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "StackBoxes1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube1"),
                     false, false, false));
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "StackBoxes2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube2"),
                     false, false, false));
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "StackBoxes3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube3"),
                     false, false, false));
-            timeline.AddManipulatedObjectAnimation("Environment",
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "StackBoxes4", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube4"),
                     false, false, false));
@@ -730,10 +730,10 @@ public class AnimationManager
             var bodyAnimationNorman = new AnimationClipInstance("InitialPose", testScenes.modelNorman,
                 false, false, false);
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationNorman, 0, "Helpers");
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
 
             // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
         }
 

@@ -183,7 +183,7 @@ public class GazeController : AnimController
     /// </summary>
     public virtual Vector3 MovingGazeTargetPosition
     {
-        get { return CurrentGazeTarget.transform.position + curMovingTargetPosOff; }
+        get { return CurrentGazeTarget.transform.position + _curMovingTargetPosOff; }
     }
 
     /// <summary>
@@ -257,10 +257,26 @@ public class GazeController : AnimController
     /// <summary>
     /// Gaze shift amplitude.
     /// </summary>
-    public float Amplitude
+    public virtual float Amplitude
     {
         get;
         protected set;
+    }
+
+    /// <summary>
+    /// Minimal torso rotational amplitude from overall gaze shift amplitude.
+    /// </summary>
+    public virtual float MinTorsoAmplitude
+    {
+        get
+        {
+            if (Amplitude >= 40f)
+                return 0.43f * Mathf.Exp(0.029f * Amplitude) + 0.186f;
+            else if (Amplitude >= 20f)
+                return 0.078f * Amplitude - 1.558f;
+
+            return 0f;
+        }
     }
 
     /// <summary>
@@ -328,7 +344,7 @@ public class GazeController : AnimController
     /// </summary>
     public Quaternion _RootRotation
     {
-        get { return rootRot; }
+        get { return _rootRot; }
     }
 
     /// <summary>
@@ -336,21 +352,21 @@ public class GazeController : AnimController
     /// </summary>
     public Quaternion _FixRootRotation
     {
-        get { return fixRootRot; }
+        get { return _fixRootRot; }
     }
 
     // Current gaze shift settings:
-    protected Vector3 curMovingTargetPosOff = Vector3.zero; // Rel. position offset of the current target in near future
-    protected bool curUseTorso = true;
+    protected Vector3 _curMovingTargetPosOff = Vector3.zero; // Rel. position offset of the current target in near future
+    protected bool _curUseTorso = true;
 
     // Current gaze shift state:
-    protected Quaternion rootRot;
-    protected Quaternion fixRootRot;
+    protected Quaternion _rootRot;
+    protected Quaternion _fixRootRot;
 
     // Other anim. controllers:
-    protected FaceController faceController = null;
-    protected bool reenableRandomHeadMotion = false;
-    protected bool reenableRandomSpeechMotion = false;
+    protected FaceController _faceController = null;
+    protected bool _reenableRandomHeadMotion = false;
+    protected bool _reenableRandomSpeechMotion = false;
 
     /// <summary>
     /// Constructor.
@@ -383,7 +399,7 @@ public class GazeController : AnimController
         FixGazeTarget = null;
 
         // Get other relevant anim. controllers
-        faceController = gameObject.GetComponent<FaceController>();
+        _faceController = gameObject.GetComponent<FaceController>();
     }
 
     /// <summary>
@@ -405,6 +421,19 @@ public class GazeController : AnimController
     /// </param>
     public virtual void GazeAt(GameObject gazeTarget)
     {
+        GazeAt(gazeTarget, Vector3.zero);
+    }
+
+    /// <summary>
+    /// Gaze at specified target object.
+    /// </summary>
+    /// <param name="gazeTarget">
+    /// Gaze target. <see cref="GameObject"/>
+    /// </param>
+    /// <param name="movingTargetPosOff">Anticipated positional offset of the gaze target
+    /// relative to the agent over the course of the gaze shift</param>
+    public virtual void GazeAt(GameObject gazeTarget, Vector3 movingTargetPosOff)
+    {
         if (gazeTarget == null)
         {
             GazeAhead();
@@ -413,7 +442,7 @@ public class GazeController : AnimController
 
         this.gazeTarget = gazeTarget;
         doGazeShift = true;
-        _MovingTargetPositionOffset = Vector3.zero;
+        _MovingTargetPositionOffset = movingTargetPosOff;
 
         Debug.Log("GazeAt " + gazeTarget.gameObject);
     }
@@ -426,6 +455,19 @@ public class GazeController : AnimController
     /// </param>
     public virtual void GazeAt(Vector3 gazeTargetWPos)
     {
+        GazeAt(gazeTargetWPos, Vector3.zero);
+    }
+
+    /// <summary>
+    /// Gaze at specified point in world space.
+    /// </summary>
+    /// <param name="gazeTargetWPos">
+    /// Gaze target position in world psace.
+    /// </param>
+    /// <param name="movingTargetPosOff">Anticipated positional offset of the gaze target
+    /// relative to the agent over the course of the gaze shift</param>
+    public virtual void GazeAt(Vector3 gazeTargetWPos, Vector3 movingTargetPosOff)
+    {
         if (FixGazeTarget == HelperTarget)
         {
             // Agent is currently fixating the helper target at a different position,
@@ -435,7 +477,7 @@ public class GazeController : AnimController
         }
 
         HelperTarget.transform.position = gazeTargetWPos;
-        GazeAt(HelperTarget);
+        GazeAt(HelperTarget, movingTargetPosOff);
     }
 
     /// <summary>
@@ -642,9 +684,9 @@ public class GazeController : AnimController
     {
         // Initialize gaze shift parameters
         CurrentGazeTarget = gazeTarget;
-        curMovingTargetPosOff = _MovingTargetPositionOffset;
-        curUseTorso = useTorso;
-        if (!curUseTorso)
+        _curMovingTargetPosOff = _MovingTargetPositionOffset;
+        _curUseTorso = useTorso;
+        if (!_curUseTorso)
             torso.align = 0f;
         _InitRootRotation();
 
@@ -686,14 +728,14 @@ public class GazeController : AnimController
     // Initialize rigid transformation of the root at preceding gaze shift start
     protected virtual void _InitFixRootRotation()
     {
-        fixRootRot = rootRot;
+        _fixRootRot = _rootRot;
     }
 
     // Update gaze fixation source directions of all body parts to account for root movement
     protected virtual void _UpdateFixSourceDirections()
     {
         Quaternion fixRootRot1 = Root.rotation;
-        Quaternion dq = Quaternion.Inverse(fixRootRot) * fixRootRot1;
+        Quaternion dq = Quaternion.Inverse(_fixRootRot) * fixRootRot1;
         torso._FixSourceDirection = dq * torso._FixSourceDirectionOriginal;
         head._FixSourceDirection = dq * head._FixSourceDirectionOriginal;
         lEye._FixSourceDirection = dq * lEye._FixSourceDirectionOriginal;
@@ -712,14 +754,14 @@ public class GazeController : AnimController
     // Initialize rigid transformation of the root at current gaze shift start
     protected virtual void _InitRootRotation()
     {
-        rootRot = Root.rotation;
+        _rootRot = Root.rotation;
     }
 
     // Update gaze shift source directions of all body parts to account for root movement
     protected virtual void _UpdateSourceDirections()
     {
         Quaternion rootRot1 = Root.rotation;
-        Quaternion dq = Quaternion.Inverse(rootRot) * rootRot1;
+        Quaternion dq = Quaternion.Inverse(_rootRot) * rootRot1;
         torso._SourceDirection = dq * torso._SourceDirectionOriginal;
         head._SourceDirection = dq * head._SourceDirectionOriginal;
         lEye._SourceDirection = dq * lEye._SourceDirectionOriginal;
@@ -769,9 +811,9 @@ public class GazeController : AnimController
     // Compute overall amplitude of the gaze shift toward the next target
     protected virtual void _InitAmplitude()
     {
-        Vector3 trgPos = CurrentGazeTargetPosition + curMovingTargetPosOff;
+        Vector3 trgPos = CurrentGazeTargetPosition + _curMovingTargetPosOff;
         Vector3 trgDir = (trgPos - EyeCenter).normalized;
-        Vector3 srcDir = (0.5f * (lEye._FixTargetDirectionAlign + rEye._FixTargetDirectionAlign)).normalized;
+        Vector3 srcDir = (0.5f * (lEye._SourceDirectionOriginal + rEye._SourceDirectionOriginal)).normalized;
         Amplitude = Vector3.Angle(srcDir, trgDir);
     }
 
@@ -803,24 +845,13 @@ public class GazeController : AnimController
         Vector3 trgDirAlign = srcDir;
 
         // Compute aligning target direction
-        float minDistRot = curUseTorso ? _ComputeMinTorsoAmplitude() : 0f;
+        float minDistRot = _curUseTorso ? MinTorsoAmplitude : 0f;
         float fullDistRot = Vector3.Angle(srcDir, trgDir);
         float align = fullDistRot > 0f ?
             Mathf.Clamp01((minDistRot + (fullDistRot - minDistRot) * torso._Align)/fullDistRot) : 1f;
         Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDir), align);
-            trgDirAlign = rotAlign * srcDir;
+        trgDirAlign = rotAlign * srcDir;
         torso._TargetDirectionAlign = trgDirAlign;
-    }
-
-    // Compute minimal torso rotational amplitude from overall gaze shift amplitude
-    protected virtual float _ComputeMinTorsoAmplitude()
-    {
-        if (Amplitude >= 40f)
-            return 0.43f * Mathf.Exp(0.029f * Amplitude) + 0.186f;
-        else if (Amplitude >= 20f)
-            return 0.078f * Amplitude - 1.558f;
-
-        return 0f;
     }
 
     // Initialize target gaze directions for the eyes
@@ -952,12 +983,12 @@ public class GazeController : AnimController
     protected virtual float _ComputeDistRotAlignForMovingTarget(GazeBodyPart bodyPart)
     {
         float adjDistRotAlign = Vector3.Angle(bodyPart._SourceDirection, bodyPart._TargetDirectionAlign);
-        if (curMovingTargetPosOff != Vector3.zero)
+        if (_curMovingTargetPosOff != Vector3.zero)
         {
             // Adjust rotational distance based on future target offset
             float distRot = Vector3.Angle(bodyPart._SourceDirection, bodyPart.GetTargetDirection(CurrentGazeTargetPosition));
             float adjDistRot = Vector3.Angle(bodyPart._SourceDirection,
-                bodyPart.GetTargetDirection(CurrentGazeTargetPosition + curMovingTargetPosOff));
+                bodyPart.GetTargetDirection(CurrentGazeTargetPosition + _curMovingTargetPosOff));
             adjDistRotAlign = distRot > 0f ? adjDistRotAlign / distRot * adjDistRot : 0f;
         }
         
@@ -969,10 +1000,10 @@ public class GazeController : AnimController
     {
         float adjDistRotOMR = Vector3.Angle(eye._SourceDirection, eye._TargetDirectionAlign);
 
-        if (curMovingTargetPosOff != Vector3.zero)
+        if (_curMovingTargetPosOff != Vector3.zero)
         {
             // Adjust rotational distance based on future target offset
-            Vector3 adjTrgDirOMR = eye.GetOMRTargetDirection(CurrentGazeTargetPosition + curMovingTargetPosOff);
+            Vector3 adjTrgDirOMR = eye.GetOMRTargetDirection(CurrentGazeTargetPosition + _curMovingTargetPosOff);
             adjDistRotOMR = Vector3.Angle(eye._SourceDirection, adjTrgDirOMR);
         }
 
@@ -982,24 +1013,24 @@ public class GazeController : AnimController
     // Stop any ongoing head movements
     protected virtual void _StopHead()
     {
-        if (faceController == null)
+        if (_faceController == null)
             return;
 
-        faceController.stopGesture = true;
-        reenableRandomHeadMotion = faceController.randomMotionEnabled;
-        reenableRandomSpeechMotion = faceController.speechMotionEnabled;
-        faceController.speechMotionEnabled = false;
-        faceController.randomMotionEnabled = false;
+        _faceController.stopGesture = true;
+        _reenableRandomHeadMotion = _faceController.randomMotionEnabled;
+        _reenableRandomSpeechMotion = _faceController.speechMotionEnabled;
+        _faceController.speechMotionEnabled = false;
+        _faceController.randomMotionEnabled = false;
     }
 
     // Restart any head movements that were previously active
     protected virtual void _RestartHead()
     {
-        if (faceController == null)
+        if (_faceController == null)
             return;
 
-        faceController.randomMotionEnabled = reenableRandomHeadMotion;
-        faceController.speechMotionEnabled = reenableRandomSpeechMotion;
+        _faceController.randomMotionEnabled = _reenableRandomHeadMotion;
+        _faceController.speechMotionEnabled = _reenableRandomSpeechMotion;
     }
 
     // Find/create helper gaze target with the specified name
@@ -1025,8 +1056,6 @@ public class GazeController : AnimController
     public override IAnimControllerState GetRuntimeState()
     {
         GazeControllerState state = new GazeControllerState();
-        if (!enabled)
-            return state;
         
         state.stateId = StateId;
         state.gazeTarget = gazeTarget;
@@ -1042,12 +1071,12 @@ public class GazeController : AnimController
         state.curGazeTarget = CurrentGazeTarget;
         state.fixGazeTarget = FixGazeTarget;
         state.amplitude = Amplitude;
-        state.curMovingTargetPosOff = curMovingTargetPosOff;
-        state.rootRot = rootRot;
-        state.fixRootRot = fixRootRot;
-        state.curUseTorso = curUseTorso;
-        state.reenableRandomHeadMotion = reenableRandomHeadMotion;
-        state.reenableRandomSpeechMotion = reenableRandomSpeechMotion;
+        state.curMovingTargetPosOff = _curMovingTargetPosOff;
+        state.rootRot = _rootRot;
+        state.fixRootRot = _fixRootRot;
+        state.curUseTorso = _curUseTorso;
+        state.reenableRandomHeadMotion = _reenableRandomHeadMotion;
+        state.reenableRandomSpeechMotion = _reenableRandomSpeechMotion;
 
         state.lEyeState = lEye._GetRuntimeState();
         state.rEyeState = rEye._GetRuntimeState();
@@ -1063,9 +1092,6 @@ public class GazeController : AnimController
     /// <returns></returns>
     public override void SetRuntimeState(IAnimControllerState state)
     {
-        if (!enabled)
-            return;
-        
         GazeControllerState gazeControllerState = (GazeControllerState)state;
         _GetFSM()._SetState(gazeControllerState.stateId);
         gazeTarget = gazeControllerState.gazeTarget;
@@ -1081,11 +1107,11 @@ public class GazeController : AnimController
         CurrentGazeTarget = gazeControllerState.curGazeTarget;
         FixGazeTarget = gazeControllerState.fixGazeTarget;
         Amplitude = gazeControllerState.amplitude;
-        curMovingTargetPosOff = gazeControllerState.curMovingTargetPosOff;
-        rootRot = gazeControllerState.rootRot;
-        fixRootRot = gazeControllerState.fixRootRot;
-        reenableRandomHeadMotion = gazeControllerState.reenableRandomHeadMotion;
-        reenableRandomSpeechMotion = gazeControllerState.reenableRandomSpeechMotion;
+        _curMovingTargetPosOff = gazeControllerState.curMovingTargetPosOff;
+        _rootRot = gazeControllerState.rootRot;
+        _fixRootRot = gazeControllerState.fixRootRot;
+        _reenableRandomHeadMotion = gazeControllerState.reenableRandomHeadMotion;
+        _reenableRandomSpeechMotion = gazeControllerState.reenableRandomSpeechMotion;
 
         lEye._SetRuntimeState(gazeControllerState.lEyeState);
         rEye._SetRuntimeState(gazeControllerState.rEyeState);
@@ -1121,10 +1147,10 @@ public class GazeController : AnimController
         state.reenableRandomHeadMotion = false;
         state.reenableRandomSpeechMotion = false;
 
-        state.lEyeState = lEye._GetInitRuntimeState();
-        state.rEyeState = rEye._GetInitRuntimeState();
-        state.headState = head._GetInitRuntimeState();
-        state.torsoState = torso._GetInitRuntimeState();
+        state.lEyeState = lEye._GetZeroRuntimeState();
+        state.rEyeState = rEye._GetZeroRuntimeState();
+        state.headState = head._GetZeroRuntimeState();
+        state.torsoState = torso._GetZeroRuntimeState();
 
         return state;
     }
@@ -1137,8 +1163,8 @@ public class GazeController : AnimController
     {
         IAnimControllerState curState = GetRuntimeState();
 
-        _InitBaseRotations();
-        _InitGazeShift();
+        doGazeShift = true;
+        LateUpdate_NoGaze();
         GazeControllerState state = (GazeControllerState)GetRuntimeState();
 
         SetRuntimeState(curState);

@@ -300,10 +300,11 @@ public class AnimationEditorWindow : EditorWindow
         int currentFrame = Timeline.CurrentFrame;
         if (LastSelectedModel != null && currentFrame >= 0)
         {
-            var gazeLayer = Timeline.GetLayer("Gaze");
+            var gazeLayer = Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName);
 
             // Get the base animation instance
-            var baseInstance = Timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(inst => inst.Animation.Model == LastSelectedModel);
+            var baseInstance = Timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations
+                .FirstOrDefault(inst => inst.Animation.Model == LastSelectedModel);
             if (baseInstance == null)
             {
                 UnityEngine.Debug.LogError("No base animation loaded for character model " + LastSelectedModel.name);
@@ -319,20 +320,26 @@ public class AnimationEditorWindow : EditorWindow
                 return;
             }
 
+            // Get gaze target animation instance (if there is one)
+            var targetInstance = Timeline.GetLayer(LEAPCore.environmentAnimationLayerName).Animations
+                .FirstOrDefault(inst => inst.Animation.Model == gazeTarget);
+
             // Generate a name for the new gaze instance
             int gazeInstanceIndex = gazeLayer.Animations.Count(inst => inst.Animation.Model == LastSelectedModel) + 1;
             string gazeInstanceName = "";
             int existingInstanceId = -1;
             do
             {
-                gazeInstanceName = baseInstance.Animation.Name + "Gaze" + (gazeInstanceIndex++);
+                gazeInstanceName = baseInstance.Animation.Name + LEAPCore.eyeGazeAnimationLayerName + (gazeInstanceIndex++);
                 existingInstanceId = Timeline.FindAnimationByName(gazeInstanceName);
             }
             while(existingInstanceId > -1);
 
             // Create the new gaze instance and schedule it
-            var newGazeInstance = new EyeGazeInstance(gazeInstanceName, LastSelectedModel, 30, gazeTarget, 1f, 0f, 30, true);
-            EyeGazeEditor.AddEyeGaze(Timeline, newGazeInstance, currentFrame, "Gaze", false);
+            var newGazeInstance = new EyeGazeInstance(gazeInstanceName, LastSelectedModel, 30, -1, gazeTarget,
+                1f, 0f, true, (baseInstance.Animation as AnimationClipInstance).AnimationClip,
+                (targetInstance.Animation as AnimationClipInstance).AnimationClip);
+            EyeGazeEditor.AddEyeGaze(Timeline, newGazeInstance, currentFrame, LEAPCore.eyeGazeAnimationLayerName, false);
         }
     }
 
@@ -342,14 +349,15 @@ public class AnimationEditorWindow : EditorWindow
         if (LastSelectedModel != null && LastSelectedModel.GetComponent<GazeController>() != null)
         {
             // Get gaze instance at the current time
-            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
+            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId(LEAPCore.eyeGazeAnimationLayerName,
+                LastSelectedModel.name);
             if (currentGazeInstanceId < 0)
             {
                 UnityEngine.Debug.LogError("No eye gaze instance defined at current frame");
                 return;
             }
 
-            EyeGazeEditor.RemoveEyeGaze(Timeline, currentGazeInstanceId, "Gaze", false);
+            EyeGazeEditor.RemoveEyeGaze(Timeline, currentGazeInstanceId, LEAPCore.eyeGazeAnimationLayerName, false);
         }
     }
 
@@ -359,7 +367,7 @@ public class AnimationEditorWindow : EditorWindow
         if (LastSelectedModel != null && LastSelectedModel.GetComponent<GazeController>() != null)
         {
             // Get gaze instance at the current time
-            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
+            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId(LEAPCore.eyeGazeAnimationLayerName, LastSelectedModel.name);
             if (currentGazeInstanceId < 0)
             {
                 UnityEngine.Debug.LogError("No eye gaze instance defined at current frame");
@@ -379,7 +387,7 @@ public class AnimationEditorWindow : EditorWindow
         if (LastSelectedModel != null && LastSelectedModel.GetComponent<GazeController>() != null)
         {
             // Get gaze instance at the current time
-            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
+            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId(LEAPCore.eyeGazeAnimationLayerName, LastSelectedModel.name);
             if (currentGazeInstanceId < 0)
             {
                 UnityEngine.Debug.LogError("No eye gaze instance defined at current frame");
@@ -390,7 +398,8 @@ public class AnimationEditorWindow : EditorWindow
             int currentEndFrame = currentStartFrame + currentGazeInstance.FrameLength - 1;
 
             // Get the next gaze instance
-            var nextGazeInstance = Timeline.GetLayer("Gaze").Animations.FirstOrDefault(inst => inst.StartFrame > currentEndFrame &&
+            var nextGazeInstance = Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Animations
+                .FirstOrDefault(inst => inst.StartFrame > currentEndFrame &&
                 inst.Animation.Model == currentGazeInstance.Model);
             if (nextGazeInstance != null)
             {
@@ -407,7 +416,7 @@ public class AnimationEditorWindow : EditorWindow
     {
         if (LastSelectedModel != null && LastSelectedModel.GetComponent<GazeController>() != null)
         {
-            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
+            int currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId(LEAPCore.eyeGazeAnimationLayerName, LastSelectedModel.name);
             if (currentGazeInstanceId < 0)
             {
                 UnityEngine.Debug.LogError("No eye gaze instance defined at current frame");
@@ -477,12 +486,12 @@ public class AnimationEditorWindow : EditorWindow
     {
         if (_animationEditGizmos == null)
             return;
-        
-        var gazeLayer = Timeline.GetLayer("Gaze");
+
+        var gazeLayer = Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName);
         if (LastSelectedModel != null && gazeLayer != null)
         {
             var gazeController = LastSelectedModel.GetComponent<GazeController>();
-            var currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId("Gaze", LastSelectedModel.name);
+            var currentGazeInstanceId = Timeline.GetCurrentAnimationInstanceId(LEAPCore.eyeGazeAnimationLayerName, LastSelectedModel.name);
             var currentGazeInstance = currentGazeInstanceId > -1 ?
                 Timeline.GetAnimation(currentGazeInstanceId) as EyeGazeInstance : null;
 
@@ -574,7 +583,7 @@ public class AnimationEditorWindow : EditorWindow
                     }
                     else if (e.shift && e.keyCode == KeyCode.P)
                     {
-                        EyeGazeEditor.PrintEyeGaze(Timeline, "Gaze", LastSelectedModel);
+                        EyeGazeEditor.PrintEyeGaze(Timeline, LEAPCore.eyeGazeAnimationLayerName, LastSelectedModel);
                     }
                     else if (e.shift && e.keyCode == KeyCode.B)
                     {

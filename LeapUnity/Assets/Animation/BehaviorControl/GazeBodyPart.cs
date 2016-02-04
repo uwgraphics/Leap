@@ -1172,25 +1172,30 @@ public class GazeBodyPart
         _fixTrgDirAlign = state.fixTrgDirAlign;
     }
 
-    // Get an initial state snapshot for the gaze body part
-    public GazeControllerState.GazeBodyPartState _GetInitRuntimeState()
+    // Get zero gaze body part state (before any gaze shifts have been performed)
+    public GazeControllerState.GazeBodyPartState _GetZeroRuntimeState()
     {
         GazeControllerState.GazeBodyPartState state = new GazeControllerState.GazeBodyPartState();
         state.gazeBodyPartType = (int)GazeBodyPartType;
         state.align = 1f;
+        state.velocity = velocity;
+        state.inOMR = inOMR;
+        state.outOMR = outOMR;
+        state.upOMR = upOMR;
+        state.downOMR = downOMR;
         state.postureWeight = IsEye ? 0f : 1f;
         state.curAlign = 1f;
         state.maxVelocity = 0f;
         state.curVelocity = 0f;
         state.latency = 0f;
-        state.adjInOMR = 0f;
-        state.adjOutOMR = 0f;
-        state.adjUpOMR = 0f;
-        state.adjDownOMR = 0f;
-        state.curInOMR = 0f;
-        state.curOutOMR = 0f;
-        state.curUpOMR = 0f;
-        state.curDownOMR = 0f;
+        state.adjInOMR = inOMR;
+        state.adjOutOMR = outOMR;
+        state.adjUpOMR = upOMR;
+        state.adjDownOMR = downOMR;
+        state.curInOMR = inOMR;
+        state.curOutOMR = outOMR;
+        state.curUpOMR = upOMR;
+        state.curDownOMR = downOMR;
         state.baseRots = new Quaternion[gazeJoints.Length];
         state.srcDir0 = Vector3.zero;
         state.srcDir = Vector3.zero;

@@ -169,18 +169,9 @@ public class EyeTrackData
         get { return _events.AsReadOnly(); }
     }
 
-    /// <summary>
-    /// Eye gaze instances generated from eye tracking events.
-    /// </summary>
-    public IList<EyeGazeInstance> EyeGazeInstances
-    {
-        get { return _eyeGazeInstances.AsReadOnly(); }
-    }
-
     // Eye tracking dataset:
     private List<EyeTrackSample> _samples = new List<EyeTrackSample>();
     private List<EyeTrackEvent> _events = new List<EyeTrackEvent>();
-    private List<EyeGazeInstance> _eyeGazeInstances = new List<EyeGazeInstance>();
 
     /// <summary>
     /// Constructor.
@@ -209,11 +200,21 @@ public class EyeTrackData
     }
 
     /// <summary>
-    /// Generate eye gaze instances from eye tracking events.
+    /// Generate gaze animation instances from eye tracking events.
     /// </summary>
-    public void GenerateEyeGazeInstances()
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="layerName">Name of the layer for gaze animation instances</param>
+    public void GenerateEyeGazeInstances(AnimationTimeline timeline, string layerName = "Gaze")
     {
-        // TODO
+        timeline.RemoveAllAnimations(layerName, Model.name);
+
+        for (int eventIndex = 0; eventIndex < Events.Count; ++eventIndex)
+        {
+            var evt = Events[eventIndex];
+            var instance = new EyeGazeInstance(BaseAnimationClip.name + "Gaze" + (eventIndex + 1),
+                Model, evt.frameLength, -1, null, 0f, 0f, true, BaseAnimationClip, null);
+            EyeGazeEditor.AddEyeGaze(timeline, instance, evt.startFrame, layerName);
+        }
     }
 
     // Load eye tracking data parameters

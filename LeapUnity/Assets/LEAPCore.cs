@@ -5,13 +5,7 @@ using System.IO;
 
 public class LEAPCore : MonoBehaviour
 {
-	public const string agentModelDirectory = "Assets/Agents";
-    public const string endEffectorConstraintAnnotationsDirectory = "Assets/AnimationAnnotations/EndEffectorConstraints";
-    public const string eyeGazeAnnotationsDirectory = "Assets/AnimationAnnotations/EyeGaze";
-    public const string timewarpAnnotationsDirectory = "Assets/AnimationAnnotations/Timewarps";
-    public const string keyFrameAnnotationsDirectory = "Assets/AnimationAnnotations/KeyFrames";
-    public const string eyeTrackDataDirectory = "Assets/AnimationAnnotations/EyeTrack";
-	public const string morphAnimationPrefix = "MC";
+    public const string morphAnimationPrefix = "MC";
 	public const string morphTargetPrefix = "MT";
     public const string lWristTag = "LWristBone";
     public const string lElbowTag = "LElbowBone";
@@ -62,6 +56,11 @@ public class LEAPCore : MonoBehaviour
     public static string helperAnimationLayerName = "Helpers";
 
     /// <summary>
+    /// Name of the gaze animation layer in the animation timeline.
+    /// </summary>
+    public static string eyeGazeAnimationLayerName = "Gaze";
+
+    /// <summary>
     /// Default baked animation timeline name.
     /// </summary>
     public static string defaultBakedTimelineName = "Edits";
@@ -75,6 +74,36 @@ public class LEAPCore : MonoBehaviour
     /// How far the IK solver is allowed to extend a limb when solving for its pose.
     /// </summary>
     public static float maxLimbExtension = 0.95f;
+
+    /// <summary>
+    /// Asset subdirectory for agent models.
+    /// </summary>
+    public static string agentModelDirectory = "Assets/Agents";
+
+    /// <summary>
+    /// Asset subdirectory for end-effector constraint annotations.
+    /// </summary>
+    public static string endEffectorConstraintAnnotationsDirectory = "Assets/AnimationAnnotations/EndEffectorConstraints";
+
+    /// <summary>
+    /// Asset subdirectory for eye gaze annotations.
+    /// </summary>
+    public static string eyeGazeAnnotationsDirectory = "Assets/AnimationAnnotations/EyeGaze";
+
+    /// <summary>
+    /// Asset subdirectory for timewarp annotations.
+    /// </summary>
+    public static string timewarpAnnotationsDirectory = "Assets/AnimationAnnotations/Timewarps";
+
+    /// <summary>
+    /// Asset subdirectory for keyframe annotations.
+    /// </summary>
+    public static string keyFrameAnnotationsDirectory = "Assets/AnimationAnnotations/KeyFrames";
+
+    /// <summary>
+    /// Asset subdirectory for eye tracking data.
+    /// </summary>
+    public static string eyeTrackDataDirectory = "Assets/AnimationAnnotations/EyeTrack";
 
     /// <summary>
     /// Asset subdirectory for environment object models.
@@ -134,9 +163,19 @@ public class LEAPCore : MonoBehaviour
     public static bool adjustGazeTargetForMovingBase = true;
 
     /// <summary>
-    /// If true, gaze controller state log will contained detailed state of every gaze joint
+    /// If true, gaze controller state log will contained detailed state of every gaze joint.
     /// </summary>
     public static bool printDetailedGazeControllerState = false;
+
+    /// <summary>
+    /// Kernel size for the low-pass filter used for filtering gaze joint joint velocities in eye gaze inference.
+    /// </summary>
+    public static int eyeGazeInferenceLowPassKernelSize = 5;
+
+    /// <summary>
+    /// Slope of the logistic curve used in computing the probability that some motion interval is a gaze shift.
+    /// </summary>
+    public static float eyeGazeInferenceGazeShiftLogisticSlope = 1f;
 
     /// <summary>
     /// If false, defined timewarps will not be applied to animations.
@@ -182,6 +221,11 @@ public class LEAPCore : MonoBehaviour
     /// Maximum width of a cluster of local key times corresponding to a single extracted key pose.
     /// </summary>
     public static float keyExtractMaxClusterWidth = 0.5f;
+
+    /// <summary>
+    /// Maximum width of a cluster of local gaze shift key times corresponding to a single extracted key pose.
+    /// </summary>
+    public static float eyeGazeKeyExtractMaxClusterWidth = 0.5f;
 
     /// <summary>
     /// Scaling factor for bone visualization gizmos.
@@ -251,6 +295,7 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeConstraintActivationTime", typeof(float));
         cfgFile.AddParam("adjustGazeTargetForMovingBase", typeof(bool));
         cfgFile.AddParam("printDetailedGazeControllerState", typeof(bool));
+        cfgFile.AddParam("eyeGazeInferenceGazeShiftLogisticSlope", typeof(float));
         cfgFile.AddParam("timewarpsEnabled", typeof(bool));
         cfgFile.AddParam("timelineBakeRangeStart", typeof(int));
         cfgFile.AddParam("timelineBakeRangeEnd", typeof(int));
@@ -275,6 +320,10 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<float>("gazeConstraintActivationTime") : gazeConstraintActivationTime;
         adjustGazeTargetForMovingBase = cfgFile.HasValue("adjustGazeTargetForMovingBase") ?
             cfgFile.GetValue<bool>("adjustGazeTargetForMovingBase") : adjustGazeTargetForMovingBase;
+        printDetailedGazeControllerState = cfgFile.HasValue("printDetailedGazeControllerState") ?
+            cfgFile.GetValue<bool>("printDetailedGazeControllerState") : printDetailedGazeControllerState;
+        eyeGazeInferenceGazeShiftLogisticSlope = cfgFile.HasValue("eyeGazeInferenceGazeShiftLogisticSlope") ?
+            cfgFile.GetValue<float>("eyeGazeInferenceGazeShiftLogisticSlope") : eyeGazeInferenceGazeShiftLogisticSlope;
         timewarpsEnabled = cfgFile.HasValue("timewarpsEnabled") ?
             cfgFile.GetValue<bool>("timewarpsEnabled") : timewarpsEnabled;
         timelineBakeRangeStart = cfgFile.HasValue("timelineBakeRangeStart") ?

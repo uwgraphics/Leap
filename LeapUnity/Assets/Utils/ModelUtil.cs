@@ -21,7 +21,9 @@ public struct ModelPose
     /// <param name="model">Character model</param>
     public ModelPose(GameObject model)
     {
-        Transform[] bones = ModelUtil.GetAllBones(model);
+        var bones = model.tag == "Agent" ? ModelUtil.GetAllBones(model) :
+            new Transform[] { model.transform };
+
         rootPosition = bones[0].position;
         boneRotations = new Quaternion[bones.Length];
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
@@ -34,7 +36,9 @@ public struct ModelPose
     /// <param name="model">Character model</param>
     public void Apply(GameObject model)
     {
-        Transform[] bones = ModelUtil.GetAllBones(model);
+        var bones = model.tag == "Agent" ? ModelUtil.GetAllBones(model) :
+            new Transform[] { model.transform };
+
         bones[0].position = rootPosition;
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             bones[boneIndex].localRotation = boneRotations[boneIndex];
@@ -60,6 +64,46 @@ public static class ModelUtil
         MeshRenderer[] meshRenderers = model.GetComponentsInChildren<MeshRenderer>();
         foreach (var meshRenderer in meshRenderers)
             meshRenderer.enabled = show;
+    }
+
+    /// <summary>
+    /// Get all models that are below the specified model in the scene hierarchy.
+    /// </summary>
+    /// <param name="model">Model</param>
+    /// <returns>Child models</returns>
+    public static GameObject[] GetSubModels(GameObject model)
+    {
+        var children = new List<GameObject>();
+        _GetSubModels(model, children);
+
+        return children.ToArray();
+    }
+
+    // Get all models that are below the specified model in the scene hierarchy.
+    private static void _GetSubModels(GameObject model, List<GameObject> subModels)
+    {
+        subModels.Add(model);
+
+        for (int childIndex = 0; childIndex < model.transform.childCount; ++childIndex)
+        {
+            var child = model.transform.GetChild(childIndex).gameObject;
+            _GetSubModels(child, subModels);
+        }
+    }
+
+    /// <summary>
+    /// Get all models that are below the specified model in the scene hierarchy and have the specified tag.
+    /// </summary>
+    /// <param name="model">Model</param>
+    /// <param name="tag">Model tag</param>
+    /// <returns>Child models</returns>
+    public static GameObject[] GetSubModelsWithTag(GameObject model, string tag)
+    {
+        var subModels = new List<GameObject>();
+        _GetSubModels(model, subModels);
+        subModels.RemoveAll(m => m.tag != tag);
+
+        return subModels.ToArray();
     }
 
     /// <summary>
@@ -278,20 +322,7 @@ public static class ModelUtil
     public static Transform FindRootBone(GameObject obj)
     {
         Transform root = FindBoneWithTag(obj.transform, "RootBone");
-        if (root == null)
-        {
-            foreach (Transform child in obj.transform)
-            {
-                if (child.childCount > 0)
-                {
-                    // We'll make an educated guess that this is the root
-                    root = child;
-                    break;
-                }
-            }
-        }
-
-        return root;
+        return root != null ? root : obj.transform;
     }
 
     /// <summary>
@@ -305,6 +336,21 @@ public static class ModelUtil
         Transform[] bones = GetAllBones(obj);
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             if (bones[boneIndex] == bone)
+                return boneIndex;
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Find the index of the specified bone in the character model.
+    /// </summary>
+    /// <param name="allBones">Array of all bones</param>
+    /// <param name="bone">Bone</param>
+    /// <returns>Bone index or -1 if bone cannot be found</returns>
+    public static int FindBoneIndex(Transform[] allBones, Transform bone)
+    {
+        for (int boneIndex = 0; boneIndex < allBones.Length; ++boneIndex)
+            if (allBones[boneIndex] == bone)
                 return boneIndex;
 
         return -1;

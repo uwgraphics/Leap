@@ -1,5 +1,7 @@
 Leap Animation Editor:
 
+#136 [] GetInitControllerStateForEyeGazeInstance() is broken and gives a controller state that is totally wrong; it also corrupts the state of the gaze controller and it can no longer be restored to its state prior to the method call
+
 #135 [] If the character continues to rotate their body toward the target during the gaze fixation (b/c rotation is part of the body motion), torso may overshoot the target
   - See example StackBoxesGaze3
   - Probably b/c torsoAlign = 0, so torso direction will always be (nearly) fixSrcDir, but fixSrcDir doesn't get updated to reflect root movement, resulting in a state of increasing body torque

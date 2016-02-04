@@ -57,14 +57,14 @@ public class LEAPMenu
             timeline.FrameLength);
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", true)]
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/From Body Animation", true)]
     private static bool ValidateInferEyeGazeInstances()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
+        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null;
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Instances", false)]
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/From Body Animation", false)]
     private static void InferEyeGazeInstances()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -72,48 +72,50 @@ public class LEAPMenu
 
         // Disable IK and gaze layers
         timeline.SetIKEnabled(false);
-        timeline.GetLayer("Gaze").Active = false;
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
 
         // Infer gaze shifts and fixations in the base animation
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
-            EyeGazeEditor.InferEyeGazeInstances(timeline, baseAnimation.InstanceId);
+            EyeGazeInferenceModel.InferEyeGazeInstances(timeline, baseAnimation.InstanceId,
+                LEAPCore.eyeGazeAnimationLayerName);
 
             // Save and print inferred eye gaze
             EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Inferred");
-            EyeGazeEditor.PrintEyeGaze(timeline);
+            EyeGazeEditor.PrintEyeGaze(timeline, LEAPCore.eyeGazeAnimationLayerName);
         }
         SceneView.RepaintAll();
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", true)]
-    private static bool ValidateInferEyeGazeAlignments()
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Generate Ground-truth", true)]
+    private static bool ValidateInferEyeGazeGenerateGroundTruth()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
+        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null;
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments", false)]
-    private static void InferEyeGazeAlignments()
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Generate Ground-truth", false)]
+    private static void InferEyeGazeGenerateGroundTruth()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         var timeline = wnd.Timeline;
 
         // Disable IK and gaze layers
         timeline.SetIKEnabled(false);
-        timeline.GetLayer("Gaze").Active = false;
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
 
-        // Infer head and torso alignments for all gaze shifts in the base animation
+        // Infer gaze shifts and fixations in the base animation
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
-            EyeGazeEditor.InferEyeGazeAheadTargets(timeline, baseAnimation.InstanceId);
-            EyeGazeEditor.InferEyeGazeAlignments(timeline, baseAnimation.InstanceId);
+            var eyeTrackData = new EyeTrackData(baseAnimation.Animation.Model,
+                (baseAnimation.Animation as AnimationClipInstance).AnimationClip);
+            eyeTrackData.GenerateEyeGazeInstances(timeline, LEAPCore.eyeGazeAnimationLayerName);
 
-            // Save and print inferred eye gaze
-            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Inferred");
-            EyeGazeEditor.PrintEyeGaze(timeline);
+            // Save and print ground-truth eye gaze
+            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#GroundTruth");
+            EyeGazeEditor.PrintEyeGaze(timeline, LEAPCore.eyeGazeAnimationLayerName);
         }
         SceneView.RepaintAll();
     }
@@ -136,10 +138,10 @@ public class LEAPMenu
         {
             var model = models[modelIndex];
             var baseAnimation = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(a => a.Animation.Model == model);
-            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze");
+            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, LEAPCore.eyeGazeAnimationLayerName);
         }
 
-        EyeGazeEditor.PrintEyeGaze(timeline);
+        EyeGazeEditor.PrintEyeGaze(timeline, LEAPCore.eyeGazeAnimationLayerName);
     }
 
     [MenuItem("LEAP/Animation/Load Eye Gaze/Inferred", true)]
@@ -160,7 +162,31 @@ public class LEAPMenu
         {
             var model = models[modelIndex];
             var baseAnimation = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(a => a.Animation.Model == model);
-            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze", "#Inferred");
+            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Inferred");
+        }
+
+        EyeGazeEditor.PrintEyeGaze(timeline);
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Ground-truth", true)]
+    private static bool ValidateLoadEyeGazeGroundTruth()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        return wnd.Timeline != null;
+    }
+
+    [MenuItem("LEAP/Animation/Load Eye Gaze/Ground-truth", false)]
+    private static void LoadEyeGazeGroundTruth()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var timeline = wnd.Timeline;
+        var models = timeline.OwningManager.Models;
+
+        for (int modelIndex = 0; modelIndex < models.Count; ++modelIndex)
+        {
+            var model = models[modelIndex];
+            var baseAnimation = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(a => a.Animation.Model == model);
+            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, LEAPCore.eyeGazeAnimationLayerName, "#GroundTruth");
         }
 
         EyeGazeEditor.PrintEyeGaze(timeline);
@@ -184,7 +210,7 @@ public class LEAPMenu
         {
             var model = models[modelIndex];
             var baseAnimation = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(a => a.Animation.Model == model);
-            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, "Gaze", "#Edits");
+            EyeGazeEditor.LoadEyeGaze(timeline, baseAnimation.InstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
         }
 
         EyeGazeEditor.PrintEyeGaze(timeline);
@@ -194,7 +220,7 @@ public class LEAPMenu
     private static bool ValidateSaveEyeGaze()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        return wnd.Timeline != null && wnd.Timeline.GetLayer("Gaze") != null;
+        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null;
     }
 
     [MenuItem("LEAP/Animation/Save Eye Gaze", false)]

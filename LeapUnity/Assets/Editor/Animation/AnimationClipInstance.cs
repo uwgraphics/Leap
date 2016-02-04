@@ -147,7 +147,8 @@ public class AnimationClipInstance : AnimationInstance
                 KeyFrameSet[] keyFrameSets = null;
                 if (!AnimationTimingEditor.LoadAnimationKeyFrames(model, AnimationClip, out keyFrameSets))
                 {
-                    keyFrameSets = AnimationTimingEditor.ExtractAnimationKeyFrames(model, AnimationClip);
+                    keyFrameSets = AnimationTimingEditor.ExtractAnimationKeyFrames(model, AnimationClip,
+                        true, true, null, LEAPCore.keyExtractMaxClusterWidth);
                     AnimationTimingEditor.SaveAnimationKeyFrames(model, AnimationClip, keyFrameSets);
                 }
 

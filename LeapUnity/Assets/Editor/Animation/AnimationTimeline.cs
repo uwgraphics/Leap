@@ -1877,7 +1877,7 @@ public class AnimationTimeline
             foreach (var model in OwningManager.Models)
             {
                 var component = model.GetComponent(controllerType);
-                if (component == null || !(component as AnimController).enabled)
+                if (component == null)
                     continue;
 
                 var controller = component as AnimController;
