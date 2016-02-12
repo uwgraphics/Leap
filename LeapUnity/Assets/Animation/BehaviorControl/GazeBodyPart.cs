@@ -32,12 +32,6 @@ public class GazeBodyPart
     public float inOMR = 45f, outOMR = 45f, upOMR = 45f, downOMR = 45f;
 
     /// <summary>
-    /// Weight with which vertical posture of the body part from the base animation
-    /// is preserved when applying gaze.
-    /// </summary>
-    public float postureWeight = 0f;
-
-    /// <summary>
     /// Gaze body part type.
     /// </summary>
     public GazeBodyPartType GazeBodyPartType
@@ -248,6 +242,7 @@ public class GazeBodyPart
     private float _adjInOMR = 0f, _adjOutOMR = 0f, _adjUpOMR = 0f, _adjDownOMR = 0f;
     private float _curInOMR = 0f, _curOutOMR = 0f, _curUpOMR = 0f, _curDownOMR = 0f;
     private Quaternion[] _baseRots;
+    private Vector3 _baseDir;
     private Vector3 _srcDir0 = Vector3.zero;
     private Vector3 _srcDir = Vector3.zero;
     private Vector3 _trgDir = Vector3.zero;
@@ -437,13 +432,20 @@ public class GazeBodyPart
         int nj = gazeJoints.Length;
         if (nj <= 1)
         {
+            // This is a single-joint body part
             SetDirection(0, direction);
-            if (IsEye) Roll = 0f;
+            if (IsEye || _gazeController.removeRoll) Roll = 0f;
             return;
         }
-        // TODO: remove this
-        if (!IsEye)
-            return;
+
+        // TODO: remove this when done testing eye inference
+        return;
+        //
+        // Compute blend weight
+        float weight1 = IsEye ? 1f :
+            GazeController.weight * (1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir)));
+        //
+        //Debug.LogWarning(string.Format("Blend weight for {0} is {1}", GazeBodyPartType, weight1));
         //
 
         // Gaze directions and joint rotations
@@ -455,7 +457,7 @@ public class GazeBodyPart
         int ji1 = jin + nj - 1;
         float cprev = 0f, c, c1;
         int jic;
-        bool isTorso = _usePelvis && _gazeBodyPartType == GazeBodyPartType.Torso;
+        bool isTorso = _usePelvis && GazeBodyPartType == GazeBodyPartType.Torso;
 
         // Apply rotational contribution of each joint in the chain
         for (int ji = ji1; ji >= jin; --ji)
@@ -484,7 +486,7 @@ public class GazeBodyPart
             // Compute current joint's contribution to the overall rotation
             trgRot = Quaternion.FromToRotation(srcDir, trgDir);
             trgRotAlign = Quaternion.Slerp(Quaternion.identity, trgRot, c1);
-            if (_gazeController.removeRoll)
+            if (IsEye || _gazeController.removeRoll)
             {
                 curJoint.localRotation = trgRotAlign;
                 SetRoll(ji, 0f);
@@ -510,8 +512,8 @@ public class GazeBodyPart
             trgRotHAlign = _baseRots[ji] * trgRotHAlign;
 
             // Blend rotations
-            Quaternion rot = Quaternion.Slerp(trgRotAlign, trgRotHAlign, postureWeight);
-            rot = Quaternion.Slerp(_baseRots[ji], rot, _gazeController.weight);
+            Quaternion rot = GazeBodyPartType == GazeBodyPartType.Torso ? trgRotHAlign : trgRotAlign;
+            rot = Quaternion.Slerp(_baseRots[ji], rot, weight1);
             curJoint.localRotation = rot;
         }
     }
@@ -719,6 +721,7 @@ public class GazeBodyPart
     // Initialize base rotations of the gaze joints (before gaze is applied)
     public void _InitBaseRotations()
     {
+        _baseDir = Direction;
         for (int gji = 0; gji < gazeJoints.Length; ++gji)
             _baseRots[gji] = gazeJoints[gji].localRotation;
     }
@@ -1106,7 +1109,6 @@ public class GazeBodyPart
         state.outOMR = outOMR;
         state.upOMR = upOMR;
         state.downOMR = downOMR;
-        state.postureWeight = postureWeight;
         state.curAlign = _curAlign;
         state.maxVelocity = _maxVelocity;
         state.curVelocity = _curVelocity;
@@ -1119,6 +1121,7 @@ public class GazeBodyPart
         state.curOutOMR = _curOutOMR;
         state.curUpOMR = _curUpOMR;
         state.curDownOMR = _curDownOMR;
+        state.baseDir = _baseDir;
         state.baseRots = (Quaternion[])_baseRots.Clone();
         state.srcDir0 = _srcDir0;
         state.srcDir = _srcDir;
@@ -1145,7 +1148,6 @@ public class GazeBodyPart
         outOMR = state.outOMR;
         upOMR = state.upOMR;
         downOMR = state.downOMR;
-        postureWeight = state.postureWeight;
         _curAlign = state.curAlign;
         _maxVelocity = state.maxVelocity;
         _curVelocity = state.curVelocity;
@@ -1158,6 +1160,7 @@ public class GazeBodyPart
         _curOutOMR = state.curOutOMR;
         _curUpOMR = state.curUpOMR;
         _curDownOMR = state.curDownOMR;
+        _baseDir = state.baseDir;
         _baseRots = (Quaternion[])state.baseRots.Clone();
         _srcDir0 = state.srcDir0;
         _srcDir = state.srcDir;
@@ -1196,6 +1199,7 @@ public class GazeBodyPart
         state.curOutOMR = outOMR;
         state.curUpOMR = upOMR;
         state.curDownOMR = downOMR;
+        state.baseDir = Vector3.zero;
         state.baseRots = new Quaternion[gazeJoints.Length];
         state.srcDir0 = Vector3.zero;
         state.srcDir = Vector3.zero;

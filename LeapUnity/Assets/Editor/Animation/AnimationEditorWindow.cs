@@ -466,17 +466,17 @@ public class AnimationEditorWindow : EditorWindow
             return;
 
         // Load animation editor icons
-        _timelineActiveTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineActive");
-        _timelineActiveDownTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineActiveDown");
-        _timelinePlayTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelinePlay");
-        _timelinePlayDownTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelinePlayDown");
-        _timelinePrevFrameTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelinePrevFrame");
-        _timelineNextFrameTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineNextFrame");
-        _timelineAddEyeGazeTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineAddEyeGaze");
-        _timelineRemoveEyeGazeTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineRemoveEyeGaze");
-        _timelineSetEyeGazeStartTimeTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineSetGazeStartTime");
-        _timelineSetEyeGazeEndTimeTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineSetGazeEndTime");
-        _timelineSetEyeGazeTargetTexture = Resources.Load<Texture2D>("LeapAnimationEditor/TimelineSetGazeTarget");
+        _timelineActiveTexture = Resources.Load<Texture2D>("AnimationEditor/TimelineActive");
+        _timelineActiveDownTexture = Resources.Load<Texture2D>("AnimationEditor/TimelineActiveDown");
+        _timelinePlayTexture = Resources.Load<Texture2D>("AnimationEditor/TimelinePlay");
+        _timelinePlayDownTexture = Resources.Load<Texture2D>("AnimationEditor/TimelinePlayDown");
+        _timelinePrevFrameTexture = Resources.Load<Texture2D>("AnimationEditor/TimelinePrevFrame");
+        _timelineNextFrameTexture = Resources.Load<Texture2D>("AnimationEditor/TimelineNextFrame");
+        _timelineAddEyeGazeTexture = Resources.Load<Texture2D>("AnimationEditor/TimelineAddEyeGaze");
+        _timelineRemoveEyeGazeTexture = Resources.Load<Texture2D>("AnimationEditor/TimelineRemoveEyeGaze");
+        _timelineSetEyeGazeStartTimeTexture = Resources.Load<Texture2D>("AnimationEditor/TimelineSetGazeStartTime");
+        _timelineSetEyeGazeEndTimeTexture = Resources.Load<Texture2D>("AnimationEditor/TimelineSetGazeEndTime");
+        _timelineSetEyeGazeTargetTexture = Resources.Load<Texture2D>("AnimationEditor/TimelineSetGazeTarget");
 
         _guiInitialized = true;
     }

@@ -941,13 +941,15 @@ public static class EyeGazeEditor
     {
         UnityEngine.Debug.Log(string.Format("{0}: curAlign = {1}, " +
             "curVelocity = {2} [maxVelocity = {3}], latency = {4}, cur*OMR = ({5}, {6}, {7}, {8}), " +
-            "srcDir0 = ({9}, {10}, {11}), srcDir = ({12}, {13}, {14}), trgDir = ({15}, {16}, {17}), trgDirAlign = ({18}, {19}, {20}), " +
-            "rotParam = {21}, curDir = ({22}, {23}, {24}), " +
-            "isFix = {25}, fixSrcDir0 = ({26}, {27}, {28}), fixSrcDir = ({29}, {30}, {31}), fixTrgDir = ({32}, {33}, {34}), " +
-            "fixTrgDirAlign = ({35}, {36}, {37})",
+            "baseDir = ({9}, {10}, {11}), " +
+            "srcDir0 = ({12}, {13}, {14}), srcDir = ({15}, {16}, {17}), trgDir = ({18}, {19}, {20}), trgDirAlign = ({21}, {22}, {23}), " +
+            "rotParam = {24}, curDir = ({25}, {26}, {27}), " +
+            "isFix = {28}, fixSrcDir0 = ({29}, {30}, {31}), fixSrcDir = ({32}, {33}, {34}), fixTrgDir = ({35}, {36}, {37}), " +
+            "fixTrgDirAlign = ({38}, {39}, {40})",
             ((GazeBodyPartType)state.gazeBodyPartType).ToString(),
             state.curAlign, state.curVelocity, state.maxVelocity, state.latency,
             state.curInOMR, state.curOutOMR, state.curUpOMR, state.curDownOMR,
+            state.baseDir.x, state.baseDir.y, state.baseDir.z,
             state.srcDir0.x, state.srcDir0.y, state.srcDir0.z,
             state.srcDir.x, state.srcDir.y, state.srcDir.z,
             state.trgDir.x, state.trgDir.y, state.trgDir.z,

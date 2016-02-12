@@ -100,6 +100,17 @@ public class EyeTrackData
     }
 
     /// <summary>
+    /// Eye tracker bone.
+    /// </summary>
+    public Transform EyeTrackerBone
+    {
+        get
+        {
+            return ModelUtil.FindBoneWithTag(Model.transform, "EyeTracker");
+        }
+    }
+
+    /// <summary>
     /// Base animation clip that matches the eye tracking data.
     /// </summary>
     public AnimationClip BaseAnimationClip

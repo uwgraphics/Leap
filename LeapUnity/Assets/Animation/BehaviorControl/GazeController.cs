@@ -37,6 +37,7 @@ public struct GazeControllerState : IAnimControllerState
         public float latency;
         public float adjInOMR, adjOutOMR, adjUpOMR, adjDownOMR;
         public float curInOMR, curOutOMR, curUpOMR, curDownOMR;
+        public Vector3 baseDir;
         public Quaternion[] baseRots;
         public Vector3 srcDir0;
         public Vector3 srcDir;

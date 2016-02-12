@@ -246,6 +246,12 @@
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Events.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Params.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Samples.txt" />
+    <None Include="Assets\Environment\Shaders\GazeTargetDome.shader" />
+    <None Include="Assets\Resources\AnimationEditor\PGazeShiftDirection.shader" />
+    <None Include="Assets\Resources\AnimationEditor\PHandContact.shader" />
+    <None Include="Assets\Resources\AnimationEditor\PTaskRelevance.shader" />
+    <None Include="Assets\Resources\AnimationEditor\RenderGameObjectID.shader" />
+    <None Include="Assets\Resources\AnimationEditor\RenderWorldPosition.shader" />
     <None Include="Assets\Scene-specific\Agents\GazeAversion\thinkingInputs.txt" />
     <None Include="Assets\Scene-specific\Agents\GazeAversion\thinkingResponses.txt" />
     <None Include="Assets\Scene-specific\Agents\GazeAversion\thoughtfulInputs.txt" />
@@ -398,6 +404,7 @@
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-BasicOutline.shader" />
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Lighted.shader" />
     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-LightedOutline.shader" />
+    <None Include="Assets\Utils\ShaderUtil.cginc" />
     <None Include="Assets\Editor\Emgu.CV.dll" />
     <None Include="Assets\Editor\Emgu.CV.ML.dll" />
     <None Include="Assets\Editor\Emgu.Util.dll" />

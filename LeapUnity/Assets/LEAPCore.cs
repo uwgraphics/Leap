@@ -178,6 +178,16 @@ public class LEAPCore : MonoBehaviour
     public static float eyeGazeInferenceGazeShiftLogisticSlope = 1f;
 
     /// <summary>
+    /// If true, simple gaze target inference will be used.
+    /// </summary>
+    public static bool useSimpleGazeTargetInference = false;
+
+    /// <summary>
+    /// Render texture width for spatial probability distributions used in gaze target inference.
+    /// </summary>
+    public static int eyeGazeInferenceRenderTextureWidth = 1280;
+
+    /// <summary>
     /// If false, defined timewarps will not be applied to animations.
     /// </summary>
     public static bool timewarpsEnabled = false;

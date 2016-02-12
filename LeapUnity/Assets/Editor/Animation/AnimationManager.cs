@@ -281,14 +281,6 @@ public class AnimationManager
         timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).isBase = false;
         timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).isGaze = true;
 
-        // Configure gaze controllers
-        testScenes.modelNorman.GetComponent<GazeController>().head.postureWeight = 0f;
-        testScenes.modelNorman.GetComponent<GazeController>().torso.postureWeight = 1f;
-        testScenes.modelRoman.GetComponent<GazeController>().head.postureWeight = 0f;
-        testScenes.modelRoman.GetComponent<GazeController>().torso.postureWeight = 1f;
-        testScenes.modelNormanNew.GetComponent<GazeController>().head.postureWeight = 0f;
-        testScenes.modelNormanNew.GetComponent<GazeController>().torso.postureWeight = 1f;
-
         // Reset test scenario
         editTestScenario.models = null;
         editTestScenario.objectAnimations = null;
@@ -612,6 +604,70 @@ public class AnimationManager
             var bodyAnimation = new AnimationClipInstance("EyeTrackMocapTest1-1", testScenes.modelKinect);
             int bodyAnimationInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
                 bodyAnimation, 0, LEAPCore.helperAnimationLayerName);
+            // TODO: remove this
+            /*// Get objects in the scene
+            var gazeController = bodyAnimation.Model.GetComponent<GazeController>();
+            var lEye = gazeController.lEye.Top;
+            var rEye = gazeController.rEye.Top;
+            var tableSpots = GameObject.FindGameObjectsWithTag("GazeTarget");
+            var leftHandSpot = tableSpots.FirstOrDefault(obj => obj.name == "LeftHandSpot");
+            var rightandSpot = tableSpots.FirstOrDefault(obj => obj.name == "RightHandSpot");
+            var midTarget = tableSpots.FirstOrDefault(obj => obj.name == "MidTarget");
+            var rightTarget = tableSpots.FirstOrDefault(obj => obj.name == "RightTarget");
+            var leftTarget = tableSpots.FirstOrDefault(obj => obj.name == "LeftTarget");
+
+            // Load eye tracking data
+            var eyeTrackData = new EyeTrackData(testScenes.modelKinect, bodyAnimation.AnimationClip);
+
+            // Get ground-truth eye directions at frame 277 (104)
+            var vle = eyeTrackData.Samples[277].lEyeDirection;
+            var vre = eyeTrackData.Samples[277].rEyeDirection;
+
+            // Get eye tracker bone space eye directions at frame 277 (104)
+            bodyAnimation.Apply(104, AnimationLayerMode.Override);
+            var eyeTrackerBone = eyeTrackData.EyeTrackerBone;
+            var ule = lEye.InverseTransformDirection((rightTarget.transform.position - lEye.position).normalized);
+            var ure = rEye.InverseTransformDirection((rightTarget.transform.position - rEye.position).normalized);
+
+            // Compute aligning rotations
+            var qle = Quaternion.FromToRotation(ule, vle);
+            var qre = Quaternion.FromToRotation(ure, vre);
+
+            Debug.Log(string.Format("qle at 104: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
+            Debug.Log(string.Format("qre at 104: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));
+            
+            // Get ground-truth eye directions at frame 302 (129)
+            vle = eyeTrackData.Samples[302].lEyeDirection;
+            vre = eyeTrackData.Samples[302].rEyeDirection;
+
+            // Get eye tracker bone space eye directions at frame 302 (129)
+            bodyAnimation.Apply(129, AnimationLayerMode.Override);
+            ule = lEye.InverseTransformDirection((leftTarget.transform.position - lEye.position).normalized);
+            ure = rEye.InverseTransformDirection((leftTarget.transform.position - rEye.position).normalized);
+
+            // Compute aligning rotations
+            qle = Quaternion.FromToRotation(ule, vle);
+            qre = Quaternion.FromToRotation(ure, vre);
+
+            Debug.Log(string.Format("qle at 129: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
+            Debug.Log(string.Format("qre at 129: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));
+
+            // Get ground-truth eye directions at frame 332 (159)
+            vle = eyeTrackData.Samples[332].lEyeDirection;
+            vre = eyeTrackData.Samples[332].rEyeDirection;
+
+            // Get eye tracker bone space eye directions at frame 332 (159)
+            bodyAnimation.Apply(159, AnimationLayerMode.Override);
+            ule = lEye.InverseTransformDirection((midTarget.transform.position - lEye.position).normalized);
+            ure = rEye.InverseTransformDirection((midTarget.transform.position - rEye.position).normalized);
+
+            // Compute aligning rotations
+            qle = Quaternion.FromToRotation(ule, vle);
+            qre = Quaternion.FromToRotation(ure, vre);
+
+            Debug.Log(string.Format("qle at 159: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
+            Debug.Log(string.Format("qre at 159: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));*/
+            //
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationInstanceId, LEAPCore.eyeGazeAnimationLayerName);

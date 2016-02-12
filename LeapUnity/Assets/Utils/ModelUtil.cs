@@ -67,6 +67,61 @@ public static class ModelUtil
     }
 
     /// <summary>
+    /// Get materials used by model renderers.
+    /// </summary>
+    /// <param name="model">Model</param>
+    /// <param name="shared">If false, the method will return material instances unique to each renderer</param>
+    /// <returns>Model materials</returns>
+    public static Material[] GetModelMaterials(GameObject model, bool shared = true)
+    {
+        var materials = new List<Material>();
+
+        SkinnedMeshRenderer[] skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
+            materials.Add(shared ? skinnedMeshRenderer.sharedMaterial : skinnedMeshRenderer.material);
+
+        MeshRenderer[] meshRenderers = model.GetComponentsInChildren<MeshRenderer>();
+        foreach (var meshRenderer in meshRenderers)
+            materials.Add(shared ? meshRenderer.sharedMaterial : meshRenderer.material);
+
+        return materials.ToArray();
+    }
+
+    /// <summary>
+    /// Set materials used by model renderers.
+    /// </summary>
+    /// <param name="model">Model</param>
+    /// <param name="materials">Model materials</param>
+    public static void SetModelMaterials(GameObject model, Material[] materials)
+    {
+        int matIndex = 0;
+
+        SkinnedMeshRenderer[] skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
+            skinnedMeshRenderer.sharedMaterial = materials[matIndex++];
+
+        MeshRenderer[] meshRenderers = model.GetComponentsInChildren<MeshRenderer>();
+        foreach (var meshRenderer in meshRenderers)
+            meshRenderer.sharedMaterial = materials[matIndex++];
+    }
+
+    /// <summary>
+    /// Set material used by model renderers.
+    /// </summary>
+    /// <param name="model">Model</param>
+    /// <param name="mat">Material</param>
+    public static void SetModelMaterial(GameObject model, Material mat)
+    {
+        SkinnedMeshRenderer[] skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
+            skinnedMeshRenderer.sharedMaterial = mat;
+
+        MeshRenderer[] meshRenderers = model.GetComponentsInChildren<MeshRenderer>();
+        foreach (var meshRenderer in meshRenderers)
+            meshRenderer.sharedMaterial = mat;
+    }
+
+    /// <summary>
     /// Get all models that are below the specified model in the scene hierarchy.
     /// </summary>
     /// <param name="model">Model</param>

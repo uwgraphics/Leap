@@ -34,6 +34,13 @@ public static class EyeGazeInferenceModel
         }
     }
 
+    private enum DomeRenderMode
+    {
+        Disabled,
+        ModelOnly,
+        ShowScene
+    }
+
     /// <summary>
     /// Analyze a base body animation to infer an eye gaze behavior that matches it.
     /// </summary>
@@ -46,9 +53,10 @@ public static class EyeGazeInferenceModel
         // Clear any prior gaze instances
         var baseInstance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
         var model = baseInstance.Model;
-        timeline.RemoveAllAnimations(layerName, model.name);
+        // TODO: bring this back
+        /*timeline.RemoveAllAnimations(layerName, model.name);
         
-        _InferEyeGazeTimings(timeline, baseAnimationInstanceId, layerName);
+        _InferEyeGazeTimings(timeline, baseAnimationInstanceId, layerName);*/
         _InferEyeGazeTargets(timeline, baseAnimationInstanceId, layerName, envLayerName);
         _InferEyeGazeAlignments(timeline, baseAnimationInstanceId, layerName);
 
@@ -334,7 +342,6 @@ public static class EyeGazeInferenceModel
         var gazeController = model.GetComponent<GazeController>();
         var gazeLayer = timeline.GetLayer(layerName);
         var envRoot = timeline.OwningManager.Environment;
-        var curGazeTargets = ModelUtil.GetSubModelsWithTag(envRoot, "GazeTarget");
 
         // Deactivate gaze
         bool gazeControllerEnabled = gazeController.enabled;
@@ -342,19 +349,24 @@ public static class EyeGazeInferenceModel
         gazeController.enabled = false;
         gazeLayer.Active = false;
 
-        var newGazeTargets = new List<GameObject>();
         foreach (var scheduledGazeInstance in gazeLayer.Animations)
         {
             var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
             if (gazeInstance.Model != baseInstance.Model) // Gaze shift on a different character
                 continue;
 
-            int fixationStartFrame = scheduledGazeInstance.StartFrame + gazeInstance.FixationStartFrame;
-            timeline.GoToFrame(fixationStartFrame);
-            timeline.ApplyAnimation();
+            int startFrame = scheduledGazeInstance.StartFrame;
+            int fixationStartFrame = startFrame + gazeInstance.FixationStartFrame;
+            // TODO: remove this
+            if (gazeInstance.Name != "StackBoxesGaze2")
+                continue;
+            //
 
             if (gazeInstance.Name.EndsWith(LEAPCore.gazeAheadSuffix))
             {
+                timeline.GoToFrame(fixationStartFrame);
+                timeline.ApplyAnimation();
+
                 // Set target position for gaze shift straight ahead
                 gazeInstance.Target = null;
                 Vector3 aheadTargetPos = gazeController.head.Position + 5f * gazeController.head.Direction;
@@ -363,45 +375,88 @@ public static class EyeGazeInferenceModel
             else
             {
                 // Infer most likely gaze shift target
-                GameObject targetParent = null;
-                Vector3 targetPosition = Vector3.zero;
-                var gazeDirection = new Ray(gazeController.EyeCenter, gazeController.head.Direction);
-                RaycastHit hitInfo;
-                if (Physics.Raycast(gazeDirection, out hitInfo, 50f))
-                {
-                    targetParent = hitInfo.collider.gameObject;
-                    targetPosition = hitInfo.point;
-                }
-                else
-                {
-                    targetParent = envRoot;
-                    targetPosition = gazeDirection.origin + 5f * gazeDirection.direction;
-                }
-
-                // Get/create gaze target object
                 GameObject gazeTarget = null;
-                var curGazeTarget = curGazeTargets.FirstOrDefault(gt => (gt.transform.position - targetPosition).magnitude < 0.35f);
-                if (curGazeTarget != null)
+                if (LEAPCore.useSimpleGazeTargetInference)
                 {
-                    gazeTarget = curGazeTarget.gameObject;
+                    timeline.GoToFrame(fixationStartFrame);
+                    timeline.ApplyAnimation();
+
+                    gazeTarget = _InferEyeGazeTargetSimple(model, gazeInstance, envRoot);
                 }
                 else
                 {
-                    // Generate gaze target name
-                    string gazeTargetName = "";
-                    int gazeTargetIndex = 1;
-                    do
+                    // TODO: remove this
+                    /*for (int frameIndex = scheduledGazeInstance.StartFrame; frameIndex <= fixationStartFrame; ++frameIndex)
                     {
-                        gazeTargetName = targetParent.name + gazeTargetIndex;
-                        ++gazeTargetIndex;
-                    }
-                    while (curGazeTargets.Any(gt => gt.name == gazeTargetName) || newGazeTargets.Any(gt => gt.name == gazeTargetName));
+                        timeline.GoToFrame(frameIndex);
+                        timeline.ApplyAnimation();
 
-                    gazeTarget = new GameObject(gazeTargetName);
-                    gazeTarget.tag = "GazeTarget";
-                    gazeTarget.transform.position = targetPosition;
-                    gazeTarget.transform.SetParent(targetParent.transform, true);
-                    newGazeTargets.Add(gazeTarget);
+                        // Determine gaze point
+                        var eyeDir = gazeController.head.Direction;
+                        var eyePos = gazeController.EyeCenter;
+                        var gazePos = eyePos + 3.6f * eyeDir;
+
+                        // Create sphere indicating a point along the gaze shift path
+                        string sphereName = gazeInstance.Name + frameIndex;
+                        var sphere = GameObject.Find(sphereName);
+                        if (sphere == null)
+                        {
+                            sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                            sphere.name = sphereName;
+                            sphere.renderer.material.color = Color.magenta;
+                            sphere.transform.localScale = new Vector3(0.08f, 0.08f, 0.08f);
+                        }
+                        sphere.transform.position = gazePos;
+                    }*/
+                    //
+
+                    // TODO: this should all go into a separate method
+                    // Get model height
+                    timeline.ResetModelsAndEnvironment();
+                    float height = gazeController.head.Top.position.y;
+
+                    // Get gaze shift path start point
+                    timeline.GoToFrame(startFrame);
+                    timeline.ApplyAnimation();
+                    var eyeDir = gazeController.head.Direction;
+                    var eyePos = gazeController.EyeCenter;
+                    var startPos = eyePos + height * eyeDir;
+
+                    // Get gaze shift path end point
+                    timeline.GoToFrame(fixationStartFrame);
+                    timeline.ApplyAnimation();
+                    eyeDir = gazeController.head.Direction;
+                    eyePos = gazeController.EyeCenter;
+                    var endPos = eyePos + height * eyeDir;
+
+                    // Compute OMR
+                    float OMR = Mathf.Min(gazeController.lEye.outOMR, gazeController.lEye.inOMR);
+                    // TODO: use adjusted OMR
+
+                    // Compute extended gaze shift path end point
+                    var startEyeDir = (startPos - eyePos).normalized;
+                    var endEyeDir = (endPos - eyePos).normalized;
+                    var eyePathRot = Quaternion.FromToRotation(startEyeDir, endEyeDir);
+                    float eyePathAngle;
+                    Vector3 eyePathAxis;
+                    eyePathRot.ToAngleAxis(out eyePathAngle, out eyePathAxis);
+                    var exEyePathRot = Quaternion.AngleAxis(OMR, eyePathAxis);
+                    var exEndEyeDir = exEyePathRot * endEyeDir;
+                    var exEndPos = eyePos + height * exEndEyeDir;
+                    /*var lEyePos = gazeController.lEye.Position;
+                    var rEyePos = gazeController.rEye.Position;
+                    var lEyeRot = gazeController.lEye.Top.localRotation;
+                    var rEyeRot = gazeController.rEye.Top.localRotation;
+                    gazeController.lEye.RotateTowards((exEndPos - lEyePos).normalized);
+                    gazeController.rEye.RotateTowards((exEndPos - rEyePos).normalized);
+                    gazeController.lEye.ClampOMR(lEyeRot);
+                    gazeController.rEye.ClampOMR(rEyeRot);
+                    exEndEyeDir = (0.5f * (gazeController.lEye.Direction + gazeController.rEye.Direction)).normalized;
+                    exEndPos = eyePos + height * exEndEyeDir;*/
+
+                    //
+
+                    gazeTarget = _InferEyeGazeTarget(model, gazeInstance, envRoot, OMR, endPos, exEndPos);
                 }
 
                 // Set gaze target
@@ -418,6 +473,353 @@ public static class EyeGazeInferenceModel
         gazeLayer.Active = gazeLayerActive;
         timeline.GoToFrame(0);
         timeline.ResetModelsAndEnvironment();
+    }
+
+    // Infer most likely gaze shift location by sampling from a spatial probability distribution
+    private static GameObject _InferEyeGazeTarget(GameObject model, EyeGazeInstance eyeGazeInstance, GameObject envRoot,
+        float OMR, Vector3 eyePathStartPos, Vector3 eyePathEndPos)
+    {
+        var gazeController = model.GetComponent<GazeController>();
+
+        // Get gaze inference camera and texture size
+        var cam = _GetEyeGazeCamera(model);
+        int width = 0, height = 0;
+        _GetEyeGazeTextureSize(cam, out width, out height);
+
+        // Create target inference render textures
+        var rtWorldPos = _CreateEyeGazeRenderTexture(width, height, RenderTextureFormat.ARGBFloat);
+        var rtGameObjID = _CreateEyeGazeRenderTexture(width, height, RenderTextureFormat.RFloat);
+        var rtPGazeShiftDir = _CreateEyeGazeRenderTexture(width, height, RenderTextureFormat.ARGB32);
+        var rtPTaskRel = _CreateEyeGazeRenderTexture(width, height, RenderTextureFormat.ARGB32);
+        var rtPHandCon = _CreateEyeGazeRenderTexture(width, height, RenderTextureFormat.ARGB32);
+        var rtPTotal = _CreateEyeGazeRenderTexture(width, height, RenderTextureFormat.ARGB32);
+
+        // Get target inference shaders and materials
+        var shaderWorldPos = Shader.Find("EyeGazeInference/RenderWorldPosition");
+        var matGameObjID = Resources.Load("AnimationEditor/RenderGameObjectID", typeof(Material)) as Material;
+        var matPGazeShiftDir = Resources.Load("AnimationEditor/PGazeShiftDirection", typeof(Material)) as Material;
+        var matPTaskRel = Resources.Load("AnimationEditor/PTaskRelevance", typeof(Material)) as Material;
+        //var matPHandCon = Resources.Load("AnimationEditor/PHandContact", typeof(Material)) as Material;
+        //var matPTotal = Resources.Load("AnimationEditor/PTotal", typeof(Material)) as Material;
+
+        // Disable rendering of the current character model
+        ModelUtil.ShowModel(model, false);
+
+        // Render scene world positions
+        _ShowModels(model, envRoot, true);
+        _ShowDome(model, envRoot, DomeRenderMode.ShowScene);
+        RenderTexture.active = rtWorldPos;
+        cam.targetTexture = rtWorldPos;
+        cam.RenderWithShader(shaderWorldPos, "");
+
+        // Render scene game object IDs
+        var materials = _GetMaterialsOnModels(model, envRoot);
+        _SetMaterialOnModels(model, envRoot, matGameObjID);
+        _SetGameObjectIDPropertyOnModels(model, envRoot);
+        RenderTexture.active = rtGameObjID;
+        cam.targetTexture = rtGameObjID;
+        cam.Render();
+        _SetMaterialsOnModels(model, envRoot, materials);
+
+        // Get gaze shift direction properties
+        var lEyePos = gazeController.lEye.Top.position;
+        var rEyePos = gazeController.rEye.Top.position;
+        gazeController.lEye.Yaw = gazeController.lEye.Pitch =
+            gazeController.rEye.Yaw = gazeController.rEye.Pitch = 0f;
+        var lEyeDir0 = gazeController.lEye.Direction;
+        var rEyeDir0 = gazeController.rEye.Direction;
+
+        // Set gaze shift direction properties in the material
+        matPGazeShiftDir.SetVector("_LEyePosition", new Vector4(lEyePos.x, lEyePos.y, lEyePos.z, 1f));
+        matPGazeShiftDir.SetVector("_REyePosition", new Vector4(rEyePos.x, rEyePos.y, rEyePos.z, 1f));
+        matPGazeShiftDir.SetVector("_LEyeDirectionAhead", new Vector4(lEyeDir0.x, lEyeDir0.y, lEyeDir0.z, 0f));
+        matPGazeShiftDir.SetVector("_REyeDirectionAhead", new Vector4(rEyeDir0.x, rEyeDir0.y, rEyeDir0.z, 0f));
+        matPGazeShiftDir.SetFloat("_OMR", OMR);
+        matPGazeShiftDir.SetVector("_EyePathStartPosition", new Vector4(eyePathStartPos.x, eyePathStartPos.y, eyePathStartPos.z, 0f));
+        matPGazeShiftDir.SetVector("_EyePathEndPosition", new Vector4(eyePathEndPos.x, eyePathEndPos.y, eyePathEndPos.z, 0f));
+
+        // Render gaze shift probability map
+        _ShowModels(model, envRoot, false);
+        _ShowDome(model, envRoot, DomeRenderMode.ModelOnly);
+        RenderTexture.active = rtPGazeShiftDir;
+        cam.targetTexture = rtPGazeShiftDir;
+        cam.Render();
+        _WriteRenderTextureToFile("../Matlab/EyeGazeInference/" + eyeGazeInstance.Name + "-PGazeShiftDir.png");
+
+        // Render object task relevance probability map
+        _ShowModels(model, envRoot, true);
+        _ShowDome(model, envRoot, DomeRenderMode.Disabled);
+        _SetMaterialOnModels(model, envRoot, matPTaskRel);
+        _SetTaskRelevancePropertyOnModels(model, envRoot);
+        RenderTexture.active = rtPTaskRel;
+        cam.targetTexture = rtPTaskRel;
+        cam.Render();
+        _SetMaterialsOnModels(model, envRoot, materials);
+        _WriteRenderTextureToFile("../Matlab/EyeGazeInference/" + eyeGazeInstance.Name + "-PTaskRel.png");
+
+        // Render object hand constraint probability map
+        // TODO
+
+        // Compute and set view-projection matrix
+        /*var matProj = GL.GetGPUProjectionMatrix(cam.projectionMatrix, false);
+        var matView = cam.worldToCameraMatrix;
+        var matViewProj = matProj * matView;
+        matTest1.SetMatrix("_MatViewProj", matViewProj);*/
+
+        // Show scene as normal
+        _ShowDome(model, envRoot, DomeRenderMode.Disabled);
+        _ShowModels(model, envRoot, true);
+        ModelUtil.ShowModel(model, true);
+
+        // Destroy render textures
+        RenderTexture.Destroy(rtWorldPos);
+        RenderTexture.Destroy(rtGameObjID);
+        RenderTexture.Destroy(rtPGazeShiftDir);
+        RenderTexture.Destroy(rtPTaskRel);
+        RenderTexture.Destroy(rtPHandCon);
+        RenderTexture.Destroy(rtPTotal);
+
+        return null;
+    }
+
+    // Get eye gaze inference camera
+    private static Camera _GetEyeGazeCamera(GameObject model)
+    {
+        var gazeController = model.GetComponent<GazeController>();
+        var headBone = gazeController.head.Top;
+        for (int childIndex = 0; childIndex < headBone.childCount; ++childIndex)
+        {
+            var child = headBone.GetChild(childIndex);
+            if (child.gameObject.camera != null)
+            {
+                return child.gameObject.camera;
+            }
+        }
+
+        return null;
+    }
+
+    // Get width and height of textures used for gaze target inference
+    private static void _GetEyeGazeTextureSize(Camera cam, out int width, out int height)
+    {
+        float camAspect = cam.aspect;
+        width = LEAPCore.eyeGazeInferenceRenderTextureWidth;
+        height = Mathf.RoundToInt(((float)LEAPCore.eyeGazeInferenceRenderTextureWidth) / camAspect);
+    }
+
+    // Create a render texture used in gaze target inference
+    private static RenderTexture _CreateEyeGazeRenderTexture(int width, int height, RenderTextureFormat format)
+    {
+        var tex = new RenderTexture(width, height, 24, format);
+        tex.antiAliasing = 1;
+        tex.filterMode = FilterMode.Point;
+
+        return tex;
+    }
+
+    // Enable/disable renderers on characters and environment models
+    private static void _ShowModels(GameObject model, GameObject envRoot, bool enabled = true)
+    {
+        var models = GameObject.FindGameObjectsWithTag("Agent");
+        foreach (var curModel in models)
+            if (curModel != model && curModel.active)
+                ModelUtil.ShowModel(curModel, enabled);
+        ModelUtil.ShowModel(envRoot, enabled);
+    }
+
+    // Set material for rendering the character/scene dome
+    private static void _SetDomeMaterial(Material mat)
+    {
+        var dome = GameObject.FindGameObjectWithTag("GazeTargetDome");
+        dome.renderer.material = mat;
+    }
+
+    // Enable/disable the rendering of a dome around the character/scene
+    private static void _ShowDome(GameObject model, GameObject envRoot, DomeRenderMode mode)
+    {
+        var dome = GameObject.FindGameObjectWithTag("GazeTargetDome");
+        if (mode == DomeRenderMode.Disabled)
+        {
+            dome.renderer.enabled = false;
+        }
+        else
+        {
+            dome.renderer.enabled = true;
+
+            if (mode == DomeRenderMode.ModelOnly)
+            {
+                var gazeController = model.GetComponent<GazeController>();
+                float modelHeight = gazeController.head.Top.position.y;
+                dome.transform.position = gazeController.EyeCenter;
+                dome.transform.localScale = new Vector3(modelHeight, modelHeight, modelHeight);
+            }
+            else
+            {
+                dome.transform.position = new Vector3(model.transform.position.x, 0f, model.transform.position.z);
+                dome.transform.localScale = new Vector3(100f, 100f, 100f);
+            }
+        }   
+    }
+
+    // Get materials on characters and environment models in the scene
+    private static Material[] _GetMaterialsOnModels(GameObject model, GameObject envRoot)
+    {
+        List<Material> materials = new List<Material>();
+
+        var models = GameObject.FindGameObjectsWithTag("Agent");
+        foreach (var curModel in models)
+            if (curModel != model && curModel.active)
+                materials.AddRange(ModelUtil.GetModelMaterials(curModel));
+        materials.AddRange(ModelUtil.GetModelMaterials(envRoot));
+
+        return materials.ToArray();
+    }
+
+    // Set specified material on all characters and environment models in the scene
+    private static void _SetMaterialOnModels(GameObject model, GameObject envRoot, Material mat)
+    {
+        var models = GameObject.FindGameObjectsWithTag("Agent");
+        foreach (var curModel in models)
+            if (curModel != model && curModel.active)
+                ModelUtil.SetModelMaterial(curModel, mat);
+        ModelUtil.SetModelMaterial(envRoot, mat);
+    }
+
+    // Set materials on characters and environment models in the scene
+    private static void _SetMaterialsOnModels(GameObject model, GameObject envRoot, Material[] materials)
+    {
+        int matIndex = 0;
+
+        var models = GameObject.FindGameObjectsWithTag("Agent");
+        foreach (var curModel in models)
+        {
+            if (curModel != model && curModel.active)
+            {
+                var curModelMaterials = ModelUtil.GetModelMaterials(curModel);
+                var newModelMaterials = new Material[curModelMaterials.Length];
+                Array.Copy(materials, matIndex, newModelMaterials, 0, newModelMaterials.Length);
+                ModelUtil.SetModelMaterials(curModel, newModelMaterials);
+                matIndex += curModelMaterials.Length;
+            }
+        }
+
+        var curEnvMaterials = ModelUtil.GetModelMaterials(envRoot);
+        var newEnvMaterials = new Material[curEnvMaterials.Length];
+        Array.Copy(materials, matIndex, newEnvMaterials, 0, newEnvMaterials.Length);
+        ModelUtil.SetModelMaterials(envRoot, newEnvMaterials);
+    }
+
+    // Set game object ID material property for all characters and environment models in the scene
+    private static void _SetGameObjectIDPropertyOnModels(GameObject model, GameObject envRoot)
+    {
+        var models = GameObject.FindGameObjectsWithTag("Agent");
+        foreach (var curModel in models)
+        {
+            if (curModel != model && curModel.active)
+            {
+                int gameObjectID = curModel.GetInstanceID();
+                var modelMaterials = ModelUtil.GetModelMaterials(curModel, false);
+                foreach (var mat in modelMaterials)
+                    mat.SetInt("_GameObjectID", gameObjectID);
+            }
+        }
+
+        var envModels = ModelUtil.GetSubModels(envRoot);
+        foreach (var envModel in envModels)
+        {
+            if (envModel.renderer != null)
+            {
+                int gameObjectID = envModel.GetInstanceID();
+                envModel.renderer.material.SetInt("_GameObjectID", gameObjectID);
+            }
+        }
+    }
+
+    // Set task relevance material property for all characters and environment models in the scene
+    private static void _SetTaskRelevancePropertyOnModels(GameObject model, GameObject envRoot)
+    {
+        var models = GameObject.FindGameObjectsWithTag("Agent");
+        foreach (var curModel in models)
+        {
+            if (curModel != model && curModel.active)
+            {
+                var modelMaterials = ModelUtil.GetModelMaterials(curModel, false);
+                foreach (var mat in modelMaterials)
+                    mat.SetInt("_IsTaskRelevant", 1);
+            }
+        }
+
+        var envModels = ModelUtil.GetSubModels(envRoot);
+        foreach (var envModel in envModels)
+        {
+            if (envModel.renderer != null &&
+                (envModel.tag == "ManipulatedObject" || envModel.tag == "GazeTarget"))
+            {
+                envModel.renderer.material.SetInt("_IsTaskRelevant", 1);
+            }
+        }
+    }
+
+    // Write active render texture to a PNG file
+    private static void _WriteRenderTextureToFile(string path)
+    {
+        int width = RenderTexture.active.width;
+        int height = RenderTexture.active.height;
+        var tex = new Texture2D(width, height, TextureFormat.ARGB32, false);
+        tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+        var texData = tex.EncodeToPNG();
+        System.IO.File.WriteAllBytes(path, texData);
+    }
+
+    // Infer most likely gaze shift location using simple raycast
+    private static GameObject _InferEyeGazeTargetSimple(GameObject model, EyeGazeInstance eyeGazeInstance, GameObject envRoot)
+    {
+        var gazeController = model.GetComponent<GazeController>();
+        GameObject targetParent = null;
+        Vector3 targetPosition = Vector3.zero;
+        var gazeDirection = new Ray(gazeController.EyeCenter, gazeController.head.Direction);
+        var curGazeTargets = ModelUtil.GetSubModelsWithTag(envRoot, "GazeTarget");
+        var newGazeTargets = new List<GameObject>();
+
+        RaycastHit hitInfo;
+        if (Physics.Raycast(gazeDirection, out hitInfo, 50f))
+        {
+            targetParent = hitInfo.collider.gameObject;
+            targetPosition = hitInfo.point;
+        }
+        else
+        {
+            targetParent = envRoot;
+            targetPosition = gazeDirection.origin + 5f * gazeDirection.direction;
+        }
+
+        // Get/create gaze target object
+        GameObject gazeTarget = null;
+        var curGazeTarget = curGazeTargets.FirstOrDefault(gt => (gt.transform.position - targetPosition).magnitude < 0.35f);
+        if (curGazeTarget != null)
+        {
+            gazeTarget = curGazeTarget.gameObject;
+        }
+        else
+        {
+            // Generate gaze target name
+            string gazeTargetName = "";
+            int gazeTargetIndex = 1;
+            do
+            {
+                gazeTargetName = targetParent.name + gazeTargetIndex;
+                ++gazeTargetIndex;
+            }
+            while (curGazeTargets.Any(gt => gt.name == gazeTargetName) || newGazeTargets.Any(gt => gt.name == gazeTargetName));
+
+            gazeTarget = new GameObject(gazeTargetName);
+            gazeTarget.tag = "GazeTarget";
+            gazeTarget.transform.position = targetPosition;
+            gazeTarget.transform.SetParent(targetParent.transform, true);
+            newGazeTargets.Add(gazeTarget);
+        }
+
+        return gazeTarget;
     }
 
     // Infer gaze shift alignment parameter values
