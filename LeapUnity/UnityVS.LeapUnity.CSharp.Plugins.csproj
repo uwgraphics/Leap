@@ -183,6 +183,7 @@
     <None Include="Assets\Resources\AnimationEditor\PGazeShiftDirection.shader" />
     <None Include="Assets\Resources\AnimationEditor\PHandContact.shader" />
     <None Include="Assets\Resources\AnimationEditor\PTaskRelevance.shader" />
+    <None Include="Assets\Resources\AnimationEditor\PTotal.shader" />
     <None Include="Assets\Resources\AnimationEditor\RenderGameObjectID.shader" />
     <None Include="Assets\Resources\AnimationEditor\RenderWorldPosition.shader" />
     <None Include="Assets\Scene-specific\Agents\GazeAversion\thinkingInputs.txt" />

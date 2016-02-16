@@ -170,12 +170,12 @@ public class LEAPCore : MonoBehaviour
     /// <summary>
     /// Kernel size for the low-pass filter used for filtering gaze joint joint velocities in eye gaze inference.
     /// </summary>
-    public static int eyeGazeInferenceLowPassKernelSize = 5;
+    public static int gazeInferenceLowPassKernelSize = 5;
 
     /// <summary>
-    /// Slope of the logistic curve used in computing the probability that some motion interval is a gaze shift.
+    /// Slope of the logistic curve used in computing the probability that some animation interval is a gaze shift.
     /// </summary>
-    public static float eyeGazeInferenceGazeShiftLogisticSlope = 1f;
+    public static float gazeShiftInferenceLogisticSlope = 1f;
 
     /// <summary>
     /// If true, simple gaze target inference will be used.
@@ -185,7 +185,51 @@ public class LEAPCore : MonoBehaviour
     /// <summary>
     /// Render texture width for spatial probability distributions used in gaze target inference.
     /// </summary>
-    public static int eyeGazeInferenceRenderTextureWidth = 1280;
+    public static int gazeInferenceRenderTextureWidth = 1280;
+
+    /// <summary>
+    /// If true, render textures used for gaze target inference will be written to PNG files.
+    /// </summary>
+    public static bool writeGazeInferenceRenderTextures = true;
+
+    /// <summary>
+    /// Number of seconds before hand contact when gaze fixations of manipulated objects
+    /// begin occurring.
+    /// </summary>
+    public static float gazeInferenceHandContactStartTime = -3f;
+
+    /// <summary>
+    /// Number of seconds before hand contact when probability of gaze fixations of manipulated objects
+    /// is the highest.
+    /// </summary>
+    public static float gazeInferenceHandContactMaxTime = -1f;
+
+    /// <summary>
+    /// Number of seconds after hand contact when gaze fixations of manipulated objects
+    /// are no longer occurring.
+    /// </summary>
+    public static float gazeInferenceHandContactEndTime = 0.6f;
+
+    /// <summary>
+    /// Weight of the gaze shift direction term for gaze target inference.
+    /// </summary>
+    public static float gazeInferencePGazeShiftDirWeight = 0.7f;
+
+    /// <summary>
+    /// Weight of the task relevance term for gaze target inference.
+    /// </summary>
+    public static float gazeInferencePTaskRelWeight = 0.2f;
+
+    /// <summary>
+    /// Weight of the hand contact term for gaze target inference.
+    /// </summary>
+    public static float gazeInferencePHandConWeight = 0.1f;
+
+    /// <summary>
+    /// Maximum distance between two eye gaze targets at which they are
+    /// still considered a single target.
+    /// </summary>
+    public static float gazeInferenceMaxColocatedTargetDistance = 0.17f;
 
     /// <summary>
     /// If false, defined timewarps will not be applied to animations.
@@ -305,7 +349,18 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeConstraintActivationTime", typeof(float));
         cfgFile.AddParam("adjustGazeTargetForMovingBase", typeof(bool));
         cfgFile.AddParam("printDetailedGazeControllerState", typeof(bool));
-        cfgFile.AddParam("eyeGazeInferenceGazeShiftLogisticSlope", typeof(float));
+        cfgFile.AddParam("gazeInferenceLowPassKernelSize", typeof(int));
+        cfgFile.AddParam("gazeShiftInferenceLogisticSlope", typeof(float));
+        cfgFile.AddParam("useSimpleGazeTargetInference", typeof(bool));
+        cfgFile.AddParam("gazeInferenceRenderTextureWidth", typeof(int));
+        cfgFile.AddParam("writeGazeInferenceRenderTextures", typeof(bool));
+        cfgFile.AddParam("gazeInferenceHandContactStartTime", typeof(float));
+        cfgFile.AddParam("gazeInferenceHandContactMaxTime", typeof(float));
+        cfgFile.AddParam("gazeInferenceHandContactEndTime", typeof(float));
+        cfgFile.AddParam("gazeInferencePGazeShiftDirWeight", typeof(float));
+        cfgFile.AddParam("gazeInferencePTaskRelWeight", typeof(float));
+        cfgFile.AddParam("gazeInferencePHandConWeight", typeof(float));
+        cfgFile.AddParam("gazeInferenceMaxColocatedTargetDistance", typeof(float));
         cfgFile.AddParam("timewarpsEnabled", typeof(bool));
         cfgFile.AddParam("timelineBakeRangeStart", typeof(int));
         cfgFile.AddParam("timelineBakeRangeEnd", typeof(int));
@@ -332,8 +387,30 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<bool>("adjustGazeTargetForMovingBase") : adjustGazeTargetForMovingBase;
         printDetailedGazeControllerState = cfgFile.HasValue("printDetailedGazeControllerState") ?
             cfgFile.GetValue<bool>("printDetailedGazeControllerState") : printDetailedGazeControllerState;
-        eyeGazeInferenceGazeShiftLogisticSlope = cfgFile.HasValue("eyeGazeInferenceGazeShiftLogisticSlope") ?
-            cfgFile.GetValue<float>("eyeGazeInferenceGazeShiftLogisticSlope") : eyeGazeInferenceGazeShiftLogisticSlope;
+        gazeInferenceLowPassKernelSize = cfgFile.HasValue("gazeInferenceLowPassKernelSize") ?
+            cfgFile.GetValue<int>("gazeInferenceLowPassKernelSize") : gazeInferenceLowPassKernelSize;
+        gazeShiftInferenceLogisticSlope = cfgFile.HasValue("gazeShiftInferenceLogisticSlope") ?
+            cfgFile.GetValue<float>("gazeShiftInferenceLogisticSlope") : gazeShiftInferenceLogisticSlope;
+        useSimpleGazeTargetInference = cfgFile.HasValue("useSimpleGazeTargetInference") ?
+            cfgFile.GetValue<bool>("useSimpleGazeTargetInference") : useSimpleGazeTargetInference;
+        gazeInferenceRenderTextureWidth = cfgFile.HasValue("gazeInferenceRenderTextureWidth") ?
+            cfgFile.GetValue<int>("gazeInferenceRenderTextureWidth") : gazeInferenceRenderTextureWidth;
+        writeGazeInferenceRenderTextures = cfgFile.HasValue("writeGazeInferenceRenderTextures") ?
+            cfgFile.GetValue<bool>("writeGazeInferenceRenderTextures") : writeGazeInferenceRenderTextures;
+        gazeInferenceHandContactStartTime = cfgFile.HasValue("gazeInferenceHandContactStartTime") ?
+            cfgFile.GetValue<float>("gazeInferenceHandContactStartTime") : gazeInferenceHandContactStartTime;
+        gazeInferenceHandContactMaxTime = cfgFile.HasValue("gazeInferenceHandContactMaxTime") ?
+            cfgFile.GetValue<float>("gazeInferenceHandContactMaxTime") : gazeInferenceHandContactMaxTime;
+        gazeInferenceHandContactEndTime = cfgFile.HasValue("gazeInferenceHandContactEndTime") ?
+            cfgFile.GetValue<float>("gazeInferenceHandContactEndTime") : gazeInferenceHandContactEndTime;
+        gazeInferencePGazeShiftDirWeight = cfgFile.HasValue("gazeInferencePGazeShiftDirWeight") ?
+            cfgFile.GetValue<float>("gazeInferencePGazeShiftDirWeight") : gazeInferencePGazeShiftDirWeight;
+        gazeInferencePTaskRelWeight = cfgFile.HasValue("gazeInferencePTaskRelWeight") ?
+            cfgFile.GetValue<float>("gazeInferencePTaskRelWeight") : gazeInferencePTaskRelWeight;
+        gazeInferencePHandConWeight = cfgFile.HasValue("gazeInferencePHandConWeight") ?
+            cfgFile.GetValue<float>("gazeInferencePHandConWeight") : gazeInferencePHandConWeight;
+        gazeInferenceMaxColocatedTargetDistance = cfgFile.HasValue("gazeInferenceMaxColocatedTargetDistance") ?
+            cfgFile.GetValue<float>("gazeInferenceMaxColocatedTargetDistance") : gazeInferenceMaxColocatedTargetDistance;
         timewarpsEnabled = cfgFile.HasValue("timewarpsEnabled") ?
             cfgFile.GetValue<bool>("timewarpsEnabled") : timewarpsEnabled;
         timelineBakeRangeStart = cfgFile.HasValue("timelineBakeRangeStart") ?

@@ -58,6 +58,29 @@ public class GeometryUtil
         return v - (Vector3.Dot(v, n) / n.sqrMagnitude) * n;
     }
 
+    /// <summary>
+    /// Project point onto a line segment.
+    /// </summary>
+    /// <param name="p">Point</param>
+    /// <param name="v1">Line segment start point</param>
+    /// <param name="v2">Line segment end point</param>
+    /// <returns>Projected point</returns>
+    public static Vector3 ProjectPointOntoLineSegment(Vector3 p, Vector3 v1, Vector3 v2)
+    {
+	    float l = Vector3.Distance(v1, v2);
+	    if (l <= 0.001f)
+		    return v1;
+
+	    float t = Vector3.Dot(p - v1, v2 - v1) / (l * l);
+	    if (t <= 0f)
+		    return v1;
+	    else if (t >= 1f)
+		    return v2;
+
+	    Vector3 pt = v1 + t * (v2 - v1);
+	    return pt;
+    }
+
 	/// <summary>
 	/// Find points on two lines where the lines are the closest
 	/// in 3D space.

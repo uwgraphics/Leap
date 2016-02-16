@@ -2,7 +2,7 @@
 {
 	Properties
 	{
-		_GameObjectID ("Game Object ID", Int) = -1
+		_GameObjectID ("Game Object ID", Float) = 0
 	}
 
 	SubShader
@@ -17,7 +17,9 @@
             #pragma fragment frag
 			#pragma target 3.0
 
-			int _GameObjectID;
+			#include "UnityCG.cginc"
+
+			float _GameObjectID;
  
             float4 vert (float4 v : POSITION) : POSITION
 			{
@@ -26,9 +28,9 @@
                 return pos;
             }
 
-            float frag(float4 pos : SV_POSITION) : COLOR
+            float4 frag(float4 pos : SV_POSITION) : COLOR
 			{
-				return (float)_GameObjectID;
+				return EncodeFloatRGBA(_GameObjectID);
             }
             ENDCG
         }

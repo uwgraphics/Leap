@@ -2,7 +2,7 @@
 {
     Properties
 	{
-		_IsTaskRelevant ("_IsTaskRelevant", Int) = 0
+		_IsTaskRelevant ("Is Task Relevant", Int) = 0
 	}
 
 	SubShader

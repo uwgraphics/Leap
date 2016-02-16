@@ -162,6 +162,38 @@ public static class ModelUtil
     }
 
     /// <summary>
+    /// Get all end-effector targets on the model.
+    /// </summary>
+    /// <param name="obj">Character model</param>
+    /// <returns>Array of all end-effector targets</returns>
+    public static Transform[] GetEndEffectorTargets(GameObject obj)
+    {
+        var endEffectorTargets = new List<Transform>();
+        if (obj.tag == "Agent")
+        {
+            var bones = GetAllBones(obj);
+            foreach (var bone in bones)
+            {
+                for (int childIndex = 0; childIndex < bone.childCount; ++childIndex)
+                {
+                    var child = bone.GetChild(childIndex);
+                    if (child.tag == "EndEffectorTarget")
+                        endEffectorTargets.Add(child);
+                }
+            }
+        }
+        else
+        {
+            var submodels = GetSubModels(obj);
+            foreach (var submodel in submodels)
+                if (submodel.tag == "EndEffectorTarget")
+                    endEffectorTargets.Add(submodel.transform);
+        }
+
+        return endEffectorTargets.ToArray();
+    }
+
+    /// <summary>
     /// Show/hide skeleton visualization gizmos.
     /// </summary>
     /// <param name="model">Character model</param>
@@ -376,8 +408,7 @@ public static class ModelUtil
     /// </returns>
     public static Transform FindRootBone(GameObject obj)
     {
-        Transform root = FindBoneWithTag(obj.transform, "RootBone");
-        return root != null ? root : obj.transform;
+        return FindBoneWithTag(obj.transform, "RootBone");
     }
 
     /// <summary>
@@ -632,6 +663,35 @@ public static class ModelUtil
         }
         
         return helper;
+    }
+
+    /// <summary>
+    /// Find bone in the character model closest to the specified point in world coordinates.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="wPos">World position</param>
+    /// <returns>Closest bone</returns>
+    public static Transform FindClosestBoneToPoint(GameObject model, Vector3 wPos)
+    {
+        var bones = GetAllBones(model);
+        float minDist = float.MaxValue;
+        Transform closestBone = null;
+        foreach (var bone in bones)
+        {
+            for (int childIndex = 0; childIndex < bone.childCount; ++childIndex)
+            {
+                var child = bone.GetChild(childIndex);
+                var wPosProj = GeometryUtil.ProjectPointOntoLineSegment(wPos, bone.position, child.position);
+                float dist = Vector3.Distance(wPos, wPosProj);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    closestBone = bone;
+                }
+            }
+        }
+
+        return closestBone;
     }
 
     /// <summary>
