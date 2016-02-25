@@ -29,7 +29,7 @@
  
             v2f vert (float4 v : POSITION)
 			{
-                v2f o;
+                v2f o; 
                 o.pos = mul(UNITY_MATRIX_MVP, v);
 				o.worldPos = mul(_Object2World, v);
 
@@ -38,14 +38,14 @@
 
             float4 frag(v2f IN) : COLOR
 			{
-				float v = 0f;
+				float v = 0;
 				if (_RenderWorldPosAxis == 0)
 					v = IN.worldPos.x;
 				else if (_RenderWorldPosAxis == 1)
 					v = IN.worldPos.y;
 				else // if (_RenderWorldPosAxis == 2)
 					v = IN.worldPos.z;
-				v /= _RenderWorldPosScale;
+				v = v / _RenderWorldPosScale + 0.5;
 
 				float4 c = EncodeFloatRGBA(v);
                 return c;

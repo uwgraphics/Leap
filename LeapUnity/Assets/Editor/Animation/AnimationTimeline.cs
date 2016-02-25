@@ -16,16 +16,6 @@ public class AnimationTimeline
     public delegate void AnimationEvtH(int animationInstanceId);
 
     /// <summary>
-    /// Event triggered when animation timeline is activated.
-    /// </summary>
-    public event TimelineControlEvtH TimelineActivated;
-
-    /// <summary>
-    /// Event triggered when animation timeline is deactivated.
-    /// </summary>
-    public event TimelineControlEvtH TimelineDeactivated;
-
-    /// <summary>
     /// Event triggered when animation timeline is deactivated.
     /// </summary>
     public event AllAnimationEvtH AllAnimationApplied;
@@ -1666,7 +1656,8 @@ public class AnimationTimeline
                             CurrentFrame, animation.Animation.Name, model.name, curTimes.ToString()));
 
                         // Notify listeners that the animation instance has just become inactive
-                        AnimationFinished(animation.InstanceId);
+                        if (AnimationFinished != null)
+                            AnimationFinished(animation.InstanceId);
                     }
 
                     continue;
@@ -1690,7 +1681,8 @@ public class AnimationTimeline
                             CurrentFrame, animation.Animation.Name, model.name, curTimes.ToString()));
 
                         // Notify listeners that the animation instance has just become active
-                        AnimationStarted(animation.InstanceId);
+                        if (AnimationStarted != null)
+                            AnimationStarted(animation.InstanceId);
                     }
 
                     // Apply the animation instance
@@ -1718,7 +1710,8 @@ public class AnimationTimeline
             }
 
             // Notify listeners that the layer has finished applying
-            LayerApplied(layer.LayerName);
+            if (LayerApplied != null)
+                LayerApplied(layer.LayerName);
         }
 
         // Apply blendshape animations, animation controllers, and IK
@@ -1727,17 +1720,21 @@ public class AnimationTimeline
         _SolveIK();
 
         // Notify listeners that animation is applied
-        AllAnimationApplied();
+        if (AllAnimationApplied != null)
+            AllAnimationApplied();
     }
 
     /// <summary>
     /// Initialize the animation timeline
     /// </summary>
-    public void Init()
+    public void _Init()
     {
         _activeBakedTimelineContainerIndex = -1;
         _InitControllers();
         _InitIK();
+        
+        Active = false;
+        Stop();
     }
 
     // Update the cached length of the animation timeline in frames

@@ -46,9 +46,9 @@ public static class EyeGazeInferenceModel
         // Clear any prior gaze instances
         var baseInstance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
         var model = baseInstance.Model;
-        // TODO: bring this back
         timeline.RemoveAllAnimations(layerName, model.name);
-        
+
+        // Infer new gaze instances
         _InferEyeGazeTimings(timeline, baseAnimationInstanceId, layerName);
         var targetInferenceModel = new EyeGazeTargetInferenceModel(model, timeline.OwningManager.Environment);
         targetInferenceModel.InferTargets(timeline, baseAnimationInstanceId, layerName, envLayerName);

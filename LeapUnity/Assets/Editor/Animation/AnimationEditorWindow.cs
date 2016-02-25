@@ -16,8 +16,7 @@ public class AnimationEditorWindow : EditorWindow
     /// </summary>
     public AnimationTimeline Timeline
     {
-        get;
-        private set;
+        get { return AnimationManager.Instance.Timeline; }
     }
 
     /// <summary>
@@ -59,8 +58,6 @@ public class AnimationEditorWindow : EditorWindow
     /// </summary>
     public void Init()
     {
-        _InitTimeline();
-
         // Get component for drawing animation edit gizmos
         _animationEditGizmos = UnityEngine.Object.FindObjectOfType(typeof(AnimationEditGizmos)) as AnimationEditGizmos;
         if (_animationEditGizmos != null)
@@ -89,6 +86,21 @@ public class AnimationEditorWindow : EditorWindow
 
     private void Update()
     {
+        try
+        {
+            _Update();
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError("Unable to update Leap animation editor: " + ex.Message);
+        }
+    }
+
+    private void _Update()
+    {
+        if (Timeline == null)
+            return;
+
         // Update frame timing
         if (!_frameTimer.IsRunning)
             _frameTimer.Start();
@@ -121,27 +133,29 @@ public class AnimationEditorWindow : EditorWindow
         {
             Selection.activeGameObject = _newSelectedGazeTarget;
         }
-        
+
         if (_loggedGazeControllerStateModel != null)
         {
             // Log gaze controller state for the specified character model
             EyeGazeEditor.PrintEyeGazeControllerState(_loggedGazeControllerStateModel);
             _loggedGazeControllerStateModel = null;
         }
-
-        // TODO: remove this
-        /*if (LastSelectedModel != null)
-        {
-            //Timeline.ResetModelsToInitialPose();
-            var gazeController = LastSelectedModel.GetComponent<GazeController>();
-            var target = GameObject.Find("UpperLeft");
-            gazeController.Torso.bone.localRotation = gazeController.Torso._ComputeTargetRotation(target.transform.position);
-            gazeController._ApplyRotation(gazeController.Torso);
-        }*/
         //
     }
 
     private void OnGUI()
+    {
+        try
+        {
+            _OnGUI();
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError("Unable to handle GUI on Leap animation editor: " + ex.Message);
+        }
+    }
+
+    private void _OnGUI()
     {
         if (Timeline == null)
             return;
@@ -442,23 +456,6 @@ public class AnimationEditorWindow : EditorWindow
         _changeGazeHeadAlign = _changeGazeTorsoAlign = false;
     }
 
-    // Initialize animation timeline
-    private void _InitTimeline()
-    {
-        AnimationManager.Instance.Init();
-
-        // Initialize the animation timeline
-        Timeline = AnimationManager.Instance.Timeline;
-        Timeline.Active = false;
-        Timeline.Stop();
-
-        // Subscribe to events from the animation timeline
-        Timeline.AllAnimationApplied += new AnimationTimeline.AllAnimationEvtH(AnimationTimeline_AllAnimationApplied);
-        Timeline.LayerApplied += new AnimationTimeline.LayerEvtH(AnimationTimeline_LayerApplied);
-        Timeline.AnimationStarted += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationStarted);
-        Timeline.AnimationFinished += new AnimationTimeline.AnimationEvtH(AnimationTimeline_AnimationFinished);
-    }
-
     // Initialize animation editor GUI
     private void _InitGUI()
     {
@@ -484,7 +481,7 @@ public class AnimationEditorWindow : EditorWindow
     // Called whenever there is a SceneView event
     private void SceneView_GUI(SceneView sceneView)
     {
-        if (_animationEditGizmos == null)
+        if (_animationEditGizmos == null || Timeline == null)
             return;
 
         var gazeLayer = Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName);
@@ -667,36 +664,6 @@ public class AnimationEditorWindow : EditorWindow
                 _animationEditGizmos._SetEndEffectorGoals(solver.Goals.ToArray());
             }
         }
-    }
-
-    private void AnimationTimeline_AllAnimationApplied()
-    {
-    }
-
-    private void AnimationTimeline_LayerApplied(string layerName)
-    {
-    }
-
-    private void AnimationTimeline_AnimationStarted(int animationInstanceId)
-    {
-        /*var animation = Timeline.GetAnimation(animationInstanceId);
-        var layer = Timeline.GetLayerForAnimation(animationInstanceId);
-        if (layer.LayerName == LEAPCore.baseAnimationLayerName)
-        {
-            var model = animation.Model.gameObject;
-            ModelUtils.ShowModel(model);
-        }*/
-    }
-
-    private void AnimationTimeline_AnimationFinished(int animationInstanceId)
-    {
-        /*var animation = Timeline.GetAnimation(animationInstanceId);
-        var layer = Timeline.GetLayerForAnimation(animationInstanceId);
-        if (layer.LayerName == LEAPCore.baseAnimationLayerName)
-        {
-            var model = animation.Model.gameObject;
-            ModelUtils.ShowModel(model, false);
-        }*/
     }
 
     /// <summary>

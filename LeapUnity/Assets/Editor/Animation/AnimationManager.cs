@@ -75,7 +75,7 @@ public class AnimationManager
     public void Init()
     {
         _InitControllerExecOrder();
-        Timeline.Init();
+        Timeline._Init();
     }
 
     /// <summary>

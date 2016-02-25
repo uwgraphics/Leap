@@ -544,10 +544,9 @@ public static class EyeGazeEditor
 
                         if (gazeTarget == null)
                         {
-                            UnityEngine.Debug.LogError(string.Format(
-                                "Trying to create EyeGazeInstance towards target {0} on model {1}, but the target does not exist!",
+                            UnityEngine.Debug.LogWarning(string.Format(
+                                "Trying to create EyeGazeInstance towards target {0} on model {1}, but the target does not exist; using null instead",
                                 gazeTargetName, model.name));
-                            continue;
                         }
                     }
                     
