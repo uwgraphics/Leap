@@ -75,11 +75,15 @@ public class LEAPMenu
         timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
 
         // Infer gaze shifts and fixations in the base animation
+        var selectedModel = ModelUtil.GetSelectedModel();;
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
-            EyeGazeInferenceModel.InferEyeGazeInstances(timeline, baseAnimation.InstanceId,
-                LEAPCore.eyeGazeAnimationLayerName);
+            if (selectedModel != baseAnimation.Animation.Model)
+                continue;
+
+            var eyeGazeInferenceModel = new EyeGazeInferenceModel(selectedModel, timeline.OwningManager.Environment);
+            eyeGazeInferenceModel.InferEyeGazeInstances(timeline, baseAnimation.InstanceId, LEAPCore.eyeGazeAnimationLayerName);
 
             // Save and print inferred eye gaze
             EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Inferred");

@@ -1,7 +1,7 @@
 Layer,Timewarp,StartFrame,EndFrame,OriginalFrameLength,FrameLength,TimewarpParams
 # Hold 1
-BaseAnimation,MovingHold,41,-1,8,32,"0.5 0.67"
-Gaze,MovingHold,41,-1,8,32,"0.5 0.67"
+#BaseAnimation,MovingHold,41,-1,8,32,"0.5 0.67"
+#Gaze,MovingHold,41,-1,8,32,"0.5 0.67"
 # Hold 2
-BaseAnimation,MovingHold,153,-1,20,80,"0.5 0.67"
-Gaze,MovingHold,153,-1,20,60,"0.5 0.67"
+#BaseAnimation,MovingHold,153,-1,20,80,"0.5 0.67"
+#Gaze,MovingHold,153,-1,20,60,"0.5 0.67"

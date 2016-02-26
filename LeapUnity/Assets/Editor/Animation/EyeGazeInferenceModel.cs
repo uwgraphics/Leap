@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 
 /// <summary>
-/// This class has static methods for inferring eye gaze behavior from a body animation.
+/// Class representing a model for inferring eye gaze behavior from body animation.
 /// </summary>
-public static class EyeGazeInferenceModel
+public class EyeGazeInferenceModel
 {
-    private enum EyeGazeIntervalType
+    private enum _EyeGazeIntervalType
     {
         GazeShift,
         GazeFixation,
@@ -20,13 +20,13 @@ public static class EyeGazeInferenceModel
     }
 
     // Defines an interval in the body animation that corresponds to a single gaze shift or fixation
-    private struct EyeGazeInterval
+    private struct _EyeGazeInterval
     {
         public KeyFrameSet startKeyFrameSet;
         public KeyFrameSet endKeyFrameSet;
-        public EyeGazeIntervalType intervalType;
+        public _EyeGazeIntervalType intervalType;
 
-        public EyeGazeInterval(KeyFrameSet startKeyFrameSet, KeyFrameSet endKeyFrameSet, EyeGazeIntervalType intervalType)
+        public _EyeGazeInterval(KeyFrameSet startKeyFrameSet, KeyFrameSet endKeyFrameSet, _EyeGazeIntervalType intervalType)
         {
             this.startKeyFrameSet = startKeyFrameSet;
             this.endKeyFrameSet = endKeyFrameSet;
@@ -35,37 +35,78 @@ public static class EyeGazeInferenceModel
     }
 
     /// <summary>
+    /// Character model.
+    /// </summary>
+    public GameObject Model
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
+    /// Root object of the environment.
+    /// </summary>
+    public GameObject Environment
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
+    /// Inference submodel for gaze targets.
+    /// </summary>
+    public EyeGazeTargetInferenceModel TargetInferenceModel
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="model">Character model</param>
+    /// <param name="env">Environment root object</param>
+    public EyeGazeInferenceModel(GameObject model, GameObject env)
+    {
+        this.Model = model;
+        this.Environment = env;
+        this.TargetInferenceModel = new EyeGazeTargetInferenceModel(this, model, env);
+    }
+
+    /// <summary>
     /// Analyze a base body animation to infer an eye gaze behavior that matches it.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
     /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
     /// <param name="layerName">Gaze animation layer name</param>
-    public static void InferEyeGazeInstances(AnimationTimeline timeline, int baseAnimationInstanceId,
+    public void InferEyeGazeInstances(AnimationTimeline timeline, int baseAnimationInstanceId,
         string layerName = "Gaze", string envLayerName = "Environment")
     {
-        // Clear any prior gaze instances
-        var baseInstance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
-        var model = baseInstance.Model;
-        timeline.RemoveAllAnimations(layerName, model.name);
-
-        // Infer new gaze instances
-        _InferEyeGazeTimings(timeline, baseAnimationInstanceId, layerName);
-        var targetInferenceModel = new EyeGazeTargetInferenceModel(model, timeline.OwningManager.Environment);
-        targetInferenceModel.InferTargets(timeline, baseAnimationInstanceId, layerName, envLayerName);
-        targetInferenceModel.DestroyResources();
-        _InferEyeGazeAlignments(timeline, baseAnimationInstanceId, layerName);
+        InferEyeGazeTimings(timeline, baseAnimationInstanceId, layerName);
+        TargetInferenceModel.InferTargets(timeline, baseAnimationInstanceId, layerName, envLayerName);
+        TargetInferenceModel.DestroyResources();
+        InferEyeGazeAlignments(timeline, baseAnimationInstanceId, layerName);
 
         Debug.Log("Gaze inference complete!");
     }
 
-    // Infer start and end times of gaze shifts and fixations
-    private static void _InferEyeGazeTimings(AnimationTimeline timeline, int baseAnimationInstanceId,
-        string layerName)
+    /// <summary>
+    /// Infer gaze shift-fixation sequence for the specified base body animation.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <param name="layerName">Gaze animation layer name</param>
+    public void InferEyeGazeTimings(AnimationTimeline timeline, int baseAnimationInstanceId,
+        string layerName = "Gaze")
     {
         Debug.Log("Inferring gaze instances and their timings...");
 
+        // Clear prior gaze instances
         var baseInstance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
         var model = baseInstance.Model;
+        timeline.RemoveAllAnimations(layerName, model.name);
+
+        // Get model bones and controllers
         var root = ModelUtil.FindRootBone(model);
         var bones = ModelUtil.GetAllBones(model);
         var gazeController = model.GetComponent<GazeController>();
@@ -155,7 +196,7 @@ public static class EyeGazeInferenceModel
         csvGazeJointVelocities.WriteToFile("../Matlab/KeyExtraction/gazeJointVelocities.csv");
 
         // Classify gaze intervals
-        var gazeIntervals = new List<EyeGazeInterval>();
+        var gazeIntervals = new List<_EyeGazeInterval>();
         for (int gazeIntervalIndex = -1; gazeIntervalIndex < gazeKeyFrames.Length; ++gazeIntervalIndex)
         {
             // Get start and end keyframe sets for the current interval
@@ -257,8 +298,8 @@ public static class EyeGazeInferenceModel
             pGF /= sumWBones;
 
             // Classify and add the gaze interval
-            var gazeIntervalType = pGS > pGF ? EyeGazeIntervalType.GazeShift : EyeGazeIntervalType.GazeFixation;
-            gazeIntervals.Add(new EyeGazeInterval(startKeyFrameSet, endKeyFrameSet, gazeIntervalType));
+            var gazeIntervalType = pGS > pGF ? _EyeGazeIntervalType.GazeShift : _EyeGazeIntervalType.GazeFixation;
+            gazeIntervals.Add(new _EyeGazeInterval(startKeyFrameSet, endKeyFrameSet, gazeIntervalType));
         }
 
         // Merge adjacent gaze fixation intervals
@@ -267,8 +308,8 @@ public static class EyeGazeInferenceModel
             var gazeInterval = gazeIntervals[gazeIntervalIndex];
             var nextGazeInterval = gazeIntervals[gazeIntervalIndex + 1];
 
-            if (gazeInterval.intervalType == EyeGazeIntervalType.GazeFixation &&
-                nextGazeInterval.intervalType == EyeGazeIntervalType.GazeFixation)
+            if (gazeInterval.intervalType == _EyeGazeIntervalType.GazeFixation &&
+                nextGazeInterval.intervalType == _EyeGazeIntervalType.GazeFixation)
             {
                 gazeInterval.endKeyFrameSet = nextGazeInterval.endKeyFrameSet;
                 gazeIntervals.RemoveAt(gazeIntervalIndex + 1);
@@ -282,7 +323,7 @@ public static class EyeGazeInferenceModel
         for (int gazeIntervalIndex = 0; gazeIntervalIndex < gazeIntervals.Count; ++gazeIntervalIndex)
         {
             var gazeInterval = gazeIntervals[gazeIntervalIndex];
-            if (gazeInterval.intervalType != EyeGazeIntervalType.GazeShift)
+            if (gazeInterval.intervalType != _EyeGazeIntervalType.GazeShift)
                 continue;
 
             // Determine gaze shift and fixation start frames
@@ -302,7 +343,7 @@ public static class EyeGazeInferenceModel
             if (gazeIntervalIndex + 1 < gazeIntervals.Count)
             {
                 var nextGazeInterval = gazeIntervals[gazeIntervalIndex + 1];
-                if (nextGazeInterval.intervalType == EyeGazeIntervalType.GazeFixation)
+                if (nextGazeInterval.intervalType == _EyeGazeIntervalType.GazeFixation)
                 {
                     endFrame = nextGazeInterval.endKeyFrameSet.keyFrame;
                     for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
@@ -324,8 +365,13 @@ public static class EyeGazeInferenceModel
         }
     }
 
-    // Infer gaze shift alignment parameter values
-    private static void _InferEyeGazeAlignments(AnimationTimeline timeline, int baseAnimationInstanceId,
+    /// <summary>
+    /// Infer gaze shift alignment parameter values.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseAnimationInstanceId">Base animation instance ID</param>
+    /// <param name="layerName">Gaze animation layer name</param>
+    public void InferEyeGazeAlignments(AnimationTimeline timeline, int baseAnimationInstanceId,
         string layerName)
     {
         Debug.Log("Inferring gaze instance alignment parameter values...");
@@ -359,7 +405,7 @@ public static class EyeGazeInferenceModel
     }
 
     // Infer gaze shift alignment parameter values for the specified gaze shift
-    private static void _InferEyeGazeAlignments(AnimationTimeline timeline, int baseAnimationInstanceId, int instanceId)
+    private void _InferEyeGazeAlignments(AnimationTimeline timeline, int baseAnimationInstanceId, int instanceId)
     {
         var baseInstance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
         var gazeInstance = timeline.GetAnimation(instanceId) as EyeGazeInstance;
@@ -482,7 +528,7 @@ public static class EyeGazeInferenceModel
 
     // Compute alignment parameter value for the specified gaze body part
     // in a gaze shift with given source and target directions.
-    private static float _ComputeGazeJointAlignment(Vector3 srcDir, Vector3 trgDir, Vector3 trgDirMin, Vector3 trgDirAlign)
+    private float _ComputeGazeJointAlignment(Vector3 srcDir, Vector3 trgDir, Vector3 trgDirMin, Vector3 trgDirAlign)
     {
         if (srcDir == trgDir)
             return 0f;

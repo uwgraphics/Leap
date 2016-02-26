@@ -232,6 +232,11 @@ public class LEAPCore : MonoBehaviour
     public static float gazeInferenceMaxColocatedTargetDistance = 0.17f;
 
     /// <summary>
+    /// Names of objects that won't be considered as task-relevant during gaze target inference.
+    /// </summary>
+    public static string[] gazeInferenceTaskRelevantObjectFilter = new string[0];
+
+    /// <summary>
     /// If false, defined timewarps will not be applied to animations.
     /// </summary>
     public static bool timewarpsEnabled = false;
@@ -361,6 +366,7 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeInferencePTaskRelWeight", typeof(float));
         cfgFile.AddParam("gazeInferencePHandConWeight", typeof(float));
         cfgFile.AddParam("gazeInferenceMaxColocatedTargetDistance", typeof(float));
+        cfgFile.AddParam("gazeInferenceTaskRelevantObjectFilter", typeof(string[]));
         cfgFile.AddParam("timewarpsEnabled", typeof(bool));
         cfgFile.AddParam("timelineBakeRangeStart", typeof(int));
         cfgFile.AddParam("timelineBakeRangeEnd", typeof(int));
@@ -411,6 +417,8 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<float>("gazeInferencePHandConWeight") : gazeInferencePHandConWeight;
         gazeInferenceMaxColocatedTargetDistance = cfgFile.HasValue("gazeInferenceMaxColocatedTargetDistance") ?
             cfgFile.GetValue<float>("gazeInferenceMaxColocatedTargetDistance") : gazeInferenceMaxColocatedTargetDistance;
+        gazeInferenceTaskRelevantObjectFilter = cfgFile.HasValue("gazeInferenceTaskRelevantObjectFilter") ?
+            cfgFile.GetValue<string[]>("gazeInferenceTaskRelevantObjectFilter") : gazeInferenceTaskRelevantObjectFilter;
         timewarpsEnabled = cfgFile.HasValue("timewarpsEnabled") ?
             cfgFile.GetValue<bool>("timewarpsEnabled") : timewarpsEnabled;
         timelineBakeRangeStart = cfgFile.HasValue("timelineBakeRangeStart") ?

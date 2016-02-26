@@ -7,15 +7,24 @@ using System.Linq;
 using System.Text;
 
 /// <summary>
-/// Class representing an inference models for targets of a gaze shift sequence.
+/// Class representing an inference model for targets of a gaze shift sequence.
 /// </summary>
 public class EyeGazeTargetInferenceModel
 {
-    private enum DomeRenderMode
+    private enum _DomeRenderMode
     {
         Disabled,
         ModelOnly,
         ShowScene
+    }
+
+    /// <summary>
+    /// Eye gaze inference modle that owns this target inference model.
+    /// </summary>
+    public EyeGazeInferenceModel OwningInferenceModel
+    {
+        get;
+        private set;
     }
     
     /// <summary>
@@ -23,8 +32,7 @@ public class EyeGazeTargetInferenceModel
     /// </summary>
     public GameObject Model
     {
-        get;
-        private set;
+        get { return OwningInferenceModel.Model; }
     }
 
     /// <summary>
@@ -32,8 +40,7 @@ public class EyeGazeTargetInferenceModel
     /// </summary>
     public GameObject Environment
     {
-        get;
-        private set;
+        get { return OwningInferenceModel.Environment; }
     }
 
     /// <summary>
@@ -88,12 +95,12 @@ public class EyeGazeTargetInferenceModel
     /// <summary>
     /// Constructor.
     /// </summary>
+    /// <param name="owner">Owning eye gaze inference model</param>
     /// <param name="model">Character model</param>
-    /// <param name="envRoot">Environment root object</param>
-    public EyeGazeTargetInferenceModel(GameObject model, GameObject env)
+    /// <param name="env">Environment root object</param>
+    public EyeGazeTargetInferenceModel(EyeGazeInferenceModel owner, GameObject model, GameObject env)
     {
-        this.Model = model;
-        this.Environment = env;
+        this.OwningInferenceModel = owner;
         EyeGazeCamera = _GetEyeGazeCamera();
 
         // Create target inference render textures
@@ -216,7 +223,7 @@ public class EyeGazeTargetInferenceModel
         int fixationStartFrame = startFrame + eyeGazeInstance.FixationStartFrame;
 
         // Get scene scale
-        float sceneScale = 200f;
+        float sceneScale = 80f;
         // TODO: calculate based on scene extents
 
         // Get model height
@@ -266,7 +273,7 @@ public class EyeGazeTargetInferenceModel
 
         // Render scene world positions
         _ShowModels(true);
-        _ShowDome(DomeRenderMode.ShowScene, sceneScale);
+        _ShowDome(_DomeRenderMode.ShowScene, sceneScale);
         Shader.SetGlobalFloat("_RenderWorldPosScale", sceneScale);
         // Render x positions
         RenderTexture.active = _rtWorldPosX;
@@ -289,7 +296,7 @@ public class EyeGazeTargetInferenceModel
 
         // Render scene game object IDs
         _ShowModels(true);
-        _ShowDome(DomeRenderMode.Disabled);
+        _ShowDome(_DomeRenderMode.Disabled);
         var materials = _GetMaterialsOnModels();
         _SetMaterialOnModels(_matGameObjID);
         _SetGameObjectIDPropertyOnModels();
@@ -318,7 +325,7 @@ public class EyeGazeTargetInferenceModel
 
         // Render gaze shift direction probability map
         _ShowModels(false);
-        _ShowDome(DomeRenderMode.ModelOnly);
+        _ShowDome(_DomeRenderMode.ModelOnly);
         RenderTexture.active = _rtPGazeShiftDir;
         EyeGazeCamera.targetTexture = _rtPGazeShiftDir;
         EyeGazeCamera.Render();
@@ -327,7 +334,7 @@ public class EyeGazeTargetInferenceModel
 
         // Render object task relevance probability map
         _ShowModels(true);
-        _ShowDome(DomeRenderMode.Disabled);
+        _ShowDome(_DomeRenderMode.Disabled);
         _SetMaterialOnModels(_matPTaskRel);
         _SetTaskRelevancePropertyOnModels();
         RenderTexture.active = _rtPTaskRel;
@@ -339,7 +346,7 @@ public class EyeGazeTargetInferenceModel
 
         // Render object hand contact probability map
         _ShowModels(true);
-        _ShowDome(DomeRenderMode.Disabled);
+        _ShowDome(_DomeRenderMode.Disabled);
         _SetMaterialOnModels(_matPHandCon);
         _SetHandContactWeightPropertyOnModels(baseInstance, fixationStartFrame);
         RenderTexture.active = _rtPHandCon;
@@ -366,7 +373,7 @@ public class EyeGazeTargetInferenceModel
         Graphics.Blit(_rtPTotal, _rtPTotal, _matPTotal);
 
         // Show scene as normal
-        _ShowDome(DomeRenderMode.Disabled);
+        _ShowDome(_DomeRenderMode.Disabled);
         _ShowModels(true);
         ModelUtil.ShowModel(Model, true);
 
@@ -374,9 +381,6 @@ public class EyeGazeTargetInferenceModel
         int tx = 0, ty = 0;
         _FindMaxValueTexel(_rtPTotal, out tx, out ty);
         var targetPos = _GetWorldPositionAtTexel(tx, ty, sceneScale);
-        // TODO: remove this
-        var targetPosTest = _GetWorldPositionAtTexel(tx + 10, ty - 10, sceneScale);
-        //
         if (LEAPCore.writeGazeInferenceRenderTextures)
         {
             // TODO: mark the target location in the textures
@@ -431,10 +435,10 @@ public class EyeGazeTargetInferenceModel
     }
 
     // Enable/disable the rendering of a dome around the character/scene
-    private void _ShowDome(DomeRenderMode mode, float sceneScale = 200f)
+    private void _ShowDome(_DomeRenderMode mode, float sceneScale = 80f)
     {
         var dome = GameObject.FindGameObjectWithTag("GazeTargetDome");
-        if (mode == DomeRenderMode.Disabled)
+        if (mode == _DomeRenderMode.Disabled)
         {
             dome.renderer.enabled = false;
         }
@@ -442,7 +446,7 @@ public class EyeGazeTargetInferenceModel
         {
             dome.renderer.enabled = true;
 
-            if (mode == DomeRenderMode.ModelOnly)
+            if (mode == _DomeRenderMode.ModelOnly)
             {
                 var gazeController = Model.GetComponent<GazeController>();
                 float modelHeight = gazeController.head.Top.position.y;
@@ -555,7 +559,10 @@ public class EyeGazeTargetInferenceModel
         {
             if (envModel.renderer != null)
             {
-                int isTaskRelevant = envModel.tag == "ManipulatedObject" || envModel.tag == "GazeTarget" ? 1 : 0;
+                int isTaskRelevant = (envModel.tag == "ManipulatedObject" || envModel.tag == "GazeTarget" ||
+                    envModel.transform.parent.tag == "ManipulatedObject" || envModel.transform.parent.tag == "GazeTarget")
+                    && !LEAPCore.gazeInferenceTaskRelevantObjectFilter.Any(on => on == envModel.name || on == envModel.transform.parent.name)
+                    ? 1 : 0;
                 envModel.renderer.material.SetInt("_IsTaskRelevant", isTaskRelevant);
             }
         }
