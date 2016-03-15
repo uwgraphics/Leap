@@ -593,6 +593,34 @@ public class LEAPMenu
     /// <returns>
     /// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
     /// </returns>
+    [MenuItem("LEAP/Models/Delete Gaze Targets", true)]
+    private static bool ValidateDeleteGazeTargets()
+    {
+        GameObject obj = Selection.activeGameObject;
+        if (obj == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Delete gaze targets attached to the specified model.
+    /// </summary>
+    [MenuItem("LEAP/Models/Delete Gaze Targets", false)]
+    private static void DeleteGazeTargets()
+    {
+        GameObject obj = Selection.activeGameObject;
+        ModelUtil.DeleteBonesWithTag(obj.transform, "GazeTarget");
+    }
+
+    /// <summary>
+    /// Validates the specified menu item.
+    /// </summary>
+    /// <returns>
+    /// true if an agent is selected, false otherwise. <see cref="System.Boolean"/>
+    /// </returns>
     [MenuItem("LEAP/Agent Setup/Set Up Default Agent", true)]
     private static bool ValidateSetupDefaultAgent()
     {

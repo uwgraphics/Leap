@@ -78,11 +78,11 @@ public static class ModelUtil
 
         SkinnedMeshRenderer[] skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
         foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
-            materials.Add(shared ? skinnedMeshRenderer.sharedMaterial : skinnedMeshRenderer.material);
+            materials.AddRange(shared ? skinnedMeshRenderer.sharedMaterials : skinnedMeshRenderer.materials);
 
         MeshRenderer[] meshRenderers = model.GetComponentsInChildren<MeshRenderer>();
         foreach (var meshRenderer in meshRenderers)
-            materials.Add(shared ? meshRenderer.sharedMaterial : meshRenderer.material);
+            materials.AddRange(shared ? meshRenderer.sharedMaterials : meshRenderer.materials);
 
         return materials.ToArray();
     }
@@ -98,11 +98,21 @@ public static class ModelUtil
 
         SkinnedMeshRenderer[] skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
         foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
-            skinnedMeshRenderer.sharedMaterial = materials[matIndex++];
+        {
+            var sharedMaterials = new Material[skinnedMeshRenderer.sharedMaterials.Length];
+            for (int curMatIndex = 0; curMatIndex < skinnedMeshRenderer.sharedMaterials.Length; ++curMatIndex)
+                sharedMaterials[curMatIndex] = materials[matIndex++];
+            skinnedMeshRenderer.sharedMaterials = sharedMaterials;
+        }
 
         MeshRenderer[] meshRenderers = model.GetComponentsInChildren<MeshRenderer>();
         foreach (var meshRenderer in meshRenderers)
-            meshRenderer.sharedMaterial = materials[matIndex++];
+        {
+            var sharedMaterials = new Material[meshRenderer.sharedMaterials.Length];
+            for (int curMatIndex = 0; curMatIndex < meshRenderer.sharedMaterials.Length; ++curMatIndex)
+                sharedMaterials[curMatIndex] = materials[matIndex++];
+            meshRenderer.sharedMaterials = sharedMaterials;
+        }
     }
 
     /// <summary>
@@ -114,11 +124,21 @@ public static class ModelUtil
     {
         SkinnedMeshRenderer[] skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
         foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
-            skinnedMeshRenderer.sharedMaterial = mat;
+        {
+            var sharedMaterials = new Material[skinnedMeshRenderer.sharedMaterials.Length];
+            for (int curMatIndex = 0; curMatIndex < skinnedMeshRenderer.sharedMaterials.Length; ++curMatIndex)
+                sharedMaterials[curMatIndex] = mat;
+            skinnedMeshRenderer.sharedMaterials = sharedMaterials;
+        }
 
         MeshRenderer[] meshRenderers = model.GetComponentsInChildren<MeshRenderer>();
         foreach (var meshRenderer in meshRenderers)
-            meshRenderer.sharedMaterial = mat;
+        {
+            var sharedMaterials = new Material[meshRenderer.sharedMaterials.Length];
+            for (int curMatIndex = 0; curMatIndex < meshRenderer.sharedMaterials.Length; ++curMatIndex)
+                sharedMaterials[curMatIndex] = mat;
+            meshRenderer.sharedMaterials = sharedMaterials;
+        }
     }
 
     /// <summary>
@@ -547,7 +567,7 @@ public static class ModelUtil
             return true;
         }
 
-        for (int childIndex = 0; childIndex < startBone.GetChildCount(); ++childIndex)
+        for (int childIndex = 0; childIndex < startBone.childCount; ++childIndex)
         {
             var child = startBone.GetChild(childIndex);
             if (_GetBoneChain(child, endBone, _boneChain))
@@ -558,6 +578,26 @@ public static class ModelUtil
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Delete all bones in the subtree with the specified tag.
+    /// </summary>
+    /// <param name="root">Root bone</param>
+    /// <param name="tag">Tag</param>
+    public static void DeleteBonesWithTag(Transform root, string tag)
+    {
+        for (int childIndex = 0; childIndex < root.childCount; ++childIndex)
+        {
+            var child = root.GetChild(childIndex);
+            DeleteBonesWithTag(child, tag);
+
+            if (child.tag == tag && child.childCount <= 0)
+            {
+                child.parent = null;
+                GameObject.DestroyImmediate(child.gameObject);
+            }
+        }
     }
 
     /// <summary>

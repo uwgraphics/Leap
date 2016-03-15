@@ -1,4 +1,2 @@
 EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ActivationFrameLength,DeactivationFrameLength,ManipulatedObjectHandle,ManipulationEndFrame
-LWristBone,0,0,false,null,0,0,SodaBottleAHandle,18
-LWristBone,19,30,true,PassSodaAMouth,20,20,SodaBottleAHandle,67
-LWristBone,68,73,true,PassSodaAHandoff,20,20,SodaBottleAHandle,73
+LWristBone,0,67,true,SodaBottleAHandle,20,20,null,-1

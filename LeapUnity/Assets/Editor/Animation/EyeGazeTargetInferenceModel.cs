@@ -322,6 +322,7 @@ public class EyeGazeTargetInferenceModel
         _matPGazeShiftDir.SetFloat("_OMR", OMR);
         _matPGazeShiftDir.SetVector("_EyePathStartPosition", new Vector4(eyePathEndPos.x, eyePathEndPos.y, eyePathEndPos.z, 0f));
         _matPGazeShiftDir.SetVector("_EyePathEndPosition", new Vector4(eyePathExEndPos.x, eyePathExEndPos.y, eyePathExEndPos.z, 0f));
+        _matPGazeShiftDir.SetFloat("_HeadAlignPropensity", LEAPCore.gazeInferenceHeadAlignPropensity);
 
         // Render gaze shift direction probability map
         _ShowModels(false);
@@ -337,6 +338,8 @@ public class EyeGazeTargetInferenceModel
         _ShowDome(_DomeRenderMode.Disabled);
         _SetMaterialOnModels(_matPTaskRel);
         _SetTaskRelevancePropertyOnModels();
+        _matPTaskRel.SetVector("_LEyePosition", new Vector4(lEyePos.x, lEyePos.y, lEyePos.z, 1f));
+        _matPTaskRel.SetVector("_REyePosition", new Vector4(rEyePos.x, rEyePos.y, rEyePos.z, 1f));
         RenderTexture.active = _rtPTaskRel;
         EyeGazeCamera.targetTexture = _rtPTaskRel;
         EyeGazeCamera.Render();
@@ -349,6 +352,8 @@ public class EyeGazeTargetInferenceModel
         _ShowDome(_DomeRenderMode.Disabled);
         _SetMaterialOnModels(_matPHandCon);
         _SetHandContactWeightPropertyOnModels(baseInstance, fixationStartFrame);
+        _matPTaskRel.SetVector("_LEyePosition", new Vector4(lEyePos.x, lEyePos.y, lEyePos.z, 1f));
+        _matPTaskRel.SetVector("_REyePosition", new Vector4(rEyePos.x, rEyePos.y, rEyePos.z, 1f));
         RenderTexture.active = _rtPHandCon;
         EyeGazeCamera.targetTexture = _rtPHandCon;
         EyeGazeCamera.Render();
@@ -572,9 +577,15 @@ public class EyeGazeTargetInferenceModel
     private void _SetHandContactWeightPropertyOnModels(AnimationClipInstance baseInstance, int baseFrameIndex)
     {
         // Determine upcoming hand contacts
-        var endEffectorConstraints = baseInstance.EndEffectorConstraints.GetConstraintsForEndEffector(LEAPCore.lWristTag)
-            .Union(baseInstance.EndEffectorConstraints.GetConstraintsForEndEffector(LEAPCore.rWristTag));
-        var handContacts = endEffectorConstraints.Where(c =>
+        var lHandConstraints = baseInstance.EndEffectorConstraints != null ?
+            baseInstance.EndEffectorConstraints.GetConstraintsForEndEffector(LEAPCore.lWristTag) :
+            new List<EndEffectorConstraint>();
+        var rHandConstraints = baseInstance.EndEffectorConstraints != null ?
+            baseInstance.EndEffectorConstraints.GetConstraintsForEndEffector(LEAPCore.rWristTag) :
+            new List<EndEffectorConstraint>();
+        var handConstraints = (lHandConstraints != null ? lHandConstraints : new List<EndEffectorConstraint>())
+            .Union(rHandConstraints != null ? rHandConstraints : new List<EndEffectorConstraint>());
+        var activeHandContacts = handConstraints.Where(c =>
             LEAPCore.ToTime(baseFrameIndex - c.startFrame) >= LEAPCore.gazeInferenceHandContactStartTime
             && LEAPCore.ToTime(baseFrameIndex - c.startFrame) <= LEAPCore.gazeInferenceHandContactEndTime);
 
@@ -589,7 +600,7 @@ public class EyeGazeTargetInferenceModel
                 float handContactWeight = 0f;
                 foreach (var endEffectorTarget in endEffectorTargets)
                 {
-                    foreach (var handContact in handContacts)
+                    foreach (var handContact in activeHandContacts)
                     {
                         if (handContact.target == endEffectorTarget)
                         {
@@ -628,7 +639,7 @@ public class EyeGazeTargetInferenceModel
             {
                 // Compute highest hand contact weight for end effector targets on the current model
                 float handContactWeight = 0f;
-                foreach (var handContact in handContacts)
+                foreach (var handContact in activeHandContacts)
                 {
                     if (handContact.target == envEndEffectorTarget)
                     {

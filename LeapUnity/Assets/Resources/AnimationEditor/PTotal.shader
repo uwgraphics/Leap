@@ -38,7 +38,7 @@
 					float4 pHandCon = tex2D(_TexPHandCon, IN.uv);
 					float4 p = _PGazeShiftDirWeight * pGazeShiftDir + _PTaskRelWeight * pTaskRel + _PHandConWeight * pHandCon;
 
-					return p;
+					return float4(p.r, p.g, p.b, 1);
 				}
 			ENDCG
 		}

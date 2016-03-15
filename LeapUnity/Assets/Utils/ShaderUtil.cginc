@@ -1,7 +1,7 @@
 #ifndef SHADERUTIL_CGINC
 #define SHADERUTIL_CGINC
 
-inline float angleBetween(float4 v1, float4 v2)
+inline float angleBetween(float3 v1, float3 v2)
 {
 	v1 = normalize(v1);
 	v2 = normalize(v2);
@@ -10,13 +10,18 @@ inline float angleBetween(float4 v1, float4 v2)
 	return angle;
 }
 
+inline float angleBetween(float4 v1, float4 v2)
+{
+	return angleBetween(v1.xyz, v2.xyz);
+}
+
 inline float4 projectPointOntoLineSegment(float4 p, float4 v1, float4 v2)
 {
 	float l = distance(v1, v2);
 	if (l <= 0.001)
 		return v1;
 
-	float t = dot(p - v1, v2 - v1) / (l * l);
+	float t = dot(p - v1, v2 - v1) / dot(v2 - v1, v2 - v1);
 	if (t < 0)
 		return v1;
 	else if (t > 1)

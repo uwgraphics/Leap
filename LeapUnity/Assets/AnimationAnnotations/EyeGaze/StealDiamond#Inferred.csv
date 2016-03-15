@@ -1,7 +1,15 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,StealDiamondGaze1Start-Ahead,1,1,36,null,"0.3253206 2.916089 5.621486",0,0,True
-Norman,StealDiamondGaze1,37,29,67,StealDiamondEnv_0,"0 0 0",0.9488075,0,True
-Norman,StealDiamondGaze2,68,32,101,StealDiamondEnv_1,"0 0 0",0.3478659,0.5515996,True
-Norman,StealDiamondGaze3,102,49,166,StealDiamondEnv_2,"0 0 0",0.995592,0.05702223,True
-Norman,StealDiamondGaze4,167,25,193,StealDiamondEnv_3,"0 0 0",0.9577914,0,True
-Norman,StealDiamondGaze5,194,35,285,StealDiamondEnv_4,"0 0 0",0.4909306,0.1846748,True
+Norman,StealDiamondGaze1,1,15,16,StealDiamondEnv-0,"0 0 0",1,1,True
+Norman,StealDiamondGaze2,17,8,25,StealDiamondEnv-1,"0 0 0",0.1273984,0.03157105,True
+Norman,StealDiamondGaze3,26,15,41,StealDiamondEnv-2,"0 0 0",0.08953312,0.03584902,True
+Norman,StealDiamondGaze4,42,12,54,Floor-0,"0 0 0",0.2595722,0.09424951,True
+Norman,StealDiamondGaze5,55,17,72,Floor-1,"0 0 0",0.08249328,0.03204715,True
+Norman,StealDiamondGaze6,73,27,129,StealDiamondEnv-3,"0 0 0",0.1286056,0.4571927,True
+Norman,StealDiamondGaze7,130,17,150,StealDiamondEnv-4,"0 0 0",0.1969737,0.1492933,True
+Norman,StealDiamondGaze8,151,14,165,Floor-2,"0 0 0",0.03056489,0.9523232,True
+Norman,StealDiamondGaze9,166,13,179,Floor-3,"0 0 0",0.2598529,1,True
+Norman,StealDiamondGaze10,180,14,194,StealDiamondEnv-5,"0 0 0",0.08501073,0.02321613,True
+Norman,StealDiamondGaze11,195,23,218,StealDiamondEnv-6,"0 0 0",0.2658679,0.454272,True
+Norman,StealDiamondGaze12,219,24,247,Floor-4,"0 0 0",0.1090921,0.6786394,True
+Norman,StealDiamondGaze13,248,18,274,StealDiamondEnv-7,"0 0 0",1,0.3353601,True
+Norman,StealDiamondGaze14,275,10,285,StealDiamondEnv-8,"0 0 0",0.2721987,0.346567,True

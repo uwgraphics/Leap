@@ -2,6 +2,8 @@
 {
     Properties
 	{
+		_LEyePosition ("Left Eye Position", Vector) = (0, 0, 0, 1)
+		_REyePosition ("Right Eye Position", Vector) = (0, 0, 0, 1)
 		_IsTaskRelevant ("Is Task Relevant", Int) = 0
 	}
 
@@ -19,20 +21,37 @@
 				#include "UnityCG.cginc"
 				#include "Assets/Utils/ShaderUtil.cginc"
 
+				float4 _LEyePosition;
+				float4 _REyePosition;
 				int _IsTaskRelevant;
-			
-				float4 vert (float4 v : POSITION) : POSITION
+
+				struct v2f
 				{
-					float4 pos = mul(UNITY_MATRIX_MVP, v);
+					float4 pos: SV_POSITION;
+					float3 worldPos : TEXCOORD0;
+					float3 worldNormal : TEXCOORD1;
+				};
+			
+				v2f vert (appdata_base v)
+				{
+					v2f o;
+					o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+					o.worldPos = mul(_Object2World, v.vertex).xyz;
+					o.worldNormal = mul(_Object2World, float4(v.normal, 0)).xyz;
 					
-					return pos;
+					return o;
 				}
 			
-				float4 frag(float4 pos : SV_POSITION) : COLOR
+				float4 frag(v2f IN) : COLOR
 				{
-					float p = _IsTaskRelevant ? 1 : 0;
+					// Compute eye center and direction
+					float3 eyeCenter = (0.5 * (_LEyePosition + _REyePosition)).xyz;
+					float3 eyeDir = normalize(eyeCenter - IN.worldPos).xyz;
+					float3 n = normalize(IN.worldNormal);
 
-					return float4(p, p, p, p);
+					// Compute probability
+					float p = _IsTaskRelevant ? clamp(dot(eyeDir, n), 0, 1) : 0;
+					return float4(p, p, p, 1);
 				}
 			ENDCG
 		}

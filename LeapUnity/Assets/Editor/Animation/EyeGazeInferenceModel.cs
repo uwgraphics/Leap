@@ -338,6 +338,9 @@ public class EyeGazeInferenceModel
                 fixationStartFrame = Mathf.Max(fixationStartFrame, gazeInterval.endKeyFrameSet.boneKeyFrames[boneIndex]);
             }
 
+            // Make gaze shift start earlier because eyes normally do
+            startFrame = Mathf.Max(0, startFrame - 1);
+
             // Determine gaze fixation end frame
             int endFrame = fixationStartFrame;
             if (gazeIntervalIndex + 1 < gazeIntervals.Count)

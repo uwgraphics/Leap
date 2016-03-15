@@ -364,7 +364,8 @@ public class AnimationManager
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.modelRoman.SetActive(true);
-            testScenes.modelNormanette.SetActive(true);
+            //testScenes.modelNormanette.SetActive(true);
+            testScenes.modelNormanette.SetActive(false);
             testScenes.modelNormanette.transform.position = new Vector3(-4.97f, 0f, 1.24f);
             testScenes.modelNormanette.transform.localScale = new Vector3(0.96f, 0.91f, 0.96f);
             testScenes.modelPassSodaEnv.SetActive(true);
@@ -578,6 +579,12 @@ public class AnimationManager
             int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
                 bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
 
+            // Create environment animations
+            var envController = testScenes.modelWaitForBusEnv.GetComponent<EnvironmentController>();
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("WaitForBusWatch", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Watch"),
+                    false, false, false));
+
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
@@ -587,6 +594,8 @@ public class AnimationManager
             editTestScenario.models[0] = testScenes.modelNorman;
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "WaitForBus-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations = new string[1];
+            editTestScenario.objectAnimations[0] = "WaitForBusWatch-" + LEAPCore.defaultBakedTimelineName;
         }
         else if (sceneName == "EyeTrackMocapTest1-1")
         {
@@ -770,6 +779,11 @@ public class AnimationManager
             editTestScenario.models[0] = testScenes.modelNormanNew;
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "StackBoxes-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations = new string[4];
+            editTestScenario.objectAnimations[0] = "StackBoxes1-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations[1] = "StackBoxes2-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations[2] = "StackBoxes3-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations[3] = "StackBoxes4-" + LEAPCore.defaultBakedTimelineName;
         }
         else // if (sceneName == "InitialPose")
         {

@@ -9,6 +9,7 @@
 		_OMR ("OMR", float) = 45
 		_EyePathStartPosition ("Eye Path Start Position", Vector) = (0, 0, 0, 1)
 		_EyePathEndPosition ("Eye Path End Position", Vector) = (0, 0, 0, 1)
+		_HeadAlignPropensity ("Head Align Propensity", float) = 0.5
 	}
 
 	SubShader
@@ -32,10 +33,11 @@
 				float _OMR;
 				float4 _EyePathStartPosition;
 				float4 _EyePathEndPosition;
+				float _HeadAlignPropensity;
 
 				struct v2f
 				{
-					float4 pos : POSITION;
+					float4 pos : SV_POSITION;
 					float4 worldPos : TEXCOORD0;
 				};
  
@@ -53,28 +55,25 @@
 					// Get pixel world position
 					float4 worldPos = IN.worldPos;
 
-					// Compute eye center, directions, and angles
-					float4 eyeCenter = 0.5 * (_LEyePosition + _REyePosition);
-					float4 lEyeDir = normalize(worldPos - _LEyePosition);
-					float4 rEyeDir = normalize(worldPos - _REyePosition);
-					float lEyeAngle = angleBetween(lEyeDir, _LEyeDirectionAhead);
-					float rEyeAngle = angleBetween(rEyeDir, _REyeDirectionAhead);
+					// Adjust gaze path by head alignment propensity
+					float4 headAlignPropensity = clamp(_HeadAlignPropensity, 0, 1);
+					float4 startPos = headAlignPropensity < 0.5f ?
+						lerp(_EyePathStartPosition, _EyePathEndPosition, 1.0f - headAlignPropensity/0.5f) :
+						_EyePathStartPosition;
+					float4 endPos = headAlignPropensity >= 0.5f ?
+						lerp(_EyePathStartPosition, _EyePathEndPosition, 1.0f - (headAlignPropensity - 0.5f)/0.5f) :
+						_EyePathEndPosition;
 					
-					// Compute target probability based on gaze shift path
-					float4 c = float4(0, 0, 0, 0);
-					//if (lEyeAngle <= _OMR || rEyeAngle <= _OMR)
-					{
-						// Compute target probability based on proximity to gaze shift path
-						float4 projWorldPos = projectPointOntoLineSegment(worldPos, _EyePathStartPosition, _EyePathEndPosition);
-						float4 v = normalize(worldPos - eyeCenter);
-						float4 vp = normalize(projWorldPos - eyeCenter);
-						float angle = angleBetween(v, vp);
-						float p = clamp(1 - angle / _OMR, 0 , 1);
+					// Compute proximity of the current point to gaze shift path
+					float4 eyeCenter = 0.5 * (_LEyePosition + _REyePosition);
+					float4 projWorldPos = projectPointOntoLineSegment(worldPos, startPos, endPos);
+					float4 v = normalize(worldPos - eyeCenter);
+					float4 vp = normalize(projWorldPos - eyeCenter);
+					float angle = clamp(angleBetween(v, vp), 0, _OMR);
 
-						c = float4(p, p, p, p);
-					}
-
-					return c;
+					// Compute probability
+					float p = (1.0f - angle / _OMR); // TODO: why is angle always greater than 0?
+					return float4(p, p, p, 1);
 				}
 			ENDCG
 		}

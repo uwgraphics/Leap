@@ -226,6 +226,11 @@ public class LEAPCore : MonoBehaviour
     public static float gazeInferencePHandConWeight = 0.1f;
 
     /// <summary>
+    /// Head alignment propensity for gaze target inference.
+    /// </summary>
+    public static float gazeInferenceHeadAlignPropensity = 0.5f;
+
+    /// <summary>
     /// Maximum distance between two eye gaze targets at which they are
     /// still considered a single target.
     /// </summary>
@@ -365,6 +370,7 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeInferencePGazeShiftDirWeight", typeof(float));
         cfgFile.AddParam("gazeInferencePTaskRelWeight", typeof(float));
         cfgFile.AddParam("gazeInferencePHandConWeight", typeof(float));
+        cfgFile.AddParam("gazeInferenceHeadAlignPropensity", typeof(float));
         cfgFile.AddParam("gazeInferenceMaxColocatedTargetDistance", typeof(float));
         cfgFile.AddParam("gazeInferenceTaskRelevantObjectFilter", typeof(string[]));
         cfgFile.AddParam("timewarpsEnabled", typeof(bool));
@@ -415,6 +421,8 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<float>("gazeInferencePTaskRelWeight") : gazeInferencePTaskRelWeight;
         gazeInferencePHandConWeight = cfgFile.HasValue("gazeInferencePHandConWeight") ?
             cfgFile.GetValue<float>("gazeInferencePHandConWeight") : gazeInferencePHandConWeight;
+        gazeInferenceHeadAlignPropensity = cfgFile.HasValue("gazeInferenceHeadAlignPropensity") ?
+            cfgFile.GetValue<float>("gazeInferenceHeadAlignPropensity") : gazeInferenceHeadAlignPropensity;
         gazeInferenceMaxColocatedTargetDistance = cfgFile.HasValue("gazeInferenceMaxColocatedTargetDistance") ?
             cfgFile.GetValue<float>("gazeInferenceMaxColocatedTargetDistance") : gazeInferenceMaxColocatedTargetDistance;
         gazeInferenceTaskRelevantObjectFilter = cfgFile.HasValue("gazeInferenceTaskRelevantObjectFilter") ?
