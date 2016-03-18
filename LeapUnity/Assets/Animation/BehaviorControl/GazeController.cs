@@ -975,7 +975,7 @@ public class GazeController : AnimController
         float rEyeA = _ComputeEyeDistRotForMovingTarget(rEye);
         float Amin = Mathf.Min(lEyeA, rEyeA);
         float velocity = (lEye.velocity + rEye.velocity) / 2f;
-        float maxVelocity = 4f * (velocity / 150f) * Amin + velocity / 6f;
+        float maxVelocity = 420f * (velocity / 200f) * (1f - Mathf.Exp(-Amin / 14f)); // from Baloh et al. 1975
 
         return maxVelocity;
     }

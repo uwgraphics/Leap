@@ -25,12 +25,15 @@ public class EyeGazeInferenceModel
         public KeyFrameSet startKeyFrameSet;
         public KeyFrameSet endKeyFrameSet;
         public _EyeGazeIntervalType intervalType;
+        public float p;
 
-        public _EyeGazeInterval(KeyFrameSet startKeyFrameSet, KeyFrameSet endKeyFrameSet, _EyeGazeIntervalType intervalType)
+        public _EyeGazeInterval(KeyFrameSet startKeyFrameSet, KeyFrameSet endKeyFrameSet,
+            _EyeGazeIntervalType intervalType, float p)
         {
             this.startKeyFrameSet = startKeyFrameSet;
             this.endKeyFrameSet = endKeyFrameSet;
             this.intervalType = intervalType;
+            this.p = p;
         }
     }
 
@@ -113,6 +116,9 @@ public class EyeGazeInferenceModel
 
         // Create bone mask for gaze shift key time extraction
         var boneMask = new BitArray(bones.Length, false);
+        //
+        //var gazeJoints = new[] { gazeController.head.Top };
+        //
         var gazeJoints = gazeController.head.gazeJoints.Union(gazeController.torso.gazeJoints)
             .Union(new[] { root }).ToArray();
         foreach (var gazeJoint in gazeJoints)
@@ -123,11 +129,12 @@ public class EyeGazeInferenceModel
         
         // Extract keyframes that signify likely gaze shift starts and ends
         var gazeKeyFrames = AnimationTimingEditor.ExtractAnimationKeyFrames(model, baseInstance.AnimationClip,
-            false, false, boneMask, LEAPCore.eyeGazeKeyExtractMaxClusterWidth);
+            false, false, boneMask, LEAPCore.gazeInferenceKeyMaxClusterWidth);
 
-        // Compute gaze joint rotations and velocities
+        // Compute gaze joint rotations, velocities, and directions
         Quaternion[,] qBones = new Quaternion[bones.Length, baseInstance.FrameLength];
         float[,] v0Bones = new float[bones.Length, baseInstance.FrameLength];
+        Vector3[] headDirections = new Vector3[baseInstance.FrameLength];
         for (int frameIndex = 0; frameIndex < baseInstance.FrameLength; ++frameIndex)
         {
             baseInstance.Apply(frameIndex, AnimationLayerMode.Override);
@@ -164,6 +171,9 @@ public class EyeGazeInferenceModel
 
                 qBones[boneIndex, frameIndex] = bones[boneIndex].localRotation;
             }
+
+            // Get head facing direction
+            headDirections[frameIndex] = gazeController.head.Direction;
         }
 
         // Smooth gaze joint velocities
@@ -234,8 +244,8 @@ public class EyeGazeInferenceModel
             }
 
             // Compute per-joint gaze shift and fixation probabilities
-            float[] pGSBones = new float[bones.Length];
-            float[] pGFBones = new float[bones.Length];
+            float[] pGSVBones = new float[bones.Length];
+            float[] pGFVBones = new float[bones.Length];
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
                 if (!boneMask[boneIndex])
@@ -259,8 +269,8 @@ public class EyeGazeInferenceModel
                 if (vMax <= 0f)
                 {
                     // No velocity peaks, this is not a gaze shift
-                    pGSBones[boneIndex] = 0f;
-                    pGFBones[boneIndex] = 1f;
+                    pGSVBones[boneIndex] = 0f;
+                    pGFVBones[boneIndex] = 1f;
                     continue;
                 }
 
@@ -277,30 +287,66 @@ public class EyeGazeInferenceModel
                 else rGF = dvMin / dvMax;
 
                 // Compute gaze shift and fixation probabilities
-                pGSBones[boneIndex] = Mathf.Clamp01(2f /
-                    (1f + Mathf.Exp(-LEAPCore.gazeShiftInferenceLogisticSlope * rGS)) - 1f);
-                pGFBones[boneIndex] = Mathf.Clamp01(2f /
-                    (1f + Mathf.Exp(-LEAPCore.gazeShiftInferenceLogisticSlope * rGF)) - 1f);
+                pGSVBones[boneIndex] = Mathf.Clamp01(2f /
+                    (1f + Mathf.Exp(-LEAPCore.gazeInferenceVelocityLogisticSlope * rGS)) - 1f);
+                pGFVBones[boneIndex] = Mathf.Clamp01(2f /
+                    (1f + Mathf.Exp(-LEAPCore.gazeInferenceVelocityLogisticSlope * rGF)) - 1f);
             }
 
-            // Compute total probability that this is a gaze shift
-            float pGS = 0f, pGF = 0f;
+            // Compute velocity term of gaze shift probability
+            float pGSV = 0f, pGFV = 0f;
             float sumWBones = wBones.Sum();
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
                 if (!boneMask[boneIndex])
                     continue;
 
-                pGS += (wBones[boneIndex] * pGSBones[boneIndex]);
-                pGF += (wBones[boneIndex] * pGFBones[boneIndex]);
+                pGSV += (wBones[boneIndex] * pGSVBones[boneIndex]);
+                pGFV += (wBones[boneIndex] * pGFVBones[boneIndex]);
             }
-            pGS /= sumWBones;
-            pGF /= sumWBones;
+            pGSV /= sumWBones;
+            pGFV /= sumWBones;
+
+            // Compute amplitude term of gaze shift probability
+            float amplitude = Vector3.Angle(headDirections[startKeyFrameSet.keyFrame], headDirections[endKeyFrameSet.keyFrame]);
+            float pGSA = 1f - Mathf.Exp(-LEAPCore.gazeInferenceAmplitudeExpRate * amplitude / 90f);
+            float pGFA = 1f - pGSA;
+            
+            // Compute total gaze shift probability
+            float pGS = (1f - LEAPCore.gazeInferenceAmplitudeWeight) * pGSV + LEAPCore.gazeInferenceAmplitudeWeight * pGSA;
+            float pGF = (1f - LEAPCore.gazeInferenceAmplitudeWeight) * pGFV + LEAPCore.gazeInferenceAmplitudeWeight * pGFA;
 
             // Classify and add the gaze interval
             var gazeIntervalType = pGS > pGF ? _EyeGazeIntervalType.GazeShift : _EyeGazeIntervalType.GazeFixation;
-            gazeIntervals.Add(new _EyeGazeInterval(startKeyFrameSet, endKeyFrameSet, gazeIntervalType));
+            gazeIntervals.Add(new _EyeGazeInterval(startKeyFrameSet, endKeyFrameSet, gazeIntervalType,
+                gazeIntervalType == _EyeGazeIntervalType.GazeShift ? pGS : pGF));
         }
+
+        // TODO: remove this
+        // Write out gaze shift interval properties
+        var csvGazeIntervals = new CSVDataFile();
+        csvGazeIntervals.AddAttribute("intervalType", typeof(string));
+        csvGazeIntervals.AddAttribute("startFrame", typeof(int));
+        csvGazeIntervals.AddAttribute("endFrame", typeof(int));
+        csvGazeIntervals.AddAttribute("amplitude", typeof(float));
+        csvGazeIntervals.AddAttribute("probability", typeof(float));
+        for (int gazeIntervalIndex = 0; gazeIntervalIndex < gazeIntervals.Count - 1; ++gazeIntervalIndex)
+        {
+            var gazeInterval = gazeIntervals[gazeIntervalIndex];
+
+            int startFrame = gazeInterval.startKeyFrameSet.keyFrame;
+            int endFrame = gazeInterval.endKeyFrameSet.keyFrame;
+            baseInstance.Apply(startFrame, AnimationLayerMode.Override);
+            var srcDir = gazeController.head.Direction;
+            baseInstance.Apply(endFrame, AnimationLayerMode.Override);
+            var trgDir = gazeController.head.Direction;
+            float a = Vector3.Angle(srcDir, trgDir);
+            float p = gazeInterval.p;
+
+            csvGazeIntervals.AddData(gazeInterval.intervalType.ToString(), startFrame, endFrame, a, p);
+        }
+        csvGazeIntervals.WriteToFile("../Matlab/KeyExtraction/gazeIntervals.csv");
+        //
 
         // Merge adjacent gaze fixation intervals
         for (int gazeIntervalIndex = 0; gazeIntervalIndex < gazeIntervals.Count - 1; ++gazeIntervalIndex)
@@ -311,7 +357,15 @@ public class EyeGazeInferenceModel
             if (gazeInterval.intervalType == _EyeGazeIntervalType.GazeFixation &&
                 nextGazeInterval.intervalType == _EyeGazeIntervalType.GazeFixation)
             {
+                // Compute merged interval
+                float weight = ((float)(gazeInterval.endKeyFrameSet.keyFrame - gazeInterval.startKeyFrameSet.keyFrame)) /
+                    (nextGazeInterval.endKeyFrameSet.keyFrame - gazeInterval.startKeyFrameSet.keyFrame);
+                float weightNext = ((float)(nextGazeInterval.endKeyFrameSet.keyFrame - nextGazeInterval.startKeyFrameSet.keyFrame)) /
+                    (nextGazeInterval.endKeyFrameSet.keyFrame - gazeInterval.startKeyFrameSet.keyFrame);
+                gazeInterval.p = weight * gazeInterval.p + weightNext * nextGazeInterval.p;
                 gazeInterval.endKeyFrameSet = nextGazeInterval.endKeyFrameSet;
+
+                // Replace the intervals with the merged interval
                 gazeIntervals.RemoveAt(gazeIntervalIndex + 1);
                 gazeIntervals[gazeIntervalIndex] = gazeInterval;
                 --gazeIntervalIndex;

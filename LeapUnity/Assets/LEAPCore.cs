@@ -168,14 +168,31 @@ public class LEAPCore : MonoBehaviour
     public static bool printDetailedGazeControllerState = false;
 
     /// <summary>
+    /// Maximum width of a cluster of local gaze shift key times corresponding to a single extracted key pose.
+    /// </summary>
+    public static float gazeInferenceKeyMaxClusterWidth = 0.5f;
+
+    /// <summary>
     /// Kernel size for the low-pass filter used for filtering gaze joint joint velocities in eye gaze inference.
     /// </summary>
     public static int gazeInferenceLowPassKernelSize = 5;
 
     /// <summary>
-    /// Slope of the logistic curve used in computing the probability that some animation interval is a gaze shift.
+    /// Slope of the logistic curve used in computing the velocity term of the probability
+    /// that some animation interval is a gaze shift.
     /// </summary>
-    public static float gazeShiftInferenceLogisticSlope = 1f;
+    public static float gazeInferenceVelocityLogisticSlope = 1f;
+
+    /// <summary>
+    /// Growth rate of the exponential curve used in computing the amplitude term of the probability
+    /// that some animation interval is a gaze shift.
+    /// </summary>
+    public static float gazeInferenceAmplitudeExpRate = 6.2f;
+
+    /// <summary>
+    /// Influence of head facing amplitude on the probability of a particular animation interval being a gaze shift.
+    /// </summary>
+    public static float gazeInferenceAmplitudeWeight = 0.5f;
 
     /// <summary>
     /// If true, simple gaze target inference will be used.
@@ -287,11 +304,6 @@ public class LEAPCore : MonoBehaviour
     public static float keyExtractMaxClusterWidth = 0.5f;
 
     /// <summary>
-    /// Maximum width of a cluster of local gaze shift key times corresponding to a single extracted key pose.
-    /// </summary>
-    public static float eyeGazeKeyExtractMaxClusterWidth = 0.5f;
-
-    /// <summary>
     /// Scaling factor for bone visualization gizmos.
     /// </summary>
     public static float boneGizmoScale = 2f;
@@ -359,8 +371,11 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeConstraintActivationTime", typeof(float));
         cfgFile.AddParam("adjustGazeTargetForMovingBase", typeof(bool));
         cfgFile.AddParam("printDetailedGazeControllerState", typeof(bool));
+        cfgFile.AddParam("gazeInferenceKeyMaxClusterWidth", typeof(float));
         cfgFile.AddParam("gazeInferenceLowPassKernelSize", typeof(int));
-        cfgFile.AddParam("gazeShiftInferenceLogisticSlope", typeof(float));
+        cfgFile.AddParam("gazeInferenceLogisticSlope", typeof(float));
+        cfgFile.AddParam("gazeInferenceAmplitudeExpRate", typeof(float));
+        cfgFile.AddParam("gazeInferenceAmplitudeWeight", typeof(float));
         cfgFile.AddParam("useSimpleGazeTargetInference", typeof(bool));
         cfgFile.AddParam("gazeInferenceRenderTextureWidth", typeof(int));
         cfgFile.AddParam("writeGazeInferenceRenderTextures", typeof(bool));
@@ -399,10 +414,16 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<bool>("adjustGazeTargetForMovingBase") : adjustGazeTargetForMovingBase;
         printDetailedGazeControllerState = cfgFile.HasValue("printDetailedGazeControllerState") ?
             cfgFile.GetValue<bool>("printDetailedGazeControllerState") : printDetailedGazeControllerState;
+        gazeInferenceKeyMaxClusterWidth = cfgFile.HasValue("gazeInferenceKeyMaxClusterWidth") ?
+            cfgFile.GetValue<float>("gazeInferenceKeyMaxClusterWidth") : gazeInferenceKeyMaxClusterWidth;
         gazeInferenceLowPassKernelSize = cfgFile.HasValue("gazeInferenceLowPassKernelSize") ?
             cfgFile.GetValue<int>("gazeInferenceLowPassKernelSize") : gazeInferenceLowPassKernelSize;
-        gazeShiftInferenceLogisticSlope = cfgFile.HasValue("gazeShiftInferenceLogisticSlope") ?
-            cfgFile.GetValue<float>("gazeShiftInferenceLogisticSlope") : gazeShiftInferenceLogisticSlope;
+        gazeInferenceVelocityLogisticSlope = cfgFile.HasValue("gazeInferenceLogisticSlope") ?
+            cfgFile.GetValue<float>("gazeInferenceLogisticSlope") : gazeInferenceVelocityLogisticSlope;
+        gazeInferenceAmplitudeExpRate = cfgFile.HasValue("gazeInferenceAmplitudeExpRate") ?
+            cfgFile.GetValue<float>("gazeInferenceAmplitudeExpRate") : gazeInferenceAmplitudeExpRate;
+        gazeInferenceAmplitudeWeight = cfgFile.HasValue("gazeInferenceAmplitudeWeight") ?
+            cfgFile.GetValue<float>("gazeInferenceAmplitudeWeight") : gazeInferenceAmplitudeWeight;
         useSimpleGazeTargetInference = cfgFile.HasValue("useSimpleGazeTargetInference") ?
             cfgFile.GetValue<bool>("useSimpleGazeTargetInference") : useSimpleGazeTargetInference;
         gazeInferenceRenderTextureWidth = cfgFile.HasValue("gazeInferenceRenderTextureWidth") ?

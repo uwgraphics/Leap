@@ -439,13 +439,14 @@ public class GazeBodyPart
         }
 
         // TODO: remove this when done testing eye inference
-        return;
+        //return;
         //
         // Compute blend weight
-        float weight1 = IsEye ? 1f :
-            GazeController.weight * (1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir)));
+        float weight1 = GazeController.weight * (IsEye ? 1f : 0f);
+        /*float weight1 = GazeController.weight * (IsEye ? 1f :
+            1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir)));
         //
-        //Debug.LogWarning(string.Format("Blend weight for {0} is {1}", GazeBodyPartType, weight1));
+        Debug.LogWarning(string.Format("Blend weight for {0} is {1}", GazeBodyPartType, weight1));*/
         //
 
         // Gaze directions and joint rotations

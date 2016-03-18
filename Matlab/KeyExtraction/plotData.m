@@ -1,12 +1,12 @@
 % Plot configuration:
-boneMask = [1];
+boneMask = [6];
 endEffectorMask = [];
 numberOfBones = 6;
 numberOfEndEffectors = 4;
 showDRoot = false;
 showDBones = false;
 showARoot = false;
-showABones = false;
+showABones = true;
 showP0Root = false;
 showP0Bones = false;
 showPRoot = false;
@@ -20,8 +20,9 @@ showP = true;
 showKeyFrames = true;
 showRootKeyFrames = false;
 showBoneKeyFrames = false;
-startFrame = 1;
-endFrame = 300;
+showVBones = false;
+startFrame = 560;
+endFrame = 600;
 normalizeA = true;
 
 % Bone indexes:
@@ -31,20 +32,21 @@ normalizeA = true;
 % 2. srfBind_Cn_SpineA
 % 3. srfBind_Cn_SpineB
 % 4. srfBind_Cn_SpineC
-% 5. srfBind_Cn_Head
-% 6. srfBind_Lf_ArmA
-% 7. srfBind_Lf_ArmD
-% 8. Hand_L
-% 9. srfBind_Rt_ArmA
-% 10. srfBind_Rt_ArmB
-% 11. srfBind_Rt_ArmD
-% 12. Hand_R
-% 13. srfBind_Lf_LegA
-% 14. srfBind_Lf_LegC
-% 15. srfBind_Lf_FootA
-% 16. srfBind_Rt_LegA
-% 17. srfBind_Rt_LegC
-% 18. srfBind_Rt_FootA
+% 5. srfBind_Cn_Neck
+% 6. srfBind_Cn_Head
+% 7. srfBind_Lf_ArmA
+% 8. srfBind_Lf_ArmD
+% 9. Hand_L
+% 10. srfBind_Rt_ArmA
+% 11. srfBind_Rt_ArmB
+% 12. srfBind_Rt_ArmD
+% 13. Hand_R
+% 14. srfBind_Lf_LegA
+% 15. srfBind_Lf_LegC
+% 16. srfBind_Lf_FootA
+% 17. srfBind_Rt_LegA
+% 18. srfBind_Rt_LegC
+% 19. srfBind_Rt_FootA
 %
 % NormanNew (gaze only)
 % 1. Bone_Hips
@@ -219,20 +221,20 @@ if showP
     plot(frames, p, '-r');
 end
 
-% TODO: remove this
 % Show gaze joint velocities
 dataPerFrame = csvread('gazeJointVelocities.csv', 1);
 vBones = dataPerFrame(startFrame:endFrame, 1:numberOfBones);
-if size(boneMask, 2) == 0
-    for i = 1:size(vBones, 2)
-        plot(frames, vBones, '-b');
-    end
-else
-    for i = 1:size(boneMask, 2)
-        plot(frames, vBones(:,boneMask(:, i)), '-b');
+if showVBones
+    if size(boneMask, 2) == 0
+        for i = 1:size(vBones, 2)
+            plot(frames, vBones, '-g');
+        end
+    else
+        for i = 1:size(boneMask, 2)
+            plot(frames, vBones(:,boneMask(:, i)), '-g');
+        end
     end
 end
-%
 
 % Load per-key data
 dataPerKey = csvread('dataPerKey.csv', 1);
