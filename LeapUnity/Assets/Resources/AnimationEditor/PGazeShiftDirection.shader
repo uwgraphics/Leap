@@ -66,13 +66,37 @@
 					
 					// Compute proximity of the current point to gaze shift path
 					float4 eyeCenter = 0.5 * (_LEyePosition + _REyePosition);
-					float4 projWorldPos = projectPointOntoLineSegment(worldPos, startPos, endPos);
-					float4 v = normalize(worldPos - eyeCenter);
-					float4 vp = normalize(projWorldPos - eyeCenter);
-					float angle = clamp(angleBetween(v, vp), 0, _OMR);
+					float3 v = normalize((worldPos - eyeCenter).xyz);
+					float3 vs = normalize((startPos - eyeCenter).xyz);
+					float3 ve = normalize((endPos - eyeCenter).xyz);
+					float3 vp = vs;
+					if (dot(vs, ve) < 0.99995f)
+					{
+						float3 n = normalize(cross(vs, ve));
+						vp = normalize(v - dot(v, n) * n);
+
+						float dps = dot(vp, vs);
+						float dpe = dot(vp, ve);
+						if (dps < 0.99995f && dpe < 0.99995f)
+						{
+							float3 vps = normalize(cross(vp, vs));
+							float3 vpe = normalize(cross(vp, ve));
+							float dpse = dot(vps, vpe);
+
+							// Constrain projected vector to the slice defined by vs and ve
+							if (sign(dpse) > 0)
+							{
+								if (abs(dps) >= abs(dpe))
+									vp = vs;
+								else if (abs(dps) <= abs(dpe))
+									vp = ve;
+							}
+						}
+					}
+					float angle = angleBetween(v, vp);
 
 					// Compute probability
-					float p = (1.0f - angle / _OMR); // TODO: why is angle always greater than 0?
+					float p = clamp(1.0f - angle / _OMR, 0, 1);
 					return float4(p, p, p, 1);
 				}
 			ENDCG

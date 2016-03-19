@@ -85,12 +85,18 @@ public class EyeGazeInferenceModel
     public void InferEyeGazeInstances(AnimationTimeline timeline, int baseAnimationInstanceId,
         string layerName = "Gaze", string envLayerName = "Environment")
     {
+        // Timer for measuring inference duration
+        System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+        timer.Start();
+
         InferEyeGazeTimings(timeline, baseAnimationInstanceId, layerName);
         TargetInferenceModel.InferTargets(timeline, baseAnimationInstanceId, layerName, envLayerName);
         TargetInferenceModel.DestroyResources();
         InferEyeGazeAlignments(timeline, baseAnimationInstanceId, layerName);
 
-        Debug.Log("Gaze inference complete!");
+        // Show inference duration
+        float elapsedTime = timer.ElapsedMilliseconds / 1000f;
+        Debug.Log(string.Format("Gaze inference complete in {0} seconds", elapsedTime));
     }
 
     /// <summary>

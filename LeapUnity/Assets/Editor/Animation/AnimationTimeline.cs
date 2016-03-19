@@ -1440,6 +1440,7 @@ public class AnimationTimeline
         }
         Stop();
 
+        // Show bake duration
         float elapsedTime = timer.ElapsedMilliseconds / 1000f;
         Debug.Log(string.Format("Baked all animation instances in {0} seconds", elapsedTime));
 

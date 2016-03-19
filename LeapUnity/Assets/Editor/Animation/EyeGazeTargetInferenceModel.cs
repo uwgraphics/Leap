@@ -662,7 +662,7 @@ public class EyeGazeTargetInferenceModel
     }
 
     // Find texel location with the highest value in the active render texture
-    private void _FindMaxValueTexel(RenderTexture rt, out int txMax, out int tyMax)
+    private float _FindMaxValueTexel(RenderTexture rt, out int txMax, out int tyMax)
     {
         int width = rt.width;
         int height = rt.height;
@@ -684,6 +684,8 @@ public class EyeGazeTargetInferenceModel
                 }
             }
         }
+
+        return maxVal;
     }
 
     // Sample the world positions textures
