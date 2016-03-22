@@ -823,6 +823,33 @@ public class AnimationTimeline
     }
 
     /// <summary>
+    /// Active baked animation timeline index.
+    /// </summary>
+    public int ActiveBakedTimelineIndex
+    {
+        get
+        {
+            return _activeBakedTimelineContainerIndex;
+        }
+        set
+        {
+            if (value < 0)
+            {
+                // Apply currently active animations on the timeline
+                _activeBakedTimelineContainerIndex = -1;
+            }
+            else if (value >= 0 && value < _bakedTimelineContainers.Count)
+            {
+                // Apply one of the baked timeline animations
+                _activeBakedTimelineContainerIndex = value;
+            }
+            else
+                throw new IndexOutOfRangeException("ActiveBakedTimelineIndex may not exceed " +
+                    (_bakedTimelineContainers.Count - 1));
+        }
+    }
+
+    /// <summary>
     /// true if animation on the timeline is currently being baked, false otherwise.
     /// </summary>
     public bool IsBaking
@@ -1891,12 +1918,17 @@ public class AnimationTimeline
     // Update animation controllers
     private void _UpdateControllers()
     {
+        // Get active controllers
+        var activeControllers = new HashSet<AnimController>();
+        _GetActiveControllers(activeControllers);
+
         foreach (var controllerType in OwningManager._ControllersByExecOrder)
         {
             foreach (var model in OwningManager.Models)
             {
                 var component = model.GetComponent(controllerType);
-                if (component == null || !(component as AnimController).enabled)
+                if (component == null || !activeControllers.Contains(component as AnimController))
+                    // Don't update inactive controllers
                     continue;
 
                 var controller = component as AnimController;
@@ -1918,12 +1950,17 @@ public class AnimationTimeline
     // Update animation controllers after all animation is applied
     private void _LateUpdateControllers()
     {
+        // Get active controllers
+        var activeControllers = new HashSet<AnimController>();
+        _GetActiveControllers(activeControllers);
+
         foreach (var controllerType in OwningManager._ControllersByExecOrder)
         {
             foreach (var model in OwningManager.Models)
             {
                 var component = model.GetComponent(controllerType);
-                if (component == null || !(component as AnimController).enabled)
+                if (component == null || !activeControllers.Contains(component as AnimController))
+                    // Don't update inactive controllers
                     continue;
 
                 var controller = component as AnimController;
@@ -1939,6 +1976,21 @@ public class AnimationTimeline
                 continue;
 
             modelController.LateUpdate();
+        }
+    }
+
+    // Get set of currently active animation controllers
+    private void _GetActiveControllers(HashSet<AnimController> activeControllers)
+    {
+        foreach (int activeInstanceId in _activeAnimationInstanceIds)
+        {
+            var instance = GetAnimation(activeInstanceId);
+            if (instance is AnimationControllerInstance)
+            {
+                var controller = (instance as AnimationControllerInstance).Controller;
+                if (controller.enabled)
+                    activeControllers.Add(controller);
+            }
         }
     }
 

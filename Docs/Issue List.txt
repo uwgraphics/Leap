@@ -1,7 +1,38 @@
-Leap Animation Editor:
+Animation Editor:
 
-#136 [] GetInitControllerStateForEyeGazeInstance() is broken and gives a controller state that is totally wrong; it also corrupts the state of the gaze controller and it can no longer be restored to its state prior to the method call
+#138 [] Eyes on Norman may be too fast given their size when using the new formula for eye max. velocity
+  - Scale down their velocity using the formula for stylized gaze
+  - Not the most pressing issue right now...
+  
+#137 [] Torso source direction moves away from the target sometimes, causing the torso to appear delayed in its movement
+  - See gaze shift at frame 130 of StealDiamond
 
+#130 [] Character root jitters sometimes when using gaze IK
+
+#129 [] Discontinuity in head direction at the start of the gaze shift when using gaze IK
+  - When gaze shift latency phase starts, fixation target direction gets wrong
+  
+#124 [] Stopping an ongoing gaze shift causes discontinuities in gaze body part directions
+  - Following last summer's refactoring, it might make sense to just not interrupt ongoing gaze shifts, but merely delay or cancel new ones
+  
+#105 [] Gaze doesn't work correctly for instance starting at frame 0
+
+#118 [] Character pose and animation controller states can vary at the start of the animation timeline, which is incorrect
+
+#112 [] IK does not work correctly for end-effector constraints attached to parts of the character affected by gaze
+
+#111 [] IK does not work correctly for resized character models
+
+#104 [] When using gaze IK, gaze cannot be unconstrained
+  - There must be contiguous gaze instances along the entire timeline, otherwise IK won't work during "gaps"  
+
+#127 [] OMR clamping does not work well when both source and target orientations lie outside valid OMR
+  - See ClampOMRToSource() function
+  - What happens is that the entire *arc* between the two orientations lies outside valid OMR area
+  - We should instead find the closest point on the closed curve that denotes the OMR region to the arc between source and target orientations
+  - No idea how to do this in quaternion space
+  - Might get sufficiently good results if we instead treat the arc as a line in yaw-pitch space and find the closest point on the ellipse that denotes OMR
+  
 #135 [] If the character continues to rotate their body toward the target during the gaze fixation (b/c rotation is part of the body motion), torso may overshoot the target
   - See example StackBoxesGaze3
   - Probably b/c torsoAlign = 0, so torso direction will always be (nearly) fixSrcDir, but fixSrcDir doesn't get updated to reflect root movement, resulting in a state of increasing body torque
@@ -12,16 +43,13 @@ Leap Animation Editor:
 #133 [] Gaze instances do not seem to activate or deactivate correctly around timewarps
   - In WindowWashing example, see how WindowWashingAGaze20 activates before WindowWashingAGaze3 has deactivated
 
+#136 [X] GetInitControllerStateForEyeGazeInstance() is broken and gives a controller state that is totally wrong; it also corrupts the state of the gaze controller and it can no longer be restored to its state prior to the method call
+  
 #132 [X] Frames for timewarped instances incorrectly computed after the end of a timewarp; frame indexes lower than they should be and the timewarped part of the motion is replayed (this time at normal rate)
   - Observed with MovingHoldTimewarp
   - Does not seem to happen with LinearTimewarp
 
 #131 [X] End-effector constraint times are incorrectly checked, because we fail to consider that animation might be scheduled to begin later than frame 0 (so its start time should be added to the end-effector constraint times)
-
-#130 [] Character root jitters sometimes when using gaze IK
-
-#129 [] Discontinuity in head direction at the start of the gaze shift when using gaze IK
-  - When gaze shift latency phase starts, fixation target direction gets wrong
 
 #128 [X] Discontinuities in head and torso directions when using pelvis as part of the torso
   - See gaze shift at frame 141 of TestExpressiveGaze
@@ -39,13 +67,6 @@ Leap Animation Editor:
   - The problem seems to be that base pose weights are non-zero only when there are hand constraints, whereas when there are foot constraints, root position is completely free (since gaze controller doesn't constrain it)
   - Upper body posture should be weighed separately from root position; base upper body posture should be weighed more when there are hand constraints, whereas base root position should be weighed more in presence of *any* constraints
   - Addressed by using separate root position term
-  
-#127 [] OMR clamping does not work well when both source and target orientations lie outside valid OMR
-  - See ClampOMRToSource() function
-  - What happens is that the entire *arc* between the two orientations lies outside valid OMR area
-  - We should instead find the closest point on the closed curve that denotes the OMR region to the arc between source and target orientations
-  - No idea how to do this in quaternion space
-  - Might get sufficiently good results if we instead treat the arc as a line in yaw-pitch space and find the closest point on the ellipse that denotes OMR
 
 #126 [X] Torso moves and snaps a bit at the end of the latency phase of a gaze shift that has torso movement disabled
   - In such cases, torso source and target directions at gaze shift start should be equal to the aligning target direction of the preceding fixation
@@ -71,34 +92,21 @@ Leap Animation Editor:
   - Seems OK for all body parts now
   
 #125 [X] Small torso movement at the start and end of gaze shift latency phase
-
-#124 [] Stopping an ongoing gaze shift causes discontinuities in gaze body part directions
-  - Following last summer's refactoring, it might make sense to just not interrupt ongoing gaze shifts, but merely delay or cancel new ones
   
-#109 [] Baking gaze animation is extremely slow
+#109 [X] Baking gaze animation is extremely slow
   - Gaze IK weight computation in AnimationTimeline._InitGazeIK() takes up a lot of time for some reason... or causes something else (IK?) to take a very long time
-  - It's the IK solver that's too slow...
-  
-#105 [] Gaze doesn't work correctly for instance starting at frame 0
+  - It's the IK solver that's slow... not much to do about it, it's the way it's designed
 
-#118 [] Character pose and animation controller states can vary at the start of the animation timeline, which is incorrect
+#117 [X] Character pose does not get reset properly when using Reset to Initial Pose
 
-#117 [] Character pose does not get reset properly when using Reset to Initial Pose
-
-#112 [] IK does not work correctly for end-effector constraints attached to parts of the character affected by gaze
-
-#111 [] IK does not work correctly for resized character models
-
-#104 [] When using gaze IK, gaze cannot be unconstrained
-  - There must be contiguous gaze instances along the entire timeline, otherwise IK won't work during "gaps"
-
-#116 [] None of the keyboard shortcuts for gaze editing work anymore
+#116 [X] None of the keyboard shortcuts for gaze editing work anymore
   - Possibly related, but in the handler function for shortcuts, LeapAnimationEdit._animationEditGizmos == null always evaluates to true, even though it is definitely not null!
   
-#100 [] Gaze target inference will be invalid for manipulated objects
+#100 [X] Gaze target inference will be invalid for manipulated objects
   - See BookShelf example - target inference might attach the gaze target to a book even at a time when the book should actually be in the character's hand
   
-#62 [] Stopping a gaze shift causes a discontinuity in pose
+#62 [X] Stopping a gaze shift causes a discontinuity in pose
+  - See #124
 
 #94 [X] Torso snaps to a new pose as we start a new gaze shift in which torso movement is disabled
   - For example, create a gaze shift toward the diamond in the StealDiamond scenario, set torso align to 0, and watch what happens with the torso at gaze shift start
@@ -635,11 +643,11 @@ Leap Animation Editor:
 
 Animation Assets:
 
-#82 [] In WaitForBus example, texture the bus stop sign
+#82 [X] In WaitForBus example, texture the bus stop sign
 
-#81 [] In StealDiamond example, the diamond has a hole on top
+#81 [X] In StealDiamond example, the diamond has a hole on top
 
-#80 [] Roman's left hand in HandShake example is twisted 180 degrees
+#80 [X] Roman's left hand in HandShake example is twisted 180 degrees
 
 #79 [] Bookshelf and books in BookShelf example have shared vertices at edges with interpolated normals, so they have a rounded appearance
 

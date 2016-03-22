@@ -32,6 +32,7 @@ public class AnimationEditorWindow : EditorWindow
     private Stopwatch _frameTimer = new Stopwatch();
     private GameObject _loggedGazeControllerStateModel = null;
     private bool _ikEnabled = true;
+    private bool _showBakedTimeline = false;
 
     // Editor window GUI
     private bool _guiInitialized = false;
@@ -210,7 +211,7 @@ public class AnimationEditorWindow : EditorWindow
         }
 
         // Show current position on the timeline
-        GUI.Label(new Rect(210, 10, 60, 40), string.Format("{0} / {1}", Timeline.CurrentFrame, Timeline.FrameLength));
+        GUI.Label(new Rect(210, 10, 100, 40), string.Format("{0} / {1}", Timeline.CurrentFrame, Timeline.FrameLength));
 
         // Update playback speed
         GUI.Label(new Rect(240, 30, 20, 19), "X");
@@ -279,7 +280,7 @@ public class AnimationEditorWindow : EditorWindow
             }
         }
         
-        // Bake procedural anim. instances into clips
+        // Bake animation timeline into a clip
         if (GUI.Button(new Rect(this.position.width - 60, 10, 40, 40), "Apply"))
         {
             Timeline.InitBake(LEAPCore.defaultBakedTimelineName);
@@ -287,6 +288,18 @@ public class AnimationEditorWindow : EditorWindow
                 LEAPCore.timelineBakeRangeEnd > LEAPCore.timelineBakeRangeStart ?
                 LEAPCore.timelineBakeRangeEnd - LEAPCore.timelineBakeRangeStart + 1 :
                 Timeline.FrameLength);
+
+            _showBakedTimeline = true;
+        }
+
+        // Enable/disable display of baked animation data
+        bool wasShowingBakedTimeline = _showBakedTimeline;
+        _showBakedTimeline = GUI.Toggle(new Rect(this.position.width - 160, 10, 100, 20), _showBakedTimeline, "Baked");
+        Timeline.ActiveBakedTimelineIndex = _showBakedTimeline ? Timeline.BakedTimelineContainers.Count - 1 : -1;
+        if (wasShowingBakedTimeline && !_showBakedTimeline)
+        {
+            // Stopped showing baked animation data, show original animation instead (but disable gaze)
+            Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
         }
 
         // Update the playback slider

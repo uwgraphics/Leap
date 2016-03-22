@@ -254,6 +254,7 @@ public class GazeBodyPart
     private Vector3 _fixSrcDir = Vector3.zero;
     private Vector3 _fixTrgDir = Vector3.zero;
     private Vector3 _fixTrgDirAlign = Vector3.zero;
+    private float _weight = 1f; // for logging purposes
 
     /// <summary>
     /// Constructor.
@@ -442,11 +443,11 @@ public class GazeBodyPart
         //return;
         //
         // Compute blend weight
-        float weight1 = GazeController.weight * (IsEye ? 1f : 0f);
-        /*float weight1 = GazeController.weight * (IsEye ? 1f :
-            1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir)));
+        _weight = GazeController.weight;
+        /*_weight = GazeController.weight * (IsEye ? 1f :
+            1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir)));*/
         //
-        Debug.LogWarning(string.Format("Blend weight for {0} is {1}", GazeBodyPartType, weight1));*/
+        //Debug.LogWarning(string.Format("Blend weight for {0} is {1}", GazeBodyPartType, weight1));
         //
 
         // Gaze directions and joint rotations
@@ -514,7 +515,7 @@ public class GazeBodyPart
 
             // Blend rotations
             Quaternion rot = GazeBodyPartType == GazeBodyPartType.Torso ? trgRotHAlign : trgRotAlign;
-            rot = Quaternion.Slerp(_baseRots[ji], rot, weight1);
+            rot = Quaternion.Slerp(_baseRots[ji], rot, _weight);
             curJoint.localRotation = rot;
         }
     }
@@ -1135,6 +1136,7 @@ public class GazeBodyPart
         state.fixSrcDir = _fixSrcDir;
         state.fixTrgDir = _fixTrgDir;
         state.fixTrgDirAlign = _fixTrgDirAlign;
+        state.weight = _weight;
 
         return state;
     }
@@ -1174,6 +1176,7 @@ public class GazeBodyPart
         _fixSrcDir = state.fixSrcDir;
         _fixTrgDir = state.fixTrgDir;
         _fixTrgDirAlign = state.fixTrgDirAlign;
+        _weight = state.weight;
     }
 
     // Get zero gaze body part state (before any gaze shifts have been performed)
@@ -1187,7 +1190,6 @@ public class GazeBodyPart
         state.outOMR = outOMR;
         state.upOMR = upOMR;
         state.downOMR = downOMR;
-        state.postureWeight = IsEye ? 0f : 1f;
         state.curAlign = 1f;
         state.maxVelocity = 0f;
         state.curVelocity = 0f;
@@ -1213,6 +1215,7 @@ public class GazeBodyPart
         state.fixSrcDir = Vector3.zero;
         state.fixTrgDir = Vector3.zero;
         state.fixTrgDirAlign = Vector3.zero;
+        state.weight = 1f;
 
         return state;
     }

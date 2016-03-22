@@ -30,7 +30,6 @@ public struct GazeControllerState : IAnimControllerState
         public float align;
         public float velocity;
         public float inOMR, outOMR, upOMR, downOMR;
-        public float postureWeight;
         public float curAlign;
         public float maxVelocity;
         public float curVelocity;
@@ -50,6 +49,7 @@ public struct GazeControllerState : IAnimControllerState
         public Vector3 fixSrcDir;
         public Vector3 fixTrgDir;
         public Vector3 fixTrgDirAlign;
+        public float weight;
     }
 
     public int stateId;

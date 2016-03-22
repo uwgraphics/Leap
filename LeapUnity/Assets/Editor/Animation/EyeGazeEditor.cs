@@ -944,7 +944,7 @@ public static class EyeGazeEditor
             "srcDir0 = ({12}, {13}, {14}), srcDir = ({15}, {16}, {17}), trgDir = ({18}, {19}, {20}), trgDirAlign = ({21}, {22}, {23}), " +
             "rotParam = {24}, curDir = ({25}, {26}, {27}), " +
             "isFix = {28}, fixSrcDir0 = ({29}, {30}, {31}), fixSrcDir = ({32}, {33}, {34}), fixTrgDir = ({35}, {36}, {37}), " +
-            "fixTrgDirAlign = ({38}, {39}, {40})",
+            "fixTrgDirAlign = ({38}, {39}, {40}), weight = {41}",
             ((GazeBodyPartType)state.gazeBodyPartType).ToString(),
             state.curAlign, state.curVelocity, state.maxVelocity, state.latency,
             state.curInOMR, state.curOutOMR, state.curUpOMR, state.curDownOMR,
@@ -957,7 +957,6 @@ public static class EyeGazeEditor
             state.isFix, state.fixSrcDir0.x, state.fixSrcDir0.y, state.fixSrcDir0.z,
             state.fixSrcDir.x, state.fixSrcDir.y, state.fixSrcDir.z,
             state.fixTrgDir.x, state.fixTrgDir.y, state.fixTrgDir.z,
-            state.fixTrgDirAlign.x, state.fixTrgDirAlign.y, state.fixTrgDirAlign.z
-            ));
+            state.fixTrgDirAlign.x, state.fixTrgDirAlign.y, state.fixTrgDirAlign.z, state.weight));
     }
 }

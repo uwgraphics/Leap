@@ -1,5 +1,5 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,StealDiamondGaze1,1,18,21,Gem-0,"0 0 0",0.9999999,0.7592115,True
+Norman,StealDiamondGaze1,1,18,21,Gem-0,"0 0 0",0.9999999,0.7613857,True
 Norman,StealDiamondGaze2,22,16,45,StealDiamondEnv-0,"0 0 0",0.383476,0.06655233,True
 Norman,StealDiamondGaze3,46,7,53,StealDiamondEnv-1,"0 0 0",0.4448499,0.04970062,True
 Norman,StealDiamondGaze4,54,7,61,StealDiamondEnv-2,"0 0 0",0.350498,0.03608372,True
