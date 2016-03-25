@@ -145,11 +145,11 @@ public class AnimationClipInstance : AnimationInstance
             {
                 // Load or extract keyframe indexes
                 KeyFrameSet[] keyFrameSets = null;
-                if (!AnimationTimingEditor.LoadAnimationKeyFrames(model, AnimationClip, out keyFrameSets))
+                if (!KeyFrameExtractor.LoadAnimationKeyFrames(model, AnimationClip, out keyFrameSets))
                 {
-                    keyFrameSets = AnimationTimingEditor.ExtractAnimationKeyFrames(model, AnimationClip,
-                        true, true, null, LEAPCore.keyExtractMaxClusterWidth);
-                    AnimationTimingEditor.SaveAnimationKeyFrames(model, AnimationClip, keyFrameSets);
+                    var keyFrameExtractor = new KeyFrameExtractor(model, AnimationClip);
+                    keyFrameSets = keyFrameExtractor.ExtractKeyFrames();
+                    KeyFrameExtractor.SaveAnimationKeyFrames(model, AnimationClip, keyFrameSets);
                 }
 
                 // Initialize key times

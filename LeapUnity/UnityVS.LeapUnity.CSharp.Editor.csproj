@@ -128,8 +128,10 @@
     <Compile Include="Assets\Editor\Animation\EyeGazeEditor.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeInferenceModel.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeInstance.cs" />
+    <Compile Include="Assets\Editor\Animation\EyeGazeKeyFrameExtractor.cs" />
     <Compile Include="Assets\Editor\Animation\EyeGazeTargetInferenceModel.cs" />
     <Compile Include="Assets\Editor\Animation\EyeTrackData.cs" />
+    <Compile Include="Assets\Editor\Animation\KeyFrameExtractor.cs" />
     <Compile Include="Assets\Editor\Animation\SimpleEyeGazeSynthesisInstance.cs" />
     <Compile Include="Assets\Editor\Animation\TimeSet.cs" />
     <Compile Include="Assets\Editor\Animation\Timewarp.cs" />

@@ -443,9 +443,9 @@ public class GazeBodyPart
         //return;
         //
         // Compute blend weight
-        _weight = GazeController.weight;
-        /*_weight = GazeController.weight * (IsEye ? 1f :
-            1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir)));*/
+        //_weight = GazeController.weight;
+        _weight = GazeController.weight * (IsEye ? 1f :
+            1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir)));
         //
         //Debug.LogWarning(string.Format("Blend weight for {0} is {1}", GazeBodyPartType, weight1));
         //
@@ -744,7 +744,7 @@ public class GazeBodyPart
             _fixSrcDir0 = _srcDir0;
             _fixSrcDir = _srcDir;
             _fixTrgDir = _trgDir;
-            _fixTrgDirAlign = _trgDirAlign;
+            _fixTrgDirAlign = _curDir;
         }
         else
         {
@@ -1051,13 +1051,11 @@ public class GazeBodyPart
     // Solve for body posture using an IK solver
     private void _SolveBodyIK()
     {
-        if (!LEAPCore.useGazeIK)
-            return;
-
         var bodySolver = _gazeController.gameObject.GetComponent<BodyIKSolver>();
         if (bodySolver != null && bodySolver.enabled)
         {
-            bodySolver.InitGazePose();
+            if (LEAPCore.useGazeIK)
+                bodySolver.InitGazePose();
             bodySolver.Solve();
         }
     }

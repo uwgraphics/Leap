@@ -119,66 +119,16 @@ public class EyeGazeInferenceModel
         var root = ModelUtil.FindRootBone(model);
         var bones = ModelUtil.GetAllBones(model);
         var gazeController = model.GetComponent<GazeController>();
-
-        // Create bone mask for gaze shift key time extraction
-        var boneMask = new BitArray(bones.Length, false);
-        //
-        //var gazeJoints = new[] { gazeController.head.Top };
-        //
-        var gazeJoints = gazeController.head.gazeJoints.Union(gazeController.torso.gazeJoints)
-            .Union(new[] { root }).ToArray();
-        foreach (var gazeJoint in gazeJoints)
-        {
-            int gazeJointIndex = ModelUtil.FindBoneIndex(bones, gazeJoint);
-            boneMask[gazeJointIndex] = true;
-        }
         
         // Extract keyframes that signify likely gaze shift starts and ends
-        var gazeKeyFrames = AnimationTimingEditor.ExtractAnimationKeyFrames(model, baseInstance.AnimationClip,
-            false, false, boneMask, LEAPCore.gazeInferenceKeyMaxClusterWidth);
+        var gazeKeyFrameExtractor = new EyeGazeKeyFrameExtractor(model, baseInstance.AnimationClip);
+        var gazeKeyFrames = gazeKeyFrameExtractor.ExtractKeyFrames();
 
-        // Compute gaze joint rotations, velocities, and directions
-        Quaternion[,] qBones = new Quaternion[bones.Length, baseInstance.FrameLength];
-        float[,] v0Bones = new float[bones.Length, baseInstance.FrameLength];
+        // Get head facing directions
         Vector3[] headDirections = new Vector3[baseInstance.FrameLength];
         for (int frameIndex = 0; frameIndex < baseInstance.FrameLength; ++frameIndex)
         {
             baseInstance.Apply(frameIndex, AnimationLayerMode.Override);
-
-            // Estimate gaze joint velocities
-            if (frameIndex >= 1)
-            {
-                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-                {
-                    if (!boneMask[boneIndex])
-                        continue;
-
-                    v0Bones[boneIndex, frameIndex] = QuaternionUtil.Angle(
-                        Quaternion.Inverse(qBones[boneIndex, frameIndex - 1]) * bones[boneIndex].localRotation)
-                        * LEAPCore.editFrameRate;
-                }
-
-                if (frameIndex == 1)
-                {
-                    for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-                    {
-                        if (!boneMask[boneIndex])
-                            continue;
-
-                        v0Bones[boneIndex, 0] = v0Bones[boneIndex, frameIndex];
-                    }
-                }
-            }
-
-            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-            {
-                if (!boneMask[boneIndex])
-                    continue;
-
-                qBones[boneIndex, frameIndex] = bones[boneIndex].localRotation;
-            }
-
-            // Get head facing direction
             headDirections[frameIndex] = gazeController.head.Direction;
         }
 
@@ -186,30 +136,14 @@ public class EyeGazeInferenceModel
         float[,] vBones = new float[bones.Length, baseInstance.FrameLength];
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
-            if (!boneMask[boneIndex])
+            if (!gazeKeyFrameExtractor.BoneMask[boneIndex])
                 continue;
 
-            var data0 = CollectionUtil.GetRow<float>(v0Bones, boneIndex);
+            var data0 = CollectionUtil.GetRow<float>(gazeKeyFrameExtractor._KinematicFeatures.vBones, boneIndex);
             var data = new float[data0.Length];
             FilterUtil.Filter(data0, data, FilterUtil.GetTentKernel1D(LEAPCore.gazeInferenceLowPassKernelSize));
             CollectionUtil.SetRow<float>(vBones, boneIndex, data);
         }
-
-        // Write out gaze joint velocities
-        var csvGazeJointVelocities = new CSVDataFile();
-        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-            if (boneMask[boneIndex])
-                csvGazeJointVelocities.AddAttribute("vBones#" + bones[boneIndex].name, typeof(float));
-        for (int frameIndex = 0; frameIndex < baseInstance.FrameLength; ++frameIndex)
-        {
-            List<object> data = new List<object>();
-            
-            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
-                if (boneMask[boneIndex])
-                    data.Add(vBones[boneIndex, frameIndex]);
-            csvGazeJointVelocities.AddData(data.ToArray());
-        }
-        csvGazeJointVelocities.WriteToFile("../Matlab/KeyExtraction/gazeJointVelocities.csv");
 
         // Classify gaze intervals
         var gazeIntervals = new List<_EyeGazeInterval>();
@@ -225,13 +159,13 @@ public class EyeGazeInferenceModel
             baseInstance.Apply(startKeyFrameSet.keyFrame, AnimationLayerMode.Override);
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
-                if (!boneMask[boneIndex])
+                if (!gazeKeyFrameExtractor.BoneMask[boneIndex])
                     continue;
 
                 // Movement magnitude
                 float d = QuaternionUtil.Angle(
-                    Quaternion.Inverse(qBones[boneIndex, startKeyFrameSet.boneKeyFrames[boneIndex]]) *
-                    qBones[boneIndex, endKeyFrameSet.boneKeyFrames[boneIndex]]);
+                    Quaternion.Inverse(gazeKeyFrameExtractor._KinematicFeatures.qBones[boneIndex, startKeyFrameSet.boneKeyFrames[boneIndex]]) *
+                    gazeKeyFrameExtractor._KinematicFeatures.qBones[boneIndex, endKeyFrameSet.boneKeyFrames[boneIndex]]);
 
                 // Segment length
                 var bone = bones[boneIndex];
@@ -254,7 +188,7 @@ public class EyeGazeInferenceModel
             float[] pGFVBones = new float[bones.Length];
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
-                if (!boneMask[boneIndex])
+                if (!gazeKeyFrameExtractor.BoneMask[boneIndex])
                     continue;
 
                 int startFrameIndex = startKeyFrameSet.boneKeyFrames[boneIndex];
@@ -304,7 +238,7 @@ public class EyeGazeInferenceModel
             float sumWBones = wBones.Sum();
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
-                if (!boneMask[boneIndex])
+                if (!gazeKeyFrameExtractor.BoneMask[boneIndex])
                     continue;
 
                 pGSV += (wBones[boneIndex] * pGSVBones[boneIndex]);
@@ -351,7 +285,7 @@ public class EyeGazeInferenceModel
 
             csvGazeIntervals.AddData(gazeInterval.intervalType.ToString(), startFrame, endFrame, a, p);
         }
-        csvGazeIntervals.WriteToFile("../Matlab/KeyExtraction/gazeIntervals.csv");
+        csvGazeIntervals.WriteToFile("../Matlab/KeyExtraction/gazeIntervals#" + baseInstance.Name + ".csv");
         //
 
         // Merge adjacent gaze fixation intervals
@@ -391,7 +325,7 @@ public class EyeGazeInferenceModel
             int fixationStartFrame = gazeInterval.endKeyFrameSet.keyFrame;
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
-                if (!boneMask[boneIndex])
+                if (!gazeKeyFrameExtractor.BoneMask[boneIndex])
                     continue;
 
                 startFrame = Mathf.Min(startFrame, gazeInterval.startKeyFrameSet.boneKeyFrames[boneIndex]);
@@ -411,7 +345,7 @@ public class EyeGazeInferenceModel
                     endFrame = nextGazeInterval.endKeyFrameSet.keyFrame;
                     for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
                     {
-                        if (!boneMask[boneIndex])
+                        if (!gazeKeyFrameExtractor.BoneMask[boneIndex])
                             continue;
 
                         endFrame = Mathf.Max(endFrame, nextGazeInterval.endKeyFrameSet.boneKeyFrames[boneIndex]);

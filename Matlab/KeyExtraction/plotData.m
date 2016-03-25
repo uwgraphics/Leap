@@ -1,10 +1,11 @@
 % Plot configuration:
-boneMask = [6];
+sceneName = 'StealDiamond';
+boneMask = [5 6];
 endEffectorMask = [];
 numberOfBones = 6;
 numberOfEndEffectors = 4;
-showDRoot = false;
-showDBones = false;
+showVRoot = false;
+showVBones = false;
 showARoot = false;
 showABones = true;
 showP0Root = false;
@@ -12,7 +13,7 @@ showP0Bones = false;
 showPRoot = false;
 showPBones = false;
 showWRoot = false;
-showWBones = false;
+showWBones = true;
 showPEndEff = false;
 showWEndEff = false;
 showP0 = false;
@@ -21,8 +22,8 @@ showKeyFrames = true;
 showRootKeyFrames = false;
 showBoneKeyFrames = false;
 showVBones = false;
-startFrame = 560;
-endFrame = 600;
+startFrame = 40;
+endFrame = 160;
 normalizeA = true;
 
 % Bone indexes:
@@ -64,10 +65,10 @@ normalizeA = true;
 % 4. RFoot
 
 % Compute array index ranges for per-frame data
-indexDRoot = 1;
-startIndexDBones = indexDRoot + 1;
-endIndexDBones = startIndexDBones + numberOfBones - 1;
-indexARoot = endIndexDBones + 1;
+indexVRoot = 1;
+startIndexVBones = indexVRoot + 1;
+endIndexVBones = startIndexVBones + numberOfBones - 1;
+indexARoot = endIndexVBones + 1;
 startIndexABones = indexARoot + 1;
 endIndexABones = startIndexABones + numberOfBones - 1;
 indexP0Root = endIndexABones + 1;
@@ -93,11 +94,11 @@ startIndexBoneKeyFrame = indexRootKeyFrame + 1;
 endIndexBoneKeyFrame = startIndexBoneKeyFrame + numberOfBones - 1;
 
 % Load per-frame data
-dataPerFrame = csvread('dataPerFrame.csv', 1);
+dataPerFrame = csvread(strcat('dataPerFrame#', sceneName, '.csv'), 1);
 frameLength = size(dataPerFrame, 1);
 frames = [startFrame:endFrame];
-dRoot = dataPerFrame(startFrame:endFrame, indexDRoot);
-dBones = dataPerFrame(startFrame:endFrame, startIndexDBones:endIndexDBones);
+vRoot = dataPerFrame(startFrame:endFrame, indexVRoot);
+vBones = dataPerFrame(startFrame:endFrame, startIndexVBones:endIndexVBones);
 aRoot = dataPerFrame(startFrame:endFrame, indexARoot);
 aBones = dataPerFrame(startFrame:endFrame, startIndexABones:endIndexABones);
 p0Root = dataPerFrame(startFrame:endFrame, indexP0Root);
@@ -122,17 +123,17 @@ end
 
 % Plot per-frame data
 hold on;
-if showDRoot
-    plot(frames, dRoot, '-k');
+if showVRoot
+    plot(frames, vRoot, '-k');
 end
-if showDBones
+if showVBones
     if size(boneMask, 2) == 0
-        for i = 1:size(dBones, 2)
-            plot(frames, dBones, '-k');
+        for i = 1:size(vBones, 2)
+            plot(frames, vBones, '-k');
         end
     else
         for i = 1:size(boneMask, 2)
-            plot(frames, dBones(:,boneMask(:, i)), '-k');
+            plot(frames, vBones(:,boneMask(:, i)), '-k');
         end
     end
 end
@@ -179,7 +180,7 @@ if showPBones
     end
 end
 if showWRoot
-    plot(frames, pWoot, '-y');
+    plot(frames, pRoot, '-y');
 end
 if showWBones
     if size(boneMask, 2) == 0
@@ -221,23 +222,8 @@ if showP
     plot(frames, p, '-r');
 end
 
-% Show gaze joint velocities
-dataPerFrame = csvread('gazeJointVelocities.csv', 1);
-vBones = dataPerFrame(startFrame:endFrame, 1:numberOfBones);
-if showVBones
-    if size(boneMask, 2) == 0
-        for i = 1:size(vBones, 2)
-            plot(frames, vBones, '-g');
-        end
-    else
-        for i = 1:size(boneMask, 2)
-            plot(frames, vBones(:,boneMask(:, i)), '-g');
-        end
-    end
-end
-
 % Load per-key data
-dataPerKey = csvread('dataPerKey.csv', 1);
+dataPerKey = csvread(strcat('dataPerKey#', sceneName, '.csv'), 1);
 keyFrames = dataPerKey(:, indexKeyFrame);
 keyFrameIndexes = find(keyFrames < startFrame | keyFrames > endFrame);
 keyFrames(keyFrameIndexes) = [];

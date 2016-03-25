@@ -374,6 +374,7 @@ ModelImporter:
     13700060: srfBind_Rt_LegB
     13700062: srfBind_Rt_LegC
     13700064: srfBind_Rt_LegD
+    13700066: srfBind_Rt_ArmC
   materials:
     importMaterials: 1
     materialName: 0
@@ -393,8 +394,8 @@ ModelImporter:
     - serializedVersion: 16
       name: WindowWashingNew
       takeName: Take 001
-      firstFrame: 209
-      lastFrame: 2209
+      firstFrame: 109
+      lastFrame: 1275
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

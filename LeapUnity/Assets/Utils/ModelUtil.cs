@@ -488,7 +488,24 @@ public static class ModelUtil
     }
 
     /// <summary>
-    /// Get a chain of bones between a start bone and one of its descendants.
+    /// Check if specified bone is a descendant of another bone.
+    /// </summary>
+    /// <param name="descBone">Descendant bone</param>
+    /// <param name="ancBone">Ancestor bone</param>
+    /// <returns>true if bone is descendant, false otherwise</returns>
+    public static bool IsDescendantOf(Transform descBone, Transform ancBone)
+    {
+        if (descBone == null)
+            return false;
+        
+        if (descBone == ancBone)
+            return true;
+
+        return IsDescendantOf(descBone.parent, ancBone);
+    }
+
+    /// <summary>
+    /// Get a chain of bones between the start bone and one of its descendants.
     /// Both start bone and end bone are included in the chain.
     /// </summary>
     /// <param name="startBone">Chain start bone</param>
@@ -496,10 +513,33 @@ public static class ModelUtil
     /// <returns>Bone chain</returns>
     public static Transform[] GetBoneChain(Transform startBone, Transform endBone)
     {
+        if (!IsDescendantOf(endBone, startBone))
+            return null;
+
         List<Transform> _boneChain = new List<Transform>();
         _GetBoneChain(startBone, endBone, _boneChain);
 
         return _boneChain.ToArray();
+    }
+
+    /// <summary>
+    /// Get length of the chain of bones between the start bone and one of its descendants.
+    /// Both start bone and end bone are included in the chain.
+    /// </summary>
+    /// <param name="startBone">Chain start bone</param>
+    /// <param name="endBone">Chain end bone, which is a descendant of the start bone</param>
+    /// <returns>Bone chain</returns>
+    public static float GetBoneChainLength(Transform startBone, Transform endBone)
+    {
+        var chain = GetBoneChain(startBone, endBone);
+        if (chain == null)
+            throw new ArgumentException("startBone and endBone do not form a chain", "startBone");
+
+        float chainlength = 0f;
+        for (int boneIndex = 1; boneIndex < chain.Length; ++boneIndex)
+            chainlength += (chain[boneIndex].position - chain[boneIndex].parent.position).magnitude;
+
+        return chainlength;
     }
 
     /// <summary>
@@ -553,31 +593,24 @@ public static class ModelUtil
         bones.Add(rootBone);
 
         foreach (Transform child in rootBone)
-        {
             _GetAllBones(child, bones);
-        }
     }
 
     // Traverse the bone subtree until you get to the end bone and add all the bones in between
     private static bool _GetBoneChain(Transform startBone, Transform endBone, List<Transform> _boneChain)
     {
+        if (endBone == null)
+            return false;
+
         if (startBone == endBone)
         {
-            _boneChain.Add(startBone);
+            _boneChain.Insert(0, startBone);
             return true;
         }
 
-        for (int childIndex = 0; childIndex < startBone.childCount; ++childIndex)
-        {
-            var child = startBone.GetChild(childIndex);
-            if (_GetBoneChain(child, endBone, _boneChain))
-            {
-                _boneChain.Add(startBone);
-                return true;
-            }
-        }
+        _boneChain.Insert(0, endBone);
 
-        return false;
+        return _GetBoneChain(startBone, endBone.parent, _boneChain);
     }
 
     /// <summary>

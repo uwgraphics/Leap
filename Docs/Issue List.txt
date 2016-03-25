@@ -1,5 +1,8 @@
 Animation Editor:
 
+#139 [X] Torso direction sometimes discontinuous from shifting to fixation phase
+  - See frame 110-111 in StealDiamond
+
 #138 [] Eyes on Norman may be too fast given their size when using the new formula for eye max. velocity
   - Scale down their velocity using the formula for stylized gaze
   - Not the most pressing issue right now...
@@ -12,8 +15,10 @@ Animation Editor:
 #129 [] Discontinuity in head direction at the start of the gaze shift when using gaze IK
   - When gaze shift latency phase starts, fixation target direction gets wrong
   
-#124 [] Stopping an ongoing gaze shift causes discontinuities in gaze body part directions
+#124 [X] Stopping an ongoing gaze shift causes discontinuities in gaze body part directions
   - Following last summer's refactoring, it might make sense to just not interrupt ongoing gaze shifts, but merely delay or cancel new ones
+  - See torso snapping in StealDiamond at 126-127 - gaze shift toward StealDiamondEnv-4 gets interrupted
+  - The problem is that fixTrgDirAlign gets initialized to trgDirAlign, even though the latter hasn't been reached yet (rotParam < 1)
   
 #105 [] Gaze doesn't work correctly for instance starting at frame 0
 
@@ -37,11 +42,12 @@ Animation Editor:
   - See example StackBoxesGaze3
   - Probably b/c torsoAlign = 0, so torso direction will always be (nearly) fixSrcDir, but fixSrcDir doesn't get updated to reflect root movement, resulting in a state of increasing body torque
 
-#134 [] Discontinuity in head pose sometimes occurs when a gaze shift gets interrupted
-  - See example StackBoxesGaze1 -> StackBoxesGaze2
-
 #133 [] Gaze instances do not seem to activate or deactivate correctly around timewarps
   - In WindowWashing example, see how WindowWashingAGaze20 activates before WindowWashingAGaze3 has deactivated
+  
+#134 [X] Discontinuity in head pose sometimes occurs when a gaze shift gets interrupted
+  - See example StackBoxesGaze1 -> StackBoxesGaze2
+  - See #124
 
 #136 [X] GetInitControllerStateForEyeGazeInstance() is broken and gives a controller state that is totally wrong; it also corrupts the state of the gaze controller and it can no longer be restored to its state prior to the method call
   
