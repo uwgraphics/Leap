@@ -12,6 +12,9 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.Util;
 
+/// <summary>
+/// Model for aligning 3D points with a 2D camera image.
+/// </summary>
 public class CameraModel
 {
     /// <summary>
@@ -108,10 +111,37 @@ public class CameraModel
     /// <summary>
     /// Initialize camera parameters using OpenCV camera calibration.
     /// </summary>
+    /// <param name="wPos">World-space positions of 4 calibration pattern corner points</param>
+    /// <param name="image">Image containing a calibration pattern</param>
+    /// <param name="calibPatternWidth">Calibration pattern width</param>
+    /// <param name="calibPatternHeight">Calibration pattern height</param>
+    /// <param name="useCurrentIntrinsics">If false, intrinsic parameters will be estimated, otherwise current ones will be used</param>
+    /// <param name="outImage">If output image is specified, calibration patterns corners will be draw in</param>
+    /// <returns>true if camera parameters estimated successfully, false if calibration pattern could not be found</returns>
+    /// <remarks>Calibration pattern corner points must be specified from top left, in clockwise order.</remarks>
+    public bool Align(Vector3[] wPos, Mat image, int calibPatternWidth, int calibPatternHeight,
+        bool useCurrentIntrinsics = true, Mat outImage = null)
+    {
+        if (wPos.Length != 4)
+        {
+            throw new ArgumentException("Must specify 4 calibration pattern corner points", "wPos");
+        }
+
+        var cornerPoints = _FindCalibPatternCorners(image, calibPatternWidth, calibPatternHeight, outImage);
+        if (cornerPoints == null)
+            return false;
+
+        //Align(wPos, cornerPoints, useCurrentIntrinsics);
+        return true;
+    }
+
+    /// <summary>
+    /// Initialize camera parameters using OpenCV camera calibration.
+    /// </summary>
     /// <param name="wPos">World-space positions</param>
     /// <param name="pPos">Corresponding image-space positions</param>
     /// <param name="useCurrentIntrinsics">If false, intrinsic parameters will be estimated, otherwise current ones will be used</param>
-    public void InitOpenCV(Vector3[] wPos, Vector2[] pPos, bool useCurrentIntrinsics = true)
+    public void Align(Vector3[] wPos, Vector2[] pPos, bool useCurrentIntrinsics = true)
     {
         int n = wPos.Length;
         if (n < 4)
@@ -124,7 +154,7 @@ public class CameraModel
         xp[0] = new PointF[n];
         for (int i = 0; i < n; ++i)
         {
-            xp[0][i] = new PointF(ImageWidth - pPos[i].x, ImageHeight - pPos[i].y);
+            xp[0][i] = new PointF(pPos[i].x, pPos[i].y);
         }
 
         // Get alignment points in world space
@@ -210,9 +240,50 @@ public class CameraModel
             var wPosi = wPos[i];
             var pPosi = GetImagePosition(wPosi);
 
-            Debug.Log(string.Format("Ground truth point: ({0}, {1}); computed point: ({2}, {3})",
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}); computed point: ({2}, {3})",
                 pPosi0.x, pPosi0.y, pPosi.x, pPosi.y));
         }
+    }
+
+    // Find calibration pattern corners in the image
+    private Vector2[] _FindCalibPatternCorners(Mat image, int calibPatternWidth, int calibPatternHeight, Mat outImage)
+    {
+        if (image.NumberOfChannels == 1)
+            // Grayscale image, we can improve contrast
+            Emgu.CV.CvInvoke.EqualizeHist(image, image);
+
+        var cornerPoints = new Emgu.CV.Util.VectorOfPoint();
+        CvInvoke.FindChessboardCorners(image, new Size(calibPatternWidth, calibPatternHeight), cornerPoints);
+
+        if (cornerPoints.Size < 4)
+        {
+            // Calibration pattern not found
+            return null;
+        }
+
+        // Compute rectangle that envelops the pattern
+        var outCornerPoints = new Vector2[4];
+        outCornerPoints[0] = new Vector2(cornerPoints[0].X, cornerPoints[0].Y);
+        outCornerPoints[1] = new Vector2(cornerPoints[calibPatternWidth - 1].X, cornerPoints[calibPatternWidth - 1].Y);
+        outCornerPoints[2] = new Vector2(cornerPoints[cornerPoints.Size - 1].X, cornerPoints[cornerPoints.Size - 1].Y);
+        outCornerPoints[3] = new Vector2(cornerPoints[cornerPoints.Size - calibPatternWidth].X,
+            cornerPoints[cornerPoints.Size - calibPatternWidth].Y);
+
+        if (outImage != null)
+        {
+            // Mark corners in the image
+            int ptRadius = 5;
+            CvInvoke.Circle(outImage, new Point((int)outCornerPoints[0].x, (int)outCornerPoints[0].y), ptRadius,
+                new Emgu.CV.Structure.MCvScalar(0, 0, 255), -1);
+            CvInvoke.Circle(outImage, new Point((int)outCornerPoints[1].x, (int)outCornerPoints[1].y), ptRadius,
+                new Emgu.CV.Structure.MCvScalar(0, 255, 0), -1);
+            CvInvoke.Circle(outImage, new Point((int)outCornerPoints[2].x, (int)outCornerPoints[2].y), ptRadius,
+                new Emgu.CV.Structure.MCvScalar(255, 0, 0), -1);
+            CvInvoke.Circle(outImage, new Point((int)outCornerPoints[3].x, (int)outCornerPoints[3].y), ptRadius,
+                new Emgu.CV.Structure.MCvScalar(255, 0, 255), -1);
+        }
+
+        return outCornerPoints;
     }
 
     /*

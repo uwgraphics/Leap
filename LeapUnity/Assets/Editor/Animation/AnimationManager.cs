@@ -242,6 +242,7 @@ public class AnimationManager
         testScenes.modelNorman.SetActive(false);
         testScenes.modelNormanette.SetActive(false);
         testScenes.modelRoman.SetActive(false);
+        testScenes.modelNormanNew.SetActive(false);
         testScenes.modelTestExpressiveGazeEnv.SetActive(false);
         testScenes.modelWindowWashingEnv.SetActive(false);
         testScenes.modelPassSodaEnv.SetActive(false);
@@ -250,6 +251,10 @@ public class AnimationManager
         testScenes.modelBookShelfEnv.SetActive(false);
         testScenes.modelStealDiamondEnv.SetActive(false);
         testScenes.modelWaitForBusEnv.SetActive(false);
+        testScenes.modelStackBoxesEnv.SetActive(false);
+        testScenes.modelWindowWashingNewEnv.SetActive(false);
+        testScenes.modelWalkConesNewEnv.SetActive(false);
+        testScenes.modelWaitForBusNewEnv.SetActive(false);
         testScenes.cameraWindowWashing.enabled = false;
         testScenes.cameraPassSoda.enabled = false;
         testScenes.cameraWalking90deg.enabled = false;
@@ -260,12 +265,12 @@ public class AnimationManager
         testScenes.cameraStealDiamond2.enabled = false;
         testScenes.cameraWaitForBus.enabled = false;
         testScenes.cameraStackBoxes.enabled = false;
+        testScenes.cameraWindowWashingNew.enabled = false;
+        testScenes.cameraWalkConesNew.enabled = false;
+        testScenes.cameraWaitForBusNew.enabled = false;
         testScenes.modelKinect.SetActive(false);
         testScenes.modelEyeTrackMocapTest1Env.SetActive(false);
         testScenes.cameraEyeTrackMocapTest1.enabled = false;
-        testScenes.modelNormanNew.SetActive(false);
-        testScenes.modelWindowWashingNewEnv.SetActive(false);
-        testScenes.modelStackBoxesEnv.SetActive(false);
 
         // Create and configure animation layers:
         timeline.AddLayer(AnimationLayerMode.Override, 0, LEAPCore.helperAnimationLayerName);
@@ -613,70 +618,6 @@ public class AnimationManager
             var bodyAnimation = new AnimationClipInstance("EyeTrackMocapTest1-1", testScenes.modelKinect);
             int bodyAnimationInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
                 bodyAnimation, 0, LEAPCore.helperAnimationLayerName);
-            // TODO: remove this
-            /*// Get objects in the scene
-            var gazeController = bodyAnimation.Model.GetComponent<GazeController>();
-            var lEye = gazeController.lEye.Top;
-            var rEye = gazeController.rEye.Top;
-            var tableSpots = GameObject.FindGameObjectsWithTag("GazeTarget");
-            var leftHandSpot = tableSpots.FirstOrDefault(obj => obj.name == "LeftHandSpot");
-            var rightandSpot = tableSpots.FirstOrDefault(obj => obj.name == "RightHandSpot");
-            var midTarget = tableSpots.FirstOrDefault(obj => obj.name == "MidTarget");
-            var rightTarget = tableSpots.FirstOrDefault(obj => obj.name == "RightTarget");
-            var leftTarget = tableSpots.FirstOrDefault(obj => obj.name == "LeftTarget");
-
-            // Load eye tracking data
-            var eyeTrackData = new EyeTrackData(testScenes.modelKinect, bodyAnimation.AnimationClip);
-
-            // Get ground-truth eye directions at frame 277 (104)
-            var vle = eyeTrackData.Samples[277].lEyeDirection;
-            var vre = eyeTrackData.Samples[277].rEyeDirection;
-
-            // Get eye tracker bone space eye directions at frame 277 (104)
-            bodyAnimation.Apply(104, AnimationLayerMode.Override);
-            var eyeTrackerBone = eyeTrackData.EyeTrackerBone;
-            var ule = lEye.InverseTransformDirection((rightTarget.transform.position - lEye.position).normalized);
-            var ure = rEye.InverseTransformDirection((rightTarget.transform.position - rEye.position).normalized);
-
-            // Compute aligning rotations
-            var qle = Quaternion.FromToRotation(ule, vle);
-            var qre = Quaternion.FromToRotation(ure, vre);
-
-            Debug.Log(string.Format("qle at 104: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
-            Debug.Log(string.Format("qre at 104: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));
-            
-            // Get ground-truth eye directions at frame 302 (129)
-            vle = eyeTrackData.Samples[302].lEyeDirection;
-            vre = eyeTrackData.Samples[302].rEyeDirection;
-
-            // Get eye tracker bone space eye directions at frame 302 (129)
-            bodyAnimation.Apply(129, AnimationLayerMode.Override);
-            ule = lEye.InverseTransformDirection((leftTarget.transform.position - lEye.position).normalized);
-            ure = rEye.InverseTransformDirection((leftTarget.transform.position - rEye.position).normalized);
-
-            // Compute aligning rotations
-            qle = Quaternion.FromToRotation(ule, vle);
-            qre = Quaternion.FromToRotation(ure, vre);
-
-            Debug.Log(string.Format("qle at 129: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
-            Debug.Log(string.Format("qre at 129: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));
-
-            // Get ground-truth eye directions at frame 332 (159)
-            vle = eyeTrackData.Samples[332].lEyeDirection;
-            vre = eyeTrackData.Samples[332].rEyeDirection;
-
-            // Get eye tracker bone space eye directions at frame 332 (159)
-            bodyAnimation.Apply(159, AnimationLayerMode.Override);
-            ule = lEye.InverseTransformDirection((midTarget.transform.position - lEye.position).normalized);
-            ure = rEye.InverseTransformDirection((midTarget.transform.position - rEye.position).normalized);
-
-            // Compute aligning rotations
-            qle = Quaternion.FromToRotation(ule, vle);
-            qre = Quaternion.FromToRotation(ure, vre);
-
-            Debug.Log(string.Format("qle at 159: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
-            Debug.Log(string.Format("qre at 159: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));*/
-            //
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationInstanceId, LEAPCore.eyeGazeAnimationLayerName);
@@ -687,47 +628,6 @@ public class AnimationManager
             editTestScenario.models[0] = testScenes.modelKinect;
             editTestScenario.animations = new string[1];
             editTestScenario.animations[0] = "EyeTrackMocapTest1-1-" + LEAPCore.defaultBakedTimelineName;
-        }
-        else if (sceneName == "WindowWashingNew")
-        {
-            testScenes.modelNormanNew.SetActive(true);
-            testScenes.modelWindowWashingNewEnv.SetActive(true);
-            testScenes.cameraWindowWashing.enabled = true;
-
-            // Add character models to the timeline
-            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
-
-            // Set environment in the timeline
-            timeline.OwningManager.SetEnvironment(testScenes.modelWindowWashingEnv);
-
-            // Create animation instances
-            var bodyAnimationNorman = new AnimationClipInstance("WindowWashingNew", testScenes.modelNormanNew);
-
-            // Add animations to characters
-            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
-                bodyAnimationNorman, 0);
-
-            // Load eye gaze
-            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
-            EyeGazeEditor.PrintEyeGaze(timeline);
-
-            // Create environment animations
-            var envController = testScenes.modelWindowWashingEnv.GetComponent<EnvironmentController>();
-            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance(
-                    "WindowWashingNewSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge"),
-                    false, false, false));
-
-            // Add timewarps to the animations
-            AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
-
-            // Initialize test scenario
-            editTestScenario.models = new GameObject[1];
-            editTestScenario.models[0] = testScenes.modelNormanNew;
-            editTestScenario.animations = new string[1];
-            editTestScenario.animations[0] = "WindowWashingNew-" + LEAPCore.defaultBakedTimelineName;
-            editTestScenario.objectAnimations = new string[1];
-            editTestScenario.objectAnimations[0] = "WindowWashingNewSponge-" + LEAPCore.defaultBakedTimelineName;
         }
         else if (sceneName == "StackBoxes")
         {
@@ -784,6 +684,134 @@ public class AnimationManager
             editTestScenario.objectAnimations[1] = "StackBoxes2-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.objectAnimations[2] = "StackBoxes3-" + LEAPCore.defaultBakedTimelineName;
             editTestScenario.objectAnimations[3] = "StackBoxes4-" + LEAPCore.defaultBakedTimelineName;
+        }
+        else if (sceneName == "WindowWashingNew")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelWindowWashingNewEnv.SetActive(true);
+            testScenes.cameraWindowWashingNew.enabled = true;
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelWindowWashingNewEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("WindowWashingNew", testScenes.modelNormanNew);
+
+            // Add animations to characters
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            var envController = testScenes.modelWindowWashingNewEnv.GetComponent<EnvironmentController>();
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "WindowWashingNewSponge", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Sponge"),
+                    false, false, false));
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "WindowWashingNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
+
+            // Add timewarps to the animations
+            AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNormanNew;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "WindowWashingNew-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations = new string[2];
+            editTestScenario.objectAnimations[0] = "WindowWashingNewSponge-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations[1] = "WindowWashingNewMarkers-" + LEAPCore.defaultBakedTimelineName;
+        }
+        else if (sceneName == "WalkConesNew")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelWalkConesNewEnv.SetActive(true);
+            testScenes.cameraWalkConesNew.enabled = true;
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelWalkConesNewEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("WalkConesNew", testScenes.modelNormanNew);
+
+            // Add animations to characters
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0);
+
+            // Create environment animations
+            var envController = testScenes.modelWalkConesNewEnv.GetComponent<EnvironmentController>();
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "WalkConesNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add timewarps to the animations
+            AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNormanNew;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "WalkConesNew-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations = new string[1];
+            editTestScenario.objectAnimations[0] = "WalkConesNewMarkers-" + LEAPCore.defaultBakedTimelineName;
+        }
+        else if (sceneName == "WaitForBusNew")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelWaitForBusNewEnv.SetActive(true);
+            testScenes.cameraWaitForBusNew.enabled = true;
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelWaitForBusNewEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("WaitForBusNew", testScenes.modelNormanNew);
+
+            // Add animations to characters
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0);
+
+            // Create environment animations
+            var envController = testScenes.modelWaitForBusNewEnv.GetComponent<EnvironmentController>();
+            timeline.AddManipulatedObjectAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "WaitForBusNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add timewarps to the animations
+            AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
+
+            // Initialize test scenario
+            editTestScenario.models = new GameObject[1];
+            editTestScenario.models[0] = testScenes.modelNormanNew;
+            editTestScenario.animations = new string[1];
+            editTestScenario.animations[0] = "WaitForBusNew-" + LEAPCore.defaultBakedTimelineName;
+            editTestScenario.objectAnimations = new string[1];
+            editTestScenario.objectAnimations[0] = "WaitForBusNewMarkers-" + LEAPCore.defaultBakedTimelineName;
         }
         else // if (sceneName == "InitialPose")
         {

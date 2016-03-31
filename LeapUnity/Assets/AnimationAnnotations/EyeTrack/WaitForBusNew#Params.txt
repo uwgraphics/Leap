@@ -1,0 +1,5 @@
+frameOffset=461
+imageWidth=1280
+imageHeight=960
+imageXCorrection=0
+imageYCorrection=0

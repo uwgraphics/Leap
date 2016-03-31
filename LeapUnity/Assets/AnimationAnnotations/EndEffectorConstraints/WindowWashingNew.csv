@@ -1,0 +1,2 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ManipulatedObjectHandle,ManipulationEndFrame
+RWristBone,0,0,true,null,SpongeHandle,1166

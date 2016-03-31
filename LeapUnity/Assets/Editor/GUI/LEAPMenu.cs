@@ -61,7 +61,9 @@ public class LEAPMenu
     private static bool ValidateInferEyeGazeInstances()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null;
+        var selectedModel = ModelUtil.GetSelectedModel();
+        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
+            selectedModel != null && selectedModel.tag == "Agent";
     }
 
     [MenuItem("LEAP/Animation/Infer Eye Gaze/From Body Animation", false)]
@@ -75,7 +77,7 @@ public class LEAPMenu
         timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
 
         // Infer gaze shifts and fixations in the base animation
-        var selectedModel = ModelUtil.GetSelectedModel();;
+        var selectedModel = ModelUtil.GetSelectedModel();
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
@@ -120,6 +122,301 @@ public class LEAPMenu
             // Save and print ground-truth eye gaze
             EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#GroundTruth");
             EyeGazeEditor.PrintEyeGaze(timeline, LEAPCore.eyeGazeAnimationLayerName);
+        }
+        SceneView.RepaintAll();
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Target Locations", true)]
+    private static bool ValidateInferEyeGazeEvaluateTargetLocations()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var selectedModel = ModelUtil.GetSelectedModel();
+        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
+            selectedModel != null && selectedModel.tag == "Agent";
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Target Locations", false)]
+    private static void InferEyeGazeEvaluateTargetLocations()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var timeline = wnd.Timeline;
+
+        // Disable IK and gaze layers
+        timeline.SetIKEnabled(false);
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
+
+        // Infer gaze shifts and fixations in the base animation
+        var selectedModel = ModelUtil.GetSelectedModel();
+        var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
+        foreach (var baseAnimation in baseLayer.Animations)
+        {
+            if (selectedModel != baseAnimation.Animation.Model)
+                continue;
+
+            // TODO: move all this to a separate class
+            //
+            var model = baseAnimation.Animation.Model;
+            var gazeController = model.GetComponent<GazeController>();
+            var lEye = gazeController.lEye.Top;
+            var rEye = gazeController.rEye.Top;
+            var head = gazeController.head.Top;
+            int frameLength = baseAnimation.Animation.FrameLength;
+            var envLayer = timeline.GetLayer("Environment");
+
+            Debug.Log(string.Format("Evaluating target location inference accuracy for {0}...", model.name));
+
+            // Load eye tracking data
+            var eyeTrackData = new EyeTrackData(model, (baseAnimation.Animation as AnimationClipInstance).AnimationClip);
+
+            Debug.Log("Getting marker positions...");
+
+            // Get world-space marker positions
+            Vector3[][] worldPos = new Vector3[frameLength][];
+            for (int frameIndex = 0; frameIndex < timeline.FrameLength; ++frameIndex)
+            {
+                // Apply animation at current frame
+                timeline.GoToFrame(frameIndex);
+                timeline.ApplyAnimation();
+
+                // Get marker objects
+                var markerSets = GameObject.FindGameObjectsWithTag("GazeMarkerSet");
+                var markersUL = GameObject.FindGameObjectsWithTag("GazeMarkerUL");
+                var markersUR = GameObject.FindGameObjectsWithTag("GazeMarkerUR");
+                var markersLR = GameObject.FindGameObjectsWithTag("GazeMarkerLR");
+                var markersLL = GameObject.FindGameObjectsWithTag("GazeMarkerLL");
+
+                // Find currently most visible marker set
+                GameObject curMarkerSet = null;
+                float curMarkerSetDist = float.MaxValue;
+                Vector3 curHeadDir = gazeController.head.Direction;
+                foreach (var markerSet in markerSets)
+                {
+                    var markerUL = markersUL.FirstOrDefault(m => m.transform.parent == markerSet.transform);
+                    var markerDir = (markerUL.transform.position - head.position).normalized;
+                    float markerSetDist = Vector3.Angle(markerDir, curHeadDir);
+
+                    if (markerSetDist < curMarkerSetDist)
+                    {
+                        curMarkerSetDist = markerSetDist;
+                        curMarkerSet = markerSet;
+                    }
+                }
+
+                Debug.Log(string.Format("Frame {0}: using marker set {1}", frameIndex, curMarkerSet.name));
+
+                // Get marker positions
+                var curMarkerUL = markersUL.FirstOrDefault(m => m.transform.parent == curMarkerSet.transform);
+                var curMarkerUR = markersUR.FirstOrDefault(m => m.transform.parent == curMarkerSet.transform);
+                var curMarkerLR = markersLR.FirstOrDefault(m => m.transform.parent == curMarkerSet.transform);
+                var curMarkerLL = markersLL.FirstOrDefault(m => m.transform.parent == curMarkerSet.transform);
+                worldPos[frameIndex] = new Vector3[4];
+                worldPos[frameIndex][0] = curMarkerUL.transform.position;
+                worldPos[frameIndex][1] = curMarkerUR.transform.position;
+                worldPos[frameIndex][2] = curMarkerLR.transform.position;
+                worldPos[frameIndex][3] = curMarkerLL.transform.position;
+            }
+
+            // Create camera model for eye tracker video
+            var eyeTrackCamModel = new VideoCameraModel(eyeTrackData.ImageWidth, eyeTrackData.ImageHeight);
+            Matrix3x3 eyeTrackMatCamera;
+            float[] eyeTrackDistCoeffs = new float[5];
+            EyeTrackData.DefaultCameraModel.GetIntrinsics(out eyeTrackMatCamera, out eyeTrackDistCoeffs);
+            eyeTrackCamModel.SetDefaultIntrinsics(eyeTrackMatCamera, eyeTrackDistCoeffs);
+
+            // Estimate camera model for eye tracker video
+            string imageDir = "../Matlab/EyeTracker/" + baseAnimation.Animation.Name + "#Frames" + "/";
+            string outImageDir = "../Matlab/EyeTracker/" + baseAnimation.Animation.Name + "#OutFrames" + "/";
+            int startFrame = eyeTrackData.FrameOffset;
+            eyeTrackCamModel.Align(worldPos, imageDir, startFrame,
+                eyeTrackData.CalibPatternWidth, eyeTrackData.CalibPatternHeight, true, true, outImageDir);
+
+            /*// Get marker objects
+            var markers = GameObject.FindGameObjectsWithTag("GazeTarget");
+            var chairLL = markers.FirstOrDefault(m => m.name == "B_Left");
+            var chairUL = markers.FirstOrDefault(m => m.name == "Top_Left");
+            var chairUR = markers.FirstOrDefault(m => m.name == "Top_Right");
+            var chairLR = markers.FirstOrDefault(m => m.name == "B_Right");
+            var dannyLL = markers.FirstOrDefault(m => m.name == "B_Left 1");
+            var dannyUL = markers.FirstOrDefault(m => m.name == "Top_Left 1");
+            var dannyUR = markers.FirstOrDefault(m => m.name == "Top_Right 1");
+            var dannyLR = markers.FirstOrDefault(m => m.name == "B_Right 1");
+            var dannyLM = markers.FirstOrDefault(m => m.name == "B_Middle");
+            var bobbyLL = markers.FirstOrDefault(m => m.name == "B_Left 1");
+            var bobbyUL = markers.FirstOrDefault(m => m.name == "Top_Left 1");
+            var bobbyUR = markers.FirstOrDefault(m => m.name == "Top_Right 1");
+            var bobbyMR1 = markers.FirstOrDefault(m => m.name == "Top_Right 1");
+            var bobbyMR2 = markers.FirstOrDefault(m => m.name == "Top_Right 1");
+            var bobbyLR = markers.FirstOrDefault(m => m.name == "B_Right 1");
+            
+            // Get image-space marker positions at frame 809 (1688)
+            Vector2[] imgPos809 = new Vector2[4];
+            imgPos809[0] = new Vector2(355, eyeTrackData.ImageHeight - 463 - 1);
+            imgPos809[1] = new Vector2(204, eyeTrackData.ImageHeight - 302 - 1);
+            imgPos809[2] = new Vector2(411, eyeTrackData.ImageHeight - 125 - 1);
+            imgPos809[3] = new Vector2(555, eyeTrackData.ImageHeight - 302 - 1);
+
+            // Get world-space marker positions at frame 809 (1688)
+            bodyAnimationNorman.Apply(809, AnimationLayerMode.Override);
+            timeline.GetLayer("Environment").Animations[0].Animation.Apply(809, AnimationLayerMode.Override);
+            timeline.GetLayer("Environment").Animations[1].Animation.Apply(809, AnimationLayerMode.Override);
+
+            Vector3[] worldPos809 = new Vector3[4];
+            worldPos809[0] = head.InverseTransformPoint(chairLL.transform.position);
+            worldPos809[1] = head.InverseTransformPoint(chairUL.transform.position);
+            worldPos809[2] = head.InverseTransformPoint(chairUR.transform.position);
+            worldPos809[3] = head.InverseTransformPoint(chairLR.transform.position);
+
+            // Get image-space marker positions at frame 73 (952)
+            Vector2[] imgPos73 = new Vector2[4];
+            imgPos73[0] = new Vector2(375, eyeTrackData.ImageHeight - 288 - 1);
+            imgPos73[1] = new Vector2(299, eyeTrackData.ImageHeight - 93 - 1);
+            imgPos73[2] = new Vector2(535, eyeTrackData.ImageHeight - 11 - 1);
+            imgPos73[3] = new Vector2(597, eyeTrackData.ImageHeight - 214 - 1);
+
+            // Get world-space marker positions at frame 73 (952)
+            bodyAnimationNorman.Apply(73, AnimationLayerMode.Override);
+            timeline.GetLayer("Environment").Animations[0].Animation.Apply(73, AnimationLayerMode.Override);
+            timeline.GetLayer("Environment").Animations[1].Animation.Apply(73, AnimationLayerMode.Override);
+            Vector3[] worldPos73 = new Vector3[4];
+            worldPos73[0] = head.InverseTransformPoint(chairLL.transform.position);
+            worldPos73[1] = head.InverseTransformPoint(chairUL.transform.position);
+            worldPos73[2] = head.InverseTransformPoint(chairUR.transform.position);
+            worldPos73[3] = head.InverseTransformPoint(chairLR.transform.position);
+
+            // Get image-space marker positions at frame 380 (1259)
+            Vector2[] imgPos380 = new Vector2[5];
+            imgPos380[0] = new Vector2(206, eyeTrackData.ImageHeight - 452 - 1);
+            imgPos380[1] = new Vector2(174, eyeTrackData.ImageHeight - 388 - 1);
+            imgPos380[2] = new Vector2(253, eyeTrackData.ImageHeight - 358 - 1);
+            imgPos380[3] = new Vector2(281, eyeTrackData.ImageHeight - 419 - 1);
+            imgPos380[4] = new Vector2(245, eyeTrackData.ImageHeight - 436 - 1);
+
+            // Get world-space marker positions at frame 380 (1259)
+            bodyAnimationNorman.Apply(380, AnimationLayerMode.Override);
+            timeline.GetLayer("Environment").Animations[0].Animation.Apply(380, AnimationLayerMode.Override);
+            timeline.GetLayer("Environment").Animations[1].Animation.Apply(380, AnimationLayerMode.Override);
+            Vector3[] worldPos380 = new Vector3[5];
+            worldPos380[0] = head.InverseTransformPoint(dannyLL.transform.position);
+            worldPos380[1] = head.InverseTransformPoint(dannyUL.transform.position);
+            worldPos380[2] = head.InverseTransformPoint(dannyUR.transform.position);
+            worldPos380[3] = head.InverseTransformPoint(dannyLR.transform.position);
+            worldPos380[4] = head.InverseTransformPoint(dannyLM.transform.position);
+
+            // Calibrate eye tracker camera
+            var cameraModel = new CameraModel();
+            var matCamera = new Matrix3x3();
+            matCamera.m00 = 1.1087157e+003f;
+            matCamera.m01 = 0f;
+            matCamera.m02 = 6.395e+002f;
+            matCamera.m10 = 0f;
+            matCamera.m11 = 1.1087157e+003f;
+            matCamera.m12 = 4.795e+002f;
+            matCamera.m20 = 0f;
+            matCamera.m21 = 0f;
+            matCamera.m22 = 1f;
+            var distCoeffs = new float[5];
+            distCoeffs[0] = 8.0114708e-002f;
+            distCoeffs[1] = -7.9709385e-001f;
+            distCoeffs[2] = 0f;
+            distCoeffs[3] = 0f;
+            distCoeffs[4] = 1.4157773e+000f;
+            cameraModel.SetIntrinsics(matCamera, distCoeffs);
+            cameraModel.InitOpenCV(worldPos809, imgPos809);
+
+            // Test calibration
+            Vector2[] estImgPos73 = new Vector2[4];
+            estImgPos73[0] = cameraModel.GetImagePosition(worldPos73[0]);
+            estImgPos73[1] = cameraModel.GetImagePosition(worldPos73[1]);
+            estImgPos73[2] = cameraModel.GetImagePosition(worldPos73[2]);
+            estImgPos73[3] = cameraModel.GetImagePosition(worldPos73[3]);
+            Vector2[] estImgPos380 = new Vector2[5];
+            estImgPos380[0] = cameraModel.GetImagePosition(worldPos380[0]);
+            estImgPos380[1] = cameraModel.GetImagePosition(worldPos380[1]);
+            estImgPos380[2] = cameraModel.GetImagePosition(worldPos380[2]);
+            estImgPos380[3] = cameraModel.GetImagePosition(worldPos380[3]);
+            estImgPos380[4] = cameraModel.GetImagePosition(worldPos380[4]);
+
+            // Print test results
+            Debug.Log("FRAME 73 (952):");
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos73[0].x, imgPos73[0].y, estImgPos73[0].x, estImgPos73[0].y));
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos73[1].x, imgPos73[1].y, estImgPos73[1].x, estImgPos73[1].y));
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos73[2].x, imgPos73[2].y, estImgPos73[2].x, estImgPos73[2].y));
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos73[3].x, imgPos73[3].y, estImgPos73[3].x, estImgPos73[3].y));
+            Debug.Log("FRAME 380 (1259):");
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos380[0].x, imgPos380[0].y, estImgPos380[0].x, estImgPos380[0].y));
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos380[1].x, imgPos380[1].y, estImgPos380[1].x, estImgPos380[1].y));
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos380[2].x, imgPos380[2].y, estImgPos380[2].x, estImgPos380[2].y));
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos380[3].x, imgPos380[3].y, estImgPos380[3].x, estImgPos380[3].y));
+            Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
+                imgPos380[4].x, imgPos380[4].y, estImgPos380[4].x, estImgPos380[4].y));*/
+            
+            /*var tableSpots = GameObject.FindGameObjectsWithTag("GazeTarget");
+            var leftHandSpot = tableSpots.FirstOrDefault(obj => obj.name == "LeftHandSpot");
+            var rightandSpot = tableSpots.FirstOrDefault(obj => obj.name == "RightHandSpot");
+            var midTarget = tableSpots.FirstOrDefault(obj => obj.name == "MidTarget");
+            var rightTarget = tableSpots.FirstOrDefault(obj => obj.name == "RightTarget");
+            var leftTarget = tableSpots.FirstOrDefault(obj => obj.name == "LeftTarget");
+
+            // Load eye tracking data
+            var eyeTrackData = new EyeTrackData(testScenes.modelNormanNew, bodyAnimationNorman.AnimationClip);
+
+            // Get ground-truth eye directions at frame 277 (104)
+            var vle = eyeTrackData.Samples[277].lEyeDirection;
+            var vre = eyeTrackData.Samples[277].rEyeDirection;
+
+            // Get eye tracker bone space eye directions at frame 277 (104)
+            bodyAnimationNorman.Apply(104, AnimationLayerMode.Override);
+            var eyeTrackerBone = eyeTrackData.EyeTrackerBone;
+            var ule = lEye.InverseTransformDirection((rightTarget.transform.position - lEye.position).normalized);
+            var ure = rEye.InverseTransformDirection((rightTarget.transform.position - rEye.position).normalized);
+
+            // Compute aligning rotations
+            var qle = Quaternion.FromToRotation(ule, vle);
+            var qre = Quaternion.FromToRotation(ure, vre);
+
+            Debug.Log(string.Format("qle at 104: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
+            Debug.Log(string.Format("qre at 104: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));
+            
+            // Get ground-truth eye directions at frame 302 (129)
+            vle = eyeTrackData.Samples[302].lEyeDirection;
+            vre = eyeTrackData.Samples[302].rEyeDirection;
+
+            // Get eye tracker bone space eye directions at frame 302 (129)
+            bodyAnimationNorman.Apply(129, AnimationLayerMode.Override);
+            ule = lEye.InverseTransformDirection((leftTarget.transform.position - lEye.position).normalized);
+            ure = rEye.InverseTransformDirection((leftTarget.transform.position - rEye.position).normalized);
+
+            // Compute aligning rotations
+            qle = Quaternion.FromToRotation(ule, vle);
+            qre = Quaternion.FromToRotation(ure, vre);
+
+            Debug.Log(string.Format("qle at 129: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
+            Debug.Log(string.Format("qre at 129: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));
+
+            // Get ground-truth eye directions at frame 332 (159)
+            vle = eyeTrackData.Samples[332].lEyeDirection;
+            vre = eyeTrackData.Samples[332].rEyeDirection;
+
+            // Get eye tracker bone space eye directions at frame 332 (159)
+            bodyAnimationNorman.Apply(159, AnimationLayerMode.Override);
+            ule = lEye.InverseTransformDirection((midTarget.transform.position - lEye.position).normalized);
+            ure = rEye.InverseTransformDirection((midTarget.transform.position - rEye.position).normalized);
+
+            // Compute aligning rotations
+            qle = Quaternion.FromToRotation(ule, vle);
+            qre = Quaternion.FromToRotation(ure, vre);
+
+            Debug.Log(string.Format("qle at 159: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
+            Debug.Log(string.Format("qre at 159: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));*/
+            //
         }
         SceneView.RepaintAll();
     }
@@ -473,6 +770,24 @@ public class LEAPMenu
         AnimationManager.LoadExampleScene("EyeTrackMocapTest1-1");
     }
 
+    [MenuItem("LEAP/Scenes/StackBoxes", true)]
+    private static bool ValidateTestStackBoxes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StackBoxes", false)]
+    private static void TestStackBoxes()
+    {
+        AnimationManager.LoadExampleScene("StackBoxes");
+    }
+
     [MenuItem("LEAP/Scenes/WindowWashingNew", true)]
     private static bool ValidateTestWindowWashingNew()
     {
@@ -491,8 +806,8 @@ public class LEAPMenu
         AnimationManager.LoadExampleScene("WindowWashingNew");
     }
 
-    [MenuItem("LEAP/Scenes/StackBoxes", true)]
-    private static bool ValidateTestStackBoxes()
+    [MenuItem("LEAP/Scenes/WalkConesNew", true)]
+    private static bool ValidateTestWalkConesNew()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         if (wnd.Timeline == null)
@@ -503,10 +818,28 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenes/StackBoxes", false)]
-    private static void TestStackBoxes()
+    [MenuItem("LEAP/Scenes/WalkConesNew", false)]
+    private static void TestWalkConesNew()
     {
-        AnimationManager.LoadExampleScene("StackBoxes");
+        AnimationManager.LoadExampleScene("WalkConesNew");
+    }
+
+    [MenuItem("LEAP/Scenes/WaitForBusNew", true)]
+    private static bool ValidateTestWaitForBusNew()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/WaitForBusNew", false)]
+    private static void TestWaitForBusNew()
+    {
+        AnimationManager.LoadExampleScene("WaitForBusNew");
     }
 
     /// <summary>

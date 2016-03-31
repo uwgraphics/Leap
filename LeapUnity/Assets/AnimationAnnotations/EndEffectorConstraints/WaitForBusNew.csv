@@ -1,0 +1,2 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ManipulatedObjectHandle,ManipulationEndFrame
+LWristBone,0,0,true,null,WatchHandle,1323

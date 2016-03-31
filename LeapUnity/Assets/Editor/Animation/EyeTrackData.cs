@@ -91,6 +91,37 @@ public struct EyeTrackEvent
 public class EyeTrackData
 {
     /// <summary>
+    /// Default eye tracker camera model with precomputed intrinsics.
+    /// Should work for SMI eye tracking glasses.
+    /// </summary>
+    public static CameraModel DefaultCameraModel
+    {
+        get
+        {
+            var camModel = new CameraModel();
+            var matCamera = new Matrix3x3();
+            matCamera.m00 = 1.1087157e+003f;
+            matCamera.m01 = 0f;
+            matCamera.m02 = 6.395e+002f;
+            matCamera.m10 = 0f;
+            matCamera.m11 = 1.1087157e+003f;
+            matCamera.m12 = 4.795e+002f;
+            matCamera.m20 = 0f;
+            matCamera.m21 = 0f;
+            matCamera.m22 = 1f;
+            var distCoeffs = new float[5];
+            distCoeffs[0] = 8.0114708e-002f;
+            distCoeffs[1] = -7.9709385e-001f;
+            distCoeffs[2] = 0f;
+            distCoeffs[3] = 0f;
+            distCoeffs[4] = 1.4157773e+000f;
+            camModel.SetIntrinsics(matCamera, distCoeffs);
+
+            return camModel;
+        }
+    }
+
+    /// <summary>
     /// Character model.
     /// </summary>
     public GameObject Model
@@ -165,6 +196,24 @@ public class EyeTrackData
     }
 
     /// <summary>
+    /// Eye tracker camera calibration pattern width.
+    /// </summary>
+    public int CalibPatternWidth
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
+    /// Eye tracker camera calibration pattern height.
+    /// </summary>
+    public int CalibPatternHeight
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
     /// Eye tracking samples.
     /// </summary>
     public IList<EyeTrackSample> Samples
@@ -200,6 +249,8 @@ public class EyeTrackData
         ImageHeight = 960;
         ImageXCorrection = 0;
         ImageYCorrection = 0;
+        CalibPatternWidth = 9;
+        CalibPatternHeight = 6;
 
         _LoadParams();
         _LoadSamples();
@@ -254,6 +305,8 @@ public class EyeTrackData
         paramFile.AddParam("imageHeight", typeof(int));
         paramFile.AddParam("imageXCorrection", typeof(int));
         paramFile.AddParam("imageYCorrection", typeof(int));
+        paramFile.AddParam("calibPatternWidth", typeof(int));
+        paramFile.AddParam("calibPatternHeight", typeof(int));
 
         // Read parameter values
         paramFile.ReadFromFile(path);
@@ -262,6 +315,8 @@ public class EyeTrackData
         ImageHeight = paramFile.HasValue("imageHeight") ? paramFile.GetValue<int>("imageHeight") : ImageHeight;
         ImageXCorrection = paramFile.HasValue("imageXCorrection") ? paramFile.GetValue<int>("imageXCorrection") : ImageXCorrection;
         ImageYCorrection = paramFile.HasValue("imageYCorrection") ? paramFile.GetValue<int>("imageYCorrection") : ImageYCorrection;
+        CalibPatternWidth = paramFile.HasValue("calibPatternWidth") ? paramFile.GetValue<int>("calibPatternWidth") : CalibPatternWidth;
+        CalibPatternHeight = paramFile.HasValue("calibPatternHeight") ? paramFile.GetValue<int>("calibPatternHeight") : CalibPatternHeight;
     }
 
     // Load eye tracking samples for the current animation clip
