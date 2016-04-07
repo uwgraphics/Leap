@@ -9,8 +9,9 @@ using System.Collections.Generic;
 public sealed class EnvironmentController : MonoBehaviour
 {
     private List<GameObject> _manipulatedObjects = new List<GameObject>();
-    private Dictionary<GameObject, Vector3> _initObjPositions = new Dictionary<GameObject,Vector3>();
-    private Dictionary<GameObject, Quaternion> _initObjRotations = new Dictionary<GameObject,Quaternion>();
+    private List<Camera> _cameras = new List<Camera>();
+    private Dictionary<GameObject, Vector3> _initObjPositions = new Dictionary<GameObject, Vector3>();
+    private Dictionary<GameObject, Quaternion> _initObjRotations = new Dictionary<GameObject, Quaternion>();
 
     /// <summary>
     /// Root environment object.
@@ -27,6 +28,14 @@ public sealed class EnvironmentController : MonoBehaviour
     public IList<GameObject> ManipulatedObjects
     {
         get { return _manipulatedObjects.AsReadOnly(); }
+    }
+
+    /// <summary>
+    /// List of cameras in the environment.
+    /// </summary>
+    public IList<Camera> Cameras
+    {
+        get { return _cameras.AsReadOnly(); }
     }
 
     /// <summary>
@@ -47,12 +56,19 @@ public sealed class EnvironmentController : MonoBehaviour
             obj.transform.localPosition = _initObjPositions[obj];
             obj.transform.localRotation = _initObjRotations[obj];
         }
+
+        foreach (var cam in _cameras)
+        {
+            cam.gameObject.transform.localPosition = _initObjPositions[cam.gameObject];
+            cam.gameObject.transform.localRotation = _initObjRotations[cam.gameObject];
+        }
     }
 
     private void _InitObjects()
     {
         RootObject = gameObject;
         _manipulatedObjects.Clear();
+        _cameras.Clear();
         _initObjPositions.Clear();
         _initObjRotations.Clear();
 
@@ -64,6 +80,12 @@ public sealed class EnvironmentController : MonoBehaviour
         if (obj.tag == "ManipulatedObject")
         {
             _manipulatedObjects.Add(obj);
+            _initObjPositions[obj] = obj.transform.localPosition;
+            _initObjRotations[obj] = obj.transform.localRotation;
+        }
+        else if (obj.tag == "MainCamera")
+        {
+            _cameras.Add(obj.camera);
             _initObjPositions[obj] = obj.transform.localPosition;
             _initObjRotations[obj] = obj.transform.localRotation;
         }

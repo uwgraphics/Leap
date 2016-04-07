@@ -611,6 +611,7 @@ public class AnimationTimeline
 
         private List<BakedAnimationContainer> _animationContainers = new List<BakedAnimationContainer>();
         private List<BakedAnimationContainer> _manipulatedObjectAnimationContainers = new List<BakedAnimationContainer>();
+        private List<BakedAnimationContainer> _cameraAnimationContainers = new List<BakedAnimationContainer>();
 
         /// <summary>
         /// Constructor.
@@ -628,8 +629,8 @@ public class AnimationTimeline
             }
 
             // Create baked animation containers for environment objects
-            var manipulatedObjects = timeline.OwningManager.Environment.GetComponent<EnvironmentController>().ManipulatedObjects;
-            foreach (var manipulatedObject in manipulatedObjects)
+            var envController = timeline.OwningManager.Environment.GetComponent<EnvironmentController>();
+            foreach (var manipulatedObject in envController.ManipulatedObjects)
             {
                 _manipulatedObjectAnimationContainers.Add(
                     new BakedAnimationContainer(manipulatedObject, this)
@@ -1077,7 +1078,7 @@ public class AnimationTimeline
             throw new Exception(string.Format("There is no layer named {0}", layerName));
         }
 
-        // Ensure character model for this animation instance has been added to this timeline
+        // Ensure character model has been added to the owning animation manager
         if (!OwningManager.Models.Any(m => m == animation.Model))
         {
             throw new Exception(string.Format("Character model {0} for animation {1} not defined on the current timeline",
@@ -1292,16 +1293,19 @@ public class AnimationTimeline
     /// <param name="animation">Animation instance</param>
     /// <param name="startFrame">Animation start frame on the timeline</param>
     /// <returns>Animation instance ID</returns>
-    public int AddManipulatedObjectAnimation(string layerName, AnimationClipInstance animation, int startFrame = 0)
+    public int AddEnvironmentAnimation(string layerName, AnimationClipInstance animation, int startFrame = 0)
     {
         if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
         {
             throw new Exception(string.Format("There is no layer named {0}", layerName));
         }
 
-        // Ensure model for this animation instance has been added to this timeline
-        if (OwningManager.Environment == null ||
-            !OwningManager.Environment.GetComponent<EnvironmentController>().ManipulatedObjects.Any(obj => obj == animation.Model))
+        // Ensure environment model has been added to the owning animation manager
+        var envController = OwningManager.Environment != null ?
+            OwningManager.Environment.GetComponent<EnvironmentController>() : null;
+        if (envController == null ||
+            !envController.ManipulatedObjects.Any(obj => obj == animation.Model) &&
+            !envController.Cameras.Any(cam => cam.gameObject == animation.Model))
         {
             throw new Exception(string.Format("Environment object {0} for animation {1} not found",
                 animation.Model.name, animation.AnimationClip.name));
@@ -1609,8 +1613,8 @@ public class AnimationTimeline
             _AddTime(deltaTime * TimeScale);
         }
 
-        if (!IsBaking &&
-            _activeBakedTimelineContainerIndex >= 0 && _activeBakedTimelineContainerIndex < _bakedTimelineContainers.Count)
+        if (!IsBaking && _activeBakedTimelineContainerIndex >= 0 &&
+            _activeBakedTimelineContainerIndex < _bakedTimelineContainers.Count)
         {
             // We have already evaluated and baked the animation timeline, so apply the baked animation
             ApplyBakedAnimation();
@@ -1626,6 +1630,15 @@ public class AnimationTimeline
     /// </summary>
     public void ApplyBakedAnimation()
     {
+        if (_activeBakedTimelineContainerIndex < 0 ||
+            _activeBakedTimelineContainerIndex >= _bakedTimelineContainers.Count)
+        {
+            throw new Exception("No baked animation on the timeline or baked animation inactive");
+        }
+
+        // Reset models
+        ResetModelsAndEnvironment();
+
         var bakedTimelineContainer = _bakedTimelineContainers[_activeBakedTimelineContainerIndex];
 
         // Apply each baked animation
@@ -1644,6 +1657,28 @@ public class AnimationTimeline
         foreach (var bakedAnimationContainer in bakedTimelineContainer.ManipulatedObjectAnimationContainers)
         {
             bakedAnimationContainer._AnimationInstance.Apply(CurrentFrame, AnimationLayerMode.Override);
+        }
+
+        // Apply camera animations
+        foreach (var layer in _layerContainers)
+        {
+            if (!layer.Active)
+                continue;
+
+            var animationsInLayer = layer.Animations;
+            foreach (var animation in animationsInLayer)
+            {
+                var model = animation.Animation.Model;
+                if (model.tag != "MainCamera")
+                    continue;
+
+                var curTimes = layer._GetOriginalTimes(model, CurrentTime);
+                if (_IsBetweenFrames(curTimes, animation.StartTime, animation.EndTime))
+                {
+                    // Apply the animation instance
+                    animation.Animation.Apply(curTimes - animation.StartTime, layer.LayerMode);
+                }
+            }
         }
     }
 

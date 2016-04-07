@@ -1,4 +1,4 @@
-frameOffset=741
+frameOffset=740
 imageWidth=1280
 imageHeight=960
 imageXCorrection=0

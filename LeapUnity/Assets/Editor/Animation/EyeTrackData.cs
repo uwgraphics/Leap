@@ -46,6 +46,31 @@ public struct EyeTrackSample
     }
 }
 
+public struct EyeTrackAlignPoint
+{
+    /// <summary>
+    /// Name of the gaze marker set.
+    /// </summary>
+    public string markerSet;
+
+    /// <summary>
+    /// Name of the marker within the set that is being looked at.
+    /// </summary>
+    public string marker;
+
+    /// <summary>
+    /// Align point frame index in eye tracking data.
+    /// </summary>
+    public int frame;
+
+    public EyeTrackAlignPoint(string markerSet, string marker, int frame)
+    {
+        this.markerSet = markerSet;
+        this.marker = marker;
+        this.frame = frame;
+    }
+}
+
 public struct EyeTrackEvent
 {
     /// <summary>
@@ -222,6 +247,14 @@ public class EyeTrackData
     }
 
     /// <summary>
+    /// Eye tracking alignment points.
+    /// </summary>
+    public IList<EyeTrackAlignPoint> AlignPoints
+    {
+        get { return _alignPoints.AsReadOnly(); }
+    }
+
+    /// <summary>
     /// Eye tracking events.
     /// </summary>
     public IList<EyeTrackEvent> Events
@@ -231,6 +264,7 @@ public class EyeTrackData
 
     // Eye tracking dataset:
     private List<EyeTrackSample> _samples = new List<EyeTrackSample>();
+    private List<EyeTrackAlignPoint> _alignPoints = new List<EyeTrackAlignPoint>();
     private List<EyeTrackEvent> _events = new List<EyeTrackEvent>();
 
     /// <summary>
@@ -254,6 +288,7 @@ public class EyeTrackData
 
         _LoadParams();
         _LoadSamples();
+        _LoadAlignPoints();
         _LoadEvents();
         _FillEventGaps();
         _RemoveBlinkEvents();
@@ -449,10 +484,75 @@ public class EyeTrackData
         }
     }
 
+    // Load eye tracking body motion alignment points for the current animation clip
+    private void _LoadAlignPoints()
+    {
+        // Get eye tracking align points file path
+        string path = Application.dataPath + LEAPCore.eyeTrackDataDirectory.Substring(
+               LEAPCore.eyeTrackDataDirectory.IndexOfAny(@"/\".ToCharArray()));
+        if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')
+            path += '/';
+        path += (BaseAnimationClip.name + "#Align.csv");
+
+        if (!File.Exists(path))
+        {
+            UnityEngine.Debug.LogError(string.Format("No eye tracking align points file at path " + path));
+            return;
+        }
+
+        Debug.Log("Loading eye tracking align points...");
+
+        try
+        {
+            var csvData = new CSVDataFile();
+
+            // Define sample attributes
+            csvData.AddAttribute("MarkerSet", typeof(string));
+            csvData.AddAttribute("Marker", typeof(string));
+            csvData.AddAttribute("Frame", typeof(int));
+
+            // Read align points
+            _alignPoints.Clear();
+            csvData.ReadFromFile(path);
+            for (int rowIndex = 0; rowIndex < csvData.NumberOfRows; ++rowIndex)
+            {
+                // Read align point
+                string markerSet = csvData[rowIndex].GetValue<string>(0);
+                string marker = csvData[rowIndex].GetValue<string>(1);
+                int frame = csvData[rowIndex].GetValue<int>(2);
+
+                if (marker != "UL" && marker != "UR" && marker != "LL" && marker != "LR")
+                {
+                    Debug.LogWarning(string.Format("Eye tracking align point specifies invalid marker tag " + marker));
+                    continue;
+                }
+                else
+                    marker = "GazeMarker" + marker;
+
+                if (frame < 0 || frame >= Samples.Count)
+                {
+                    Debug.LogWarning(string.Format("Eye tracking align point at {0} is outside of valid frame range", frame));
+                    continue;
+                }
+
+                // Add align point
+                var alignPoint = new EyeTrackAlignPoint(markerSet, marker, frame);
+                _alignPoints.Add(alignPoint);
+            }
+
+            Debug.Log(string.Format("Loaded {0} eye track align points", _alignPoints.Count));
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogError(string.Format("Unable to load eye tracking align points from asset file {0}: {1}",
+                path, ex.Message));
+        }
+    }
+
     // Load eye tracking events for the current animation clip
     private void _LoadEvents()
     {
-        // Get eye tracking samples file path
+        // Get eye tracking events file path
         string path = Application.dataPath + LEAPCore.eyeTrackDataDirectory.Substring(
                LEAPCore.eyeTrackDataDirectory.IndexOfAny(@"/\".ToCharArray()));
         if (path[path.Length - 1] != '/' && path[path.Length - 1] != '\\')

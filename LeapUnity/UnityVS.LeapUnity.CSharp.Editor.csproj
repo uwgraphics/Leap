@@ -137,6 +137,7 @@
     <Compile Include="Assets\Editor\AssetPipeline\LEAPModelPostprocessor.cs" />
     <Compile Include="Assets\Editor\AssetPipeline\LMCSerializer.cs" />
     <Compile Include="Assets\Editor\GUI\LEAPMenu.cs" />
+    <Compile Include="Assets\Editor\Scene-specific\EyeGazeEditTestSceneManager.cs" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coinsurance.txt" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_coverage.txt" />
     <None Include="Assets\Agents\JasminGazeAversion\audio\ivy\definitions\ivy_history.txt" />

@@ -1,5 +1,5 @@
-frameOffset=461
+frameOffset=460
 imageWidth=1280
 imageHeight=960
-imageXCorrection=0
+imageXCorrection=8
 imageYCorrection=0
