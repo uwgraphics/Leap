@@ -267,6 +267,16 @@ public class LEAPCore : MonoBehaviour
     public static string gazeVideoCaptureFormat = "mov";
 
     /// <summary>
+    /// Start frame for captured gaze video.
+    /// </summary>
+    public static int gazeVideoCaptureStartFrame = 0;
+
+    /// <summary>
+    /// End frame for captured gaze video.
+    /// </summary>
+    public static int gazeVideoCaptureEndFrame = -1;
+
+    /// <summary>
     /// If false, defined timewarps will not be applied to animations.
     /// </summary>
     public static bool timewarpsEnabled = false;
@@ -366,6 +376,9 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeInferenceHeadAlignPropensity", typeof(float));
         cfgFile.AddParam("gazeInferenceMaxColocatedTargetDistance", typeof(float));
         cfgFile.AddParam("gazeInferenceTaskRelevantObjectFilter", typeof(string[]));
+        cfgFile.AddParam("gazeVideoCaptureFormat", typeof(string));
+        cfgFile.AddParam("gazeVideoCaptureStartFrame", typeof(int));
+        cfgFile.AddParam("gazeVideoCaptureEndFrame", typeof(int));
         cfgFile.AddParam("timewarpsEnabled", typeof(bool));
         cfgFile.AddParam("timelineBakeRangeStart", typeof(int));
         cfgFile.AddParam("timelineBakeRangeEnd", typeof(int));
@@ -426,6 +439,12 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<float>("gazeInferenceMaxColocatedTargetDistance") : gazeInferenceMaxColocatedTargetDistance;
         gazeInferenceTaskRelevantObjectFilter = cfgFile.HasValue("gazeInferenceTaskRelevantObjectFilter") ?
             cfgFile.GetValue<string[]>("gazeInferenceTaskRelevantObjectFilter") : gazeInferenceTaskRelevantObjectFilter;
+        gazeVideoCaptureFormat = cfgFile.HasValue("gazeVideoCaptureFormat") ?
+            cfgFile.GetValue<string>("gazeVideoCaptureFormat") : gazeVideoCaptureFormat;
+        gazeVideoCaptureStartFrame = cfgFile.HasValue("gazeVideoCaptureStartFrame") ?
+            cfgFile.GetValue<int>("gazeVideoCaptureStartFrame") : gazeVideoCaptureStartFrame;
+        gazeVideoCaptureEndFrame = cfgFile.HasValue("gazeVideoCaptureEndFrame") ?
+            cfgFile.GetValue<int>("gazeVideoCaptureEndFrame") : gazeVideoCaptureEndFrame;
         timewarpsEnabled = cfgFile.HasValue("timewarpsEnabled") ?
             cfgFile.GetValue<bool>("timewarpsEnabled") : timewarpsEnabled;
         timelineBakeRangeStart = cfgFile.HasValue("timelineBakeRangeStart") ?

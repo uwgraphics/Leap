@@ -15,7 +15,7 @@ public static class EyeGazeEditTestSceneManager
     {
         var timeline = AnimationManager.Instance.Timeline;
         var gazeTargets = GameObject.FindGameObjectsWithTag("GazeTarget");
-        var testScenes = GameObject.Find("EyeGazeEditor").GetComponent<EyeGazeEditTestSceneData>();
+        var testScenes = GameObject.FindGameObjectWithTag("EyeGazeEditor").GetComponent<EyeGazeEditTestSceneData>();
         timeline.RemoveAllLayers();
         timeline.OwningManager.RemoveAllModels();
 
@@ -498,8 +498,12 @@ public static class EyeGazeEditTestSceneManager
             // Create environment animations
             var envController = testScenes.modelStealDiamondNewEnv.GetComponent<EnvironmentController>();
             var envAnimationGem = new AnimationClipInstance("StealDiamondNewGem",
-                envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "GemOnStand"),
+                envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Gem"),
                 false, false, false);
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "StealDiamondNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, envAnimationGem);
             var cameraAnimation = new AnimationClipInstance("StealDiamondNewCamera1",
                 envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStealDiamondNew1").gameObject,
@@ -534,6 +538,9 @@ public static class EyeGazeEditTestSceneManager
 
             // Create environment animations
             var envController = testScenes.modelWaitForBusNewEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("WaitForBusNewWatch", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Watch"),
+                    false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "WaitForBusNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
@@ -609,12 +616,13 @@ public static class EyeGazeEditTestSceneManager
     public static void CaptureVideo(string suffix = "")
     {
         var timeline = AnimationManager.Instance.Timeline;
-        var videoCapture = GameObject.FindGameObjectWithTag("ScenarioManager").GetComponent<VideoCapture>();
+        var videoCapture = GameObject.FindGameObjectWithTag("EyeGazeEditor").GetComponent<VideoCapture>();
         if (timeline.ActiveBakedTimeline == null)
         {
             Debug.LogError("No baked animation on the timeline or baked animation inactive");
             return;
         }
+        var envController = timeline.OwningManager.Environment.GetComponent<EnvironmentController>();
 
         // Create screenshot texture
         var rtScreen = new RenderTexture(Screen.width, Screen.height, 24);
@@ -622,9 +630,12 @@ public static class EyeGazeEditTestSceneManager
         var texScreen = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
 
         // Advance through the animation and capture a sceenshot at each frame
-        var envController = timeline.OwningManager.Environment.GetComponent<EnvironmentController>();
+
+        int startFrame = Mathf.Clamp(LEAPCore.gazeVideoCaptureStartFrame, 0, timeline.FrameLength - 1);
+        int endFrame = LEAPCore.gazeVideoCaptureEndFrame < 0 ? timeline.FrameLength - 1 :
+            Mathf.Clamp(LEAPCore.gazeVideoCaptureEndFrame, startFrame, timeline.FrameLength - 1);
         videoCapture.Start();
-        for (int frameIndex = 0; frameIndex < timeline.FrameLength; ++frameIndex)
+        for (int frameIndex = startFrame; frameIndex <= endFrame; ++frameIndex)
         {
             timeline.GoToFrame(frameIndex);
             timeline.ApplyBakedAnimation();
@@ -651,7 +662,7 @@ public static class EyeGazeEditTestSceneManager
 
             // Save screenshot to file
             var data = texScreen.EncodeToPNG();
-            string path = string.Format(videoCapture.videoCaptureDirectory + "frame{0:D5}.png", frameIndex + 1);
+            string path = string.Format(videoCapture.videoCaptureDirectory + "frame{0:D5}.png", frameIndex + 1 - startFrame);
             File.WriteAllBytes(path, data);
         }
 

@@ -564,10 +564,11 @@ public class EyeGazeTargetInferenceModel
         {
             if (envModel.renderer != null)
             {
+                bool isFiltered = LEAPCore.gazeInferenceTaskRelevantObjectFilter.Any(on =>
+                    on == envModel.name || on == envModel.transform.parent.name);
                 int isTaskRelevant = (envModel.tag == "ManipulatedObject" || envModel.tag == "GazeTarget" ||
                     envModel.transform.parent.tag == "ManipulatedObject" || envModel.transform.parent.tag == "GazeTarget")
-                    && !LEAPCore.gazeInferenceTaskRelevantObjectFilter.Any(on => on == envModel.name || on == envModel.transform.parent.name)
-                    ? 1 : 0;
+                    && !isFiltered ? 1 : 0;
                 envModel.renderer.material.SetInt("_IsTaskRelevant", isTaskRelevant);
             }
         }

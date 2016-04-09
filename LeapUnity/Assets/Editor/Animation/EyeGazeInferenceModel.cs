@@ -589,8 +589,7 @@ public class EyeGazeInferenceModel
             GameObject marker = null;
             if (alignPoint.markerSet == "null")
             {
-                marker = GameObject.FindGameObjectsWithTag(alignPoint.marker)
-                    .FirstOrDefault(m => m.transform.parent.tag == "ManipulatedObject");
+                marker = GameObject.FindGameObjectWithTag(alignPoint.marker);
             }
             else
             {
