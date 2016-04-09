@@ -1,0 +1,1 @@
+ffmpeg -y -r 30 -i ./VideoCapture/frame%%05d.png -r 30 -c:v libxvid -qscale:v 2 -an %1.mov

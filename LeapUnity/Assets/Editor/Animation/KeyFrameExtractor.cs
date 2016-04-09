@@ -293,7 +293,7 @@ public class KeyFrameExtractor
         float[,] pBones = new float[_bones.Length, _instance.FrameLength];
         float[,] pEndEff = new float[_endEffectors.Length, _instance.FrameLength];
         _ComputeBoneProbabilities(_bones, _instance, anRoot, anBones, pRoot, pBones);
-        _ComputeEndEffectorProbabilities(_bones, _instance, pEndEff);
+        _ComputeEndEffectorProbabilities(_endEffectors, _instance, pEndEff);
 
         // Compute global probability signal
         float[] p = new float[_instance.FrameLength];

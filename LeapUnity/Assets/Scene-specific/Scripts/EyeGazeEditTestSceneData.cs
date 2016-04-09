@@ -10,6 +10,7 @@ public class EyeGazeEditTestSceneData : MonoBehaviour
     public GameObject modelNormanette = null;
     public GameObject modelRoman = null;
     public GameObject modelNormanNew = null;
+    public GameObject modelRomanTall = null;
     public GameObject modelTestExpressiveGazeEnv = null;
     public GameObject modelWindowWashingEnv = null;
     public GameObject modelPassSodaEnv = null;
@@ -21,7 +22,10 @@ public class EyeGazeEditTestSceneData : MonoBehaviour
     public GameObject modelStackBoxesEnv = null;
     public GameObject modelWindowWashingNewEnv = null;
     public GameObject modelWalkConesNewEnv = null;
+    public GameObject modelBookShelfNewEnv = null;
+    public GameObject modelStealDiamondNewEnv = null;
     public GameObject modelWaitForBusNewEnv = null;
+    public GameObject modelChatWithFriendEnv = null;
     public GameObject modelKinect = null;
     public GameObject modelEyeTrackMocapTest1Env = null;
 }

@@ -1,0 +1,209 @@
+fileFormatVersion: 2
+guid: c2e832e6dfe9d984481e88bd5724bceb
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: B_Left
+    100002: B_Left 1
+    100004: B_Middle
+    100006: B_Right
+    100008: B_Right 1
+    100010: Book_Shelf_1_TRC_01_MARS
+    100012: Book_Shelf_1_TRC_02_MARS
+    100014: Book_Shelf_1_TRC_03_MARS
+    100016: //RootNode
+    100018: Bottom_Left
+    100020: Bottom_ML
+    100022: Bottom_MR
+    100024: Bottom_Right
+    100026: Top_Left
+    100028: Top_Left 1
+    100030: Top_Left 2
+    100032: Top_Right
+    100034: Top_Right 1
+    100036: Top_Right 2
+    400000: B_Left
+    400002: B_Left 1
+    400004: B_Middle
+    400006: B_Right
+    400008: B_Right 1
+    400010: Book_Shelf_1_TRC_01_MARS
+    400012: Book_Shelf_1_TRC_02_MARS
+    400014: Book_Shelf_1_TRC_03_MARS
+    400016: //RootNode
+    400018: Bottom_Left
+    400020: Bottom_ML
+    400022: Bottom_MR
+    400024: Bottom_Right
+    400026: Top_Left
+    400028: Top_Left 1
+    400030: Top_Left 2
+    400032: Top_Right
+    400034: Top_Right 1
+    400036: Top_Right 2
+    2300000: B_Left
+    2300002: B_Left 1
+    2300004: B_Middle
+    2300006: B_Right
+    2300008: B_Right 1
+    2300010: Bottom_Left
+    2300012: Bottom_ML
+    2300014: Bottom_MR
+    2300016: Bottom_Right
+    2300018: Top_Left
+    2300020: Top_Left 1
+    2300022: Top_Left 2
+    2300024: Top_Right
+    2300026: Top_Right 1
+    2300028: Top_Right 2
+    3300000: B_Left
+    3300002: B_Left 1
+    3300004: B_Middle
+    3300006: B_Right
+    3300008: B_Right 1
+    3300010: Bottom_Left
+    3300012: Bottom_ML
+    3300014: Bottom_MR
+    3300016: Bottom_Right
+    3300018: Top_Left
+    3300020: Top_Left 1
+    3300022: Top_Left 2
+    3300024: Top_Right
+    3300026: Top_Right 1
+    3300028: Top_Right 2
+    4300000: Top_Right
+    4300002: Top_Left
+    4300004: B_Right
+    4300006: B_Left
+    4300008: Top_Right 1
+    4300010: Top_Left 1
+    4300012: B_Right 1
+    4300014: B_Middle
+    4300016: B_Left 1
+    4300018: Top_Left 2
+    4300020: Top_Right 2
+    4300022: Bottom_Left
+    4300024: Bottom_ML
+    4300026: Bottom_MR
+    4300028: Bottom_Right
+    7400000: BookShelfNewMarkers
+    9500000: //RootNode
+    11100000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: BookShelfNewMarkers
+      takeName: Take 001
+      firstFrame: 139
+      lastFrame: 2171
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Book_Shelf_1_TRC_01_MARS
+        weight: 1
+      - path: Book_Shelf_1_TRC_01_MARS/B_Left
+        weight: 1
+      - path: Book_Shelf_1_TRC_01_MARS/B_Right
+        weight: 1
+      - path: Book_Shelf_1_TRC_01_MARS/Top_Left
+        weight: 1
+      - path: Book_Shelf_1_TRC_01_MARS/Top_Right
+        weight: 1
+      - path: Book_Shelf_1_TRC_02_MARS
+        weight: 1
+      - path: Book_Shelf_1_TRC_02_MARS/B_Left 1
+        weight: 1
+      - path: Book_Shelf_1_TRC_02_MARS/B_Middle
+        weight: 1
+      - path: Book_Shelf_1_TRC_02_MARS/B_Right 1
+        weight: 1
+      - path: Book_Shelf_1_TRC_02_MARS/Top_Left 1
+        weight: 1
+      - path: Book_Shelf_1_TRC_02_MARS/Top_Right 1
+        weight: 1
+      - path: Book_Shelf_1_TRC_03_MARS
+        weight: 1
+      - path: Book_Shelf_1_TRC_03_MARS/Bottom_Left
+        weight: 1
+      - path: Book_Shelf_1_TRC_03_MARS/Bottom_ML
+        weight: 1
+      - path: Book_Shelf_1_TRC_03_MARS/Bottom_MR
+        weight: 1
+      - path: Book_Shelf_1_TRC_03_MARS/Bottom_Right
+        weight: 1
+      - path: Book_Shelf_1_TRC_03_MARS/Top_Left 2
+        weight: 1
+      - path: Book_Shelf_1_TRC_03_MARS/Top_Right 2
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  additionalBone: 0
+  userData: 

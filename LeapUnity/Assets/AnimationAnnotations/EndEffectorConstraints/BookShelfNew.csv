@@ -1,0 +1,4 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ManipulatedObjectHandle,ManipulationEndFrame
+RWristBone,271,587,true,Book2Handle,null,0
+RWristBone,920,1262,true,Book1Handle,null,0
+RWristBone,1597,1923,true,Book3Handle,null,0

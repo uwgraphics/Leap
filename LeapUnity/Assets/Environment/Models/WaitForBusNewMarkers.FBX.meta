@@ -22,6 +22,9 @@ ModelImporter:
     100032: Wait_For_Bus_1_TRC_02_MARS
     100034: Wait_For_Bus_1_TRC_03_MARS
     100036: //RootNode
+    100038: Wait_For_Bus_1_TRC_01_MARS2
+    100040: Wait_For_Bus_1_TRC_02_MARS1
+    100042: Wait_For_Bus_1_TRC_03_MARS1
     400000: B_Left
     400002: B_Left 1
     400004: B_Middle
@@ -41,6 +44,9 @@ ModelImporter:
     400032: Wait_For_Bus_1_TRC_02_MARS
     400034: Wait_For_Bus_1_TRC_03_MARS
     400036: //RootNode
+    400038: Wait_For_Bus_1_TRC_01_MARS2
+    400040: Wait_For_Bus_1_TRC_02_MARS1
+    400042: Wait_For_Bus_1_TRC_03_MARS1
     2300000: B_Left
     2300002: B_Left 1
     2300004: B_Middle

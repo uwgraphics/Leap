@@ -1,0 +1,5 @@
+frameOffset=586
+imageWidth=1280
+imageHeight=960
+imageXCorrection=11
+imageYCorrection=-6

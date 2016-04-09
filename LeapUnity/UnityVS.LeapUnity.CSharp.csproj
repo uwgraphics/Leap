@@ -7,16 +7,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{82D523C5-FDB7-AA01-284E-6FCBF9F7A7FC}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <AssemblyName>Assembly-CSharp</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -133,7 +131,6 @@
     <Compile Include="Assets\Scene-specific\Scripts\GazeAversion_Thinking.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\GazeAversion_Thoughtful.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\GazeAversion_Turntaking.cs" />
-    <Compile Include="Assets\Scene-specific\Scripts\GazeEditTestScenario.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\GazeExamples1.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\IvyStylizedGazeScenario.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\Jack_ChrisLectureScenario.cs" />
@@ -267,9 +264,18 @@
     <None Include="Assets\Agents\Shaders\TransparentCutoutDiffuse2Sided.shader" />
     <None Include="Assets\Agents\Shaders\TransparentDiffuse2Sided.shader" />
     <None Include="Assets\Agents\Shaders\VertexColorUnlit.shader" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\BookShelfNew#Events.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\BookShelfNew#Params.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\BookShelfNew#Samples.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\ChatWithFriend#Events.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\ChatWithFriend#Params.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\ChatWithFriend#Samples.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Events.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Params.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Samples.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\StealDiamondNew#Events.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\StealDiamondNew#Params.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\StealDiamondNew#Samples.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\WaitForBusNew#Events.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\WaitForBusNew#Params.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\WaitForBusNew#Samples.txt" />

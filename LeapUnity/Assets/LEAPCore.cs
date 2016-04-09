@@ -259,6 +259,14 @@ public class LEAPCore : MonoBehaviour
     public static string[] gazeInferenceTaskRelevantObjectFilter = new string[0];
 
     /// <summary>
+    /// Format used for gaze video capture. Supported formats:
+    /// mov: QuickTime mov / XviD
+    /// mp4: MP4 / h.264
+    /// wmv: Windows Media Video / msmpeg4
+    /// </summary>
+    public static string gazeVideoCaptureFormat = "mov";
+
+    /// <summary>
     /// If false, defined timewarps will not be applied to animations.
     /// </summary>
     public static bool timewarpsEnabled = false;

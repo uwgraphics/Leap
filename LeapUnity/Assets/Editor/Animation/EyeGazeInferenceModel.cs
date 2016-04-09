@@ -585,15 +585,25 @@ public class EyeGazeInferenceModel
         var markerSets = GameObject.FindGameObjectsWithTag("GazeMarkerSet");
         foreach (var alignPoint in eyeTrackData.AlignPoints)
         {
-            var markerSet = markerSets.FirstOrDefault(ms => ms.name == alignPoint.markerSet);
-            if (markerSet == null)
+            // Get marker for the current align point
+            GameObject marker = null;
+            if (alignPoint.markerSet == "null")
             {
-                Debug.LogWarning("Eye tracking align point specifies non-existent marker set " + alignPoint.markerSet);
-                continue;
+                marker = GameObject.FindGameObjectsWithTag(alignPoint.marker)
+                    .FirstOrDefault(m => m.transform.parent.tag == "ManipulatedObject");
+            }
+            else
+            {
+                var markerSet = markerSets.FirstOrDefault(ms => ms.name == alignPoint.markerSet);
+                if (markerSet == null)
+                {
+                    Debug.LogWarning("Eye tracking align point specifies non-existent marker set " + alignPoint.markerSet);
+                    continue;
+                }
+                marker = GameObject.FindGameObjectsWithTag(alignPoint.marker)
+                    .FirstOrDefault(m => m.transform.parent == markerSet.transform);
             }
 
-            var marker = GameObject.FindGameObjectsWithTag(alignPoint.marker)
-                .FirstOrDefault(m => m.transform.parent == markerSet.transform);
             if (marker == null)
             {
                 Debug.LogWarning("Eye tracking align point specifies non-existent marker " + alignPoint.marker);

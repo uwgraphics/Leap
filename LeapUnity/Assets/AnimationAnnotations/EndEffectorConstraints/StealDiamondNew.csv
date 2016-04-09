@@ -1,0 +1,3 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ManipulatedObjectHandle,ManipulationEndFrame
+LWristBone,354,456,true,GemLHandle,null,0
+RWristBone,354,456,true,GemRHandle,null,0

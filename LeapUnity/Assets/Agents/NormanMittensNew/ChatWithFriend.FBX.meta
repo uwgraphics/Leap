@@ -1,0 +1,462 @@
+fileFormatVersion: 2
+guid: 6620e827ebe7e6a44bd10ddc888df62e
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: Bone_Eye2_R
+    100002: Bone_Eye2_R 1
+    100004: Bone_Eye_L
+    100006: Bone_Eye_R
+    100008: Bone_Fingers_L
+    100010: Bone_Fingers_R
+    100012: Bone_Foot_L
+    100014: Bone_Foot_R
+    100016: Bone_FootNub_L
+    100018: Bone_FootNub_R
+    100020: Bone_Forearm_L
+    100022: Bone_Forearm_R
+    100024: Bone_Hand_L
+    100026: Bone_Hand_Nub_L
+    100028: Bone_Hand_Nub_R
+    100030: Bone_Hand_R
+    100032: Bone_Head
+    100034: Bone_Head_Nub
+    100036: Bone_Hips
+    100038: Bone_Hips_Nub
+    100040: Bone_LowerLeg_L
+    100042: Bone_LowerLeg_R
+    100044: Bone_Neck
+    100046: Bone_Shoulder_L
+    100048: Bone_Shoulder_R
+    100050: Bone_SpineA
+    100052: Bone_SpineB
+    100054: Bone_SpineC
+    100056: Bone_Thumb_L
+    100058: Bone_Thumb_Nub_L
+    100060: Bone_Thumb_Nub_R
+    100062: Bone_Thumb_R
+    100064: Bone_Toes_L
+    100066: Bone_Toes_R
+    100068: Bone_UpperArm_L
+    100070: Bone_UpperArm_R
+    100072: Bone_UpperLeg_L
+    100074: Bone_UpperLeg_R
+    100076: //RootNode
+    100078: Hand_L
+    100080: Hand_L001
+    100082: SpineA
+    100084: srfBind_Cn_Head
+    100086: srfBind_Cn_Neck
+    100088: srfBind_Cn_Nose
+    100090: srfBind_Cn_Pelvis
+    100092: srfBind_Cn_SpineB
+    100094: srfBind_Cn_SpineC
+    100096: srfBind_Lf_ArmA
+    100098: srfBind_Lf_ArmB
+    100100: srfBind_Lf_ArmC
+    100102: srfBind_Lf_ArmD
+    100104: srfBind_Lf_Ear
+    100106: srfBind_Lf_Eye
+    100108: srfBind_Lf_FootA
+    100110: srfBind_Lf_FootB
+    100112: srfBind_Lf_FootB 1
+    100114: srfBind_Lf_FootB 2
+    100116: srfBind_Lf_FootB 3
+    100118: srfBind_Lf_LegA
+    100120: srfBind_Lf_LegB
+    100122: srfBind_Lf_LegC
+    100124: srfBind_Lf_LegD
+    100126: srfBind_Rt_ArmA
+    100128: srfBind_Rt_ArmB
+    100130: srfBind_Rt_ArmC
+    100132: srfBind_Rt_ArmD
+    100134: srfBind_Rt_Ear
+    100136: srfBind_Rt_Eye
+    100138: srfBind_Rt_FootA
+    100140: srfBind_Rt_LegA
+    100142: srfBind_Rt_LegB
+    100144: srfBind_Rt_LegC
+    100146: srfBind_Rt_LegD
+    400000: Bone_Eye2_R
+    400002: Bone_Eye2_R 1
+    400004: Bone_Eye_L
+    400006: Bone_Eye_R
+    400008: Bone_Fingers_L
+    400010: Bone_Fingers_R
+    400012: Bone_Foot_L
+    400014: Bone_Foot_R
+    400016: Bone_FootNub_L
+    400018: Bone_FootNub_R
+    400020: Bone_Forearm_L
+    400022: Bone_Forearm_R
+    400024: Bone_Hand_L
+    400026: Bone_Hand_Nub_L
+    400028: Bone_Hand_Nub_R
+    400030: Bone_Hand_R
+    400032: Bone_Head
+    400034: Bone_Head_Nub
+    400036: Bone_Hips
+    400038: Bone_Hips_Nub
+    400040: Bone_LowerLeg_L
+    400042: Bone_LowerLeg_R
+    400044: Bone_Neck
+    400046: Bone_Shoulder_L
+    400048: Bone_Shoulder_R
+    400050: Bone_SpineA
+    400052: Bone_SpineB
+    400054: Bone_SpineC
+    400056: Bone_Thumb_L
+    400058: Bone_Thumb_Nub_L
+    400060: Bone_Thumb_Nub_R
+    400062: Bone_Thumb_R
+    400064: Bone_Toes_L
+    400066: Bone_Toes_R
+    400068: Bone_UpperArm_L
+    400070: Bone_UpperArm_R
+    400072: Bone_UpperLeg_L
+    400074: Bone_UpperLeg_R
+    400076: //RootNode
+    400078: Hand_L
+    400080: Hand_L001
+    400082: SpineA
+    400084: srfBind_Cn_Head
+    400086: srfBind_Cn_Neck
+    400088: srfBind_Cn_Nose
+    400090: srfBind_Cn_Pelvis
+    400092: srfBind_Cn_SpineB
+    400094: srfBind_Cn_SpineC
+    400096: srfBind_Lf_ArmA
+    400098: srfBind_Lf_ArmB
+    400100: srfBind_Lf_ArmC
+    400102: srfBind_Lf_ArmD
+    400104: srfBind_Lf_Ear
+    400106: srfBind_Lf_Eye
+    400108: srfBind_Lf_FootA
+    400110: srfBind_Lf_FootB
+    400112: srfBind_Lf_FootB 1
+    400114: srfBind_Lf_FootB 2
+    400116: srfBind_Lf_FootB 3
+    400118: srfBind_Lf_LegA
+    400120: srfBind_Lf_LegB
+    400122: srfBind_Lf_LegC
+    400124: srfBind_Lf_LegD
+    400126: srfBind_Rt_ArmA
+    400128: srfBind_Rt_ArmB
+    400130: srfBind_Rt_ArmC
+    400132: srfBind_Rt_ArmD
+    400134: srfBind_Rt_Ear
+    400136: srfBind_Rt_Eye
+    400138: srfBind_Rt_FootA
+    400140: srfBind_Rt_LegA
+    400142: srfBind_Rt_LegB
+    400144: srfBind_Rt_LegC
+    400146: srfBind_Rt_LegD
+    2300000: srfBind_Lf_Eye
+    2300002: srfBind_Rt_Eye
+    3300000: srfBind_Lf_Eye
+    3300002: srfBind_Rt_Eye
+    4300000: srfBind_Cn_Head
+    4300002: srfBind_Rt_Ear
+    4300004: srfBind_Lf_Ear
+    4300006: srfBind_Cn_Nose
+    4300008: srfBind_Cn_Pelvis
+    4300010: srfBind_Lf_LegA
+    4300012: srfBind_Lf_LegB
+    4300014: srfBind_Lf_LegC
+    4300016: srfBind_Lf_LegD
+    4300018: srfBind_Lf_FootA
+    4300020: srfBind_Lf_FootB
+    4300022: srfBind_Rt_LegA
+    4300024: srfBind_Rt_LegB
+    4300026: srfBind_Rt_LegC
+    4300028: srfBind_Rt_LegD
+    4300030: srfBind_Rt_FootA
+    4300032: srfBind_Lf_FootB 1
+    4300034: srfBind_Lf_FootB 3
+    4300036: srfBind_Lf_FootB 2
+    4300038: SpineA
+    4300040: srfBind_Cn_SpineB
+    4300042: srfBind_Rt_Eye
+    4300044: srfBind_Lf_Eye
+    4300046: srfBind_Cn_SpineC
+    4300048: srfBind_Lf_ArmA
+    4300050: srfBind_Lf_ArmB
+    4300052: srfBind_Lf_ArmC
+    4300054: srfBind_Lf_ArmD
+    4300056: Hand_L
+    4300058: srfBind_Cn_Neck
+    4300060: srfBind_Rt_ArmA
+    4300062: srfBind_Rt_ArmB
+    4300064: srfBind_Rt_ArmC
+    4300066: srfBind_Rt_ArmD
+    4300068: Hand_L001
+    7400000: ChatWithFriend
+    9500000: //RootNode
+    11100000: //RootNode
+    11400000: //RootNode
+    11400002: //RootNode
+    13700000: Hand_L
+    13700002: Hand_L001
+    13700004: SpineA
+    13700006: srfBind_Cn_Head
+    13700008: srfBind_Cn_Neck
+    13700010: srfBind_Cn_Nose
+    13700012: srfBind_Cn_Pelvis
+    13700014: srfBind_Cn_SpineB
+    13700016: srfBind_Cn_SpineC
+    13700018: srfBind_Lf_ArmA
+    13700020: srfBind_Lf_ArmB
+    13700022: srfBind_Lf_ArmC
+    13700024: srfBind_Lf_ArmD
+    13700026: srfBind_Lf_Ear
+    13700028: srfBind_Lf_FootA
+    13700030: srfBind_Lf_FootB
+    13700032: srfBind_Lf_FootB 1
+    13700034: srfBind_Lf_FootB 2
+    13700036: srfBind_Lf_FootB 3
+    13700038: srfBind_Lf_LegA
+    13700040: srfBind_Lf_LegB
+    13700042: srfBind_Lf_LegC
+    13700044: srfBind_Lf_LegD
+    13700046: srfBind_Rt_ArmA
+    13700048: srfBind_Rt_ArmB
+    13700050: srfBind_Rt_ArmC
+    13700052: srfBind_Rt_ArmD
+    13700054: srfBind_Rt_Ear
+    13700056: srfBind_Rt_FootA
+    13700058: srfBind_Rt_LegA
+    13700060: srfBind_Rt_LegB
+    13700062: srfBind_Rt_LegC
+    13700064: srfBind_Rt_LegD
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: ChatWithFriend
+      takeName: Take 001
+      firstFrame: 98
+      lastFrame: 1999
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Bone_Hips
+        weight: 1
+      - path: Bone_Hips/Bone_Hips_Nub
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck/Bone_Head
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck/Bone_Head/Bone_Eye_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck/Bone_Head/Bone_Eye_L/Bone_Eye2_R
+          1
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck/Bone_Head/Bone_Eye_L/srfBind_Lf_Eye
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck/Bone_Head/Bone_Eye_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck/Bone_Head/Bone_Eye_R/Bone_Eye2_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck/Bone_Head/Bone_Eye_R/srfBind_Rt_Eye
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Neck/Bone_Head/Bone_Head_Nub
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_L/Bone_UpperArm_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_L/Bone_UpperArm_L/Bone_Forearm_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_L/Bone_UpperArm_L/Bone_Forearm_L/Bone_Hand_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_L/Bone_UpperArm_L/Bone_Forearm_L/Bone_Hand_L/Bone_Fingers_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_L/Bone_UpperArm_L/Bone_Forearm_L/Bone_Hand_L/Bone_Fingers_L/Bone_Hand_Nub_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_L/Bone_UpperArm_L/Bone_Forearm_L/Bone_Hand_L/Bone_Thumb_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_L/Bone_UpperArm_L/Bone_Forearm_L/Bone_Hand_L/Bone_Thumb_L/Bone_Thumb_Nub_L
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_R/Bone_UpperArm_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_R/Bone_UpperArm_R/Bone_Forearm_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_R/Bone_UpperArm_R/Bone_Forearm_R/Bone_Hand_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_R/Bone_UpperArm_R/Bone_Forearm_R/Bone_Hand_R/Bone_Fingers_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_R/Bone_UpperArm_R/Bone_Forearm_R/Bone_Hand_R/Bone_Fingers_R/Bone_Hand_Nub_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_R/Bone_UpperArm_R/Bone_Forearm_R/Bone_Hand_R/Bone_Thumb_R
+        weight: 1
+      - path: Bone_Hips/Bone_SpineA/Bone_SpineB/Bone_SpineC/Bone_Shoulder_R/Bone_UpperArm_R/Bone_Forearm_R/Bone_Hand_R/Bone_Thumb_R/Bone_Thumb_Nub_R
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_L
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_L/Bone_LowerLeg_L
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_L/Bone_LowerLeg_L/Bone_Foot_L
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_L/Bone_LowerLeg_L/Bone_Foot_L/Bone_Toes_L
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_L/Bone_LowerLeg_L/Bone_Foot_L/Bone_Toes_L/Bone_FootNub_L
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_R
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_R/Bone_LowerLeg_R
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_R/Bone_LowerLeg_R/Bone_Foot_R
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_R/Bone_LowerLeg_R/Bone_Foot_R/Bone_Toes_R
+        weight: 1
+      - path: Bone_Hips/Bone_UpperLeg_R/Bone_LowerLeg_R/Bone_Foot_R/Bone_Toes_R/Bone_FootNub_R
+        weight: 1
+      - path: srfBind_Cn_Head
+        weight: 1
+      - path: srfBind_Cn_Head/srfBind_Cn_Nose
+        weight: 1
+      - path: srfBind_Cn_Head/srfBind_Lf_Ear
+        weight: 1
+      - path: srfBind_Cn_Head/srfBind_Rt_Ear
+        weight: 1
+      - path: srfBind_Cn_Pelvis
+        weight: 1
+      - path: srfBind_Cn_Pelvis/SpineA
+        weight: 1
+      - path: srfBind_Cn_Pelvis/SpineA/srfBind_Cn_SpineB
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD/srfBind_Lf_FootA
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Lf_LegA/srfBind_Lf_LegB/srfBind_Lf_LegC/srfBind_Lf_LegD/srfBind_Lf_FootA/srfBind_Lf_FootB
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
+          1
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
+          2
+        weight: 1
+      - path: srfBind_Cn_Pelvis/srfBind_Rt_LegA/srfBind_Rt_LegB/srfBind_Rt_LegC/srfBind_Rt_LegD/srfBind_Rt_FootA/srfBind_Lf_FootB
+          3
+        weight: 1
+      - path: srfBind_Cn_SpineC
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Cn_Neck
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Lf_ArmA
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC/srfBind_Lf_ArmD
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Lf_ArmA/srfBind_Lf_ArmB/srfBind_Lf_ArmC/srfBind_Lf_ArmD/Hand_L
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Rt_ArmA
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC/srfBind_Rt_ArmD
+        weight: 1
+      - path: srfBind_Cn_SpineC/srfBind_Rt_ArmA/srfBind_Rt_ArmB/srfBind_Rt_ArmC/srfBind_Rt_ArmD/Hand_L001
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  additionalBone: 0
+  userData: 

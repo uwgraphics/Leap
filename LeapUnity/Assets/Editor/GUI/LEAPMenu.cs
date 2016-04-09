@@ -563,6 +563,42 @@ public class LEAPMenu
         EyeGazeEditTestSceneManager.LoadExampleScene("WalkConesNew");
     }
 
+    [MenuItem("LEAP/Scenes/BookShelfNew", true)]
+    private static bool ValidateTestBookShelfNew()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/BookShelfNew", false)]
+    private static void TestBookShelfNew()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("BookShelfNew");
+    }
+
+    [MenuItem("LEAP/Scenes/StealDiamondNew", true)]
+    private static bool ValidateTestStealDiamondNew()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StealDiamondNew", false)]
+    private static void TestStealDiamondNew()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("StealDiamondNew");
+    }
+
     [MenuItem("LEAP/Scenes/WaitForBusNew", true)]
     private static bool ValidateTestWaitForBusNew()
     {
@@ -579,6 +615,42 @@ public class LEAPMenu
     private static void TestWaitForBusNew()
     {
         EyeGazeEditTestSceneManager.LoadExampleScene("WaitForBusNew");
+    }
+
+    [MenuItem("LEAP/Scenes/ChatWithFriend", true)]
+    private static bool ValidateTestChatWithFriend()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/ChatWithFriend", false)]
+    private static void TestChatWithFriend()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("ChatWithFriend");
+    }
+
+    [MenuItem("LEAP/Capture Video/[None]", true)]
+    private static bool ValidateCaptureVideo()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null || wnd.Timeline.ActiveBakedTimeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Capture Video/[None]", false)]
+    private static void CaptureVideo()
+    {
+        EyeGazeEditTestSceneManager.CaptureVideo();
     }
 
     [MenuItem("LEAP/Capture Video/Original", true)]
