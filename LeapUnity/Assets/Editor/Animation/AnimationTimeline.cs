@@ -1293,7 +1293,7 @@ public class AnimationTimeline
     /// <param name="animation">Animation instance</param>
     /// <param name="startFrame">Animation start frame on the timeline</param>
     /// <returns>Animation instance ID</returns>
-    public int AddEnvironmentAnimation(string layerName, AnimationClipInstance animation, int startFrame = 0)
+    public int AddEnvironmentAnimation(string layerName, AnimationInstance animation, int startFrame = 0)
     {
         if (!_layerContainers.Any(layerContainer => layerContainer.LayerName == layerName))
         {
@@ -1308,7 +1308,7 @@ public class AnimationTimeline
             !envController.Cameras.Any(cam => cam.gameObject == animation.Model))
         {
             throw new Exception(string.Format("Environment object {0} for animation {1} not found",
-                animation.Model.name, animation.AnimationClip.name));
+                animation.Model.name, animation.Name));
         }
 
         // Schedule the animation instance in the appropriate order (based on start frame)

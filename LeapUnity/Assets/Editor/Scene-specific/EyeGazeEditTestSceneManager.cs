@@ -56,7 +56,10 @@ public static class EyeGazeEditTestSceneManager
         timeline.AddLayer(AnimationLayerMode.Override, 10, LEAPCore.baseAnimationLayerName);
         timeline.GetLayer(LEAPCore.baseAnimationLayerName).isIKEndEffectorConstr = true;
         timeline.GetLayer(LEAPCore.baseAnimationLayerName).isBase = true;
-        timeline.AddLayer(AnimationLayerMode.Override, 15, LEAPCore.eyeGazeAnimationLayerName);
+        timeline.AddLayer(AnimationLayerMode.Override, 15, LEAPCore.cameraAnimationLayerName);
+        timeline.GetLayer(LEAPCore.cameraAnimationLayerName).isBase = false;
+        timeline.GetLayer(LEAPCore.cameraAnimationLayerName).isIKEndEffectorConstr = false;
+        timeline.AddLayer(AnimationLayerMode.Override, 20, LEAPCore.eyeGazeAnimationLayerName);
         timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).isBase = false;
         timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).isGaze = true;
 
@@ -435,6 +438,16 @@ public static class EyeGazeEditTestSceneManager
                 new AnimationClipInstance(
                     "WalkConesNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
+            /*var cameraAnimation = new AnimationClipInstance("WalkConesNewCamera",
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraWalkConesNew").gameObject,
+                false, false, false);
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);*/
+            var gazeController = testScenes.modelNormanNew.GetComponent<GazeController>();
+            var root = ModelUtil.FindBoneWithTag(testScenes.modelNormanNew.transform, "RootBone");
+            var cameraAnimation = new LookAtFrontInstance("WalkConesCamera",
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraWalkConesNew").gameObject,
+                bodyAnimationNorman.FrameLength, root, 7.6f, 5.2f, 3.2f); 
+            timeline.AddEnvironmentAnimation(LEAPCore.cameraAnimationLayerName, cameraAnimation);
 
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);

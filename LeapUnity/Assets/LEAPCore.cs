@@ -61,6 +61,11 @@ public class LEAPCore : MonoBehaviour
     public static string eyeGazeAnimationLayerName = "Gaze";
 
     /// <summary>
+    /// Name of the camera animation layer in the animation timeline.
+    /// </summary>
+    public static string cameraAnimationLayerName = "Camera";
+
+    /// <summary>
     /// Default baked animation timeline name.
     /// </summary>
     public static string defaultBakedTimelineName = "Edits";
