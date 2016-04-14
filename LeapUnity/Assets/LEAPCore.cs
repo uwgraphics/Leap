@@ -173,6 +173,12 @@ public class LEAPCore : MonoBehaviour
     public static bool printDetailedGazeControllerState = false;
 
     /// <summary>
+    /// Blend weight with which gaze controller animation is applied to the body.
+    /// </summary>
+    /// <remarks>Set this to less than 0 to prevent blend weight overriding</remarks>
+    public static float gazeBlendWeightOverride = -1f;
+
+    /// <summary>
     /// Maximum width of a cluster of local gaze shift key times corresponding to a single extracted key pose.
     /// </summary>
     public static float gazeInferenceKeyMaxClusterWidth = 0.5f;
@@ -262,6 +268,11 @@ public class LEAPCore : MonoBehaviour
     /// Names of objects that won't be considered as task-relevant during gaze target inference.
     /// </summary>
     public static string[] gazeInferenceTaskRelevantObjectFilter = new string[0];
+
+    /// <summary>
+    /// Threshold for matching gaze instances in ground-truth and inferred gaze.
+    /// </summary>
+    public static float gazeInferenceMatchThreshold = 0.8f;
 
     /// <summary>
     /// Format used for gaze video capture. Supported formats:
@@ -364,6 +375,7 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeConstraintActivationTime", typeof(float));
         cfgFile.AddParam("adjustGazeTargetForMovingBase", typeof(bool));
         cfgFile.AddParam("printDetailedGazeControllerState", typeof(bool));
+        cfgFile.AddParam("gazeBlendWeightOverride", typeof(float));
         cfgFile.AddParam("gazeInferenceKeyMaxClusterWidth", typeof(float));
         cfgFile.AddParam("gazeInferenceLowPassKernelSize", typeof(int));
         cfgFile.AddParam("gazeInferenceLogisticSlope", typeof(float));
@@ -381,6 +393,7 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeInferenceHeadAlignPropensity", typeof(float));
         cfgFile.AddParam("gazeInferenceMaxColocatedTargetDistance", typeof(float));
         cfgFile.AddParam("gazeInferenceTaskRelevantObjectFilter", typeof(string[]));
+        cfgFile.AddParam("gazeInferenceMatchThreshold", typeof(float));
         cfgFile.AddParam("gazeVideoCaptureFormat", typeof(string));
         cfgFile.AddParam("gazeVideoCaptureStartFrame", typeof(int));
         cfgFile.AddParam("gazeVideoCaptureEndFrame", typeof(int));
@@ -410,6 +423,8 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<bool>("adjustGazeTargetForMovingBase") : adjustGazeTargetForMovingBase;
         printDetailedGazeControllerState = cfgFile.HasValue("printDetailedGazeControllerState") ?
             cfgFile.GetValue<bool>("printDetailedGazeControllerState") : printDetailedGazeControllerState;
+        gazeBlendWeightOverride = cfgFile.HasValue("gazeBlendWeightOverride") ?
+            cfgFile.GetValue<float>("gazeBlendWeightOverride") : gazeBlendWeightOverride;
         gazeInferenceKeyMaxClusterWidth = cfgFile.HasValue("gazeInferenceKeyMaxClusterWidth") ?
             cfgFile.GetValue<float>("gazeInferenceKeyMaxClusterWidth") : gazeInferenceKeyMaxClusterWidth;
         gazeInferenceLowPassKernelSize = cfgFile.HasValue("gazeInferenceLowPassKernelSize") ?
@@ -444,6 +459,8 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<float>("gazeInferenceMaxColocatedTargetDistance") : gazeInferenceMaxColocatedTargetDistance;
         gazeInferenceTaskRelevantObjectFilter = cfgFile.HasValue("gazeInferenceTaskRelevantObjectFilter") ?
             cfgFile.GetValue<string[]>("gazeInferenceTaskRelevantObjectFilter") : gazeInferenceTaskRelevantObjectFilter;
+        gazeInferenceMatchThreshold = Mathf.Clamp01(cfgFile.HasValue("gazeInferenceMatchThreshold") ?
+            cfgFile.GetValue<float>("gazeInferenceMatchThreshold") : gazeInferenceMatchThreshold);
         gazeVideoCaptureFormat = cfgFile.HasValue("gazeVideoCaptureFormat") ?
             cfgFile.GetValue<string>("gazeVideoCaptureFormat") : gazeVideoCaptureFormat;
         gazeVideoCaptureStartFrame = cfgFile.HasValue("gazeVideoCaptureStartFrame") ?

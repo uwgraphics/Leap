@@ -556,6 +556,91 @@ public class EyeGazeInferenceModel
     }
 
     /// <summary>
+    /// Evaluate accuracy of gaze shift/fixation inference.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseInstanceId">Base animation instance ID</param>
+    public static void EvaluateInstances(AnimationTimeline timeline, int baseInstanceId)
+    {
+        var baseInstance = timeline.GetAnimation(baseInstanceId) as AnimationClipInstance;
+        var model = baseInstance.Model;
+        var gazeLayer = timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName);
+
+        Debug.Log("Evaluating gaze shift inference accuracy for " + baseInstance.Name + "...");
+
+        // Load ground-truth gaze shift annotations
+        string path = FileUtil.MakeFilePath(LEAPCore.eyeTrackDataDirectory, baseInstance.Name + "#GazeShifts.csv");
+        var data = new CSVDataFile();
+        data.AddAttribute("EventType", typeof(string));
+        data.AddAttribute("StartFrame", typeof(int));
+        data.AddAttribute("EndFrame", typeof(int));
+        data.ReadFromFile(path);
+        if (data.NumberOfRows <= 0)
+            // No ground-truth gaze shift data
+            return;
+
+        // Count accurately inferred gaze instances
+        int numInstances = 0;
+        int numCorrect = 0;
+        for (int rowIndex = 0; rowIndex < data.NumberOfRows; ++rowIndex)
+        {
+            string eventType = data[rowIndex].GetValue<string>(0);
+            if (eventType == "Other")
+                continue;
+            else
+                ++numInstances;
+
+            // Get gaze instance start and end frames
+            int startFrameIndex = data[rowIndex].GetValue<int>(1);
+            int endFrameIndex = baseInstance.FrameLength - 1;
+            for (int nextRowIndex = rowIndex + 1; nextRowIndex < data.NumberOfRows; ++nextRowIndex)
+            {
+                string nextEventType = data[nextRowIndex].GetValue<string>(0);
+                if (nextEventType == "GazeShift")
+                {
+                    int nextStartFrameIndex = data[nextRowIndex].GetValue<int>(1);
+                    endFrameIndex = nextStartFrameIndex - 1;
+                    break;
+                }
+            }
+
+            // Find match for current ground-truth gaze instance
+            bool matchFound = false;
+            foreach (var gazeInstance in gazeLayer.Animations)
+            {
+                int matchStartFrameIndex = Mathf.Max(startFrameIndex, gazeInstance.StartFrame);
+                int matchEndFrameIndex = Mathf.Min(endFrameIndex, gazeInstance.EndFrame);
+
+                if (matchEndFrameIndex >= matchStartFrameIndex)
+                {
+                    float matchGroundTruth = ((float)(matchEndFrameIndex - matchStartFrameIndex + 1)) /
+                        (endFrameIndex - startFrameIndex + 1);
+                    float matchInferred = ((float)(matchEndFrameIndex - matchStartFrameIndex + 1)) /
+                        (gazeInstance.EndFrame - gazeInstance.StartFrame + 1);
+
+                    if (matchGroundTruth >= LEAPCore.gazeInferenceMatchThreshold &&
+                        matchInferred >= LEAPCore.gazeInferenceMatchThreshold)
+                    {
+                        matchFound = true;
+                        Debug.Log(string.Format("{0} matches ground-truth gaze instance from {1} to {2}",
+                            gazeInstance.Animation.Name, startFrameIndex, endFrameIndex));
+                    }
+                }
+            }
+
+            if (matchFound)
+                ++numCorrect;
+            else
+                Debug.LogWarning(string.Format("No match for ground-truth gaze instance from {0} to {1}",
+                    startFrameIndex, endFrameIndex));
+        }
+
+        // Compute inference accuracy
+        float acc = ((float)numCorrect) / numInstances;
+        Debug.Log(string.Format("Gaze instances for {0} inferred with accuracy {1}%", baseInstance.Name, acc * 100f));
+    }
+
+    /// <summary>
     /// Evaluate accuracy of gaze target direction inference.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
@@ -573,7 +658,7 @@ public class EyeGazeInferenceModel
 
         // TODO: make sure we are applying base animation with gaze edits baked in
 
-        Debug.Log(string.Format("Evaluating target location inference accuracy for {0}...", model.name));
+        Debug.Log(string.Format("Evaluating gaze target direction inference accuracy for {0}...", baseInstance.Name));
 
         // Load eye tracking data
         var eyeTrackData = new EyeTrackData(model, baseInstance.AnimationClip);
@@ -659,256 +744,161 @@ public class EyeGazeInferenceModel
             var gazeDirectionError = QuaternionUtil.Angle(Quaternion.FromToRotation(de0, de1));
             outCsvData.AddData(gazeDirectionError);
         }
-        outCsvData.WriteToFile("../Matlab/EyeGazeInference/targetDirectionAccuracy#" + baseInstance.Name + ".csv");
+        outCsvData.WriteToFile("../Matlab/EyeGazeInference/gazeDirectionAccuracy#" + baseInstance.Name + ".csv");
+    }
 
-        /*Debug.Log("Getting marker positions...");
-            
-        // Get marker objects
-        var markerSets = GameObject.FindGameObjectsWithTag("GazeMarkerSet");
-        var markersUL = GameObject.FindGameObjectsWithTag("GazeMarkerUL");
-        var markersUR = GameObject.FindGameObjectsWithTag("GazeMarkerUR");
-        var markersLR = GameObject.FindGameObjectsWithTag("GazeMarkerLR");
-        var markersLL = GameObject.FindGameObjectsWithTag("GazeMarkerLL");
+    /// <summary>
+    /// Evaluate accuracy of gaze target inference.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseInstanceId">Base animation instance ID</param>
+    public static void EvaluateTargets(AnimationTimeline timeline, int baseInstanceId, string[] targetNames = null)
+    {
+        var baseInstance = timeline.GetAnimation(baseInstanceId) as AnimationClipInstance;
+        var model = baseInstance.Model;
+        var gazeLayer = timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName);
 
-        // Get world-space marker positions
-        Vector3[][] worldPos = new Vector3[frameLength][];
-        for (int frameIndex = 0; frameIndex < timeline.FrameLength; ++frameIndex)
+        Debug.Log("Evaluating gaze target inference accuracy for " + baseInstance.Name + "...");
+
+        // Load eye tracking data
+        var eyeTrackData = new EyeTrackData(model, baseInstance.AnimationClip);
+        int frameOffset = eyeTrackData.FrameOffset;
+
+        // Load ground-truth gaze target annotations
+        string path = FileUtil.MakeFilePath(LEAPCore.eyeTrackDataDirectory, baseInstance.Name + "#GazeTargets.csv");
+        var data = new CSVDataFile();
+        data.AddAttribute("Target", typeof(string));
+        data.AddAttribute("Frame", typeof(int));
+        data.ReadFromFile(path);
+        if (data.NumberOfRows <= 0)
+            // No ground-truth gaze target data
+            return;
+
+        // Count accurately inferred fixation targets
+        int numAllFixations = data.NumberOfRows;
+        int numAllCorrect = 0;
+        int numObjectFixations = 0;
+        int numObjectCorrect = 0;
+        for (int rowIndex = 0; rowIndex < data.NumberOfRows; ++rowIndex)
         {
-            // Apply animation at current frame
-            timeline.GoToFrame(frameIndex);
-            timeline.ApplyAnimation();
-
-            // Find currently most visible marker set
-            GameObject curMarkerSet = null;
-            float curMarkerSetDist = float.MaxValue;
-            Vector3 curHeadDir = gazeController.head.Direction;
-            foreach (var markerSet in markerSets)
+            string targetName = data[rowIndex].GetValue<string>(0);
+            int frameIndex = data[rowIndex].GetValue<int>(1) - 1 - frameOffset;
+            if (targetName == "Background")
+                ++numObjectFixations;
+            
+            // Get corresponding gaze instance
+            var scheduledGazeInstance = gazeLayer.Animations.FirstOrDefault(inst => inst.StartFrame <= frameIndex && inst.EndFrame >= frameIndex);
+            if (scheduledGazeInstance == null)
             {
-                var markerUL = markersUL.FirstOrDefault(m => m.transform.parent == markerSet.transform);
-                var markerDir = (markerUL.transform.position - head.position).normalized;
-                float markerSetDist = Vector3.Angle(markerDir, curHeadDir);
+                if (targetName == "Background")
+                    ++numAllCorrect;
 
-                if (markerSetDist < curMarkerSetDist)
+                continue;
+            }
+            var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
+
+            // Is the gaze instance toward the same target?
+            bool isSameTarget = false;
+            if (targetName == "Background")
+            {
+                isSameTarget = true;
+
+                // Ground-truth target is background, so inferred target should not be one of the targets of interest
+                if (targetNames != null && targetNames.Length > 0)
                 {
-                    curMarkerSetDist = markerSetDist;
-                    curMarkerSet = markerSet;
+                    if (gazeInstance.Target != null)
+                    {
+                        var target = gazeInstance.Target.transform;
+                        while (target != null)
+                        {
+                            if (targetNames.Any(tn => tn == target.name))
+                            {
+                                isSameTarget = false;
+                                break;
+                            }
+
+                            target = target.parent;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Ground-truth target is one of the targets of interest, so inferred target should be it
+                if (gazeInstance.Target != null)
+                {
+                    var target = gazeInstance.Target.transform;
+                    while (target != null)
+                    {
+                        if (target.name == targetName)
+                        {
+                            isSameTarget = true;
+                            break;
+                        }
+
+                        target = target.parent;
+                    }
                 }
             }
 
-            Debug.Log(string.Format("Frame {0}: using marker set {1}", frameIndex, curMarkerSet.name));
-
-            // Get marker positions
-            var curMarkerUL = markersUL.FirstOrDefault(m => m.transform.parent == curMarkerSet.transform);
-            var curMarkerUR = markersUR.FirstOrDefault(m => m.transform.parent == curMarkerSet.transform);
-            var curMarkerLR = markersLR.FirstOrDefault(m => m.transform.parent == curMarkerSet.transform);
-            var curMarkerLL = markersLL.FirstOrDefault(m => m.transform.parent == curMarkerSet.transform);
-            worldPos[frameIndex] = new Vector3[4];
-            worldPos[frameIndex][0] = curMarkerUL.transform.position;
-            worldPos[frameIndex][1] = curMarkerUR.transform.position;
-            worldPos[frameIndex][2] = curMarkerLR.transform.position;
-            worldPos[frameIndex][3] = curMarkerLL.transform.position;
+            if (isSameTarget)
+            {
+                ++numAllCorrect;
+                if (targetName != "Background")
+                    ++numObjectCorrect;
+            }
+            else
+                Debug.LogWarning(string.Format("Gaze target mismatch at frame {0}, target {1}", frameIndex, targetName));
         }
 
-        // Create camera model for eye tracker video
-        var eyeTrackCamModel = new VideoCameraModel(eyeTrackData.ImageWidth, eyeTrackData.ImageHeight);
-        Matrix3x3 eyeTrackMatCamera;
-        float[] eyeTrackDistCoeffs = new float[5];
-        EyeTrackData.DefaultCameraModel.GetIntrinsics(out eyeTrackMatCamera, out eyeTrackDistCoeffs);
-        eyeTrackCamModel.SetDefaultIntrinsics(eyeTrackMatCamera, eyeTrackDistCoeffs);
+        // Compute inference accuracy
+        float accAll = ((float)numAllCorrect) / numAllFixations;
+        Debug.Log(string.Format("Gaze targets (all) for {0} inferred with accuracy {1}%", baseInstance.Name, accAll * 100f));
+        float accObj = ((float)numObjectCorrect) / numObjectFixations;
+        Debug.Log(string.Format("Gaze targets (non-background) for {0} inferred with accuracy {1}%", baseInstance.Name, accObj * 100f));
+    }
 
-        // Estimate camera model for eye tracker video
-        string imageDir = "../Matlab/EyeTracker/" + baseAnimation.Animation.Name + "#Frames" + "/";
-        string outImageDir = "../Matlab/EyeTracker/" + baseAnimation.Animation.Name + "#OutFrames" + "/";
-        int startFrame = eyeTrackData.FrameOffset;
-        eyeTrackCamModel.Align(worldPos, imageDir, startFrame,
-            eyeTrackData.CalibPatternWidth, eyeTrackData.CalibPatternHeight, true, true, outImageDir);
-        */
-        /*// Get marker objects
-        var markers = GameObject.FindGameObjectsWithTag("GazeTarget");
-        var chairLL = markers.FirstOrDefault(m => m.name == "B_Left");
-        var chairUL = markers.FirstOrDefault(m => m.name == "Top_Left");
-        var chairUR = markers.FirstOrDefault(m => m.name == "Top_Right");
-        var chairLR = markers.FirstOrDefault(m => m.name == "B_Right");
-        var dannyLL = markers.FirstOrDefault(m => m.name == "B_Left 1");
-        var dannyUL = markers.FirstOrDefault(m => m.name == "Top_Left 1");
-        var dannyUR = markers.FirstOrDefault(m => m.name == "Top_Right 1");
-        var dannyLR = markers.FirstOrDefault(m => m.name == "B_Right 1");
-        var dannyLM = markers.FirstOrDefault(m => m.name == "B_Middle");
-        var bobbyLL = markers.FirstOrDefault(m => m.name == "B_Left 1");
-        var bobbyUL = markers.FirstOrDefault(m => m.name == "Top_Left 1");
-        var bobbyUR = markers.FirstOrDefault(m => m.name == "Top_Right 1");
-        var bobbyMR1 = markers.FirstOrDefault(m => m.name == "Top_Right 1");
-        var bobbyMR2 = markers.FirstOrDefault(m => m.name == "Top_Right 1");
-        var bobbyLR = markers.FirstOrDefault(m => m.name == "B_Right 1");
-            
-        // Get image-space marker positions at frame 809 (1688)
-        Vector2[] imgPos809 = new Vector2[4];
-        imgPos809[0] = new Vector2(355, eyeTrackData.ImageHeight - 463 - 1);
-        imgPos809[1] = new Vector2(204, eyeTrackData.ImageHeight - 302 - 1);
-        imgPos809[2] = new Vector2(411, eyeTrackData.ImageHeight - 125 - 1);
-        imgPos809[3] = new Vector2(555, eyeTrackData.ImageHeight - 302 - 1);
+    /// <summary>
+    /// Extract frames from eye tracker video that correspond to distinct gaze fixations.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="baseInstanceId">Base animation instance ID</param>
+    /// <param name="framePath">Eye tracker video input frame path</param>
+    /// <param name="outFramePath">Eye tracker video output frame path</param>
+    /// <param name="startFrame">Start frame index</param>
+    /// <param name="endFrame">End frame index</param>
+    public static void ExtractEyeTrackFixationFrames(AnimationTimeline timeline, int baseInstanceId,
+        string framePath, string outFramePath, int startFrame = 0, int endFrame = -1)
+    {
+        if (!Directory.Exists(framePath))
+            throw new DirectoryNotFoundException("Frame path: " + framePath);
+        if (!Directory.Exists(outFramePath))
+            throw new DirectoryNotFoundException("Output frame path: " + outFramePath);
+        if (Directory.GetFiles(outFramePath).Length > 0)
+        {
+            Debug.LogWarning("Eye track fixation frames already extracted at " + outFramePath);
+            return;
+        }
 
-        // Get world-space marker positions at frame 809 (1688)
-        bodyAnimationNorman.Apply(809, AnimationLayerMode.Override);
-        timeline.GetLayer("Environment").Animations[0].Animation.Apply(809, AnimationLayerMode.Override);
-        timeline.GetLayer("Environment").Animations[1].Animation.Apply(809, AnimationLayerMode.Override);
+        var baseInstance = timeline.GetAnimation(baseInstanceId) as AnimationClipInstance;
+        var model = baseInstance.Model;
+        
+        // Use eye tracking data to extract fixation frames
+        var eyeTrackData = new EyeTrackData(model, baseInstance.AnimationClip);
+        int frameLength = eyeTrackData.Samples.Count;
+        startFrame = Mathf.Clamp(startFrame, 0, frameLength - 1);
+        endFrame = endFrame < 0 ? frameLength - 1 : Mathf.Clamp(endFrame, startFrame, frameLength - 1);
+        foreach (var eyeGazeEvent in eyeTrackData.Events)
+        {
+            if (eyeGazeEvent.eventType != EyeTrackEventType.Fixation)
+                continue;
 
-        Vector3[] worldPos809 = new Vector3[4];
-        worldPos809[0] = head.InverseTransformPoint(chairLL.transform.position);
-        worldPos809[1] = head.InverseTransformPoint(chairUL.transform.position);
-        worldPos809[2] = head.InverseTransformPoint(chairUR.transform.position);
-        worldPos809[3] = head.InverseTransformPoint(chairLR.transform.position);
+            int frameIndex = eyeGazeEvent.startFrame + eyeGazeEvent.frameLength / 2;
+            if (frameIndex < startFrame || frameIndex > endFrame)
+                continue;
 
-        // Get image-space marker positions at frame 73 (952)
-        Vector2[] imgPos73 = new Vector2[4];
-        imgPos73[0] = new Vector2(375, eyeTrackData.ImageHeight - 288 - 1);
-        imgPos73[1] = new Vector2(299, eyeTrackData.ImageHeight - 93 - 1);
-        imgPos73[2] = new Vector2(535, eyeTrackData.ImageHeight - 11 - 1);
-        imgPos73[3] = new Vector2(597, eyeTrackData.ImageHeight - 214 - 1);
-
-        // Get world-space marker positions at frame 73 (952)
-        bodyAnimationNorman.Apply(73, AnimationLayerMode.Override);
-        timeline.GetLayer("Environment").Animations[0].Animation.Apply(73, AnimationLayerMode.Override);
-        timeline.GetLayer("Environment").Animations[1].Animation.Apply(73, AnimationLayerMode.Override);
-        Vector3[] worldPos73 = new Vector3[4];
-        worldPos73[0] = head.InverseTransformPoint(chairLL.transform.position);
-        worldPos73[1] = head.InverseTransformPoint(chairUL.transform.position);
-        worldPos73[2] = head.InverseTransformPoint(chairUR.transform.position);
-        worldPos73[3] = head.InverseTransformPoint(chairLR.transform.position);
-
-        // Get image-space marker positions at frame 380 (1259)
-        Vector2[] imgPos380 = new Vector2[5];
-        imgPos380[0] = new Vector2(206, eyeTrackData.ImageHeight - 452 - 1);
-        imgPos380[1] = new Vector2(174, eyeTrackData.ImageHeight - 388 - 1);
-        imgPos380[2] = new Vector2(253, eyeTrackData.ImageHeight - 358 - 1);
-        imgPos380[3] = new Vector2(281, eyeTrackData.ImageHeight - 419 - 1);
-        imgPos380[4] = new Vector2(245, eyeTrackData.ImageHeight - 436 - 1);
-
-        // Get world-space marker positions at frame 380 (1259)
-        bodyAnimationNorman.Apply(380, AnimationLayerMode.Override);
-        timeline.GetLayer("Environment").Animations[0].Animation.Apply(380, AnimationLayerMode.Override);
-        timeline.GetLayer("Environment").Animations[1].Animation.Apply(380, AnimationLayerMode.Override);
-        Vector3[] worldPos380 = new Vector3[5];
-        worldPos380[0] = head.InverseTransformPoint(dannyLL.transform.position);
-        worldPos380[1] = head.InverseTransformPoint(dannyUL.transform.position);
-        worldPos380[2] = head.InverseTransformPoint(dannyUR.transform.position);
-        worldPos380[3] = head.InverseTransformPoint(dannyLR.transform.position);
-        worldPos380[4] = head.InverseTransformPoint(dannyLM.transform.position);
-
-        // Calibrate eye tracker camera
-        var cameraModel = new CameraModel();
-        var matCamera = new Matrix3x3();
-        matCamera.m00 = 1.1087157e+003f;
-        matCamera.m01 = 0f;
-        matCamera.m02 = 6.395e+002f;
-        matCamera.m10 = 0f;
-        matCamera.m11 = 1.1087157e+003f;
-        matCamera.m12 = 4.795e+002f;
-        matCamera.m20 = 0f;
-        matCamera.m21 = 0f;
-        matCamera.m22 = 1f;
-        var distCoeffs = new float[5];
-        distCoeffs[0] = 8.0114708e-002f;
-        distCoeffs[1] = -7.9709385e-001f;
-        distCoeffs[2] = 0f;
-        distCoeffs[3] = 0f;
-        distCoeffs[4] = 1.4157773e+000f;
-        cameraModel.SetIntrinsics(matCamera, distCoeffs);
-        cameraModel.InitOpenCV(worldPos809, imgPos809);
-
-        // Test calibration
-        Vector2[] estImgPos73 = new Vector2[4];
-        estImgPos73[0] = cameraModel.GetImagePosition(worldPos73[0]);
-        estImgPos73[1] = cameraModel.GetImagePosition(worldPos73[1]);
-        estImgPos73[2] = cameraModel.GetImagePosition(worldPos73[2]);
-        estImgPos73[3] = cameraModel.GetImagePosition(worldPos73[3]);
-        Vector2[] estImgPos380 = new Vector2[5];
-        estImgPos380[0] = cameraModel.GetImagePosition(worldPos380[0]);
-        estImgPos380[1] = cameraModel.GetImagePosition(worldPos380[1]);
-        estImgPos380[2] = cameraModel.GetImagePosition(worldPos380[2]);
-        estImgPos380[3] = cameraModel.GetImagePosition(worldPos380[3]);
-        estImgPos380[4] = cameraModel.GetImagePosition(worldPos380[4]);
-
-        // Print test results
-        Debug.Log("FRAME 73 (952):");
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos73[0].x, imgPos73[0].y, estImgPos73[0].x, estImgPos73[0].y));
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos73[1].x, imgPos73[1].y, estImgPos73[1].x, estImgPos73[1].y));
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos73[2].x, imgPos73[2].y, estImgPos73[2].x, estImgPos73[2].y));
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos73[3].x, imgPos73[3].y, estImgPos73[3].x, estImgPos73[3].y));
-        Debug.Log("FRAME 380 (1259):");
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos380[0].x, imgPos380[0].y, estImgPos380[0].x, estImgPos380[0].y));
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos380[1].x, imgPos380[1].y, estImgPos380[1].x, estImgPos380[1].y));
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos380[2].x, imgPos380[2].y, estImgPos380[2].x, estImgPos380[2].y));
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos380[3].x, imgPos380[3].y, estImgPos380[3].x, estImgPos380[3].y));
-        Debug.Log(string.Format("Ground-truth: ({0}, {1}), estimated: ({2}, {3})",
-            imgPos380[4].x, imgPos380[4].y, estImgPos380[4].x, estImgPos380[4].y));*/
-
-        /*var tableSpots = GameObject.FindGameObjectsWithTag("GazeTarget");
-        var leftHandSpot = tableSpots.FirstOrDefault(obj => obj.name == "LeftHandSpot");
-        var rightandSpot = tableSpots.FirstOrDefault(obj => obj.name == "RightHandSpot");
-        var midTarget = tableSpots.FirstOrDefault(obj => obj.name == "MidTarget");
-        var rightTarget = tableSpots.FirstOrDefault(obj => obj.name == "RightTarget");
-        var leftTarget = tableSpots.FirstOrDefault(obj => obj.name == "LeftTarget");
-
-        // Load eye tracking data
-        var eyeTrackData = new EyeTrackData(testScenes.modelNormanNew, bodyAnimationNorman.AnimationClip);
-
-        // Get ground-truth eye directions at frame 277 (104)
-        var vle = eyeTrackData.Samples[277].lEyeDirection;
-        var vre = eyeTrackData.Samples[277].rEyeDirection;
-
-        // Get eye tracker bone space eye directions at frame 277 (104)
-        bodyAnimationNorman.Apply(104, AnimationLayerMode.Override);
-        var eyeTrackerBone = eyeTrackData.EyeTrackerBone;
-        var ule = lEye.InverseTransformDirection((rightTarget.transform.position - lEye.position).normalized);
-        var ure = rEye.InverseTransformDirection((rightTarget.transform.position - rEye.position).normalized);
-
-        // Compute aligning rotations
-        var qle = Quaternion.FromToRotation(ule, vle);
-        var qre = Quaternion.FromToRotation(ure, vre);
-
-        Debug.Log(string.Format("qle at 104: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
-        Debug.Log(string.Format("qre at 104: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));
-            
-        // Get ground-truth eye directions at frame 302 (129)
-        vle = eyeTrackData.Samples[302].lEyeDirection;
-        vre = eyeTrackData.Samples[302].rEyeDirection;
-
-        // Get eye tracker bone space eye directions at frame 302 (129)
-        bodyAnimationNorman.Apply(129, AnimationLayerMode.Override);
-        ule = lEye.InverseTransformDirection((leftTarget.transform.position - lEye.position).normalized);
-        ure = rEye.InverseTransformDirection((leftTarget.transform.position - rEye.position).normalized);
-
-        // Compute aligning rotations
-        qle = Quaternion.FromToRotation(ule, vle);
-        qre = Quaternion.FromToRotation(ure, vre);
-
-        Debug.Log(string.Format("qle at 129: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
-        Debug.Log(string.Format("qre at 129: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));
-
-        // Get ground-truth eye directions at frame 332 (159)
-        vle = eyeTrackData.Samples[332].lEyeDirection;
-        vre = eyeTrackData.Samples[332].rEyeDirection;
-
-        // Get eye tracker bone space eye directions at frame 332 (159)
-        bodyAnimationNorman.Apply(159, AnimationLayerMode.Override);
-        ule = lEye.InverseTransformDirection((midTarget.transform.position - lEye.position).normalized);
-        ure = rEye.InverseTransformDirection((midTarget.transform.position - rEye.position).normalized);
-
-        // Compute aligning rotations
-        qle = Quaternion.FromToRotation(ule, vle);
-        qre = Quaternion.FromToRotation(ure, vre);
-
-        Debug.Log(string.Format("qle at 159: ({0}, {1}, {2})", qle.eulerAngles.x, qle.eulerAngles.y, qle.eulerAngles.z));
-        Debug.Log(string.Format("qre at 159: ({0}, {1}, {2})", qre.eulerAngles.x, qre.eulerAngles.y, qre.eulerAngles.z));*/
-        //
+            string frameFilename = string.Format("frame{0:D5}.png", frameIndex + 1);
+            File.Copy(FileUtil.MakeFilePath(framePath, frameFilename), FileUtil.MakeFilePath(outFramePath, frameFilename));
+        }
     }
 }

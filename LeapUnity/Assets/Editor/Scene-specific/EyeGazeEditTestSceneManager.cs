@@ -413,6 +413,9 @@ public static class EyeGazeEditTestSceneManager
 
             // Add timewarps to the animations
             AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
+
+            // Extract eye tracking fixation frames
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 970, 2045);
         }
         else if (sceneName == "WalkConesNew")
         {
@@ -491,6 +494,9 @@ public static class EyeGazeEditTestSceneManager
                 new AnimationClipInstance(
                     "BookShelfNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
+
+            // Extract eye tracking fixation frames
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 749, 2618);
         }
         else if (sceneName == "StealDiamondNew")
         {
@@ -530,6 +536,9 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Extract eye tracking fixation frames
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 1066, 1359);
         }
         else if (sceneName == "WaitForBusNew")
         {
@@ -565,6 +574,9 @@ public static class EyeGazeEditTestSceneManager
 
             // Add timewarps to the animations
             AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
+
+            // Extract eye tracking fixation frames
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 590, 1782);
         }
         else if (sceneName == "ChatWithFriend")
         {
@@ -598,6 +610,9 @@ public static class EyeGazeEditTestSceneManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Extract eye tracking fixation frames
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 967, 2868);
         }
         else // if (sceneName == "InitialPose")
         {
@@ -705,5 +720,22 @@ public static class EyeGazeEditTestSceneManager
                 break;
         }
         System.Diagnostics.Process.Start(cmd, args);
+    }
+
+    /// <summary>
+    /// Extract fixation frames from eye tracking data.
+    /// </summary>
+    /// <param name="sceneName">Scene name</param>
+    /// <param name="timeline">Animation timeline</param>
+    /// <param name="model">Character model</param>
+    public static void ExtractEyeTrackFixationFrames(string sceneName, AnimationTimeline timeline, GameObject model,
+        int startFrame = 0, int endFrame = -1)
+    {
+        string framePath = "C:\\Local Users\\tpejsa\\OneDrive\\Gaze Editing Project\\EyeTrackMocap\\" + sceneName + "\\EyeTrack\\Frames";
+        string outFramePath = "C:\\Local Users\\tpejsa\\OneDrive\\Gaze Editing Project\\Annotations\\GazeTargets\\"  + sceneName;
+        var baseInstance = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(inst =>
+            inst.Animation.Model == model);
+        EyeGazeInferenceModel.ExtractEyeTrackFixationFrames(timeline, baseInstance.InstanceId, framePath, outFramePath,
+            startFrame, endFrame);
     }
 }

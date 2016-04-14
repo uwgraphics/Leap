@@ -445,7 +445,8 @@ public class GazeBodyPart
         // Compute blend weight
         //_weight = GazeController.weight;
         _weight = GazeController.weight * (IsEye ? 1f :
-            1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir)));
+            (LEAPCore.gazeBlendWeightOverride >= 0f ? Mathf.Clamp01(LEAPCore.gazeBlendWeightOverride) :
+            1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir))));
         //
         //Debug.LogWarning(string.Format("Blend weight for {0} is {1}", GazeBodyPartType, weight1));
         //

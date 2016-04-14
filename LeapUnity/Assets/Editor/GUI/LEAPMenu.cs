@@ -126,8 +126,35 @@ public class LEAPMenu
         SceneView.RepaintAll();
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Target Locations", true)]
-    private static bool ValidateInferEyeGazeEvaluateTargetLocations()
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Instances", true)]
+    private static bool ValidateInferEyeGazeEvaluateInstances()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var selectedModel = ModelUtil.GetSelectedModel();
+        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
+            selectedModel != null && selectedModel.tag == "Agent";
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Instances", false)]
+    private static void InferEyeGazeEvaluateInstances()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var timeline = wnd.Timeline;
+        var model = ModelUtil.GetSelectedModel();
+        
+        var baseInstance = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(inst => inst.Animation.Model == model);
+        if (baseInstance == null)
+        {
+            Debug.LogError("No base animation instance on character model " + model.name);
+            return;
+        }
+
+        EyeGazeInferenceModel.EvaluateInstances(timeline, baseInstance.InstanceId);
+        SceneView.RepaintAll();
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Target Directions", true)]
+    private static bool ValidateInferEyeGazeEvaluateTargetDirections()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         var selectedModel = ModelUtil.GetSelectedModel();
@@ -136,8 +163,8 @@ public class LEAPMenu
             wnd.Timeline.BakedTimelineContainers.Count > 0;
     }
 
-    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Target Locations", false)]
-    private static void InferEyeGazeEvaluateTargetLocations()
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Target Directions", false)]
+    private static void InferEyeGazeEvaluateTargetDirections()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         var timeline = wnd.Timeline;
@@ -157,6 +184,33 @@ public class LEAPMenu
 
             EyeGazeInferenceModel.EvaluateTargetDirections(timeline, baseAnimation.InstanceId);
         }
+        SceneView.RepaintAll();
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Targets", true)]
+    private static bool ValidateInferEyeGazeEvaluateTargets()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var selectedModel = ModelUtil.GetSelectedModel();
+        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
+            selectedModel != null && selectedModel.tag == "Agent";
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Evaluate Targets", false)]
+    private static void InferEyeGazeEvaluateTargets()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var timeline = wnd.Timeline;
+        var model = ModelUtil.GetSelectedModel();
+
+        var baseInstance = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(inst => inst.Animation.Model == model);
+        if (baseInstance == null)
+        {
+            Debug.LogError("No base animation instance on character model " + model.name);
+            return;
+        }
+
+        EyeGazeInferenceModel.EvaluateTargets(timeline, baseInstance.InstanceId);
         SceneView.RepaintAll();
     }
 
