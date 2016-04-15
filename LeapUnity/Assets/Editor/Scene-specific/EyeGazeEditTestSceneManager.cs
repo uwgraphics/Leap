@@ -42,7 +42,10 @@ public static class EyeGazeEditTestSceneManager
         testScenes.modelStealDiamondNewEnv.SetActive(false);
         testScenes.modelBookShelfNewEnv.SetActive(false);
         testScenes.modelWaitForBusNewEnv.SetActive(false);
+        testScenes.modelStackBoxesNewEnv.SetActive(false);
         testScenes.modelChatWithFriendEnv.SetActive(false);
+        testScenes.modelMakeSandwichEnv.SetActive(false);
+        testScenes.modelMakeSandwichDemoEnv.SetActive(false);
         testScenes.modelKinect.SetActive(false);
         testScenes.modelEyeTrackMocapTest1Env.SetActive(false);
 
@@ -578,6 +581,62 @@ public static class EyeGazeEditTestSceneManager
             // Extract eye tracking fixation frames
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 590, 1782);
         }
+        else if (sceneName == "StackBoxesNew")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelStackBoxesNewEnv.SetActive(true);
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelStackBoxesNewEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("StackBoxesNew", testScenes.modelNormanNew);
+
+            // Add animations to characters
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            var envController = testScenes.modelStackBoxesNewEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "StackBoxesNew1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube1"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "StackBoxesNew2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube2"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "StackBoxesNew3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube3"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "StackBoxesNew4", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube4"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "StackBoxesNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
+            var cameraAnimation = new AnimationClipInstance("StackBoxesNewCamera1",
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew1").gameObject,
+                false, false, false);
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
+            cameraAnimation = new AnimationClipInstance("StackBoxesNewCamera2",
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew2").gameObject,
+                false, false, false);
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
+
+            // Extract eye tracking fixation frames
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 544, 1486);
+        }
         else if (sceneName == "ChatWithFriend")
         {
             testScenes.modelNormanNew.SetActive(true);
@@ -613,6 +672,108 @@ public static class EyeGazeEditTestSceneManager
 
             // Extract eye tracking fixation frames
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 967, 2868);
+        }
+        else if (sceneName == "MakeSandwich")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelMakeSandwichEnv.SetActive(true);
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelMakeSandwichEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("MakeSandwich", testScenes.modelNormanNew);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            var envController = testScenes.modelMakeSandwichEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBread1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bread1"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBread2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bread2"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBacon", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bacon"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichLettuce", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Lettuce"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichTomato", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Tomato"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichSwiss", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Swiss"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichTurkey", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Turkey"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "MakeSandwichMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
+
+            // Extract eye tracking fixation frames
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 942, 1957);
+        }
+        else if (sceneName == "MakeSandwichDemo")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelMakeSandwichDemoEnv.SetActive(true);
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelMakeSandwichDemoEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("MakeSandwichDemo", testScenes.modelNormanNew);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            var envController = testScenes.modelMakeSandwichDemoEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichDemoBread1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bread1"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichDemoBread2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bread2"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichDemoBacon", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bacon"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichDemoLettuce", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Lettuce"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichDemoTomato", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Tomato"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichDemoSwiss", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Swiss"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichDemoTurkey", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Turkey"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "MakeSandwichDemoMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
+
+            // Extract eye tracking fixation frames
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 756, 2763);
         }
         else // if (sceneName == "InitialPose")
         {

@@ -25,7 +25,10 @@ public class EyeGazeEditTestSceneData : MonoBehaviour
     public GameObject modelBookShelfNewEnv = null;
     public GameObject modelStealDiamondNewEnv = null;
     public GameObject modelWaitForBusNewEnv = null;
+    public GameObject modelStackBoxesNewEnv = null;
     public GameObject modelChatWithFriendEnv = null;
+    public GameObject modelMakeSandwichEnv = null;
+    public GameObject modelMakeSandwichDemoEnv = null;
     public GameObject modelKinect = null;
     public GameObject modelEyeTrackMocapTest1Env = null;
 }

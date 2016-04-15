@@ -671,6 +671,24 @@ public class LEAPMenu
         EyeGazeEditTestSceneManager.LoadExampleScene("WaitForBusNew");
     }
 
+    [MenuItem("LEAP/Scenes/StackBoxesNew", true)]
+    private static bool ValidateTestStackBoxesNew()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StackBoxesNew", false)]
+    private static void TestStackBoxesNew()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("StackBoxesNew");
+    }
+
     [MenuItem("LEAP/Scenes/ChatWithFriend", true)]
     private static bool ValidateTestChatWithFriend()
     {
@@ -687,6 +705,42 @@ public class LEAPMenu
     private static void TestChatWithFriend()
     {
         EyeGazeEditTestSceneManager.LoadExampleScene("ChatWithFriend");
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich", true)]
+    private static bool ValidateTestMakeSandwich()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich", false)]
+    private static void TestMakeSandwich()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich");
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwichDemo", true)]
+    private static bool ValidateTestMakeSandwichDemo()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwichDemo", false)]
+    private static void TestMakeSandwichDemo()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwichDemo");
     }
 
     [MenuItem("LEAP/Capture Video/[None]", true)]

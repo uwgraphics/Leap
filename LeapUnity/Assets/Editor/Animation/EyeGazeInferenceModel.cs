@@ -783,7 +783,7 @@ public class EyeGazeInferenceModel
         {
             string targetName = data[rowIndex].GetValue<string>(0);
             int frameIndex = data[rowIndex].GetValue<int>(1) - 1 - frameOffset;
-            if (targetName == "Background")
+            if (targetName != "Background")
                 ++numObjectFixations;
             
             // Get corresponding gaze instance

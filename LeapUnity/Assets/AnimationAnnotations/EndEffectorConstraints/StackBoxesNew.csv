@@ -1,0 +1,9 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ManipulatedObjectHandle,ManipulationEndFrame
+LWristBone,222,353,true,pCube1LHandle,null,0
+RWristBone,222,353,true,pCube1RHandle,null,0
+LWristBone,510,667,true,pCube2LHandle,null,0
+RWristBone,510,667,true,pCube2RHandle,null,0
+LWristBone,836,986,true,pCube3LHandle,null,0
+RWristBone,836,986,true,pCube3RHandle,null,0
+LWristBone,1142,1285,true,pCube4LHandle,null,0
+RWristBone,1142,1285,true,pCube4RHandle,null,0

@@ -1,0 +1,9 @@
+EndEffector,StartFrame,EndFrame,PreserveAbsoluteRotation,Target,ManipulatedObjectHandle,ManipulationEndFrame
+# Assumes activation time of 1.4s or 42 frames
+RWristBone,345,390,true,Bread1RHandle,null,0
+RWristBone,685,718,true,LettuceRHandle,null,0
+RWristBone,872,914,true,TomatoRHandle,null,0
+RWristBone,1102,1155,true,BaconRHandle,null,0
+RWristBone,1421,1450,true,TurkeyRHandle,null,0
+RWristBone,1683,1747,true,SwissRHandle,null,0
+RWristBone,1936,2016,true,Bread2RHandle,null,0

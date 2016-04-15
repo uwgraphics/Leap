@@ -283,6 +283,15 @@
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Events.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Params.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\EyeTrackMocapTest1-1#Samples.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\MakeSandwich#Events.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\MakeSandwich#Params.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\MakeSandwich#Samples.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\MakeSandwichDemo#Events.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\MakeSandwichDemo#Params.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\MakeSandwichDemo#Samples.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\StackBoxesNew#Events.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\StackBoxesNew#Params.txt" />
+    <None Include="Assets\AnimationAnnotations\EyeTrack\StackBoxesNew#Samples.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\StealDiamondNew#Events.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\StealDiamondNew#Params.txt" />
     <None Include="Assets\AnimationAnnotations\EyeTrack\StealDiamondNew#Samples.txt" />

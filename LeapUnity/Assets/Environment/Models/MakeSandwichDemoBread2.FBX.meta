@@ -1,0 +1,129 @@
+fileFormatVersion: 2
+guid: db870815635e68249bcaaff3f1f10b19
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: pasted__Bacon
+    100004: pasted__Bread1
+    100006: pasted__Bread2
+    100008: pasted__Ham
+    100010: pasted__Lettuce1
+    100012: pasted__Plane_001
+    100014: pasted__Tomatoes
+    400000: //RootNode
+    400002: pasted__Bacon
+    400004: pasted__Bread1
+    400006: pasted__Bread2
+    400008: pasted__Ham
+    400010: pasted__Lettuce1
+    400012: pasted__Plane_001
+    400014: pasted__Tomatoes
+    2300000: //RootNode
+    2300002: pasted__Bacon
+    2300004: pasted__Bread1
+    2300006: pasted__Bread2
+    2300008: pasted__Ham
+    2300010: pasted__Lettuce1
+    2300012: pasted__Plane_001
+    2300014: pasted__Tomatoes
+    3300000: //RootNode
+    3300002: pasted__Bacon
+    3300004: pasted__Bread1
+    3300006: pasted__Bread2
+    3300008: pasted__Ham
+    3300010: pasted__Lettuce1
+    3300012: pasted__Plane_001
+    3300014: pasted__Tomatoes
+    4300000: pasted__Bread2
+    4300002: pasted__Plane_001
+    4300004: pasted__Tomatoes
+    4300006: pasted__Bread1
+    4300008: pasted__Bacon
+    4300010: pasted__Ham
+    4300012: pasted__Lettuce1
+    7400000: MakeSandwichDemoBread2
+    9500000: //RootNode
+    11100000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: MakeSandwichDemoBread2
+      takeName: Take 001
+      firstFrame: 77
+      lastFrame: 2316
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  additionalBone: 0
+  userData: 

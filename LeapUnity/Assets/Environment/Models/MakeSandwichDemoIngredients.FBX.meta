@@ -1,0 +1,144 @@
+fileFormatVersion: 2
+guid: 825a3d6be2db81e4e9430998d9cac803
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: pasted__Balogna
+    100004: pasted__BarbQ
+    100006: pasted__BrownCircle
+    100008: pasted__Egg
+    100010: pasted__Jelly
+    100012: pasted__Ketchup
+    100014: pasted__Kiwis
+    100016: pasted__Lettuce2
+    100018: pasted__Mayo
+    100020: pasted__Mustard
+    100022: pasted__Onions
+    100024: pasted__Pastrami
+    100026: pasted__Pickles
+    100028: pasted__Plane
+    100030: pasted__WhiteCircle1
+    100032: pasted__WhiteCircle2
+    400000: //RootNode
+    400002: pasted__Balogna
+    400004: pasted__BarbQ
+    400006: pasted__BrownCircle
+    400008: pasted__Egg
+    400010: pasted__Jelly
+    400012: pasted__Ketchup
+    400014: pasted__Kiwis
+    400016: pasted__Lettuce2
+    400018: pasted__Mayo
+    400020: pasted__Mustard
+    400022: pasted__Onions
+    400024: pasted__Pastrami
+    400026: pasted__Pickles
+    400028: pasted__Plane
+    400030: pasted__WhiteCircle1
+    400032: pasted__WhiteCircle2
+    2300000: pasted__Balogna
+    2300002: pasted__BarbQ
+    2300004: pasted__BrownCircle
+    2300006: pasted__Egg
+    2300008: pasted__Jelly
+    2300010: pasted__Ketchup
+    2300012: pasted__Kiwis
+    2300014: pasted__Lettuce2
+    2300016: pasted__Mayo
+    2300018: pasted__Mustard
+    2300020: pasted__Onions
+    2300022: pasted__Pastrami
+    2300024: pasted__Pickles
+    2300026: pasted__Plane
+    2300028: pasted__WhiteCircle1
+    2300030: pasted__WhiteCircle2
+    3300000: pasted__Balogna
+    3300002: pasted__BarbQ
+    3300004: pasted__BrownCircle
+    3300006: pasted__Egg
+    3300008: pasted__Jelly
+    3300010: pasted__Ketchup
+    3300012: pasted__Kiwis
+    3300014: pasted__Lettuce2
+    3300016: pasted__Mayo
+    3300018: pasted__Mustard
+    3300020: pasted__Onions
+    3300022: pasted__Pastrami
+    3300024: pasted__Pickles
+    3300026: pasted__Plane
+    3300028: pasted__WhiteCircle1
+    3300030: pasted__WhiteCircle2
+    4300000: pasted__Plane
+    4300002: pasted__Pickles
+    4300004: pasted__Kiwis
+    4300006: pasted__Onions
+    4300008: pasted__Pastrami
+    4300010: pasted__Balogna
+    4300012: pasted__WhiteCircle2
+    4300014: pasted__BrownCircle
+    4300016: pasted__WhiteCircle1
+    4300018: pasted__Lettuce2
+    4300020: pasted__Jelly
+    4300022: pasted__Ketchup
+    4300024: pasted__Mustard
+    4300026: pasted__Mayo
+    4300028: pasted__BarbQ
+    4300030: pasted__Egg
+    7400000: Take 001
+    9500000: //RootNode
+    11100000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  additionalBone: 0
+  userData: 
