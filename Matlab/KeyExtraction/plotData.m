@@ -1,6 +1,5 @@
 % Plot configuration:
-sceneName = 'StealDiamond';
-boneMask = [5 6];
+boneMask = [6];
 endEffectorMask = [];
 numberOfBones = 6;
 numberOfEndEffectors = 4;
@@ -22,8 +21,6 @@ showKeyFrames = true;
 showRootKeyFrames = false;
 showBoneKeyFrames = false;
 showVBones = false;
-startFrame = 40;
-endFrame = 160;
 normalizeA = true;
 
 % Bone indexes:
@@ -225,7 +222,7 @@ end
 % Load per-key data
 dataPerKey = csvread(strcat('dataPerKey#', sceneName, '.csv'), 1);
 keyFrames = dataPerKey(:, indexKeyFrame);
-keyFrameIndexes = find(keyFrames < startFrame | keyFrames > endFrame);
+keyFrameIndexes = find(keyFrames < startFrame - 1 | keyFrames > endFrame - 1);
 keyFrames(keyFrameIndexes) = [];
 rootKeyFrames = dataPerKey(:, indexRootKeyFrame);
 rootKeyFrames(keyFrameIndexes) = [];
@@ -234,19 +231,23 @@ boneKeyFrames(keyFrameIndexes, :) = [];
 
 % Plot per-key data
 if showKeyFrames
-    plot(keyFrames, zeros(size(keyFrames, 1)), 'or');
+    plot(keyFrames + 1, p(keyFrames - startFrame + 2,:), 'or');
+    plot(keyFrames + 1, zeros(size(keyFrames, 1)), 'or');
 end
 if showRootKeyFrames
-    plot(rootKeyFrames, zeros(size(rootKeyFrames, 1)), 'xm');
+    plot(rootKeyFrames + 1, pRoot(keyFrames - startFrame + 2,:), 'xm');
+    plot(rootKeyFrames + 1, zeros(size(keyFrames, 1)), 'xm');
 end
 if showBoneKeyFrames
     if size(boneMask, 2) == 0
         for i = 1:size(boneKeyFrames, 2)
-            plot(boneKeyFrames(:, i), zeros(size(boneKeyFrames(:, i), 1)), 'xm');
+            plot(boneKeyFrames(:, i), pBones(keyFrames - startFrame + 2, i), 'xm');
+            plot(boneKeyFrames(:, i), zeros(size(keyFrames, 1)), 'xm');
         end
     else
         for i = 1:size(boneMask, 2)
-            plot(boneKeyFrames(:, boneMask(:, i)), zeros(size(boneKeyFrames(:, boneMask(:, i)), 1)), 'xm');
+            plot(boneKeyFrames(:, boneMask(:, i)), pBones(keyFrames - startFrame + 2, boneMask(:, i)), 'xm');
+            plot(boneKeyFrames(:, boneMask(:, i)), zeros(size(keyFrames, 1)), 'xm');
         end
     end
 end

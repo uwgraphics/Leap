@@ -37,7 +37,26 @@ public class EyeGazeKeyFrameExtractor : KeyFrameExtractor
         // Settings for gaze keyframe extraction
         UseRootPosition = false;
         UseEndEffectorConstraints = false;
+        LowPassKernelSize = LEAPCore.gazeInferenceLowPassKernelSize;
+        UseBilateralFilter = LEAPCore.gazeInferenceUseBilateralFilter;
+        BilateralFilterSpace = LEAPCore.gazeInferenceBilateralFilterSpace;
+        BilateralFilterRange = LEAPCore.gazeInferenceBilateralFilterRange;
         MaxClusterWidth = LEAPCore.gazeInferenceKeyMaxClusterWidth;
+        MinKeyFrameP = LEAPCore.gazeInferenceMinKeyFrameP;
+    }
+
+    /// <summary>
+    /// Compute per-bone weights (how much each bone influences total keyframe probability)
+    /// based on bone distance to the eyes.
+    /// </summary>
+    /// <returns>Bone weights</returns>
+    public virtual float[] ComputeBoneWeights()
+    {
+        float wRoot;
+        float[] wBones = new float[_bones.Length];
+        _ComputeBoneWeights(_bones, null, out wRoot, wBones);
+
+        return wBones;
     }
 
     // Compute per-bone weights (how much each bone influences total keyframe probability)

@@ -11,13 +11,16 @@ public class AnimationEditGizmos : MonoBehaviour
 {
     public struct EyeGazeInstanceDesc
     {
+        public bool isLocal;
         public Vector3 targetPosition;
         public float headAlign;
         public float torsoAlign;
         public bool turnBody;
         
-        public EyeGazeInstanceDesc(Vector3 targetPosition, float headAlign, float torsoAlign, bool turnBody = true)
+        public EyeGazeInstanceDesc(bool isLocal, Vector3 targetPosition,
+            float headAlign, float torsoAlign, bool turnBody = true)
         {
+            this.isLocal = isLocal;
             this.targetPosition = targetPosition;
             this.headAlign = headAlign;
             this.torsoAlign = torsoAlign;
@@ -25,10 +28,17 @@ public class AnimationEditGizmos : MonoBehaviour
         }
     }
 
+    public enum ShowGazeSequenceMode
+    {
+        DoNotShow,
+        ShowLocal,
+        ShowAll
+    }
+
     /// <summary>
     /// If true, sequence of gaze shifts will be visually indicated.
     /// </summary>
-    public bool showGazeSequence = true;
+    public ShowGazeSequenceMode showGazeSequence = ShowGazeSequenceMode.ShowLocal;
 
     /// <summary>
     /// If true, gaze targets will be visually indicated in the scene view.
@@ -177,9 +187,9 @@ public class AnimationEditGizmos : MonoBehaviour
             _DrawGazeTargets();
         }
 
-        if (showGazeSequence)
+        if (showGazeSequence != ShowGazeSequenceMode.DoNotShow)
         {
-            _DrawGazeSequence();
+            _DrawGazeSequence(showGazeSequence == ShowGazeSequenceMode.ShowLocal);
         }
 
         if (showEndEffectorGoals)
@@ -188,10 +198,13 @@ public class AnimationEditGizmos : MonoBehaviour
         }
     }
 
-    private void _DrawGazeSequence()
+    private void _DrawGazeSequence(bool showLocal)
     {
         for (int gazeIndex = 1; gazeIndex < _gazeSequence.Count; ++gazeIndex)
         {
+            if (showLocal && !_gazeSequence[gazeIndex].isLocal)
+                continue;
+
             Vector3 p1 = _gazeSequence[gazeIndex - 1].targetPosition;
             Vector3 p2 = _gazeSequence[gazeIndex].targetPosition;
 

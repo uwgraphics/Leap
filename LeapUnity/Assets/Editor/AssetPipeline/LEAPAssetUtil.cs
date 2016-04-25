@@ -286,10 +286,14 @@ public static class LEAPAssetUtil
         // Get all bones on the model
         Transform[] bones = null;
         var modelController = model.GetComponent<ModelController>();
+        bool hasPosCurves = false;
         if (modelController == null)
         {
-            bones = new Transform[1];
-            bones[0] = model.transform;
+            hasPosCurves = true;
+            var subModels = ModelUtil.GetSubModels(model);
+            bones = new Transform[subModels.Length];
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                bones[boneIndex] = subModels[boneIndex].transform;
         }
         else
         {
@@ -297,8 +301,8 @@ public static class LEAPAssetUtil
         }
         int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
 
-        // 3 properties for the root position, 4 for the rotation of each bone (incl. root), 1 for each blend shape
-        AnimationCurve[] curves = new AnimationCurve[3 + bones.Length * 4 + numBlendShapes];
+        // 3 properties for position, 4 for rotation, 1 for each blend shape
+        AnimationCurve[] curves = new AnimationCurve[(hasPosCurves ? 7 * bones.Length : 3 + bones.Length * 4) + numBlendShapes];
         for (int curveIndex = 0; curveIndex < curves.Length; ++curveIndex)
             curves[curveIndex] = new AnimationCurve();
 
@@ -313,13 +317,30 @@ public static class LEAPAssetUtil
     /// <returns>Animation curves</returns>
     public static AnimationCurve[] GetAnimationCurvesFromClip(GameObject model, AnimationClip clip)
     {
+        // Get all bones on the model
+        Transform[] bones = null;
         var modelController = model.GetComponent<ModelController>();
-        int numBones = modelController == null ? 0 : modelController.NumberOfBones;
+        bool hasPosCurves = false;
+        if (modelController == null)
+        {
+            hasPosCurves = true;
+            var subModels = ModelUtil.GetSubModels(model);
+            bones = new Transform[subModels.Length];
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                bones[boneIndex] = subModels[boneIndex].transform;
+        }
+        else
+        {
+            bones = ModelUtil.GetAllBones(model);
+        }
         int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
-        AnimationCurve[] curves = new AnimationCurve[3 + numBones * 4 + numBlendShapes];
+        int rotCurveIndex = hasPosCurves ? 3 : 0;
+
+        // Get existing curve data
         AnimationClipCurveData[] curveData = AnimationUtility.GetAllCurves(clip, true);
 
         // Create empty curves for all bone properties
+        AnimationCurve[] curves = new AnimationCurve[(hasPosCurves ? bones.Length * 7 : 3 + bones.Length * 4) + numBlendShapes];
         int curveIndex = 0;
         for (curveIndex = 0; curveIndex < curves.Length; ++curveIndex)
         {
@@ -328,12 +349,12 @@ public static class LEAPAssetUtil
         }
 
         // Get curve data from the animation clip for each bone
-        for (int boneIndex = 0; boneIndex < numBones; ++boneIndex)
+        for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
             var bone = modelController.GetBone(boneIndex);
             string bonePath = ModelUtil.GetBonePath(bone);
             var curveDataForBone = curveData.Where(cd => cd.path == bonePath);
-            curveIndex = 3 + boneIndex * 4;
+            curveIndex = hasPosCurves ? boneIndex * 7 : 3 + boneIndex * 4;
 
             foreach (var curveDataForBoneProperty in curveDataForBone)
             {
@@ -341,49 +362,49 @@ public static class LEAPAssetUtil
                 {
                     case "m_LocalPosition.x":
 
-                        if (boneIndex == 0)
-                        {
+                        if (hasPosCurves)
+                            curves[curveIndex] = curveDataForBoneProperty.curve;
+                        else if (boneIndex == 0)
                             curves[0] = curveDataForBoneProperty.curve;
-                        }
 
                         break;
 
                     case "m_LocalPosition.y":
 
-                        if (boneIndex == 0)
-                        {
+                        if (hasPosCurves)
+                            curves[curveIndex] = curveDataForBoneProperty.curve;
+                        else if (boneIndex == 0)
                             curves[1] = curveDataForBoneProperty.curve;
-                        }
 
                         break;
 
                     case "m_LocalPosition.z":
 
-                        if (boneIndex == 0)
-                        {
+                        if (hasPosCurves)
+                            curves[curveIndex] = curveDataForBoneProperty.curve;
+                        else if (boneIndex == 0)
                             curves[2] = curveDataForBoneProperty.curve;
-                        }
 
                         break;
 
                     case "m_LocalRotation.x":
 
-                        curves[curveIndex] = curveDataForBoneProperty.curve;
+                        curves[curveIndex + rotCurveIndex] = curveDataForBoneProperty.curve;
                         break;
 
                     case "m_LocalRotation.y":
 
-                        curves[curveIndex + 1] = curveDataForBoneProperty.curve;
+                        curves[curveIndex + rotCurveIndex + 1] = curveDataForBoneProperty.curve;
                         break;
 
                     case "m_LocalRotation.z":
 
-                        curves[curveIndex + 2] = curveDataForBoneProperty.curve;
+                        curves[curveIndex + rotCurveIndex + 2] = curveDataForBoneProperty.curve;
                         break;
 
                     case "m_LocalRotation.w":
 
-                        curves[curveIndex + 3] = curveDataForBoneProperty.curve;
+                        curves[curveIndex + rotCurveIndex + 3] = curveDataForBoneProperty.curve;
                         break;
 
                     default:
@@ -405,7 +426,7 @@ public static class LEAPAssetUtil
             // Get curve data for blend shapes
             string blendShapePath = ModelUtil.GetBonePath(meshWithBlendShape.gameObject.transform);
             var curveDataForMesh = curveData.Where(cd => cd.path == blendShapePath && cd.propertyName == blendShapeName);
-            curveIndex = 3 + modelController.NumberOfBones * 4 + blendShapeIndex;
+            curveIndex = 3 + bones.Length * 4 + blendShapeIndex;
             if (curveDataForMesh != null & curveDataForMesh.Count() > 0)
                 curves[curveIndex] = curveDataForMesh.ToArray()[0].curve;
         }
@@ -421,52 +442,61 @@ public static class LEAPAssetUtil
     /// <param name="curves">Animation curves</param>
     public static void SetAnimationCurvesOnClip(GameObject model, AnimationClip clip, AnimationCurve[] curves)
     {
-        var modelController = model.GetComponent<ModelController>();
+        // Get all bones on the model
         Transform[] bones = null;
+        var modelController = model.GetComponent<ModelController>();
+        bool hasPosCurves = false;
         if (modelController == null)
         {
-            bones = new Transform[1];
-            bones[0] = model.transform;
+            hasPosCurves = true;
+            var subModels = ModelUtil.GetSubModels(model);
+            bones = new Transform[subModels.Length];
+            for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                bones[boneIndex] = subModels[boneIndex].transform;
         }
         else
         {
             bones = ModelUtil.GetAllBones(model);
         }
+        int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
+        int rotCurveIndex = hasPosCurves ? 3 : 0;
 
         // Set curves for bone properties
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
             var bone = bones[boneIndex];
             string bonePath = ModelUtil.GetBonePath(bone);
+            int curveIndex = hasPosCurves ? boneIndex * 7 : 3 + boneIndex * 4;
 
-            if (boneIndex == 0)
+            if (hasPosCurves || boneIndex == 0)
             {
-                // Set position curves on root bone
-                if (curves[0] != null && curves[0].keys.Length > 0)
-                    clip.SetCurve(bonePath, typeof(Transform), "localPosition.x", curves[0]);
-                if (curves[1] != null && curves[1].keys.Length > 0)
-                    clip.SetCurve(bonePath, typeof(Transform), "localPosition.y", curves[1]);
-                if (curves[2] != null && curves[2].keys.Length > 0)
-                    clip.SetCurve(bonePath, typeof(Transform), "localPosition.z", curves[2]);
+                int posCurveIndex = boneIndex == 0 ? 0 : curveIndex;
+
+                // Set position curves on bone
+                if (curves[posCurveIndex] != null && curves[posCurveIndex].keys.Length > 0)
+                    clip.SetCurve(bonePath, typeof(Transform), "localPosition.x", curves[posCurveIndex]);
+                if (curves[posCurveIndex + 1] != null && curves[posCurveIndex + 1].keys.Length > 0)
+                    clip.SetCurve(bonePath, typeof(Transform), "localPosition.y", curves[posCurveIndex + 1]);
+                if (curves[posCurveIndex + 2] != null && curves[posCurveIndex + 2].keys.Length > 0)
+                    clip.SetCurve(bonePath, typeof(Transform), "localPosition.z", curves[posCurveIndex + 2]);
             }
 
             // Set rotation curves
-            var curve = curves[3 + boneIndex * 4];
+            var curve = curves[curveIndex + rotCurveIndex];
             if (curve != null && curve.keys.Length > 0)
                 clip.SetCurve(bonePath, typeof(Transform), "localRotation.x", curve);
-            curve = curves[3 + boneIndex * 4 + 1];
+            curve = curves[curveIndex + rotCurveIndex + 1];
             if (curve != null && curve.keys.Length > 0)
                 clip.SetCurve(bonePath, typeof(Transform), "localRotation.y", curve);
-            curve = curves[3 + boneIndex * 4 + 2];
+            curve = curves[curveIndex + rotCurveIndex + 2];
             if (curve != null && curve.keys.Length > 0)
                 clip.SetCurve(bonePath, typeof(Transform), "localRotation.z", curve);
-            curve = curves[3 + boneIndex * 4 + 3];
+            curve = curves[curveIndex + rotCurveIndex + 3];
             if (curve != null && curve.keys.Length > 0)
                 clip.SetCurve(bonePath, typeof(Transform), "localRotation.w", curve);
         }
 
         // Set curves for blend shapes
-        int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
         for (int blendShapeIndex = 0; blendShapeIndex < numBlendShapes; ++blendShapeIndex)
         {
             // Get blend shape info

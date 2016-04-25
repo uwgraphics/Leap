@@ -1,4 +1,5 @@
-﻿using System;
+﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,9 +17,7 @@ public static class FilterUtil
     public static void Filter(float[] inData, float[] outData, float[] kernel)
     {
         if (inData.Length != outData.Length)
-        {
             throw new ArgumentException("Buffer for output data has different size from input data", "outData");
-        }
 
         for (int index1 = 0; index1 < inData.Length; ++index1)
         {
@@ -41,15 +40,16 @@ public static class FilterUtil
     /// <returns>Kernel</returns>
     public static float[] GetTentKernel1D(int size)
     {
-        if (size % 2 == 0)
-            throw new ArgumentException("Filter kernel must have odd size!", "size");
+        if (size < 1)
+            throw new ArgumentOutOfRangeException("Filter kernel must have size > 0", "size");
 
+        int halfSize = size / 2;
         float[] kernel = new float[size];
-        for (int kIndex = 0; kIndex <= size / 2; ++kIndex)
+        for (int kIndex = 0; kIndex <= halfSize; ++kIndex)
         {
-            int index1 = size / 2 + kIndex;
-            int index2 = size / 2 - kIndex;
-            kernel[index1] = kernel[index2] = ((float)index2 + 1) / (size / 2 + 1);
+            int index1 = halfSize + kIndex;
+            int index2 = halfSize - kIndex;
+            kernel[index1] = kernel[index2] = ((float)index2 + 1) / (halfSize + 1);
         }
 
         float sum = kernel.Sum();
@@ -58,5 +58,47 @@ public static class FilterUtil
 
         return kernel;
     }
-}
 
+    /// <summary>
+    /// Perform bilateral filtering of a 1D signal.
+    /// </summary>
+    /// <param name="inData">Input data</param>
+    /// <param name="outData">Filtered data</param>
+    /// <param name="size">Kernel size</param>
+    /// <param name="space">Space parameter</param>
+    /// <param name="range">Range parameter</param>
+    public static void BilateralFilter(float[] inData, float[] outData, int size, float space, float range)
+    {
+        if (inData.Length != outData.Length)
+            throw new ArgumentException("Buffer for output data has different size from input data", "outData");
+
+        if (size < 1)
+            throw new ArgumentOutOfRangeException("Filter kernel must have size > 0", "size");
+
+        int halfSize = size / 2;
+        for (int index1 = 0; index1 < inData.Length; ++index1)
+        {
+            float sum = 0f, sumw = 0f;
+            for (int index2 = Mathf.Max(0, index1 - halfSize);
+                index2 <= Math.Min(inData.Length - 1, index1 + halfSize); ++index2)
+            {
+                float w = Gaussian(Mathf.Abs(index2 - index1), space) * Gaussian(Mathf.Abs(inData[index1] - inData[index2]), range);
+                sum += w * inData[index2];
+                sumw += w;
+            }
+
+            outData[index1] = sum / sumw;
+        }
+    }
+
+    /// <summary>
+    /// Compute Gaussian function.
+    /// </summary>
+    /// <param name="x">x</param>
+    /// <param name="sd">sigma</param>
+    /// <returns>Gaussian value</returns>
+    public static float Gaussian(float x, float sd)
+    {
+        return (1f / (sd * Mathf.Sqrt(2f * Mathf.PI))) * Mathf.Exp(-x * x / (2f * sd * sd));
+    }
+}

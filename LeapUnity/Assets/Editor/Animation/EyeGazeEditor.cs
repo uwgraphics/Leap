@@ -51,21 +51,18 @@ public static class EyeGazeEditor
             if (overlappingStartFrame < newStartFrame)
             {
                 // Overlapping instance starts before the new instance
-                if (newStartFrame - overlappingStartFrame >= minEyeGazeLength)
+                if (newStartFrame - overlappingStartFrame >= minEyeGazeLength && !overlappingIsGazeAhead)
                 {
                     // Overlapping instance reaches fixation before the start of the new instance,
                     // so we can just trim the fixation phase
                     overlappingGazeInstance.FrameLength = newStartFrame - overlappingStartFrame;
 
-                    if (!overlappingIsGazeAhead)
-                    {
-                        // If overlapping instance is followed by a gaze-ahead instance,
-                        // the gaze-ahead instance must be removed
-                        var gazeAheadOverlappingInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(
-                            inst => inst.Animation.Name == overlappingInstance.Animation.Name + LEAPCore.gazeAheadSuffix);
-                        if (gazeAheadOverlappingInstance != null)
-                            timeline.RemoveAnimation(gazeAheadOverlappingInstance.InstanceId);
-                    }
+                    // If overlapping instance is followed by a gaze-ahead instance,
+                    // the gaze-ahead instance must be removed
+                    var gazeAheadOverlappingInstance = timeline.GetLayer(layerName).Animations.FirstOrDefault(
+                        inst => inst.Animation.Name == overlappingInstance.Animation.Name + LEAPCore.gazeAheadSuffix);
+                    if (gazeAheadOverlappingInstance != null)
+                        timeline.RemoveAnimation(gazeAheadOverlappingInstance.InstanceId);
                 }
                 else
                 {

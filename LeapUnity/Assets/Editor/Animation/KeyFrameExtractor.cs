@@ -114,12 +114,49 @@ public class KeyFrameExtractor
     }
 
     /// <summary>
+    /// If true, bilateral filter will be used to filter probability signals in keyframe inference,
+    /// otherwise a simple tent filter will be used.
+    /// </summary>
+    public bool UseBilateralFilter
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Space parameter of the bilateral filter.
+    /// </summary>
+    public float BilateralFilterSpace
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Range parameter of the bilateral filter.
+    /// </summary>
+    public float BilateralFilterRange
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
     /// Maximum width of a cluster of local key times corresponding to a single extracted key pose.
     /// </summary>
     public float MaxClusterWidth
     {
         get { return _maxClusterWidth; }
         set { _maxClusterWidth = value < 0 ? 0 : value; }
+    }
+
+    /// <summary>
+    /// Minimum probability value for a frame to be classified as keyframe.
+    /// </summary>
+    public virtual float MinKeyFrameP
+    {
+        get { return _minKeyFrameP; }
+        set { _minKeyFrameP = Mathf.Clamp01(value); }
     }
 
     /// <summary>
@@ -196,6 +233,7 @@ public class KeyFrameExtractor
     private float _endEffConstrWeight = 1f;
     private int _lowPassKernelSize = 5;
     private float _maxClusterWidth = 0.5f;
+    private float _minKeyFrameP = 0f;
 
     // Model and animation state:
     protected Transform[] _bones = null;
@@ -397,7 +435,7 @@ public class KeyFrameExtractor
     // Compute kinematic features of the animation
     protected virtual _KinematicFeatureSet _ComputeKinematicFeatures(Transform[] bones, AnimationClipInstance instance)
     {
-        _KinematicFeatureSet features = new _KinematicFeatureSet(bones, instance);
+        var features = new _KinematicFeatureSet(bones, instance);
 
         // Estimate bone accelerations and movement magnitudes
         for (int frameIndex = 0; frameIndex < instance.FrameLength; ++frameIndex)
@@ -665,13 +703,19 @@ public class KeyFrameExtractor
     {
         // Smooth the global probability signal
         p.CopyTo(p0, 0);
-        FilterUtil.Filter(p0, p, FilterUtil.GetTentKernel1D(LowPassKernelSize));
+        if (UseBilateralFilter)
+            FilterUtil.BilateralFilter(p0, p, LowPassKernelSize, BilateralFilterSpace, BilateralFilterRange);
+        else
+            FilterUtil.Filter(p0, p, FilterUtil.GetTentKernel1D(LowPassKernelSize));
 
         // Smooth the local probability signals
         if (UseRootPosition)
         {
             pRoot.CopyTo(p0Root, 0);
-            FilterUtil.Filter(p0Root, pRoot, FilterUtil.GetTentKernel1D(LowPassKernelSize));
+            if (UseBilateralFilter)
+                FilterUtil.BilateralFilter(p0Root, pRoot, LowPassKernelSize, BilateralFilterSpace, BilateralFilterRange);
+            else
+                FilterUtil.Filter(p0Root, pRoot, FilterUtil.GetTentKernel1D(LowPassKernelSize));
         }
         for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
         {
@@ -681,7 +725,10 @@ public class KeyFrameExtractor
             var data0 = CollectionUtil.GetRow<float>(pBones, boneIndex);
             CollectionUtil.SetRow<float>(p0Bones, boneIndex, data0);
             var data = new float[data0.Length];
-            FilterUtil.Filter(data0, data, FilterUtil.GetTentKernel1D(LowPassKernelSize));
+            if (UseBilateralFilter)
+                FilterUtil.BilateralFilter(data0, data, LowPassKernelSize, BilateralFilterSpace, BilateralFilterRange);
+            else
+                FilterUtil.Filter(data0, data, FilterUtil.GetTentKernel1D(LowPassKernelSize));
             CollectionUtil.SetRow<float>(pBones, boneIndex, data);
         }
     }
@@ -695,7 +742,8 @@ public class KeyFrameExtractor
         float lastP = 0f;
         for (int frameIndex = 1; frameIndex < instance.FrameLength - 1; ++frameIndex)
         {
-            if (p[frameIndex] > p[frameIndex - 1] && p[frameIndex] > p[frameIndex + 1])
+            if (p[frameIndex] > p[frameIndex - 1] && p[frameIndex] > p[frameIndex + 1] &&
+                p[frameIndex] >= MinKeyFrameP)
             {
                 // This is a candidate key frame
                 float time = frameIndex / ((float)LEAPCore.editFrameRate);

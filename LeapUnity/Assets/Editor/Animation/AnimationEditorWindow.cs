@@ -605,10 +605,10 @@ public class AnimationEditorWindow : EditorWindow
                     }
                     else if (e.shift && e.keyCode == KeyCode.D)
                     {
-                        bool show = !_animationEditGizmos.showGazeSequence;
-                        _animationEditGizmos.showGazeSequence =
-                            _animationEditGizmos.showGazeTargets =
-                            _animationEditGizmos.showEndEffectorGoals = show;
+                        bool show = _animationEditGizmos.showGazeSequence == AnimationEditGizmos.ShowGazeSequenceMode.DoNotShow;
+                        _animationEditGizmos.showGazeSequence = show ? AnimationEditGizmos.ShowGazeSequenceMode.ShowLocal :
+                            AnimationEditGizmos.ShowGazeSequenceMode.DoNotShow;
+                        _animationEditGizmos.showGazeTargets = _animationEditGizmos.showEndEffectorGoals = show;
                     }
                     else if (e.shift && e.keyCode == KeyCode.L)
                     {
@@ -634,14 +634,26 @@ public class AnimationEditorWindow : EditorWindow
             for (int gazeInstanceIndex = 0; gazeInstanceIndex < gazeLayer.Animations.Count; ++gazeInstanceIndex)
             {
                 var scheduledGazeInstance = gazeLayer.Animations[gazeInstanceIndex];
+                var prevScheduledGazeInstance = gazeInstanceIndex > 0 ?
+                    gazeLayer.Animations[gazeInstanceIndex - 1] : scheduledGazeInstance;
+                var nextScheduledGazeInstance = gazeInstanceIndex < gazeLayer.Animations.Count - 1 ?
+                    gazeLayer.Animations[gazeInstanceIndex + 1] : scheduledGazeInstance;
                 if (scheduledGazeInstance.Animation.Model == LastSelectedModel)
                 {
                     var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
 
+                    // Is the sequence local to the current time on the timeline?
+                    int curFrame = Timeline.CurrentFrame;
+                    int localStartFrame = Mathf.Min(prevScheduledGazeInstance.StartFrame,
+                        scheduledGazeInstance.StartFrame, nextScheduledGazeInstance.StartFrame);
+                    int localEndFrame = Mathf.Max(prevScheduledGazeInstance.EndFrame,
+                        scheduledGazeInstance.EndFrame, nextScheduledGazeInstance.EndFrame);
+                    bool isLocal = curFrame >= localStartFrame && curFrame <= localEndFrame;
+
                     // Add gaze instance description to the sequence
                     Vector3 targetPosition = gazeInstance.Target != null ? gazeInstance.Target.transform.position : gazeInstance.AheadTargetPosition;
-                    gazeSequence.Add(new AnimationEditGizmos.EyeGazeInstanceDesc(targetPosition,
-                        gazeInstance.HeadAlign, gazeInstance.TorsoAlign, gazeInstance.TurnBody));
+                    gazeSequence.Add(new AnimationEditGizmos.EyeGazeInstanceDesc(isLocal,
+                        targetPosition, gazeInstance.HeadAlign, gazeInstance.TorsoAlign, gazeInstance.TurnBody));
                     ++gazeIndex;
 
                     if (gazeInstance == currentGazeInstance)

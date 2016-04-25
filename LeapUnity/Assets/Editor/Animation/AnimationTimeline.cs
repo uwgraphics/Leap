@@ -717,10 +717,8 @@ public class AnimationTimeline
             string clipName = baseAnimation.Animation.Name + "-" + timelineContainer.Name;
             AnimationClip = LEAPAssetUtil.GetAnimationClipOnModel(clipName, model);
             if (AnimationClip == null)
-            {
                 // Create baked animation clip
                 AnimationClip = LEAPAssetUtil.CreateAnimationClipOnModel(clipName, model);
-            }
             
             // Create an array of animation curves for the clip
             _AnimationCurves = LEAPAssetUtil.CreateAnimationCurvesForModel(model);
@@ -731,9 +729,7 @@ public class AnimationTimeline
             // Create baked controller containers
             AnimController[] controllers = model.GetComponents<AnimController>();
             foreach (var controller in controllers)
-            {
                 _controllerContainers.Add(new BakedControllerContainer(controller, this));
-            }
         }
     }
 
@@ -1853,18 +1849,22 @@ public class AnimationTimeline
         {
             var model = bakedAnimationContainer.Model;
             Transform[] bones = null;
-            ModelController modelController = model.GetComponent<ModelController>();
-
-            // Get model bones
+            var modelController = model.GetComponent<ModelController>();
+            bool hasPosCurves = false;
             if (modelController == null)
             {
-                bones = new Transform[1];
-                bones[0] = model.transform;
+                hasPosCurves = true;
+                var subModels = ModelUtil.GetSubModels(model);
+                bones = new Transform[subModels.Length];
+                for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
+                    bones[boneIndex] = subModels[boneIndex].transform;
             }
             else
             {
                 bones = ModelUtil.GetAllBones(model);
             }
+            int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
+            int rotCurveIndex = hasPosCurves ? 3 : 0;
 
             // Compute current frame time
             float time = ((float)CurrentFrame) / LEAPCore.editFrameRate;
@@ -1873,50 +1873,42 @@ public class AnimationTimeline
             for (int boneIndex = 0; boneIndex < bones.Length; ++boneIndex)
             {
                 var bone = bones[boneIndex];
+                int curveIndex = hasPosCurves ? boneIndex * 7 : 3 + boneIndex * 4;
 
-                if (boneIndex == 0)
+                if (hasPosCurves || boneIndex == 0)
                 {
-                    // Key position on the root bone
-
+                    // Key position
+                    int posCurveIndex = boneIndex == 0 ? 0 : curveIndex;
                     var positionKeyframe = new Keyframe();
                     positionKeyframe.time = time;
-
                     positionKeyframe.value = bone.localPosition.x;
-                    bakedAnimationContainer._AnimationCurves[0].AddKey(positionKeyframe);
-
+                    bakedAnimationContainer._AnimationCurves[posCurveIndex].AddKey(positionKeyframe);
                     positionKeyframe.value = bone.localPosition.y;
-                    bakedAnimationContainer._AnimationCurves[1].AddKey(positionKeyframe);
-
+                    bakedAnimationContainer._AnimationCurves[posCurveIndex + 1].AddKey(positionKeyframe);
                     positionKeyframe.value = bone.localPosition.z;
-                    bakedAnimationContainer._AnimationCurves[2].AddKey(positionKeyframe);
+                    bakedAnimationContainer._AnimationCurves[posCurveIndex + 2].AddKey(positionKeyframe);
                 }
 
                 // Key rotation
-
                 var rotationKeyFrame = new Keyframe();
                 rotationKeyFrame.time = time;
-
                 rotationKeyFrame.value = bone.localRotation.x;
-                bakedAnimationContainer._AnimationCurves[3 + boneIndex * 4].AddKey(rotationKeyFrame);
-
+                bakedAnimationContainer._AnimationCurves[curveIndex + rotCurveIndex].AddKey(rotationKeyFrame);
                 rotationKeyFrame.value = bone.localRotation.y;
-                bakedAnimationContainer._AnimationCurves[3 + boneIndex * 4 + 1].AddKey(rotationKeyFrame);
-
+                bakedAnimationContainer._AnimationCurves[curveIndex + rotCurveIndex + 1].AddKey(rotationKeyFrame);
                 rotationKeyFrame.value = bone.localRotation.z;
-                bakedAnimationContainer._AnimationCurves[3 + boneIndex * 4 + 2].AddKey(rotationKeyFrame);
-
+                bakedAnimationContainer._AnimationCurves[curveIndex + rotCurveIndex  + 2].AddKey(rotationKeyFrame);
                 rotationKeyFrame.value = bone.localRotation.w;
-                bakedAnimationContainer._AnimationCurves[3 + boneIndex * 4 + 3].AddKey(rotationKeyFrame);
+                bakedAnimationContainer._AnimationCurves[curveIndex + rotCurveIndex + 3].AddKey(rotationKeyFrame);
             }
 
             // Next, bake blend shape properties
-            int numBlendShapes = modelController == null ? 0 : modelController.NumberOfBlendShapes;
             for (int blendShapeIndex = 0; blendShapeIndex < numBlendShapes; ++blendShapeIndex)
             {
                 var keyFrame = new Keyframe();
                 keyFrame.time = time;
                 keyFrame.value = modelController.GetBlendShapeWeight(blendShapeIndex);
-                int curveIndex = 3 + modelController.NumberOfBones * 4 + blendShapeIndex;
+                int curveIndex = 3 + bones.Length * 4 + blendShapeIndex;
                 bakedAnimationContainer._AnimationCurves[curveIndex].AddKey(keyFrame);
             }
 

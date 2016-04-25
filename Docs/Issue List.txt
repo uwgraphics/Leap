@@ -1,5 +1,21 @@
 Animation Editor:
 
+#142 [] In the baked animation, current eye gaze direction differs from target aligning direction (trgDirAlign)
+  - It's like something changes the final pose after gaze has been applied, even though IK is (or should be) inactive
+
+#141 [] More goddamn eye movement popping
+  - See the stupid goddamn mess at MakeSandwichDemo, frames 1208-1211
+  - Even the most basic fucking things about this gaze model are buggy and broken, I hate this shit
+  - Just before the gaze controller changes from Shifting to NoGaze state, something causes a discontinuous change in trgDirAlign (which then also becomes fixTrgDirAlign)
+  - srcDir seems to be behaving correctly
+  - GetOMRTargetDirection() gives the wrong result, it seems
+  - After ClampOMRToSource(), we get wrong trgDirAlign
+  - It seems that in preceding frames, source direction and target direction are both outside valid OMR, so our new trgDirAlign is what we get when clamping trgDir to identity
+  - Then at frame 1208, source direction is no longer outside OMR, so we clamp normally, leading to discontinuity
+  - This is almost certainly the problem, must implement better way to clamp to OMR
+
+#140 [] Inferred gaze instance timings are off compared to inferred gaze key times
+
 #139 [X] Torso direction sometimes discontinuous from shifting to fixation phase
   - See frame 110-111 in StealDiamond
 

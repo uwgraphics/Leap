@@ -498,8 +498,10 @@ public static class EyeGazeEditTestSceneManager
                     "BookShelfNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
 
-            // Extract eye tracking fixation frames
+            // Prepare eye gaze inference evaluations
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 749, 2618);
+            ComputeIntercoderReliabilityTargets(sceneName);
+            ComputeIntercoderReliabilityInstances(sceneName, 163, 2032);
         }
         else if (sceneName == "StealDiamondNew")
         {
@@ -540,8 +542,9 @@ public static class EyeGazeEditTestSceneManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
 
-            // Extract eye tracking fixation frames
+            // Prepare eye gaze inference evaluations
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 1066, 1359);
+            ComputeIntercoderReliabilityTargets(sceneName);
         }
         else if (sceneName == "WaitForBusNew")
         {
@@ -578,8 +581,9 @@ public static class EyeGazeEditTestSceneManager
             // Add timewarps to the animations
             AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
 
-            // Extract eye tracking fixation frames
+            // Prepare eye gaze inference evaluations
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 590, 1782);
+            ComputeIntercoderReliabilityInstances(sceneName, 131, 1323);
         }
         else if (sceneName == "StackBoxesNew")
         {
@@ -635,7 +639,7 @@ public static class EyeGazeEditTestSceneManager
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
 
             // Extract eye tracking fixation frames
-            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 544, 1486);
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 416, 1651);
         }
         else if (sceneName == "ChatWithFriend")
         {
@@ -721,8 +725,9 @@ public static class EyeGazeEditTestSceneManager
                     "MakeSandwichMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
 
-            // Extract eye tracking fixation frames
-            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 942, 1957);
+            // Prepare eye gaze inference evaluations
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 819, 1834);
+            ComputeIntercoderReliabilityTargets(sceneName);
         }
         else if (sceneName == "MakeSandwichDemo")
         {
@@ -773,7 +778,7 @@ public static class EyeGazeEditTestSceneManager
                     false, false, false));
 
             // Extract eye tracking fixation frames
-            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 756, 2763);
+            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 679, 2686);
         }
         else // if (sceneName == "InitialPose")
         {
@@ -898,5 +903,198 @@ public static class EyeGazeEditTestSceneManager
             inst.Animation.Model == model);
         EyeGazeInferenceModel.ExtractEyeTrackFixationFrames(timeline, baseInstance.InstanceId, framePath, outFramePath,
             startFrame, endFrame);
+    }
+
+    /// <summary>
+    /// Compute intercoder reliability for gaze instance annotations.
+    /// </summary>
+    /// <param name="sceneName">Scene name</param>
+    /// <param name="startFrame">Scene start frame</param>
+    /// <param name="endFrame">Scene end frame</param>
+    public static void ComputeIntercoderReliabilityInstances(string sceneName,
+        int sceneStartFrame, int sceneEndFrame)
+    {
+        // Get data paths for current scene
+        string path1 = "C:/Local Users/tpejsa/OneDrive/Gaze Editing Project/Annotations/GazeShifts/Tom/"
+            + sceneName + "#GazeShifts.csv";
+        string path2 = "C:/Local Users/tpejsa/OneDrive/Gaze Editing Project/Annotations/GazeShifts/"
+            + sceneName + "#GazeShifts.csv";
+
+        // Load data from both coders
+        var data1 = new CSVDataFile();
+        data1.AddAttribute("EventType", typeof(string));
+        data1.AddAttribute("StartFrame", typeof(int));
+        data1.AddAttribute("EndFrame", typeof(int));
+        data1.ReadFromFile(path1);
+        var data2 = new CSVDataFile();
+        data2.AddAttribute("EventType", typeof(string));
+        data2.AddAttribute("StartFrame", typeof(int));
+        data2.AddAttribute("EndFrame", typeof(int));
+        data2.ReadFromFile(path2);
+
+        // For each frame, determine how it was categorized by each coder
+        bool[] gazeShiftFrames1 = new bool[sceneEndFrame - sceneStartFrame + 1];
+        bool[] gazeShiftFrames2 = new bool[sceneEndFrame - sceneStartFrame + 1];
+        for (int frameIndex = sceneStartFrame; frameIndex <= sceneEndFrame; ++frameIndex)
+        {
+            // Does coder 1 say it is a gaze shift?
+            gazeShiftFrames1[frameIndex - sceneStartFrame] = false;
+            for (int rowIndex = 0; rowIndex < data1.NumberOfRows; ++rowIndex)
+            {
+                string eventType = data1[rowIndex].GetValue<string>(0);
+                if (eventType != "GazeShift")
+                    continue;
+
+                int startFrame = data1[rowIndex].GetValue<int>(1);
+                int endFrame = data1[rowIndex].GetValue<int>(2);
+                if (frameIndex >= startFrame && frameIndex <= endFrame)
+                {
+                    gazeShiftFrames1[frameIndex - sceneStartFrame] = true;
+                    break;
+                }
+            }
+
+            // Does coder 2 say it is a gaze shift?
+            gazeShiftFrames2[frameIndex - sceneStartFrame] = false;
+            for (int rowIndex = 0; rowIndex < data2.NumberOfRows; ++rowIndex)
+            {
+                string eventType = data2[rowIndex].GetValue<string>(0);
+                if (eventType != "GazeShift")
+                    continue;
+
+                int startFrame = data2[rowIndex].GetValue<int>(1);
+                int endFrame = data2[rowIndex].GetValue<int>(2);
+                if (frameIndex >= startFrame && frameIndex <= endFrame)
+                {
+                    gazeShiftFrames2[frameIndex - sceneStartFrame] = true;
+                    break;
+                }
+            }
+        }
+
+        // Generate frame indices
+        int[] frameIndexes = new int[sceneEndFrame - sceneStartFrame + 1];
+        for (int frameIndex = sceneStartFrame; frameIndex <= sceneEndFrame; ++frameIndex)
+            frameIndexes[frameIndex - sceneStartFrame] = frameIndex;
+
+        // Report Cohen's kappa
+        float kappa = StatUtil.ComputeCohenKappa<int, bool>(frameIndexes,
+            new bool[] {true, false}, gazeShiftFrames1, gazeShiftFrames2);
+        Debug.Log(string.Format("Gaze instance intercoder reliability for scene {0} is kappa = {1}",
+            sceneName, kappa));
+    }
+
+    /// <summary>
+    /// Compute intercoder reliability for gaze target annotations.
+    /// </summary>
+    /// <param name="sceneName">Scene name</param>
+    public static void ComputeIntercoderReliabilityTargets(string sceneName)
+    {
+        // Get target names and data paths for current scene
+        string path1 = "C:/Local Users/tpejsa/OneDrive/Gaze Editing Project/Annotations/GazeTargets/Tom/"
+            + sceneName + "#GazeTargets.csv";
+        string path2 = "C:/Local Users/tpejsa/OneDrive/Gaze Editing Project/Annotations/GazeTargets/"
+            + sceneName + "#GazeTargets.csv";
+        string[] targetNames = null;
+        switch (sceneName)
+        {
+            case "BookShelfNew":
+
+                targetNames = new string[] { "Book1", "Book2", "Book3", "Background" };
+                break;
+
+            case "MakeSandwich":
+
+                targetNames = new string[] { "Bread1", "Bread2", "Bacon", "Swiss", "Turkey", "Lettuce", "Tomato", "Background" };
+                break;
+
+            case "StealDiamondNew":
+
+                targetNames = new string[] { "Gem", "Background" };
+                break;
+
+            default:
+
+                throw new ArgumentException(sceneName + " was not coded for gaze targets by multiple coders!", sceneName);
+        }
+
+        // Load data from both coders
+        var data1 = new CSVDataFile();
+        data1.AddAttribute("Target", typeof(string));
+        data1.AddAttribute("Frame", typeof(int));
+        data1.ReadFromFile(path1);
+        var data2 = new CSVDataFile();
+        data2.AddAttribute("Target", typeof(string));
+        data2.AddAttribute("Frame", typeof(int));
+        data2.ReadFromFile(path2);
+
+        // Get all frame indexes and remove duplicates from the dataset
+        var frameSet1 = new HashSet<int>();
+        for (int rowIndex = 0; rowIndex < data1.NumberOfRows; ++rowIndex)
+        {
+            int frame = data1[rowIndex].GetValue<int>(1);
+            string targetName = data1[rowIndex].GetValue<string>(0);
+
+            if (!targetNames.Contains(targetName))
+                continue;
+
+            if (frameSet1.Contains(frame))
+                data1.RemoveData(rowIndex--);
+            else
+                frameSet1.Add(frame);
+        }
+        var frameSet2 = new HashSet<int>();
+        for (int rowIndex = 0; rowIndex < data2.NumberOfRows; ++rowIndex)
+        {
+            int frame = data2[rowIndex].GetValue<int>(1);
+            string targetName = data2[rowIndex].GetValue<string>(0);
+
+            if (!targetNames.Contains(targetName))
+                continue;
+
+            if (frameSet2.Contains(frame))
+                data2.RemoveData(rowIndex--);
+            else
+                frameSet2.Add(frame);
+        }
+        var frameSet = new HashSet<int>(frameSet1.Intersect(frameSet2));
+        
+        // Get all per-frame targets
+        var frames1 = new List<int>();
+        var frames2 = new List<int>();
+        var frameTargets1 = new List<string>();
+        var frameTargets2 = new List<string>();
+        for (int rowIndex = 0; rowIndex < data1.NumberOfRows; ++rowIndex)
+        {
+            int frame = data1[rowIndex].GetValue<int>(1);
+            string targetName = data1[rowIndex].GetValue<string>(0);
+
+            if (!frameSet.Contains(frame))
+                continue;
+
+            frames1.Add(frame);
+            frameTargets1.Add(targetName);
+        }
+        for (int rowIndex = 0; rowIndex < data2.NumberOfRows; ++rowIndex)
+        {
+            int frame = data2[rowIndex].GetValue<int>(1);
+            string targetName = data2[rowIndex].GetValue<string>(0);
+
+            if (!frameSet.Contains(frame))
+                continue;
+
+            frames2.Add(frame);
+            frameTargets2.Add(targetName);
+        }
+
+        if (!frames1.SequenceEqual(frames2))
+            throw new Exception(string.Format("One or both gaze target data sets for {0} specify frames out of order",
+                sceneName));
+
+        // Report Cohen's kappa
+        float kappa = StatUtil.ComputeCohenKappa<int, string>(frames1.ToArray(),
+            targetNames.ToArray(), frameTargets1.ToArray(), frameTargets2.ToArray());
+        Debug.Log(string.Format("Gaze target intercoder reliability for scene {0} is kappa = {1}",
+            sceneName, kappa));
     }
 }
