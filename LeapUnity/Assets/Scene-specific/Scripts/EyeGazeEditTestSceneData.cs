@@ -11,6 +11,7 @@ public class EyeGazeEditTestSceneData : MonoBehaviour
     public GameObject modelRoman = null;
     public GameObject modelNormanNew = null;
     public GameObject modelRomanTall = null;
+    public GameObject modelNormanElliot = null;
     public GameObject modelTestExpressiveGazeEnv = null;
     public GameObject modelWindowWashingEnv = null;
     public GameObject modelPassSodaEnv = null;

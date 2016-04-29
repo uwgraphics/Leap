@@ -27,7 +27,8 @@ public static class EyeGazeEditor
         int maxEyeGazeGapLength = Mathf.RoundToInt(LEAPCore.maxEyeGazeGapLength * LEAPCore.editFrameRate);
         int minEyeGazeLength = Mathf.RoundToInt(LEAPCore.minEyeGazeLength * LEAPCore.editFrameRate);
 
-        // Make sure the new instance isn't too short
+        // Adjust instance timing
+        newStartFrame = newStartFrame < 1 ? 1 : newStartFrame;
         newInstance.FrameLength = newInstance.FrameLength >= minEyeGazeLength ? newInstance.FrameLength : minEyeGazeLength;
 
         // Trim or remove overlapping eye gaze instances

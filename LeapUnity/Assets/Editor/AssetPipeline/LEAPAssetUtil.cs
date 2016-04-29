@@ -538,32 +538,26 @@ public static class LEAPAssetUtil
     }
 
     /// <summary>
-    /// Make sure animation clips added to the character model's Animation component are
-    /// correctly associated with the model.
+    /// Make sure animated properties in the animation clip are correctly linked to the model's properties.
     /// </summary>
     /// <param name="model">Character model</param>
-    public static void FixModelAnimationClipAssoc(GameObject model)
+    /// <param name="clip">Animation clip</param>
+    public static void RelinkAnimationClipToModel(GameObject model, AnimationClip clip)
     {
-        AnimationClip[] clips = GetAllAnimationClipsOnModel(model);
         Transform rootBone = model.tag == "Agent" ? ModelUtil.FindRootBone(model) : model.transform;
-
-        foreach (var clip in clips)
+        AnimationClipCurveData[] allCurvesData = AnimationUtility.GetAllCurves(clip, true);
+        clip.ClearCurves();
+        foreach (var curveData in allCurvesData)
         {
-            AnimationClipCurveData[] allCurvesData = AnimationUtility.GetAllCurves(clip, true);
-            clip.ClearCurves();
+            string boneName = curveData.path.LastIndexOf('/') >= 0 ?
+                curveData.path.Substring(curveData.path.LastIndexOf('/') + 1) : curveData.path;
+            Transform bone = ModelUtil.FindBone(rootBone, boneName);
 
-            foreach (var curveData in allCurvesData)
+            if (bone != null)
             {
-                string boneName = curveData.path.LastIndexOf('/') >= 0 ?
-                    curveData.path.Substring(curveData.path.LastIndexOf('/') + 1) : curveData.path;
-                Transform bone = ModelUtil.FindBone(rootBone, boneName);
-
-                if (bone != null)
-                {
-                    // Bone found, make sure the curve has the right path
-                    string bonePath = ModelUtil.GetBonePath(bone);
-                    clip.SetCurve(bonePath, curveData.type, curveData.propertyName, curveData.curve);
-                }
+                // Bone found, make sure the curve has the right path
+                string bonePath = ModelUtil.GetBonePath(bone);
+                clip.SetCurve(bonePath, curveData.type, curveData.propertyName, curveData.curve);
             }
         }
     }

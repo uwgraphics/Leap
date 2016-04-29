@@ -1,10 +1,6 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,PassSodaAGaze1Start-Ahead,1,-1,8,null,"2.04689 4.764687 0.9429958",0.992233,0.9351962,True
-Norman,PassSodaAGaze1,9,15,27,PassSodaEnv-0,"0 0 0",0.1106103,0.137956,True
-Norman,PassSodaAGaze2,28,18,56,Roman-3,"0 0 0",0.8969954,0.3388533,True
-Norman,PassSodaAGaze3,57,22,81,Floor-0,"0 0 0",0.4324919,0,True
-Norman,PassSodaAGaze4,82,17,99,Roman-4,"0 0 0",0.4883973,0.5193151,True
-Norman,PassSodaAGaze5,100,10,110,Roman-0,"0 0 0",1,0.056379,True
-Norman,PassSodaAGaze6,111,14,125,PassSodaEnv-1,"0 0 0",0.003724695,0,True
-Norman,PassSodaAGaze7,126,13,187,Roman-5,"0 0 0",1,0.04650612,True
-Norman,PassSodaAGaze8,188,24,228,Roman-2,"0 0 0",1,0.04971999,True
+Norman,PassSodaAGaze1Start-Ahead,1,-1,9,null,"2.04689 4.764687 0.9429958",0.992233,0.9351962,True
+Norman,PassSodaAGaze1,10,14,29,PassSodaEnv-0,"0 0 0",1,0.3035256,True
+Norman,PassSodaAGaze2,30,13,83,Roman-0,"0 0 0",0.8600413,0.2494761,True
+Norman,PassSodaAGaze3,84,17,101,Roman-1,"0 0 0",0.4621811,0.6580836,True
+Norman,PassSodaAGaze3-Ahead,102,-1,228,null,"-0.56195 4.734243 2.680873",0,0,True

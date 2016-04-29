@@ -86,18 +86,31 @@ public class EyeGazeInferenceModel
     public void InferEyeGazeInstances(AnimationTimeline timeline, int baseAnimationInstanceId,
         string layerName = "Gaze", string envLayerName = "Environment")
     {
-        // Timer for measuring inference duration
-        System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
-        timer.Start();
+        // Timers for measuring inference duration
+        System.Diagnostics.Stopwatch timerInstances = new System.Diagnostics.Stopwatch();
+        System.Diagnostics.Stopwatch timerTargets = new System.Diagnostics.Stopwatch();
+        System.Diagnostics.Stopwatch timerAlignments = new System.Diagnostics.Stopwatch();
+        
 
+        // Perform gaze inference
+        timerInstances.Start();
         InferEyeGazeTimings(timeline, baseAnimationInstanceId, layerName);
+        timerInstances.Stop();
+        timerTargets.Start();
         TargetInferenceModel.InferTargets(timeline, baseAnimationInstanceId, layerName, envLayerName);
         TargetInferenceModel.DestroyResources();
+        timerTargets.Stop();
+        timerAlignments.Start();
         InferEyeGazeAlignments(timeline, baseAnimationInstanceId, layerName);
+        timerAlignments.Stop();
 
         // Show inference duration
-        float elapsedTime = timer.ElapsedMilliseconds / 1000f;
-        Debug.Log(string.Format("Gaze inference complete in {0} seconds", elapsedTime));
+        float elapsedTime = (timerInstances.ElapsedMilliseconds + timerTargets.ElapsedMilliseconds + timerAlignments.ElapsedMilliseconds) / 1000f;
+        float elapsedTimeInstances = timerInstances.ElapsedMilliseconds / 1000f;
+        float elapsedTimeTargets = timerTargets.ElapsedMilliseconds / 1000f;
+        float elapsedTimeAlignments = timerAlignments.ElapsedMilliseconds / 1000f;
+        Debug.Log(string.Format("Gaze inference complete in {0} s: {1} s for instances, {2} for targets, {3} for alignments",
+            elapsedTime, elapsedTimeInstances, elapsedTimeTargets, elapsedTimeAlignments));
     }
 
     /// <summary>
@@ -878,7 +891,7 @@ public class EyeGazeInferenceModel
                 var target = gazeInstance.Target.transform;
                 while (target != null)
                 {
-                    if (objTargets.Any(t => t == target.name))
+                    if (objTargets.Any(t => target.name.StartsWith(t)))
                     {
                         isBackground = false;
                         ++numObjFixations;
@@ -904,7 +917,7 @@ public class EyeGazeInferenceModel
                         var target = gazeInstance.Target.transform;
                         while (target != null)
                         {
-                            if (frameTargetPair.Value == target.name)
+                            if (target.name.StartsWith(frameTargetPair.Value))
                             {
                                 isSameTarget = true;
                                 break;

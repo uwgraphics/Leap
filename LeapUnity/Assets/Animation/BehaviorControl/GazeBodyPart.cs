@@ -439,17 +439,10 @@ public class GazeBodyPart
             return;
         }
 
-        // TODO: remove this when done testing eye inference
-        //return;
-        //
         // Compute blend weight
-        //_weight = GazeController.weight;
         _weight = GazeController.weight * (IsEye ? 1f :
             (LEAPCore.gazeBlendWeightOverride >= 0f ? Mathf.Clamp01(LEAPCore.gazeBlendWeightOverride) :
             1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir))));
-        //
-        //Debug.LogWarning(string.Format("Blend weight for {0} is {1}", GazeBodyPartType, weight1));
-        //
 
         // Gaze directions and joint rotations
         Vector3 trgDir, trgDirAlign, srcDir, baseDir;
@@ -573,10 +566,7 @@ public class GazeBodyPart
         // Get OMR-constrained gaze direction
         Quaternion curRot = Top.localRotation;
         RotateTowards(trgDir);
-        if (!fix)
-            ClampOMRToSource();
-        else
-            ClampOMRToFixSource();
+        ClampOMR();
         trgDir = Direction;
         Top.localRotation = curRot;
 
@@ -611,83 +601,28 @@ public class GazeBodyPart
     /// </summary>
     public void ClampOMR()
     {
-        ClampOMR(Quaternion.identity);
-    }
+        if (!CheckOMR())
+            return;
 
-    /// <summary>
-    /// Clamp current eye orientation to OMR limits relative to
-    /// gaze shift source orientation.
-    /// </summary>
-    public void ClampOMRToSource()
-    {
-        Vector3 trgDir = Direction;
-        SetDirection(0, _SourceDirection);
-        Roll = 0f;
-        Quaternion srcRot = Top.localRotation;
-        SetDirection(0, trgDir);
-        Roll = 0f;
-        ClampOMR(srcRot);
-    }
-
-    /// <summary>
-    /// Clamp current eye orientation to OMR limits relative to
-    /// gaze shift source orientation.
-    /// </summary>
-    public void ClampOMRToFixSource()
-    {
-        Vector3 trgDir = Direction;
-        SetDirection(0, _FixSourceDirection);
-        Roll = 0f;
-        Quaternion srcRot = Top.localRotation;
-        SetDirection(0, trgDir);
-        Roll = 0f;
-        ClampOMR(srcRot);
-    }
-
-    /// <summary>
-    /// Clamp current eye orientation to OMR limits.
-    /// </summary>
-    /// <param name="origin">Origin eye gaze direction to which current eye orientation should be clamped</param>
-    public void ClampOMR(Quaternion origin)
-    {
         // TODO: use a smarter/more efficient method to compute the clamped orientation,
         // e.g., find closest point on OMR ellipse to line between source and target orientations (in yaw-pitch space)
-        Quaternion trgRot = Top.localRotation;
-        Top.localRotation = origin;
-        bool srcOMRReached = CheckOMR();
+        var trgRot = Top.localRotation;
         for (float t = 0f; t <= 1f; )
         {
             // Update joint rotation
             Quaternion prevRot = Top.localRotation;
-            Top.localRotation = Quaternion.Slerp(origin, trgRot, t);
+            Top.localRotation = Quaternion.Slerp(Quaternion.identity, trgRot, t);
 
             // Has the joint violated OMR limits?
             if (CheckOMR())
             {
-                if (!srcOMRReached)
-                {
-                    // Yes, previous rotation is as far as we can go
-                    Top.localRotation = prevRot;
-                    return;
-                }
-            }
-            else
-            {
-                if (srcOMRReached)
-                {
-                    // We were outside OMR range at the start, but now we are back in valid range
-                    srcOMRReached = false;
-                }
+                // Yes, previous rotation is as far as we can go
+                Top.localRotation = prevRot;
+                return;
             }
 
             // Advance joint rotation
             t += 0.01f;
-        }
-
-        if (srcOMRReached)
-        {
-            // Both source and target orientations were outside valid OMR range, so we clamp to zero instead
-            ClampOMR(Quaternion.identity);
         }
     }
 
@@ -756,17 +691,13 @@ public class GazeBodyPart
     // Apply gaze fixation for this body part
     public void _ApplyFix()
     {
-        // Apply the new body posture
+        // Apply the new body part posture
         RotateTowards(_fixTrgDirAlign);
         if (GazeBodyPartType == GazeBodyPartType.Torso)
             _SolveBodyIK();
-        
-        if (IsEye)
-        {
+        else if (IsEye)
             // Fixation must not violate OMR
-            if (CheckOMR())
-                ClampOMRToFixSource();
-        }
+            ClampOMR();
     }
 
     // Stop gaze  fixation for this body part
@@ -783,10 +714,14 @@ public class GazeBodyPart
         _maxVelocity = 0f;
         _curVelocity = 0f;
         _latency = 0f;
-        _curInOMR = _adjInOMR = inOMR;
-        _curOutOMR = _adjOutOMR = outOMR;
-        _curUpOMR = _adjUpOMR = upOMR;
-        _curDownOMR = _adjDownOMR = downOMR;
+        _adjInOMR = inOMR;
+        _adjOutOMR = outOMR;
+        _adjUpOMR = upOMR;
+        _adjDownOMR = downOMR;
+        _curInOMR = _curInOMR <= 0f ? _adjInOMR : _curInOMR;
+        _curOutOMR = _curOutOMR <= 0f ? _adjOutOMR : _curOutOMR;
+        _curUpOMR = _curUpOMR <= 0f ? _adjUpOMR : _curUpOMR;
+        _curDownOMR = _curDownOMR <= 0f ? _adjDownOMR : _curDownOMR;
         _srcDir0 = _fixTrgDirAlign; // source direction is initialized from current direction at gaze fixation end
         _srcDir = _srcDir0;
         _trgDir = _srcDir0;
@@ -826,10 +761,10 @@ public class GazeBodyPart
         // Adjust OMR by IEP
         float pitchAdj = 1f / 360f * pitch + 0.75f;
         float yawAdj = 1f / 360f * yaw + 0.75f;
-        _curInOMR = _adjInOMR = inOMR * yawAdj;
-        _curOutOMR = _adjOutOMR = outOMR * yawAdj;
-        _curUpOMR = _adjUpOMR = upOMR * pitchAdj;
-        _curDownOMR = _adjDownOMR = downOMR * pitchAdj;
+        _adjInOMR = inOMR * yawAdj;
+        _adjOutOMR = outOMR * yawAdj;
+        _adjUpOMR = upOMR * pitchAdj;
+        _adjDownOMR = downOMR * pitchAdj;
     }
 
     // Update gaze direction that will align the body part with the target
@@ -957,12 +892,9 @@ public class GazeBodyPart
         RotateTowards(_curDir);
         if (GazeBodyPartType == GazeBodyPartType.Torso)
             _SolveBodyIK();
-
-        if (IsEye && CheckOMR())
-        {
+        else if (IsEye)
             // If OMR has been reached, clamp the rotation
-            ClampOMRToSource(); // TODO: keep an eye out for discontinuities in orientation (LOL)
-        }
+            ClampOMR(); // TODO: keep an eye out for discontinuities in orientation (LOL)
     }
 
     // Get current OMR
@@ -981,7 +913,7 @@ public class GazeBodyPart
         Quaternion trgRot = ModelUtil.LookAtRotation(Top, _gazeController.CurrentGazeTargetPosition);
         Quaternion curRot = Top.localRotation;
         Top.localRotation = trgRot;
-        ClampOMRToSource();
+        ClampOMR();
         Quaternion trgRotOMR = Top.localRotation;
         Top.localRotation = curRot;
         
@@ -1042,11 +974,20 @@ public class GazeBodyPart
         if (!IsEye)
             return;
 
+        // Compute OMR for the new frame
         float headVelocity = _gazeController.head._curVelocity;
-        _curUpOMR = _adjUpOMR * (-1f / 600f * headVelocity + 1f);
-        _curDownOMR = _adjDownOMR * (-1f / 600f * headVelocity + 1f);
-        _curInOMR = _adjInOMR * (-1f / 600f * headVelocity + 1f);
-        _curOutOMR = _adjOutOMR * (-1f / 600f * headVelocity + 1f);
+        float newUpOMR = _adjUpOMR * (-1f / 600f * headVelocity + 1f);
+        float newDownOMR = _adjDownOMR * (-1f / 600f * headVelocity + 1f);
+        float newInOMR = _adjInOMR * (-1f / 600f * headVelocity + 1f);
+        float newOutOMR = _adjOutOMR * (-1f / 600f * headVelocity + 1f);
+
+        // Compute actual OMR as a weighted combination of previous and new
+        float coeff = 0.85f / 12f; // weight (< 1) / OMR difference
+        _curUpOMR = coeff * Mathf.Abs(_curUpOMR - newUpOMR) * (_curUpOMR - newUpOMR) + newUpOMR;
+        _curDownOMR = coeff * Mathf.Abs(_curDownOMR - newDownOMR) * (_curDownOMR - newDownOMR) + newDownOMR;
+        _curInOMR = coeff * Mathf.Abs(_curInOMR - newInOMR) * (_curInOMR - newInOMR) + newInOMR;
+        _curOutOMR = coeff * Mathf.Abs(_curOutOMR - newOutOMR) * (_curOutOMR - newOutOMR) + newOutOMR;
+        // TODO: this is a stupid hack to smooth out OMR discontinuities
     }
 
     // Solve for body posture using an IK solver

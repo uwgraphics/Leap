@@ -332,11 +332,14 @@ public class LEAPMenu
         }
     }
 
-    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", true)]
-    private static bool ValidateFixAnimationClipAssoc()
+    [MenuItem("LEAP/Animation/Relink Animation to Model", true)]
+    private static bool ValidateRelinkAnimationClipToModel()
     {
         GameObject obj = Selection.activeGameObject;
-        if (obj == null || obj.GetComponent<Animation>() == null)
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var timeline = wnd.Timeline;
+        if (obj == null || obj.GetComponent<Animation>() == null ||
+            !timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.Any(inst => inst.Animation.Model == obj))
         {
             return false;
         }
@@ -344,11 +347,15 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Animation/Fix Animation Clip Assoc.", false)]
-    private static void FixAnimationClipAssoc()
+    [MenuItem("LEAP/Animation/Relink Animation to Model", false)]
+    private static void RelinkAnimationClipToModel()
     {
         GameObject obj = Selection.activeGameObject;
-        LEAPAssetUtil.FixModelAnimationClipAssoc(obj);
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var timeline = wnd.Timeline;
+        var baseInstance = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations
+            .FirstOrDefault(inst => inst.Animation.Model == obj).Animation as AnimationClipInstance;
+        LEAPAssetUtil.RelinkAnimationClipToModel(obj, baseInstance.AnimationClip);
     }
 
 
@@ -741,6 +748,96 @@ public class LEAPMenu
     private static void TestMakeSandwichDemo()
     {
         EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwichDemo");
+    }
+
+    [MenuItem("LEAP/Scenes/PassSoda-Eyes", true)]
+    private static bool ValidateTestPassSodaEyes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/PassSoda-Eyes", false)]
+    private static void TestPassSodaEyes()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("PassSoda-Eyes");
+    }
+
+    [MenuItem("LEAP/Scenes/WalkConesNew-Eyes", true)]
+    private static bool ValidateTestWalkConesNewEyes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/WalkConesNew-Eyes", false)]
+    private static void TestWalkConesNewEyes()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("WalkConesNew-Eyes");
+    }
+
+    [MenuItem("LEAP/Scenes/StealDiamondNew-Eyes", true)]
+    private static bool ValidateTestStealDiamondNewEyes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StealDiamondNew-Eyes", false)]
+    private static void TestStealDiamondNewEyes()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("StealDiamondNew-Eyes");
+    }
+
+    [MenuItem("LEAP/Scenes/ChatWithFriend-Eyes", true)]
+    private static bool ValidateTestChatWithFriendEyes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/ChatWithFriend-Eyes", false)]
+    private static void TestChatWithFriendEyes()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("ChatWithFriend-Eyes");
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich-Eyes", true)]
+    private static bool ValidateTestMakeSandwichEyes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich-Eyes", false)]
+    private static void TestMakeSandwichEyes()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich-Eyes");
     }
 
     [MenuItem("LEAP/Capture Video/[None]", true)]

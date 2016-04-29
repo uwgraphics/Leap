@@ -222,11 +222,21 @@ public class EyeGazeTargetInferenceModel
         int startFrame = timeline.GetAnimationStartFrame(eyeGazeInstanceId);
         int fixationStartFrame = startFrame + eyeGazeInstance.FixationStartFrame;
 
-        // Get scene scale
-        float sceneScale = 80f;
-        // TODO: calculate based on scene extents
+        // Hide filtered objects
+        var manipObjs = GameObject.FindGameObjectsWithTag("ManipulatedObject");
+        var manipObjsToReactivate = new HashSet<GameObject>();
+        foreach (var manipObj in manipObjs)
+        {
+            if (LEAPCore.gazeInferenceTaskRelevantObjectFilter.Any(obj => obj == manipObj.name) &&
+                manipObj.active)
+            {
+                manipObj.active = false;
+                manipObjsToReactivate.Add(manipObj);
+            }
+        }
 
-        // Get model height
+        // Get scene and character model scale
+        float sceneScale = 80f; // TODO: calculate based on scene extents
         timeline.ResetModelsAndEnvironment();
         float modelHeight = gazeController.head.Top.position.y;
 
@@ -388,7 +398,6 @@ public class EyeGazeTargetInferenceModel
         var targetPos = _GetWorldPositionAtTexel(tx, ty, sceneScale);
         if (LEAPCore.writeGazeInferenceRenderTextures)
         {
-            // TODO: mark the target location in the textures
             _WriteRenderTextureToFile(_rtPTotal, "../Matlab/EyeGazeInference/" + eyeGazeInstance.Name + "-PTotal.png", tx, ty);
             _WriteRenderTextureToFile(_rtView, "../Matlab/EyeGazeInference/" + eyeGazeInstance.Name + ".png", tx, ty);
         }
@@ -414,7 +423,7 @@ public class EyeGazeTargetInferenceModel
             gazeTarget.transform.position = targetPos;
             gazeTarget.tag = "GazeTarget";
 
-            // Set name for gaze target object
+            // Determine name for gaze target object
             string targetName = "";
             int targetIndex = 0;
             do
@@ -425,6 +434,10 @@ public class EyeGazeTargetInferenceModel
 
         // Destroy all those materials that got instantiated for scene objects
         Resources.UnloadUnusedAssets();
+
+        // Unhide filtered models
+        foreach (var manipObj in manipObjsToReactivate)
+            manipObj.active = true;
 
         return gazeTarget;
     }
@@ -555,7 +568,7 @@ public class EyeGazeTargetInferenceModel
             {
                 var modelMaterials = ModelUtil.GetModelMaterials(curModel, false);
                 foreach (var mat in modelMaterials)
-                    mat.SetInt("_IsTaskRelevant", 1);
+                    mat.SetFloat("_TaskRelevance", 1f);
             }
         }
 
@@ -566,10 +579,10 @@ public class EyeGazeTargetInferenceModel
             {
                 bool isFiltered = LEAPCore.gazeInferenceTaskRelevantObjectFilter.Any(on =>
                     on == envModel.name || on == envModel.transform.parent.name);
-                int isTaskRelevant = (envModel.tag == "ManipulatedObject" || envModel.tag == "GazeTarget" ||
+                float taskRelevance = (envModel.tag == "ManipulatedObject" || envModel.tag == "GazeTarget" ||
                     envModel.transform.parent.tag == "ManipulatedObject" || envModel.transform.parent.tag == "GazeTarget")
-                    && !isFiltered ? 1 : 0;
-                envModel.renderer.material.SetInt("_IsTaskRelevant", isTaskRelevant);
+                    && !isFiltered ? 1f : 0f;
+                envModel.renderer.material.SetFloat("_TaskRelevance", taskRelevance);
             }
         }
     }
@@ -764,7 +777,7 @@ public class EyeGazeTargetInferenceModel
         for (int childIndex = 0; childIndex < targetParent.childCount; ++childIndex)
         {
             var child = targetParent.GetChild(childIndex);
-            if (child.tag == "GazeTarget" &&
+            if (child.tag == "GazeTarget" && !child.name.EndsWith("Helper") &&
                 Vector3.Distance(targetPos, child.position) < LEAPCore.gazeInferenceMaxColocatedTargetDistance)
             {
                 return child.gameObject;

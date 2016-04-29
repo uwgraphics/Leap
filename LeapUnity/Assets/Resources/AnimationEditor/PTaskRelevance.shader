@@ -4,7 +4,7 @@
 	{
 		_LEyePosition ("Left Eye Position", Vector) = (0, 0, 0, 1)
 		_REyePosition ("Right Eye Position", Vector) = (0, 0, 0, 1)
-		_IsTaskRelevant ("Is Task Relevant", Int) = 0
+		_TaskRelevance ("Task Relevance", Float) = 0
 	}
 
 	SubShader
@@ -23,7 +23,7 @@
 
 				float4 _LEyePosition;
 				float4 _REyePosition;
-				int _IsTaskRelevant;
+				float _TaskRelevance;
 
 				struct v2f
 				{
@@ -50,7 +50,7 @@
 					float3 n = normalize(IN.worldNormal);
 
 					// Compute probability
-					float p = _IsTaskRelevant ? clamp(dot(eyeDir, n), 0, 1) : 0;
+					float p = _TaskRelevance * clamp(abs(dot(eyeDir, n)), 0, 1); // TODO: abs needed to handle models that have normals pointing inward
 					return float4(p, p, p, 1);
 				}
 			ENDCG

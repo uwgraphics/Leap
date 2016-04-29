@@ -125,7 +125,7 @@ public class EyeGazeInstance : AnimationControllerInstance
 
     // TODO: not happy about having elements of runtime state in this class
     protected bool _isActive = false;
-    protected bool _blendIn, _blendOut;
+    protected bool _blendIn, _blendOut, _zeroWeight;
 
     /// <summary>
     /// Constructor.
@@ -211,7 +211,7 @@ public class EyeGazeInstance : AnimationControllerInstance
             }
             else
             {
-                GazeController.weight = 1f;
+                GazeController.weight = _zeroWeight ? 0f : 1f;
             }
         }
         
@@ -230,19 +230,24 @@ public class EyeGazeInstance : AnimationControllerInstance
         // Register handler for gaze controller state changes
         GazeController.StateChange += new StateChangeEvtH(GazeController_StateChange);
 
-        if (!GazeController.fixGaze && GazeController.FixGazeTarget == null)
+        if (!GazeController.fixGaze && (GazeController.FixGazeTarget == null ||
+            GazeController.FixGazeTarget == GazeController.HelperTarget ||
+            GazeController.FixGazeTarget == GazeController.FixHelperTarget))
         {
-            // This gaze instance is preceded by a period of unconstrained gaze,
-            // so enable gaze fixation and start blending in
-            GazeController.fixGaze = true;
-            _blendIn = true;
+            if (Target != null)
+            {
+                // This gaze instance is preceded by a period of unconstrained gaze,
+                // so enable gaze fixation and start blending in
+                GazeController.fixGaze = true;
+                _blendIn = true;
+            }
+            else
+                _zeroWeight = true;
         }
         else if (Target == null)
-        {
             // This gaze instance is followed by a period of unconstrained gaze,
             // so start blending out
             _blendOut = true;
-        }
 
         // Initiate gaze shift to the target
         GazeController.head.align = Mathf.Clamp01(HeadAlign);
@@ -279,6 +284,7 @@ public class EyeGazeInstance : AnimationControllerInstance
 
         // Disable blending
         _blendIn = _blendOut = false;
+        _zeroWeight = false;
 
         // Unregister handler for gaze controller state changes
         GazeController.StateChange -= GazeController_StateChange;

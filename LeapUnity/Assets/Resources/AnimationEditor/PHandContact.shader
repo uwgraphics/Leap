@@ -50,7 +50,7 @@
 					float3 n = normalize(IN.worldNormal);
 
 					// Compute probability
-					float p = _HandContactWeight * clamp(dot(eyeDir, n), 0, 1);
+					float p = _HandContactWeight * clamp(abs(dot(eyeDir, n)), 0, 1); // TODO: abs needed to handle models that have normals pointing inward
 					return float4(p, p, p, 1);
 				}
 			ENDCG

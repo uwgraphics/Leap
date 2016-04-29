@@ -85,9 +85,8 @@ public class LimbIKSolver : IKSolver
             // Rotate shoulder to align wrist with goal
             cur_n = (_wrist.position - _shoulder.position).normalized;
             goal_n.Normalize();
-            Quaternion spqi = Quaternion.Inverse(_shoulder.parent.rotation);
-            Vector3 lcl_curn = spqi * cur_n;
-            Vector3 lcl_goaln = spqi * goal_n;
+            Vector3 lcl_curn = _shoulder.InverseTransformDirection(cur_n);
+            Vector3 lcl_goaln = _shoulder.InverseTransformDirection(goal_n);
             _shoulder.localRotation = Quaternion.FromToRotation(lcl_curn, lcl_goaln) * _shoulder.localRotation;
             Quaternion sq = _shoulder.rotation;
 
@@ -110,9 +109,7 @@ public class LimbIKSolver : IKSolver
             _shoulder.localRotation = Quaternion.Slerp(lcl_sq0, _shoulder.localRotation, goal.weight);
             _elbow.localRotation = Quaternion.Slerp(lcl_eq0, _elbow.localRotation, goal.weight);
             if (goal.preserveAbsoluteRotation)
-            {
                 _wrist.rotation = Quaternion.Slerp(_wrist.rotation, wq0, goal.weight);
-            }
         }
     }
 

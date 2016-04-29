@@ -150,6 +150,7 @@ public static class ModelUtil
     {
         var children = new List<GameObject>();
         _GetSubModels(model, children);
+        children.RemoveAll(sm => sm.tag == "EndEffectorTarget" || sm.tag == "ManipulatedObjectHandle");
 
         return children.ToArray();
     }
@@ -157,9 +158,6 @@ public static class ModelUtil
     // Get all models that are below the specified model in the scene hierarchy.
     private static void _GetSubModels(GameObject model, List<GameObject> subModels)
     {
-        if (!IsSubModel(model))
-            return;
-
         subModels.Add(model);
 
         for (int childIndex = 0; childIndex < model.transform.childCount; ++childIndex)
@@ -167,16 +165,6 @@ public static class ModelUtil
             var child = model.transform.GetChild(childIndex).gameObject;
             _GetSubModels(child, subModels);
         }
-    }
-
-    /// <summary>
-    /// true if the specified model is part of another model, false otherwise.
-    /// </summary>
-    /// <param name="model">Model</param>
-    /// <returns>true if the specified model is a submodel, false otherwise</returns>
-    public static bool IsSubModel(GameObject model)
-    {
-        return model.tag != "EndEffectorTarget" && model.tag != "ManipulatedObjectHandle";
     }
 
     /// <summary>
@@ -642,6 +630,7 @@ public static class ModelUtil
             {
                 child.parent = null;
                 GameObject.DestroyImmediate(child.gameObject);
+                --childIndex;
             }
         }
     }

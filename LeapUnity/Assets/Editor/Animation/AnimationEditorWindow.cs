@@ -211,7 +211,7 @@ public class AnimationEditorWindow : EditorWindow
         }
 
         // Show current position on the timeline
-        GUI.Label(new Rect(210, 10, 100, 40), string.Format("{0} / {1}", Timeline.CurrentFrame, Timeline.FrameLength));
+        GUI.Label(new Rect(210, 10, 100, 40), string.Format("{0} / {1}", Timeline.CurrentFrame, Timeline.FrameLength - 1));
 
         // Update playback speed
         GUI.Label(new Rect(240, 30, 20, 19), "X");

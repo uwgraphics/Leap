@@ -1,9 +1,32 @@
 Animation Editor:
 
+#146 [] YET MORE EYE POPPING!!! WTF?! When will this nightmare end???
+  - See MakeSandwichDemo, frames 1309-1311
+  - At frame 1310-1311, a new gaze shift begins
+  - fixTrgDirAlign is discontinuous 1309-1310
+  - It's because of a huge shift in OMR (13 to 27!)
+
+#145 [X] Yet more goddamn stupid eye popping, this time just before a gaze shift begins
+  - See MakeSandwich, frames 215-217
+  - There is a sizeable change in OMR 216-217, but the pop occurs 215-216 and is much too big
+  - There is also a shift in fixTrgDirAlign 216-217, but again the pop occurs a frame later and is bigger than that
+  - Problem unrelated to OMR
+  - Yep, gaze direction that gets baked at frame 216 is garbage, but fixTrgDirAlign is OK
+  - fixGaze somehow gets set to false, causing _ApplyFix() to not get called!
+  - fixGaze seems to be false for the whole instance - unclear how gaze even works at all!
+  - Problem is in EyeGazeInstance, which fails to update fixGaze correctly
+
+#144 [X] Hand contact term in gaze target inference is zero for some models that are about to be manipulated
+  - E.g., any object in MakeSandwich scene
+ 
+#143 [X] Task relevance term in gaze target inference is zero for some models that have ManipulatedObject tag
+  - E.g., tomatoes in MakeSandwich scene
+  - I think it's because some models have normals pointing inward - yep, that was it!
+	
 #142 [] In the baked animation, current eye gaze direction differs from target aligning direction (trgDirAlign)
   - It's like something changes the final pose after gaze has been applied, even though IK is (or should be) inactive
 
-#141 [] More goddamn eye movement popping
+#141 [X] More goddamn eye movement popping
   - See the stupid goddamn mess at MakeSandwichDemo, frames 1208-1211
   - Even the most basic fucking things about this gaze model are buggy and broken, I hate this shit
   - Just before the gaze controller changes from Shifting to NoGaze state, something causes a discontinuous change in trgDirAlign (which then also becomes fixTrgDirAlign)
