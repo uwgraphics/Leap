@@ -43,12 +43,14 @@ public struct GazeControllerState : IAnimControllerState
         public Vector3 trgDir;
         public Vector3 trgDirAlign;
         public float rotParam;
+        public bool useLongArc;
         public Vector3 curDir;
         public bool isFix;
         public Vector3 fixSrcDir0;
         public Vector3 fixSrcDir;
         public Vector3 fixTrgDir;
         public Vector3 fixTrgDirAlign;
+        public bool fixUseLongArc;
         public float weight;
     }
 
@@ -702,6 +704,7 @@ public class GazeController : AnimController
         _InitAmplitude();
         _InitOMR();
         _InitTargetDirections();
+        _InitLongArcGazeShift();
         _InitLatencies();
         _InitMaxVelocities();
     }
@@ -833,6 +836,13 @@ public class GazeController : AnimController
         _InitHeadTargetDirection();
     }
 
+    // Should gaze shift be performed along the longer rotational arc?
+    protected virtual void _InitLongArcGazeShift()
+    {
+        torso._InitLongArcGazeShift();
+        head._InitLongArcGazeShift();
+    }
+
     // Initialize target gaze directions for the torso
     protected virtual void _InitTorsoTargetDirection()
     {
@@ -850,18 +860,10 @@ public class GazeController : AnimController
         float fullDistRot = Vector3.Angle(srcDir, trgDir);
         float align = fullDistRot > 0f ?
             Mathf.Clamp01((minDistRot + (fullDistRot - minDistRot) * torso._Align)/fullDistRot) : 1f;
-        Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDir), align);
+        Quaternion rotAlign = Quaternion.FromToRotation(srcDir, trgDir);
+        rotAlign = Quaternion.Slerp(Quaternion.identity, rotAlign, align);
         trgDirAlign = rotAlign * srcDir;
         torso._TargetDirectionAlign = trgDirAlign;
-    }
-
-    // Initialize target gaze directions for the eyes
-    protected virtual void _InitEyeTargetDirections()
-    {
-        lEye._InitTargetDirection();
-        lEye._InitOMRTargetDirection();
-        rEye._InitTargetDirection();
-        rEye._InitOMRTargetDirection();
     }
 
     // Initialize target gaze direction of the head
@@ -899,10 +901,19 @@ public class GazeController : AnimController
         float headDistRotFull = Vector3.Angle(headSrcDir, headTrgDir);
         float headAlign = headDistRotFull > 0f ?
             Mathf.Clamp01((headDistRotMin + (headDistRotFull - headDistRotMin) * head._Align) / headDistRotFull) : 1f;
-        Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity,
-            Quaternion.FromToRotation(headSrcDir, headTrgDir), headAlign);
+        Quaternion rotAlign = Quaternion.FromToRotation(headSrcDir, headTrgDir);
+        rotAlign = Quaternion.Slerp(Quaternion.identity, rotAlign, headAlign);
         Vector3 headTrgDirAlign = rotAlign * head._SourceDirection;
         head._TargetDirectionAlign = headTrgDirAlign;
+    }
+
+    // Initialize target gaze directions for the eyes
+    protected virtual void _InitEyeTargetDirections()
+    {
+        lEye._InitTargetDirection();
+        lEye._InitOMRTargetDirection();
+        rEye._InitTargetDirection();
+        rEye._InitOMRTargetDirection();
     }
     
     // Initialize latency times of all gaze body parts

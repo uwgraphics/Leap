@@ -940,9 +940,9 @@ public static class EyeGazeEditor
             "curVelocity = {2} [maxVelocity = {3}], latency = {4}, cur*OMR = ({5}, {6}, {7}, {8}), " +
             "baseDir = ({9}, {10}, {11}), " +
             "srcDir0 = ({12}, {13}, {14}), srcDir = ({15}, {16}, {17}), trgDir = ({18}, {19}, {20}), trgDirAlign = ({21}, {22}, {23}), " +
-            "rotParam = {24}, curDir = ({25}, {26}, {27}), " +
-            "isFix = {28}, fixSrcDir0 = ({29}, {30}, {31}), fixSrcDir = ({32}, {33}, {34}), fixTrgDir = ({35}, {36}, {37}), " +
-            "fixTrgDirAlign = ({38}, {39}, {40}), weight = {41}",
+            "rotParam = {24}, useLongArc = {25}, curDir = ({26}, {27}, {28}), " +
+            "isFix = {29}, fixSrcDir0 = ({30}, {31}, {32}), fixSrcDir = ({33}, {34}, {35}), fixTrgDir = ({36}, {37}, {38}), " +
+            "fixTrgDirAlign = ({39}, {40}, {41}), fixUseLongArc = {42}, weight = {43}",
             ((GazeBodyPartType)state.gazeBodyPartType).ToString(),
             state.curAlign, state.curVelocity, state.maxVelocity, state.latency,
             state.curInOMR, state.curOutOMR, state.curUpOMR, state.curDownOMR,
@@ -950,11 +950,12 @@ public static class EyeGazeEditor
             state.srcDir0.x, state.srcDir0.y, state.srcDir0.z,
             state.srcDir.x, state.srcDir.y, state.srcDir.z,
             state.trgDir.x, state.trgDir.y, state.trgDir.z,
-            state.trgDirAlign.x, state.trgDirAlign.y, state.trgDirAlign.z, state.rotParam,
+            state.trgDirAlign.x, state.trgDirAlign.y, state.trgDirAlign.z, state.rotParam, state.useLongArc,
             state.curDir.x, state.curDir.y, state.curDir.z,
             state.isFix, state.fixSrcDir0.x, state.fixSrcDir0.y, state.fixSrcDir0.z,
             state.fixSrcDir.x, state.fixSrcDir.y, state.fixSrcDir.z,
             state.fixTrgDir.x, state.fixTrgDir.y, state.fixTrgDir.z,
-            state.fixTrgDirAlign.x, state.fixTrgDirAlign.y, state.fixTrgDirAlign.z, state.weight));
+            state.fixTrgDirAlign.x, state.fixTrgDirAlign.y, state.fixTrgDirAlign.z,
+            state.fixUseLongArc, state.weight));
     }
 }

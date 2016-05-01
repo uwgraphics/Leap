@@ -205,10 +205,11 @@ public static class ModelUtil
         }
         else
         {
-            var submodels = GetSubModels(obj);
-            foreach (var submodel in submodels)
-                if (submodel.tag == "EndEffectorTarget")
-                    endEffectorTargets.Add(submodel.transform);
+            var subModels = new List<GameObject>();
+            _GetSubModels(obj, subModels);
+            foreach (var subModel in subModels)
+                if (subModel.tag == "EndEffectorTarget")
+                    endEffectorTargets.Add(subModel.transform);
         }
 
         return endEffectorTargets.ToArray();

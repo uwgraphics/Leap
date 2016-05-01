@@ -421,6 +421,7 @@ public static class EyeGazeEditTestSceneManager
 
             // Extract eye tracking fixation frames
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 970, 2045);
+            ComputeIntercoderReliabilityInstances(sceneName, 91, 1165);
         }
         else if (sceneName == "WalkConesNew")
         {
@@ -465,6 +466,22 @@ public static class EyeGazeEditTestSceneManager
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelBookShelfNewEnv.SetActive(true);
 
+            // Set book layout
+            var envController = testScenes.modelBookShelfNewEnv.GetComponent<EnvironmentController>();
+            var book1 = envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1");
+            var book2 = envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2");
+            var book3 = envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3");
+            var endEffectorTargets = ModelUtil.GetEndEffectorTargets(envController.gameObject);
+            var book1Handle = endEffectorTargets.FirstOrDefault(t => t.name == "Book1Handle");
+            var book2Handle = endEffectorTargets.FirstOrDefault(t => t.name == "Book2Handle");
+            var book3Handle = endEffectorTargets.FirstOrDefault(t => t.name == "Book3Handle");
+            book1.transform.localPosition = new Vector3(-8.2f, 2.27f, -1.63f);
+            book2.transform.localPosition = new Vector3(-7.99f, 2.53f, -0.56f);
+            book3.transform.localPosition = new Vector3(-8f, 3.96f, -1.64f);
+            book1Handle.localPosition = new Vector3(-7.47f, 2.50f, -1.63f);
+            book2Handle.localPosition = new Vector3(-7.98f, 2.55f, -0.42f);
+            book3Handle.localPosition = new Vector3(-7.4f, 3.83f, -1.39f);
+            
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
 
@@ -481,16 +498,12 @@ public static class EyeGazeEditTestSceneManager
             EyeGazeEditor.PrintEyeGaze(timeline);
 
             // Create environment animations
-            var envController = testScenes.modelBookShelfNewEnv.GetComponent<EnvironmentController>();
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1"),
-                    false, false, false));
+                new AnimationClipInstance("BookShelfNewBook1", book1, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2"),
-                    false, false, false));
+                new AnimationClipInstance("BookShelfNewBook2", book2, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3"),
-                    false, false, false));
+                new AnimationClipInstance("BookShelfNewBook3", book3, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "BookShelfNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
@@ -500,6 +513,50 @@ public static class EyeGazeEditTestSceneManager
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 749, 2618);
             ComputeIntercoderReliabilityTargets(sceneName);
             ComputeIntercoderReliabilityInstances(sceneName, 163, 2032);
+        }
+        else if (sceneName == "BookShelfNew-Edits")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelBookShelfNewEnv.SetActive(true);
+
+            // Set book layout
+            var envController = testScenes.modelBookShelfNewEnv.GetComponent<EnvironmentController>();
+            var book1 = envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book1");
+            var book2 = envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book2");
+            var book3 = envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3");
+            var endEffectorTargets = ModelUtil.GetEndEffectorTargets(envController.gameObject);
+            var book1Handle = endEffectorTargets.FirstOrDefault(t => t.name == "Book1Handle");
+            var book2Handle = endEffectorTargets.FirstOrDefault(t => t.name == "Book2Handle");
+            var book3Handle = endEffectorTargets.FirstOrDefault(t => t.name == "Book3Handle");
+            book1.transform.localPosition = new Vector3(-8.2f, 3.93f, -1.63f);
+            book2.transform.localPosition = new Vector3(-7.99f, 4.18f, -0.37f);
+            book3.transform.localPosition = new Vector3(-8f, 3.96f, -0.08f);
+            book1Handle.localPosition = new Vector3(-7.44f, 3.8f, -1.47f);
+            book2Handle.localPosition = new Vector3(-7.81f, 3.72f, -0.16f);
+            book3Handle.localPosition = new Vector3(-7.32f, 3.8f, 0.15f);
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelBookShelfNewEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("BookShelfNew", testScenes.modelNormanNew);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("BookShelfNewBook1", book1, false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("BookShelfNewBook2", book2, false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("BookShelfNewBook3", book3, false, false, false));
         }
         else if (sceneName == "StealDiamondNew")
         {

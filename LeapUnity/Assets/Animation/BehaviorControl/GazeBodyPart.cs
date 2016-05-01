@@ -168,6 +168,14 @@ public class GazeBodyPart
     }
 
     /// <summary>
+    /// If true, gaze shift is performed along longer rotational arc.
+    /// </summary>
+    public bool _UseLongArc
+    {
+        get { return _useLongArc; }
+    }
+
+    /// <summary>
     /// Gaze latency of the body part.
     /// </summary>
     public float _Latency
@@ -248,12 +256,14 @@ public class GazeBodyPart
     private Vector3 _trgDir = Vector3.zero;
     private Vector3 _trgDirAlign = Vector3.zero;
     private float _rotParam = 0f;
+    private bool _useLongArc = false;
     private Vector3 _curDir = Vector3.zero;
     private bool _isFix = false;
     private Vector3 _fixSrcDir0 = Vector3.zero;
     private Vector3 _fixSrcDir = Vector3.zero;
     private Vector3 _fixTrgDir = Vector3.zero;
     private Vector3 _fixTrgDirAlign = Vector3.zero;
+    private bool _fixUseLongArc = false;
     private float _weight = 1f; // for logging purposes
 
     /// <summary>
@@ -440,8 +450,9 @@ public class GazeBodyPart
         }
 
         // Compute blend weight
-        _weight = GazeController.weight * (IsEye ? 1f :
-            (LEAPCore.gazeBlendWeightOverride >= 0f ? Mathf.Clamp01(LEAPCore.gazeBlendWeightOverride) :
+        float weightOverride = GazeBodyPartType == GazeBodyPartType.Torso ?
+            LEAPCore.gazeTorsoBlendWeightOverride : LEAPCore.gazeHeadBlendWeightOverride;
+        _weight = GazeController.weight * (IsEye ? 1f : (weightOverride >= 0f ? weightOverride :
             1f - Mathf.Clamp01(Vector3.Dot(direction, _baseDir))));
 
         // Gaze directions and joint rotations
@@ -686,6 +697,7 @@ public class GazeBodyPart
         {
             _fixSrcDir0 = _fixSrcDir = _fixTrgDir = _fixTrgDirAlign = Direction;
         }
+        _fixUseLongArc = _useLongArc;
     }
 
     // Apply gaze fixation for this body part
@@ -727,6 +739,7 @@ public class GazeBodyPart
         _trgDir = _srcDir0;
         _trgDirAlign = _srcDir0;
         _rotParam = 0f;
+        _useLongArc = false;
         _curDir = _srcDir0;
     }
 
@@ -734,6 +747,30 @@ public class GazeBodyPart
     public void _InitTargetDirection()
     {
         _trgDir = GetTargetDirection(_gazeController.CurrentGazeTargetPosition);
+    }
+
+    // Should gaze shift be performed along the longer rotational arc?
+    public void _InitLongArcGazeShift()
+    {
+        // Get source, target, and root directions
+        Vector3 srcDir = GeometryUtil.ProjectVectorOntoPlane(_srcDir, Vector3.up).normalized;
+        Vector3 trgDir = GeometryUtil.ProjectVectorOntoPlane(_trgDir, Vector3.up).normalized;
+        Vector3 rootDir = GeometryUtil.ProjectVectorOntoPlane(GazeController.Root.forward, Vector3.up);
+
+        if (Mathf.Abs((srcDir - trgDir).magnitude) <= 0.0001f)
+        {
+            // No gaze shift
+            _useLongArc = false;
+            return;
+        }
+
+        // Does -rootDir lie along the shortest arc?
+        float rootAngle = Vector3.Angle(srcDir, -rootDir);
+        float trgAngle = Vector3.Angle(srcDir, trgDir);
+        float t = rootAngle / trgAngle;
+        Quaternion rootRot = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(srcDir, trgDir), t);
+        Vector3 dir = rootRot * srcDir;
+        _useLongArc = Vector3.Angle(dir, -rootDir) <= 1f;
     }
 
     // Initialize OMR-constrained target direction for the current gaze target
@@ -777,7 +814,8 @@ public class GazeBodyPart
         if (!IsEye)
         {
             float prevAlign = prevDistRot > 0.0001f ? prevDistRotAlign / prevDistRot : 1f;
-            Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(_srcDir, _trgDir), prevAlign);
+            Quaternion rotAlign = Quaternion.FromToRotation(_srcDir, _trgDir);
+            rotAlign = Quaternion.Slerp(Quaternion.identity, _useLongArc ? Quaternion.Inverse(rotAlign) : rotAlign, prevAlign);
             _trgDirAlign = rotAlign * _srcDir;
         }
         else
@@ -807,7 +845,8 @@ public class GazeBodyPart
         if (!IsEye)
         {
             float prevAlign = prevDistRot > 0.0001f ? prevDistRotAlign / prevDistRot : 1f;
-            Quaternion rotAlign = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(_fixSrcDir, _fixTrgDir), prevAlign);
+            Quaternion rotAlign = Quaternion.FromToRotation(_fixSrcDir, _fixTrgDir);
+            rotAlign = Quaternion.Slerp(Quaternion.identity, _fixUseLongArc ? Quaternion.Inverse(rotAlign) : rotAlign, prevAlign);
             _fixTrgDirAlign = rotAlign * _fixSrcDir;
         }
         else
@@ -1070,12 +1109,14 @@ public class GazeBodyPart
         state.trgDir = _trgDir;
         state.trgDirAlign = _trgDirAlign;
         state.rotParam = _rotParam;
+        state.useLongArc = _useLongArc;
         state.curDir = _curDir;
         state.isFix = _isFix;
         state.fixSrcDir0 = _fixSrcDir0;
         state.fixSrcDir = _fixSrcDir;
         state.fixTrgDir = _fixTrgDir;
         state.fixTrgDirAlign = _fixTrgDirAlign;
+        state.fixUseLongArc = _fixUseLongArc;
         state.weight = _weight;
 
         return state;
@@ -1110,12 +1151,14 @@ public class GazeBodyPart
         _trgDir = state.trgDir;
         _trgDirAlign = state.trgDirAlign;
         _rotParam = state.rotParam;
+        _useLongArc = state.useLongArc;
         _curDir = state.curDir;
         _isFix = state.isFix;
         _fixSrcDir0 = state.fixSrcDir0;
         _fixSrcDir = state.fixSrcDir;
         _fixTrgDir = state.fixTrgDir;
         _fixTrgDirAlign = state.fixTrgDirAlign;
+        _fixUseLongArc = state.fixUseLongArc;
         _weight = state.weight;
     }
 
@@ -1149,12 +1192,14 @@ public class GazeBodyPart
         state.trgDir = Vector3.zero;
         state.trgDirAlign = Vector3.zero;
         state.rotParam = 0f;
+        state.useLongArc = false;
         state.curDir = Vector3.zero;
         state.isFix = false;
         state.fixSrcDir0 = Vector3.zero;
         state.fixSrcDir = Vector3.zero;
         state.fixTrgDir = Vector3.zero;
         state.fixTrgDirAlign = Vector3.zero;
+        state.fixUseLongArc = false;
         state.weight = 1f;
 
         return state;

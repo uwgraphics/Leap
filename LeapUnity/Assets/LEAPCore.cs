@@ -173,10 +173,16 @@ public class LEAPCore : MonoBehaviour
     public static bool printDetailedGazeControllerState = false;
 
     /// <summary>
-    /// Blend weight with which gaze controller animation is applied to the body.
+    /// Blend weight with which gaze controller animation is applied to the head.
     /// </summary>
     /// <remarks>Set this to less than 0 to prevent blend weight overriding</remarks>
-    public static float gazeBlendWeightOverride = -1f;
+    public static float gazeHeadBlendWeightOverride = -1f;
+
+    /// <summary>
+    /// Blend weight with which gaze controller animation is applied to the torso.
+    /// </summary>
+    /// <remarks>Set this to less than 0 to prevent blend weight overriding</remarks>
+    public static float gazeTorsoBlendWeightOverride = -1f;
 
     /// <summary>
     /// Maximum width of a cluster of local gaze shift key times corresponding to a single extracted key pose.
@@ -401,7 +407,8 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("gazeConstraintActivationTime", typeof(float));
         cfgFile.AddParam("adjustGazeTargetForMovingBase", typeof(bool));
         cfgFile.AddParam("printDetailedGazeControllerState", typeof(bool));
-        cfgFile.AddParam("gazeBlendWeightOverride", typeof(float));
+        cfgFile.AddParam("gazeHeadBlendWeightOverride", typeof(float));
+        cfgFile.AddParam("gazeTorsoBlendWeightOverride", typeof(float));
         cfgFile.AddParam("gazeInferenceKeyMaxClusterWidth", typeof(float));
         cfgFile.AddParam("gazeInferenceLowPassKernelSize", typeof(int));
         cfgFile.AddParam("gazeInferenceUseBilateralFilter", typeof(bool));
@@ -454,8 +461,10 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<bool>("adjustGazeTargetForMovingBase") : adjustGazeTargetForMovingBase;
         printDetailedGazeControllerState = cfgFile.HasValue("printDetailedGazeControllerState") ?
             cfgFile.GetValue<bool>("printDetailedGazeControllerState") : printDetailedGazeControllerState;
-        gazeBlendWeightOverride = cfgFile.HasValue("gazeBlendWeightOverride") ?
-            cfgFile.GetValue<float>("gazeBlendWeightOverride") : gazeBlendWeightOverride;
+        gazeHeadBlendWeightOverride = cfgFile.HasValue("gazeHeadBlendWeightOverride") ?
+            cfgFile.GetValue<float>("gazeHeadBlendWeightOverride") : gazeHeadBlendWeightOverride;
+        gazeTorsoBlendWeightOverride = cfgFile.HasValue("gazeTorsoBlendWeightOverride") ?
+            cfgFile.GetValue<float>("gazeTorsoBlendWeightOverride") : gazeTorsoBlendWeightOverride;
         gazeInferenceKeyMaxClusterWidth = cfgFile.HasValue("gazeInferenceKeyMaxClusterWidth") ?
             cfgFile.GetValue<float>("gazeInferenceKeyMaxClusterWidth") : gazeInferenceKeyMaxClusterWidth;
         gazeInferenceLowPassKernelSize = cfgFile.HasValue("gazeInferenceLowPassKernelSize") ?

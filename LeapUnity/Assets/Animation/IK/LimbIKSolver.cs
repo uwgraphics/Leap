@@ -45,71 +45,71 @@ public class LimbIKSolver : IKSolver
                 continue;
 
             // Store the unadapted pose
-            Quaternion lcl_sq0 = _shoulder.localRotation;
-            Quaternion sq0 = _shoulder.rotation;
-            Quaternion lcl_eq0 = _elbow.localRotation;
-            Quaternion wq0 = goal.rotation;
+            Quaternion lqs0 = _shoulder.localRotation;
+            Quaternion qs0 = _shoulder.rotation;
+            Quaternion lqe0 = _elbow.localRotation;
+            Quaternion q0 = goal.rotation;
 
             // Determine if goal is within reach
-            Vector3 cur_n = _wrist.position - _shoulder.position;
-            Vector3 goal_n = goal.position - _shoulder.position;
-            float goal_l = goal_n.magnitude; // distance from shoulder to goal
-            Vector3 cur_es = _shoulder.position - _elbow.position;
-            Vector3 cur_ew = _wrist.position - _elbow.position;
-            float les = cur_es.magnitude;
-            float lew = cur_ew.magnitude;
-            cur_es.Normalize();
-            cur_ew.Normalize();
-            // Don't allow the arm to extend completley
-            if (goal_l >= LEAPCore.maxLimbExtension * (les + lew))
+            Vector3 v0 = _wrist.position - _shoulder.position;
+            Vector3 vGoal = goal.position - _shoulder.position;
+            float dGoal = vGoal.magnitude; // distance from shoulder to goal
+            Vector3 es = _shoulder.position - _elbow.position;
+            Vector3 ew = _wrist.position - _elbow.position;
+            float des = es.magnitude;
+            float dew = ew.magnitude;
+            es.Normalize();
+            ew.Normalize();
+            // Don't allow the arm to extend completely
+            if (dGoal >= LEAPCore.maxLimbExtension * (des + dew))
             {
-                goal_l = LEAPCore.maxLimbExtension * (les + lew);
-                goal_n = goal_n.normalized * goal_l;
+                dGoal = LEAPCore.maxLimbExtension * (des + dew);
+                vGoal = vGoal.normalized * dGoal;
 
                 //Debug.LogWarning(string.Format("Limb {0} cannot reach the goal", endEffectors[0]));
             }
 
             // If elbow is completely extended or collapsed, we reuse previous rot. axis
-            if (Mathf.Abs(Mathf.Abs(Vector3.Dot(cur_es, cur_ew)) - 1f) > 0.0001f)
-                _elbowAxis = Vector3.Cross(cur_es, cur_ew).normalized;
-            if (_isLeg)
-                _elbowAxis = -_elbowAxis;
+            if (Mathf.Abs(Mathf.Abs(Vector3.Dot(es, ew)) - 1f) > 0.0001f)
+                _elbowAxis = Vector3.Cross(es, ew).normalized;
 
             // Flex elbow to make the goal achievable
-            float eth = Vector3.Angle(cur_es, cur_ew);
-            float goal_coseth = (les * les + lew * lew - goal_l * goal_l) / (2f * les * lew);
-            float goal_eth = Mathf.Rad2Deg * Mathf.Acos(Mathf.Clamp(goal_coseth, -1f, 1f));
-            Vector3 lcl_eax = Quaternion.Inverse(_shoulder.rotation) * _elbowAxis;
-            _elbow.localRotation = Quaternion.AngleAxis(goal_eth - eth, lcl_eax) * _elbow.localRotation;
+            float eth = Vector3.Angle(es, ew);
+            float cosEthGoal = (des * des + dew * dew - dGoal * dGoal) / (2f * des * dew);
+            float ethGoal = Mathf.Rad2Deg * Mathf.Acos(Mathf.Clamp(cosEthGoal, -1f, 1f));
+            Vector3 lElbowAxis = Quaternion.Inverse(_shoulder.rotation) * _elbowAxis;
+            _elbow.localRotation = Quaternion.AngleAxis(ethGoal - eth, lElbowAxis) * _elbow.localRotation;
 
             // Rotate shoulder to align wrist with goal
-            cur_n = (_wrist.position - _shoulder.position).normalized;
-            goal_n.Normalize();
-            Vector3 lcl_curn = _shoulder.InverseTransformDirection(cur_n);
-            Vector3 lcl_goaln = _shoulder.InverseTransformDirection(goal_n);
-            _shoulder.localRotation = Quaternion.FromToRotation(lcl_curn, lcl_goaln) * _shoulder.localRotation;
-            Quaternion sq = _shoulder.rotation;
+            v0 = _wrist.position - _shoulder.position;
+            Vector3 lv0 = _shoulder.InverseTransformDirection(v0).normalized;
+            Vector3 lvGoal = _shoulder.InverseTransformDirection(vGoal).normalized;
+            Quaternion lqGoal = Quaternion.FromToRotation(lv0, lvGoal);
+            //_shoulder.localRotation = lqGoal * _shoulder.localRotation;
+            _shoulder.Rotate(Vector3.Cross(v0.normalized, vGoal.normalized).normalized,
+                Vector3.Angle(v0.normalized, vGoal.normalized), Space.World);
+            Quaternion qs = _shoulder.rotation;
 
             // Compute shoulder swivel angle
-            Quaternion sqref = sq;
-            float a = Quaternion.Dot(sq0, sqref);
-            float b = sqref.w * Vector3.Dot(goal_n, new Vector3(sq0.x, sq0.y, sq0.z)) -
-                sq0.w * Vector3.Dot(goal_n, new Vector3(sqref.x, sqref.y, sqref.z)) +
-                Vector3.Dot(new Vector3(sq0.x, sq0.y, sq0.z), Vector3.Cross(goal_n, new Vector3(sqref.x, sqref.y, sqref.z)));
+            Quaternion qsr = qs;
+            float a = Quaternion.Dot(qs0, qsr);
+            float b = qsr.w * Vector3.Dot(vGoal, new Vector3(qs0.x, qs0.y, qs0.z)) -
+                qs0.w * Vector3.Dot(vGoal, new Vector3(qsr.x, qsr.y, qsr.z)) +
+                Vector3.Dot(new Vector3(qs0.x, qs0.y, qs0.z), Vector3.Cross(vGoal, new Vector3(qsr.x, qsr.y, qsr.z)));
             float alpha = Mathf.Rad2Deg * Mathf.Atan2(a, b);
-            Quaternion sq1 = Quaternion.AngleAxis(-2f * alpha + Mathf.PI * Mathf.Rad2Deg, goal_n) * sqref;
-            Quaternion sq2 = Quaternion.AngleAxis(-2f * alpha - Mathf.PI * Mathf.Rad2Deg, goal_n) * sqref;
-            if (Quaternion.Dot(sq0, sq1) > Quaternion.Dot(sq0, sq2))
-                sq = sq1;
+            Quaternion qs1 = Quaternion.AngleAxis(-2f * alpha + Mathf.PI * Mathf.Rad2Deg, vGoal) * qsr;
+            Quaternion qs2 = Quaternion.AngleAxis(-2f * alpha - Mathf.PI * Mathf.Rad2Deg, vGoal) * qsr;
+            if (Quaternion.Dot(qs0, qs1) > Quaternion.Dot(qs0, qs2))
+                qs = qs1;
             else
-                sq = sq2;
-            _shoulder.localRotation = Quaternion.Inverse(_shoulder.parent.rotation) * sq;
+                qs = qs2;
+            _shoulder.localRotation = Quaternion.Inverse(_shoulder.parent.rotation) * qs;
 
             // Blend based on goal weight
-            _shoulder.localRotation = Quaternion.Slerp(lcl_sq0, _shoulder.localRotation, goal.weight);
-            _elbow.localRotation = Quaternion.Slerp(lcl_eq0, _elbow.localRotation, goal.weight);
+            _shoulder.localRotation = Quaternion.Slerp(lqs0, _shoulder.localRotation, goal.weight);
+            _elbow.localRotation = Quaternion.Slerp(lqe0, _elbow.localRotation, goal.weight);
             if (goal.preserveAbsoluteRotation)
-                _wrist.rotation = Quaternion.Slerp(_wrist.rotation, wq0, goal.weight);
+                _wrist.rotation = Quaternion.Slerp(_wrist.rotation, q0, goal.weight);
         }
     }
 

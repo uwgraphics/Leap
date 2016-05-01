@@ -1,10 +1,19 @@
 Animation Editor:
 
-#146 [] YET MORE EYE POPPING!!! WTF?! When will this nightmare end???
+#148 [X] Gaze shifts always proceed along shortest arcs, even when longer arcs would be anatomically correct
+  - Fixed by identifying long-arc gaze shifts, and flipping aligning target direction to the right side of the rotation sphere in _UpdateTargetDirection()
+  - Sometimes wrong gaze shifts are labeled as long-arc - fixed that now!
+  - There are discontinuities at the boundary between gaze instances
+  - fixTrgDirAlign is discontinuous; maybe because we don't keep track of whether we are in long arc mode durign fixation? - fixed that now!
+
+#147 [X] IK solver is broken, fails to reach goal even when it is obviously reachable
+
+#146 [X] YET MORE EYE POPPING!!! WTF?! When will this nightmare end???
   - See MakeSandwichDemo, frames 1309-1311
   - At frame 1310-1311, a new gaze shift begins
   - fixTrgDirAlign is discontinuous 1309-1310
   - It's because of a huge shift in OMR (13 to 27!)
+  - Smoothing out OMR changes now
 
 #145 [X] Yet more goddamn stupid eye popping, this time just before a gaze shift begins
   - See MakeSandwich, frames 215-217

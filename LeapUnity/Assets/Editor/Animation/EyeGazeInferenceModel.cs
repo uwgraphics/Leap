@@ -859,7 +859,10 @@ public class EyeGazeInferenceModel
         {
             string targetName = data[rowIndex].GetValue<string>(0);
             int frameIndex = data[rowIndex].GetValue<int>(1) - 1 - frameOffset;
-            frameTargetPairs.Add(frameIndex, targetName);
+            if (!frameTargetPairs.ContainsKey(frameIndex))
+                frameTargetPairs.Add(frameIndex, targetName);
+            else
+                Debug.LogError(string.Format("Gaze target already defined for frame {0}", frameIndex));
             targets.Add(targetName);
         }
         var objTargets = new HashSet<string>(targets.Distinct().Where(t => t != "Background"));

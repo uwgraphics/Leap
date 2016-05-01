@@ -94,6 +94,43 @@ public class LEAPMenu
         SceneView.RepaintAll();
     }
 
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments Only", true)]
+    private static bool ValidateInferEyeGazeAlignments()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var selectedModel = ModelUtil.GetSelectedModel();
+        return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
+            selectedModel != null && selectedModel.tag == "Agent";
+    }
+
+    [MenuItem("LEAP/Animation/Infer Eye Gaze/Alignments Only", false)]
+    private static void InferEyeGazeAlignments()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        var timeline = wnd.Timeline;
+
+        // Disable IK and gaze layers
+        timeline.SetIKEnabled(false);
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
+
+        // Infer gaze shifts and fixations in the base animation
+        var selectedModel = ModelUtil.GetSelectedModel();
+        var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
+        foreach (var baseAnimation in baseLayer.Animations)
+        {
+            if (selectedModel != baseAnimation.Animation.Model)
+                continue;
+
+            var eyeGazeInferenceModel = new EyeGazeInferenceModel(selectedModel, timeline.OwningManager.Environment);
+            eyeGazeInferenceModel.InferEyeGazeAlignments(timeline, baseAnimation.InstanceId, LEAPCore.eyeGazeAnimationLayerName);
+
+            // Save and print inferred eye gaze
+            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#Inferred");
+            EyeGazeEditor.PrintEyeGaze(timeline, LEAPCore.eyeGazeAnimationLayerName);
+        }
+        SceneView.RepaintAll();
+    }
+
     [MenuItem("LEAP/Animation/Infer Eye Gaze/Generate Ground-truth", true)]
     private static bool ValidateInferEyeGazeGenerateGroundTruth()
     {
@@ -640,6 +677,24 @@ public class LEAPMenu
     private static void TestBookShelfNew()
     {
         EyeGazeEditTestSceneManager.LoadExampleScene("BookShelfNew");
+    }
+
+    [MenuItem("LEAP/Scenes/BookShelfNew-Edits", true)]
+    private static bool ValidateTestBookShelfNewEdits()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/BookShelfNew-Edits", false)]
+    private static void TestBookShelfNewEdits()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("BookShelfNew-Edits");
     }
 
     [MenuItem("LEAP/Scenes/StealDiamondNew", true)]

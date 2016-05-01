@@ -76,7 +76,7 @@ public sealed class EnvironmentController : MonoBehaviour
     }
 
     private void _InitObjects(GameObject obj)
-    {
+    { 
         if (obj.tag == "ManipulatedObject")
         {
             _manipulatedObjects.Add(obj);
