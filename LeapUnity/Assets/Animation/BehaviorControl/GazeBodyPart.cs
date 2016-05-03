@@ -1033,12 +1033,8 @@ public class GazeBodyPart
     private void _SolveBodyIK()
     {
         var bodySolver = _gazeController.gameObject.GetComponent<BodyIKSolver>();
-        if (bodySolver != null && bodySolver.enabled)
-        {
-            if (LEAPCore.useGazeIK)
-                bodySolver.InitGazePose();
+        if (bodySolver != null && bodySolver.enabled && LEAPCore.useGazeIK)
             bodySolver.Solve();
-        }
     }
 
     // true if right and forward helpers are defined for the specified gaze joint, false otherwise

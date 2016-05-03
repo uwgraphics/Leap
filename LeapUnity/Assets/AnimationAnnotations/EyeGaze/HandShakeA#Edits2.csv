@@ -1,3 +1,0 @@
-Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Norman,HandShakeAGaze2,1,29,39,NormanLookDown,"0 0 0",1,0.6,True
-Norman,HandShakeAGaze3,40,28,73,NormanLookLeft,"0 0 0",0.6,0.4,True

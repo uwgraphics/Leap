@@ -152,16 +152,6 @@ public class LEAPCore : MonoBehaviour
     public static bool useGazeIK = true;
 
     /// <summary>
-    /// If true, gaze constraint weight will be dynamically computed based on importance.
-    /// </summary>
-    public static bool useDynamicGazeIKWeights = true;
-
-    /// <summary>
-    /// Default time over which gaze constraints become active or inactive.
-    /// </summary>
-    public static float gazeConstraintActivationTime = 1f;
-
-    /// <summary>
     /// If true, effective gaze target in a gaze shift will be adjusted for movement
     /// in the base animation.
     /// </summary>
@@ -403,8 +393,6 @@ public class LEAPCore : MonoBehaviour
         cfgFile.AddParam("minEyeGazeLength", typeof(float));
         cfgFile.AddParam("maxEyeGazeGapLength", typeof(float));
         cfgFile.AddParam("useGazeIK", typeof(bool));
-        cfgFile.AddParam("useDynamicGazeIKWeights", typeof(bool));
-        cfgFile.AddParam("gazeConstraintActivationTime", typeof(float));
         cfgFile.AddParam("adjustGazeTargetForMovingBase", typeof(bool));
         cfgFile.AddParam("printDetailedGazeControllerState", typeof(bool));
         cfgFile.AddParam("gazeHeadBlendWeightOverride", typeof(float));
@@ -453,10 +441,6 @@ public class LEAPCore : MonoBehaviour
             cfgFile.GetValue<float>("maxEyeGazeGapLength") : maxEyeGazeGapLength;
         useGazeIK = cfgFile.HasValue("useGazeIK") ?
             cfgFile.GetValue<bool>("useGazeIK") : useGazeIK;
-        useDynamicGazeIKWeights = cfgFile.HasValue("useDynamicGazeIKWeights") ?
-            cfgFile.GetValue<bool>("useDynamicGazeIKWeights") : useDynamicGazeIKWeights;
-        gazeConstraintActivationTime = cfgFile.HasValue("gazeConstraintActivationTime") ?
-            cfgFile.GetValue<float>("gazeConstraintActivationTime") : gazeConstraintActivationTime;
         adjustGazeTargetForMovingBase = cfgFile.HasValue("adjustGazeTargetForMovingBase") ?
             cfgFile.GetValue<bool>("adjustGazeTargetForMovingBase") : adjustGazeTargetForMovingBase;
         printDetailedGazeControllerState = cfgFile.HasValue("printDetailedGazeControllerState") ?

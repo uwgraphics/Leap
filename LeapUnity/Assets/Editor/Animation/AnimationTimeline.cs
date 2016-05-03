@@ -419,24 +419,6 @@ public class AnimationTimeline
             set;
         }
 
-        /// <summary>
-        /// If true, the current layer contains base animation for the body IK solver.
-        /// </summary>
-        public bool isBase
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// If true, the current layer contains gaze control for the body IK solver.
-        /// </summary>
-        public bool isGaze
-        {
-            get;
-            set;
-        }
-
         private List<ScheduledInstance> _animationInstances = new List<ScheduledInstance>();
         private Dictionary<GameObject, TimewarpContainer> _timewarpsByModel = new Dictionary<GameObject,TimewarpContainer>();
 
@@ -456,8 +438,6 @@ public class AnimationTimeline
 
             Active = true;
             isIKEndEffectorConstr = false;
-            isBase = false;
-            isGaze = false;
         }
 
         /// <summary>
@@ -1758,11 +1738,6 @@ public class AnimationTimeline
 
             foreach (var model in OwningManager.Models)
             {
-                // Configure IK solver parameters for each model
-                if (layer.isBase)
-                    _SetIKBasePose(model);
-                if (layer.isGaze)
-                    _InitGazeIK(model, layer);
             
                 // Store model poses after the current layer is applied
                 StoreModelPose(model.name, layer.LayerName + "Pose");
@@ -2086,127 +2061,6 @@ public class AnimationTimeline
         }
     }
 
-    // Set current model pose as base pose for the IK solver on the specified model
-    private void _SetIKBasePose(GameObject model)
-    {
-        IKSolver[] solvers = model.GetComponents<IKSolver>();
-        foreach (var solver in solvers)
-        {
-            if (solver is BodyIKSolver)
-            {
-                var bodySolver = solver as BodyIKSolver;
-                bodySolver.InitBasePose();
-            }
-        }
-    }
-
-    // Set up gaze constraints for the IK solver on the specified model
-    private void _InitGazeIK(GameObject model, LayerContainer gazeLayer)
-    {
-        if (!LEAPCore.useGazeIK)
-            return;
-
-        var gazeController = model.GetComponent<GazeController>();
-        if (gazeController == null)
-        {
-            Debug.LogWarning(string.Format("Unable to set up gaze IK on model {0}, no GazeController found", model.name));
-            return;
-        }
-        var modelController = model.GetComponent<ModelController>();
-        int headIndex = modelController.GetBoneIndex(gazeController.head.Top);
-
-        float gazeWeight = 0f;
-        float gazeTime = gazeLayer._GetOriginalTimes(model, CurrentTime).boneTimes[headIndex];
-        int gazeFrame = Mathf.RoundToInt(gazeTime * LEAPCore.editFrameRate);
-        var curGazeInstance = gazeLayer.Animations.FirstOrDefault(inst =>
-            gazeTime >= inst.StartTime && gazeTime <= inst.EndTime &&
-            inst.Animation.Model == model);
-
-        if (LEAPCore.useDynamicGazeIKWeights && curGazeInstance != null)
-        {
-            // Gaze is constrained by the current gaze instance
-
-            // Compute gaze IK activation/deactivation time
-            int gazeIKFrameLength = Mathf.RoundToInt(LEAPCore.gazeConstraintActivationTime * LEAPCore.editFrameRate);
-
-            // Get all gaze instances on this model that follow the current one
-            var curOrNextGazeInstances = gazeLayer.Animations.Where(inst =>
-                inst.EndTime >= gazeTime && inst.Animation.Model == model).ToArray();
-
-            // Find the first gap in those instances
-            int gazeIKEndFrame = OriginalFrameLength - 1;
-            for (int gazeInstanceIndex = 0; gazeInstanceIndex < curOrNextGazeInstances.Length; ++gazeInstanceIndex)
-            {
-                int nextEndFrame = curOrNextGazeInstances[gazeInstanceIndex].EndFrame;
-                int nextStartFrame = gazeInstanceIndex + 1 < curOrNextGazeInstances.Length ?
-                    curOrNextGazeInstances[gazeInstanceIndex + 1].StartFrame : OriginalFrameLength;
-
-                if (nextStartFrame - nextEndFrame > 1)
-                {
-                    gazeIKEndFrame = nextEndFrame;
-                    break;
-                }
-            }
-
-            // Get all gaze instances on this model that precede the current one
-            var curOrPrevGazeInstances = gazeLayer.Animations.Where(inst =>
-                inst.StartTime <= gazeTime && inst.Animation.Model == model).ToArray();
-
-            // Find the last gap in those instances
-            int gazeIKStartFrame = 0;
-            for (int gazeInstanceIndex = curOrPrevGazeInstances.Length - 1; gazeInstanceIndex >= 0; --gazeInstanceIndex)
-            {
-                int prevStartFrame = curOrPrevGazeInstances[gazeInstanceIndex].StartFrame;
-                int prevEndFrame = gazeInstanceIndex - 1 >= 0 ?
-                    curOrPrevGazeInstances[gazeInstanceIndex - 1].EndFrame : 0;
-
-                if (prevStartFrame - prevEndFrame > 1)
-                {
-                    gazeIKStartFrame = prevStartFrame;
-                    break;
-                }
-            }
-
-            // TODO: quick hack to prevent constrained gaze from rapidly blending back into
-            // the base motion at the end of the timeline
-            if (curOrNextGazeInstances.Length >= 1 &&
-                !curOrNextGazeInstances[curOrNextGazeInstances.Length - 1]
-                .Animation.Name.EndsWith(LEAPCore.gazeAheadSuffix))
-            {
-                // This is the last gaze instance on the timeline, but it isn't gaze-ahead
-                gazeIKEndFrame = FrameLength - 1 + gazeIKFrameLength;
-            }
-
-            // Compute gaze IK weight
-            float gazeWeightIn = gazeIKFrameLength > 0 ?
-                Mathf.Clamp01(((float)(gazeFrame - gazeIKStartFrame)) / gazeIKFrameLength) : 1f;
-            float gazeWeightIn2 = gazeWeightIn * gazeWeightIn;
-            gazeWeightIn = -2f * gazeWeightIn2 * gazeWeightIn + 3f * gazeWeightIn2;
-            float gazeWeightOut = gazeIKFrameLength > 0 ?
-                Mathf.Clamp01(((float)(gazeIKEndFrame - gazeFrame)) / gazeIKFrameLength) : 1f;
-            float gazeWeightOut2 = gazeWeightOut * gazeWeightOut;
-            gazeWeightOut = -2f * gazeWeightOut2 * gazeWeightOut + 3f * gazeWeightOut2;
-            gazeWeight = Mathf.Min(gazeWeightIn, gazeWeightOut);
-        }
-
-        if (!LEAPCore.useDynamicGazeIKWeights)
-        {
-            // Use static weight for gaze constraints
-            gazeWeight = 1f;
-        }
-
-        // Set gaze weights in the IK solver
-        IKSolver[] solvers = model.GetComponents<IKSolver>();
-        foreach (var solver in solvers)
-        {
-            if (solver is BodyIKSolver)
-            {
-                var bodySolver = solver as BodyIKSolver;
-                bodySolver.InitGazeWeights(gazeWeight);
-            }
-        }
-    }
-
     // Clear end-effector goals in all IK solvers on all models
     private void _ResetIK()
     {
@@ -2214,9 +2068,7 @@ public class AnimationTimeline
         {
             IKSolver[] solvers = model.GetComponents<IKSolver>();
             foreach (var solver in solvers)
-            {
                 solver.ClearGoals();
-            }
         }
 
         // Clear object manipulations

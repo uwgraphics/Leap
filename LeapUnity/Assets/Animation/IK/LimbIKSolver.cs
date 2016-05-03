@@ -11,6 +11,8 @@ using System.Linq;
 /// and other limbs.</remarks>
 public class LimbIKSolver : IKSolver
 {
+    public bool solveSwivelAngle = true;
+
     protected bool _isLeg = false;
     protected Transform _shoulder, _elbow, _wrist;
     protected Vector3 _elbowAxis = new Vector3(0f, 1f, 0f);
@@ -90,20 +92,23 @@ public class LimbIKSolver : IKSolver
                 Vector3.Angle(v0.normalized, vGoal.normalized), Space.World);
             Quaternion qs = _shoulder.rotation;
 
-            // Compute shoulder swivel angle
-            Quaternion qsr = qs;
-            float a = Quaternion.Dot(qs0, qsr);
-            float b = qsr.w * Vector3.Dot(vGoal, new Vector3(qs0.x, qs0.y, qs0.z)) -
-                qs0.w * Vector3.Dot(vGoal, new Vector3(qsr.x, qsr.y, qsr.z)) +
-                Vector3.Dot(new Vector3(qs0.x, qs0.y, qs0.z), Vector3.Cross(vGoal, new Vector3(qsr.x, qsr.y, qsr.z)));
-            float alpha = Mathf.Rad2Deg * Mathf.Atan2(a, b);
-            Quaternion qs1 = Quaternion.AngleAxis(-2f * alpha + Mathf.PI * Mathf.Rad2Deg, vGoal) * qsr;
-            Quaternion qs2 = Quaternion.AngleAxis(-2f * alpha - Mathf.PI * Mathf.Rad2Deg, vGoal) * qsr;
-            if (Quaternion.Dot(qs0, qs1) > Quaternion.Dot(qs0, qs2))
-                qs = qs1;
-            else
-                qs = qs2;
-            _shoulder.localRotation = Quaternion.Inverse(_shoulder.parent.rotation) * qs;
+            if (solveSwivelAngle)
+            {
+                // Compute shoulder swivel angle
+                Quaternion qsr = qs;
+                float a = Quaternion.Dot(qs0, qsr);
+                float b = qsr.w * Vector3.Dot(vGoal, new Vector3(qs0.x, qs0.y, qs0.z)) -
+                    qs0.w * Vector3.Dot(vGoal, new Vector3(qsr.x, qsr.y, qsr.z)) +
+                    Vector3.Dot(new Vector3(qs0.x, qs0.y, qs0.z), Vector3.Cross(vGoal, new Vector3(qsr.x, qsr.y, qsr.z)));
+                float alpha = Mathf.Rad2Deg * Mathf.Atan2(a, b);
+                Quaternion qs1 = Quaternion.AngleAxis(-2f * alpha + Mathf.PI * Mathf.Rad2Deg, vGoal) * qsr;
+                Quaternion qs2 = Quaternion.AngleAxis(-2f * alpha - Mathf.PI * Mathf.Rad2Deg, vGoal) * qsr;
+                if (Quaternion.Dot(qs0, qs1) > Quaternion.Dot(qs0, qs2))
+                    qs = qs1;
+                else
+                    qs = qs2;
+                _shoulder.localRotation = Quaternion.Inverse(_shoulder.parent.rotation) * qs;
+            }
 
             // Blend based on goal weight
             _shoulder.localRotation = Quaternion.Slerp(lqs0, _shoulder.localRotation, goal.weight);

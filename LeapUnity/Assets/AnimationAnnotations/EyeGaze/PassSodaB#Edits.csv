@@ -1,5 +1,7 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Roman,PassSodaBGaze1,1,21,59,NormanFace,"0 0 0",1,0.3346926,True
-Roman,PassSodaBGaze2,60,10,70,SodaBottleA,"0 0 0",1,0.01540869,True
-Roman,PassSodaBGaze3,71,13,200,NormanetteFace,"0 0 0",1,0.1654218,True
-Roman,PassSodaBGaze5,201,27,228,NormanFace,"0 0 0",0.2328566,0.01403843,True
+Roman,PassSodaBGaze1,1,16,50,Norman-0,"0 0 0",1,0.7515254,True
+Roman,PassSodaBGaze2,51,13,78,Norman-1,"0 0 0",0.863219,0.5817521,True
+Roman,PassSodaBGaze7,79,13,148,NormanetteFace,"0 0 0",0.85,0,True
+Roman,PassSodaBGaze3,149,10,168,PassSodaEnv-1,"0 0 0",0.9993402,0.04603284,True
+Roman,PassSodaBGaze4,169,14,193,NormanetteBack,"0 0 0",0.3491378,0.07661075,True
+Roman,PassSodaBGaze6,194,24,228,Norman-0,"0 0 0",1,0.2819241,True

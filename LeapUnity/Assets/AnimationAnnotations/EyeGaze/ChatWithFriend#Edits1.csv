@@ -1,0 +1,2 @@
+Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
+NormanNew,ChatWithFriendGaze1,1,16,1900,RomanTall-4,"0 0 0",1,0.1756704,True
