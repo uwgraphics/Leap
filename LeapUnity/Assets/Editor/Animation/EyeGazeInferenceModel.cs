@@ -723,60 +723,9 @@ public class EyeGazeInferenceModel
 
         // Load eye tracking data
         var eyeTrackData = new EyeTrackData(model, baseInstance.AnimationClip);
-
-        // Compute gaze direction aligning rotations from eye tracking align points
-        Vector3 vle = Vector3.zero;
-        Vector3 vre = Vector3.zero;
-        int numAlignPoints = 0;
-        var markerSets = GameObject.FindGameObjectsWithTag("GazeMarkerSet");
-        foreach (var alignPoint in eyeTrackData.AlignPoints)
-        {
-            // Get marker for the current align point
-            GameObject marker = null;
-            if (alignPoint.markerSet == "null")
-            {
-                marker = GameObject.FindGameObjectWithTag(alignPoint.marker);
-            }
-            else
-            {
-                var markerSet = markerSets.FirstOrDefault(ms => ms.name == alignPoint.markerSet);
-                if (markerSet == null)
-                {
-                    Debug.LogWarning("Eye tracking align point specifies non-existent marker set " + alignPoint.markerSet);
-                    continue;
-                }
-                marker = GameObject.FindGameObjectsWithTag(alignPoint.marker)
-                    .FirstOrDefault(m => m.transform.parent == markerSet.transform);
-            }
-
-            if (marker == null)
-            {
-                Debug.LogWarning("Eye tracking align point specifies non-existent marker " + alignPoint.marker);
-                continue;
-            }
-
-            ++numAlignPoints;
-
-            // Get eye gaze directions in the base animation
-            timeline.GoToFrame(alignPoint.frame - eyeTrackData.FrameOffset);
-            timeline.ApplyAnimation();
-            var dle1 = lEye.InverseTransformDirection((marker.transform.position - lEye.position)).normalized;
-            var dre1 = rEye.InverseTransformDirection((marker.transform.position - rEye.position)).normalized;
-
-            // Get eye gaze directions in the eye tracking data
-            var dle0 = eyeTrackData.Samples[alignPoint.frame].lEyeDirection;
-            var dre0 = eyeTrackData.Samples[alignPoint.frame].rEyeDirection;
-
-            // Compute aligning rotation
-            var qle = Quaternion.FromToRotation(dle0, dle1);
-            var qre = Quaternion.FromToRotation(dre0, dre1);
-            vle += QuaternionUtil.Log(qle);
-            vre += QuaternionUtil.Log(qre);
-        }
-        vle = (1f / numAlignPoints) * vle;
-        vre = (1f / numAlignPoints) * vre;
-        var lEyeAlignRot = QuaternionUtil.Exp(vle);
-        var rEyeAlignRot = QuaternionUtil.Exp(vre);
+        eyeTrackData.InitAlignEyeRotations(timeline, Quaternion.Euler(0f, 0f, 90f)); // TODO: this will only work for NormanNew and its ilk
+        Quaternion lEyeAlignRot = eyeTrackData.LEyeAlignRotation;
+        Quaternion rEyeAlignRot = eyeTrackData.REyeAlignRotation;
 
         // Compute per-frame error in gaze directions
         var outCsvData = new CSVDataFile();
@@ -853,7 +802,154 @@ public class EyeGazeInferenceModel
             return;
 
         // Get ground-truth targets
-        var frameTargetPairs = new Dictionary<int, string>();
+        var fixationFrames = new List<int>();
+        var fixationTargets = new List<string>();
+        for (int rowIndex = 0; rowIndex < data.NumberOfRows; ++rowIndex)
+        {
+            string targetName = data[rowIndex].GetValue<string>(0);
+            int frameIndex = data[rowIndex].GetValue<int>(1) - 1 - frameOffset;
+            fixationFrames.Add(frameIndex);
+            fixationTargets.Add(targetName);
+        }
+        var objTargets = new HashSet<string>(fixationTargets.Distinct().Where(t => t != "Background"));
+
+        // Count accurately inferred fixation targets
+        int numAllFixations = 0;
+        int numAllCorrect = 0;
+        int numObjFixations = 0;
+        int numObjCorrect = 0;
+        foreach (var scheduledGazeInstance in gazeLayer.Animations)
+        {
+            var gazeInstance = scheduledGazeInstance.Animation as EyeGazeInstance;
+            int startFrame = scheduledGazeInstance.StartFrame;
+            int endFrame = scheduledGazeInstance.EndFrame;
+
+            // Get all ground-truth fixations that overlap with the current gaze instance
+            var overlappingTargets = new List<string>();
+            for (int fixationIndex = 0; fixationIndex < fixationFrames.Count; ++fixationIndex)
+            {
+                int fixationStartFrame = fixationIndex > 0 ? fixationFrames[fixationIndex - 1] : fixationFrames[fixationIndex];
+                int fixationEndFrame = fixationIndex < fixationFrames.Count - 1 ? fixationFrames[fixationIndex + 1] : fixationFrames[fixationIndex];
+                if (Mathf.Max(startFrame, fixationStartFrame) <= Mathf.Min(endFrame, fixationEndFrame))
+                    overlappingTargets.Add(fixationTargets[fixationIndex]);
+            }
+            if (overlappingTargets.Count <= 0)
+                // No ground-truth data for this part of the animation
+                continue;
+            else
+                ++numAllFixations;
+
+            // Is it a character?
+            bool isCharacter = false;
+            GameObject characterModel = null;
+            if (gazeInstance.Target != null)
+            {
+                var target = gazeInstance.Target.transform;
+                while (target != null)
+                {
+                    if (target.tag == "Agent")
+                    {
+                        isCharacter = true;
+                        characterModel = target.gameObject;
+                        ++numObjFixations;
+                        break;
+                    }
+
+                    target = target.parent;
+                }
+            }
+
+            // Is it a torso or head target?
+            bool isTorso = false;
+            bool isHead = false;
+            if (isCharacter)
+            {
+                // Get head and torso height
+                var headBones =  ModelUtil.GetAllBonesWithTag(characterModel, "HeadBone");
+                float torsoHeight = 0f;
+                float headHeight = float.MaxValue;
+                foreach (var curHeadBone in headBones)
+                {
+                    if (curHeadBone.transform.position.y > torsoHeight)
+                        torsoHeight = curHeadBone.transform.position.y;
+
+                    if (curHeadBone.transform.position.y < headHeight)
+                        headHeight = curHeadBone.transform.position.y;
+                }
+                isTorso = gazeInstance.Target.transform.position.y <= torsoHeight;
+                isHead = gazeInstance.Target.transform.position.y >= headHeight;
+            }
+
+            // Is it a background target?
+            bool isBackground = !isCharacter;
+            if (gazeInstance.Target != null && !isCharacter)
+            {
+                var target = gazeInstance.Target.transform;
+                while (target != null)
+                {
+                    if (objTargets.Any(t => target.name.StartsWith(t)))
+                    {
+                        isBackground = false;
+                        ++numObjFixations;
+                        break;
+                    }
+
+                    target = target.parent;
+                }
+            }
+
+            // Is the gaze instance toward a target specified in ground-truth data?
+            bool isSameTarget = false;
+            foreach (var overlappingTarget in overlappingTargets)
+            {
+                if (isBackground)
+                {
+                    if (overlappingTarget == "Background")
+                        isSameTarget = true;
+                }
+                else if (isCharacter)
+                {
+                    if (isHead && overlappingTarget == (characterModel.name + "Head") ||
+                        isTorso && overlappingTarget == (characterModel.name + "Torso"))
+                        isSameTarget = true;
+                }
+                else
+                {
+                    if (gazeInstance.Target != null)
+                    {
+                        var target = gazeInstance.Target.transform;
+                        while (target != null)
+                        {
+                            if (target.name.StartsWith(overlappingTarget))
+                            {
+                                isSameTarget = true;
+                                break;
+                            }
+
+                            target = target.parent;
+                        }
+                    }
+                }
+
+                if (isSameTarget)
+                    break;
+            }
+
+            if (isSameTarget)
+            {
+                ++numAllCorrect;
+                if (!isBackground)
+                    ++numObjCorrect;
+            }
+            else
+            {
+                string targetName = gazeInstance.Target != null ? gazeInstance.Target.name : "null";
+                Debug.LogWarning(string.Format("Gaze target mismatch for {0}, target {1}", gazeInstance.Name, targetName));
+            }
+        }
+
+        // Get ground-truth targets
+        /*var frameTargetPairs = new Dictionary<int, string>();
         var targets = new List<string>();
         for (int rowIndex = 0; rowIndex < data.NumberOfRows; ++rowIndex)
         {
@@ -946,7 +1042,7 @@ public class EyeGazeInferenceModel
                 string targetName = gazeInstance.Target != null ? gazeInstance.Target.name : "null";
                 Debug.LogWarning(string.Format("Gaze target mismatch for {0}, target {1}", gazeInstance.Name, targetName));
             }
-        }
+        }*/
 
         // Compute inference accuracy
         float accAll = ((float)numAllCorrect) / numAllFixations;

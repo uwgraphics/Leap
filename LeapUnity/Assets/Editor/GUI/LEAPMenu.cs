@@ -152,13 +152,16 @@ public class LEAPMenu
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
-            var eyeTrackData = new EyeTrackData(baseAnimation.Animation.Model,
-                (baseAnimation.Animation as AnimationClipInstance).AnimationClip);
-            eyeTrackData.GenerateEyeGazeInstances(timeline, LEAPCore.eyeGazeAnimationLayerName);
+            var model = baseAnimation.Animation.Model;
+            var baseAnimationClip = (baseAnimation.Animation as AnimationClipInstance).AnimationClip;
+            var eyeTrackData = new EyeTrackData(model, baseAnimationClip);
+            //eyeTrackData.GenerateEyeGazeInstances(timeline, LEAPCore.eyeGazeAnimationLayerName);
+            eyeTrackData.InitAlignEyeRotations(timeline, Quaternion.Euler(0f, 0f, 90f)); // TODO: this will only work for NormanNew and its ilk
+            eyeTrackData.AddEyeAnimation(baseAnimationClip.name + "-GroundTruth");
 
             // Save and print ground-truth eye gaze
-            EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#GroundTruth");
-            EyeGazeEditor.PrintEyeGaze(timeline, LEAPCore.eyeGazeAnimationLayerName);
+            /*EyeGazeEditor.SaveEyeGaze(timeline, baseAnimation.InstanceId, "#GroundTruth");
+            EyeGazeEditor.PrintEyeGaze(timeline, LEAPCore.eyeGazeAnimationLayerName);*/
         }
         SceneView.RepaintAll();
     }
@@ -374,14 +377,7 @@ public class LEAPMenu
     {
         GameObject obj = Selection.activeGameObject;
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        var timeline = wnd.Timeline;
-        if (obj == null || obj.GetComponent<Animation>() == null ||
-            !timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.Any(inst => inst.Animation.Model == obj))
-        {
-            return false;
-        }
-
-        return true;
+        return obj != null && obj.GetComponent<Animation>() != null;
     }
 
     [MenuItem("LEAP/Animation/Relink Animation to Model", false)]
@@ -389,10 +385,10 @@ public class LEAPMenu
     {
         GameObject obj = Selection.activeGameObject;
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        var timeline = wnd.Timeline;
-        var baseInstance = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations
-            .FirstOrDefault(inst => inst.Animation.Model == obj).Animation as AnimationClipInstance;
-        LEAPAssetUtil.RelinkAnimationClipToModel(obj, baseInstance.AnimationClip);
+        var animationComponent = obj.GetComponent<Animation>();
+        foreach (AnimationState animationState in animationComponent)
+            if (animationState.clip != null)
+                LEAPAssetUtil.RelinkAnimationClipToModel(obj, animationState.clip);
     }
 
 
@@ -985,6 +981,96 @@ public class LEAPMenu
         EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwichDemo-Edits");
     }
 
+    [MenuItem("LEAP/Scenes/WalkConesNew-GroundTruth", true)]
+    private static bool ValidateTestWalkConesNewGroundTruth()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/WalkConesNew-GroundTruth", false)]
+    private static void TestWalkConesNewGroundTruth()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("WalkConesNew-GroundTruth");
+    }
+
+    [MenuItem("LEAP/Scenes/StealDiamondNew-GroundTruth", true)]
+    private static bool ValidateTestStealDiamondNewGroundTruth()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StealDiamondNew-GroundTruth", false)]
+    private static void TestStealDiamondNewGroundTruth()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("StealDiamondNew-GroundTruth");
+    }
+
+    [MenuItem("LEAP/Scenes/StackBoxesNew-GroundTruth", true)]
+    private static bool ValidateTestStackBoxesNewGroundTruth()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StackBoxesNew-GroundTruth", false)]
+    private static void TestStackBoxesNewGroundTruth()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("StackBoxesNew-GroundTruth");
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich-GroundTruth", true)]
+    private static bool ValidateTesMakeSandwichGroundTruth()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich-GroundTruth", false)]
+    private static void TestMakeSandwichGroundTruth()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich-GroundTruth");
+    }
+
+    [MenuItem("LEAP/Scenes/ChatWithFriend-GroundTruth", true)]
+    private static bool ValidateTesChatWithFriendGroundTruth()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/ChatWithFriend-GroundTruth", false)]
+    private static void TestChatWithFriendGroundTruth()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("ChatWithFriend-GroundTruth");
+    }
+
     [MenuItem("LEAP/Scenes/PassSoda-Eyes", true)]
     private static bool ValidateTestPassSodaEyes()
     {
@@ -1001,6 +1087,24 @@ public class LEAPMenu
     private static void TestPassSodaEyes()
     {
         EyeGazeEditTestSceneManager.LoadExampleScene("PassSoda-Eyes");
+    }
+
+    [MenuItem("LEAP/Scenes/HandShake-Eyes", true)]
+    private static bool ValidateTestHandShakeEyes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/HandShake-Eyes", false)]
+    private static void TestHandShakeEyes()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("HandShake-Eyes");
     }
 
     [MenuItem("LEAP/Scenes/WalkConesNew-Eyes", true)]
@@ -1039,6 +1143,24 @@ public class LEAPMenu
         EyeGazeEditTestSceneManager.LoadExampleScene("StealDiamondNew-Eyes");
     }
 
+    [MenuItem("LEAP/Scenes/StackBoxesNew-Eyes", true)]
+    private static bool ValidateTestStackBoxesNewEyes()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StackBoxesNew-Eyes", false)]
+    private static void TestStackBoxesNewEyes()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("StackBoxesNew-Eyes");
+    }
+
     [MenuItem("LEAP/Scenes/ChatWithFriend-Eyes", true)]
     private static bool ValidateTestChatWithFriendEyes()
     {
@@ -1073,6 +1195,60 @@ public class LEAPMenu
     private static void TestMakeSandwichEyes()
     {
         EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich-Eyes");
+    }
+
+    [MenuItem("LEAP/Scenes/PassSoda-HandEdits", true)]
+    private static bool ValidateTestPassSodaHandEdits()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/PassSoda-HandEdits", false)]
+    private static void TestPassSodaHandEdits()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("PassSoda-HandEdits");
+    }
+
+    [MenuItem("LEAP/Scenes/HandShake-HandEdits", true)]
+    private static bool ValidateTestHandShakeHandEdits()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/HandShake-HandEdits", false)]
+    private static void TestHandShakeHandEdits()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("HandShake-HandEdits");
+    }
+
+    [MenuItem("LEAP/Scenes/StealDiamondNew-HandEdits", true)]
+    private static bool ValidateTestStealDiamondNewHandEdits()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/StealDiamondNew-HandEdits", false)]
+    private static void TestStealDiamondNewHandEdits()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("StealDiamondNew-HandEdits");
     }
 
     [MenuItem("LEAP/Capture Video/[None]", true)]

@@ -77,6 +77,11 @@ ModelImporter:
     100142: srfBind_Rt_LegC
     100144: srfBind_Rt_LegD
     100146: //RootNode
+    100148: Skeleton node
+    100150: Skeleton node 1
+    100152: Skeleton node 2
+    100154: Skeleton node 3
+    100156: Skeleton node 4
     400000: Bone_Eye2_R
     400002: Bone_Eye2_R 1
     400004: Bone_Eye_L
@@ -151,6 +156,11 @@ ModelImporter:
     400142: srfBind_Rt_LegC
     400144: srfBind_Rt_LegD
     400146: //RootNode
+    400148: Skeleton node
+    400150: Skeleton node 1
+    400152: Skeleton node 2
+    400154: Skeleton node 3
+    400156: Skeleton node 4
     2300000: srfBind_Lf_Eye
     2300002: srfBind_Rt_Eye
     3300000: srfBind_Lf_Eye

@@ -80,6 +80,22 @@ ModelImporter:
     100148: srfBind_Rt_LegB
     100150: srfBind_Rt_LegC
     100152: srfBind_Rt_LegD
+    100154: Bone_Eye2_R
+    100156: Bone_Eye2_R 1
+    100158: Bone_Eye_L 1
+    100160: Bone_Eye_R 1
+    100162: eye_Center 1
+    100164: Skeleton node
+    100166: Skeleton node 1
+    100168: Skeleton node 2
+    100170: Skeleton node 3
+    100172: Skeleton node 4
+    100174: eye_Center 2
+    100176: Skeleton node 5
+    100178: Skeleton node 6
+    100180: Skeleton node 7
+    100182: Skeleton node 8
+    100184: Skeleton node 9
     400000: Bone_Eye2_R 4
     400002: Bone_Eye2_R 5
     400004: Bone_Eye_L 2
@@ -157,6 +173,22 @@ ModelImporter:
     400148: srfBind_Rt_LegB
     400150: srfBind_Rt_LegC
     400152: srfBind_Rt_LegD
+    400154: Bone_Eye2_R
+    400156: Bone_Eye2_R 1
+    400158: Bone_Eye_L 1
+    400160: Bone_Eye_R 1
+    400162: eye_Center 1
+    400164: Skeleton node
+    400166: Skeleton node 1
+    400168: Skeleton node 2
+    400170: Skeleton node 3
+    400172: Skeleton node 4
+    400174: eye_Center 2
+    400176: Skeleton node 5
+    400178: Skeleton node 6
+    400180: Skeleton node 7
+    400182: Skeleton node 8
+    400184: Skeleton node 9
     2300000: Hand_L 1
     2300002: Hand_R 1
     2300004: srfBind_Cn_Neck 1
@@ -363,6 +395,9 @@ ModelImporter:
     4300134: srfBind_Lf_FootB
     4300136: srfBind_Lf_FootB
     4300138: srfBind_Lf_FootB
+    4300140: srfBind_Lf_FootB 1
+    4300142: srfBind_Lf_FootB 3
+    4300144: srfBind_Lf_FootB 2
     7400000: HandShakeA-Eyes
     9500000: //RootNode
     11100000: //RootNode
@@ -389,7 +424,7 @@ ModelImporter:
     - serializedVersion: 16
       name: HandShakeA-Eyes
       takeName: Take 001
-      firstFrame: 0
+      firstFrame: 1
       lastFrame: 75
       wrapMode: 0
       orientationOffsetY: 0

@@ -262,6 +262,24 @@ public class EyeTrackData
         get { return _events.AsReadOnly(); }
     }
 
+    /// <summary>
+    /// Rotation aligning eye tracker gaze directions with eye model-space gaze directions.
+    /// </summary>
+    public Quaternion LEyeAlignRotation
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
+    /// Rotation aligning eye tracker gaze directions with eye model-space gaze directions.
+    /// </summary>
+    public Quaternion REyeAlignRotation
+    {
+        get;
+        private set;
+    }
+
     // Eye tracking dataset:
     private List<EyeTrackSample> _samples = new List<EyeTrackSample>();
     private List<EyeTrackAlignPoint> _alignPoints = new List<EyeTrackAlignPoint>();
@@ -297,6 +315,18 @@ public class EyeTrackData
     }
 
     /// <summary>
+    /// Is specified eye tracking sample valid?
+    /// </summary>
+    /// <param name="sample">Eye tracking sample</param>
+    /// <returns>true if the sample is valid, false otherwise</returns>
+    public bool IsValidSample(EyeTrackSample sample)
+    {
+        return sample.eventType != EyeTrackEventType.Unknown &&
+            sample.lEyeDirection != Vector3.zero &&
+            sample.rEyeDirection != Vector3.zero;
+    }
+
+    /// <summary>
     /// Generate gaze animation instances from eye tracking events.
     /// </summary>
     /// <param name="timeline">Animation timeline</param>
@@ -312,6 +342,162 @@ public class EyeTrackData
                 Model, evt.frameLength, -1, null, 0f, 0f, true, BaseAnimationClip, null);
             EyeGazeEditor.AddEyeGaze(timeline, instance, evt.startFrame, layerName);
         }
+    }
+
+    /// <summary>
+    /// Compute gaze direction aligning rotations from eye tracking align points.
+    /// </summary>
+    /// <param name="timeline">Animation timeline</param>
+    public void InitAlignEyeRotations(AnimationTimeline timeline, Quaternion initEyeRot)
+    {
+        // TODO: take into account alignment points to refine the estimate
+        LEyeAlignRotation = initEyeRot;
+        REyeAlignRotation = initEyeRot;
+        return;
+
+        /*var gazeController = Model.GetComponent<GazeController>();
+        if (gazeController == null)
+            throw new Exception("Character model " + Model.name + " has no gaze controller.");
+        var lEye = gazeController.lEye.Top;
+        var rEye = gazeController.rEye.Top;
+        
+        Vector3 vle = Vector3.zero;
+        Vector3 vre = Vector3.zero;
+        int numAlignPoints = 0;
+        var markerSets = GameObject.FindGameObjectsWithTag("GazeMarkerSet");
+        foreach (var alignPoint in AlignPoints)
+        {
+            // Get marker for the current align point
+            GameObject marker = null;
+            if (alignPoint.markerSet == "null")
+            {
+                marker = GameObject.FindGameObjectWithTag(alignPoint.marker);
+            }
+            else
+            {
+                var markerSet = markerSets.FirstOrDefault(ms => ms.name == alignPoint.markerSet);
+                if (markerSet == null)
+                {
+                    Debug.LogWarning("Eye tracking align point specifies non-existent marker set " + alignPoint.markerSet);
+                    continue;
+                }
+                marker = GameObject.FindGameObjectsWithTag(alignPoint.marker)
+                    .FirstOrDefault(m => m.transform.parent == markerSet.transform);
+            }
+
+            if (marker == null)
+            {
+                Debug.LogWarning("Eye tracking align point specifies non-existent marker " + alignPoint.marker);
+                continue;
+            }
+
+            if (!IsValidSample(Samples[alignPoint.frame]))
+                continue;
+
+            ++numAlignPoints;
+
+            // Get eye gaze directions in the base animation
+            timeline.GoToFrame(alignPoint.frame - FrameOffset);
+            timeline.ApplyAnimation();
+            var dle1 = lEye.InverseTransformDirection((marker.transform.position - lEye.position)).normalized;
+            var dre1 = rEye.InverseTransformDirection((marker.transform.position - rEye.position)).normalized;
+
+            // Get eye gaze directions in the eye tracking data
+            var dle0 = initEyeRot * Samples[alignPoint.frame].lEyeDirection;
+            var dre0 = initEyeRot * Samples[alignPoint.frame].rEyeDirection;
+
+            // Compute aligning rotation
+            var qle = Quaternion.FromToRotation(dle0, dle1);
+            var qre = Quaternion.FromToRotation(dre0, dre1);
+            vle += QuaternionUtil.Log(qle);
+            vre += QuaternionUtil.Log(qre);
+        }
+
+        if (numAlignPoints == 0)
+            throw new Exception("No valid alignment point markers for eye tracking data found in the scene.");
+
+        vle = (1f / numAlignPoints) * vle;
+        vre = (1f / numAlignPoints) * vre;
+        LEyeAlignRotation = QuaternionUtil.Exp(vle);
+        REyeAlignRotation = QuaternionUtil.Exp(vre);*/
+    }
+
+    /// <summary>
+    /// Add eye animation generated from eye tracking samples to the base animation.
+    /// </summary>
+    /// <param name="eyeAnimationClipName">Name for the new animation containing eye animation</param>
+    /// <returns>New animation clip containing eye animation curves</returns>
+    public AnimationClip AddEyeAnimation(string eyeAnimationClipName)
+    {
+        Debug.Log("Adding eye animation to " + BaseAnimationClip.name + "...");
+
+        var gazeController = Model.GetComponent<GazeController>();
+        if (gazeController == null)
+            throw new Exception("Character model " + Model.name + " has no gaze controller.");
+        var lEye = gazeController.lEye.Top;
+        var rEye = gazeController.rEye.Top;
+        var curves = LEAPAssetUtil.GetAnimationCurvesFromClip(Model, BaseAnimationClip);
+        var baseInstance = new AnimationClipInstance(BaseAnimationClip.name, Model, false, false, false);
+        
+        // Create eye animation curves
+        int lEyeIndex = ModelUtil.FindBoneIndex(Model, lEye);
+        int rEyeIndex = ModelUtil.FindBoneIndex(Model, rEye);
+        curves[3 + lEyeIndex * 4] = new AnimationCurve();
+        curves[3 + lEyeIndex * 4 + 1] = new AnimationCurve();
+        curves[3 + lEyeIndex * 4 + 2] = new AnimationCurve();
+        curves[3 + lEyeIndex * 4 + 3] = new AnimationCurve();
+        curves[3 + rEyeIndex * 4] = new AnimationCurve();
+        curves[3 + rEyeIndex * 4 + 1] = new AnimationCurve();
+        curves[3 + rEyeIndex * 4 + 2] = new AnimationCurve();
+        curves[3 + rEyeIndex * 4 + 3] = new AnimationCurve();
+
+        // Generate eye animation curves
+        Vector3 dle0 = lEye.TransformDirection(LEyeAlignRotation * (new Vector3(0f, 0f, 1f))).normalized,
+            dre0 = rEye.TransformDirection(REyeAlignRotation * (new Vector3(0f, 0f, 1f))).normalized;
+        for (int frameIndex = 0; frameIndex < baseInstance.FrameLength; ++frameIndex)
+        {
+            baseInstance.Apply(frameIndex, AnimationLayerMode.Override);
+
+            // Get eye directions in world space
+            if (IsValidSample(Samples[frameIndex + FrameOffset]))
+            {
+                dle0 = Samples[frameIndex + FrameOffset].lEyeDirection.normalized;
+                dre0 = Samples[frameIndex + FrameOffset].rEyeDirection.normalized;
+                dle0 = (LEyeAlignRotation * dle0).normalized;
+                dre0 = (REyeAlignRotation * dre0).normalized;
+            }
+            
+            // Compute eye rotations
+            lEye.localRotation = Quaternion.FromToRotation(Vector3.forward, dle0);
+            rEye.localRotation = Quaternion.FromToRotation(Vector3.forward, dre0);
+            /*float scaleOMR = 0.5f * (gazeController.lEye.inOMR + gazeController.lEye.outOMR) / 55f;
+            gazeController.lEye.Yaw *= scaleOMR;
+            gazeController.lEye.Pitch *= scaleOMR;
+            gazeController.rEye.Yaw *= scaleOMR;
+            gazeController.rEye.Pitch *= scaleOMR;*/
+            gazeController.lEye.ClampOMR();
+            gazeController.rEye.ClampOMR();
+            Quaternion lEyeRot = lEye.localRotation;
+            Quaternion rEyeRot = rEye.localRotation;
+            //lEyeRot = Quaternion.Euler(scaleOMR * lEyeRot.eulerAngles.x, scaleOMR * lEyeRot.eulerAngles.y, scaleOMR * lEyeRot.eulerAngles.z);
+            //rEyeRot = Quaternion.Euler(scaleOMR * rEyeRot.eulerAngles.x, scaleOMR * rEyeRot.eulerAngles.y, scaleOMR * rEyeRot.eulerAngles.z);
+
+            // Generate keyframes
+            float time = LEAPCore.ToTime(frameIndex);
+            curves[3 + lEyeIndex * 4].AddKey(new Keyframe(time, lEyeRot.x));
+            curves[3 + lEyeIndex * 4 + 1].AddKey(new Keyframe(time, lEyeRot.y));
+            curves[3 + lEyeIndex * 4 + 2].AddKey(new Keyframe(time, lEyeRot.z));
+            curves[3 + lEyeIndex * 4 + 3].AddKey(new Keyframe(time, lEyeRot.w));
+            curves[3 + rEyeIndex * 4].AddKey(new Keyframe(time, rEyeRot.x));
+            curves[3 + rEyeIndex * 4 + 1].AddKey(new Keyframe(time, rEyeRot.y));
+            curves[3 + rEyeIndex * 4 + 2].AddKey(new Keyframe(time, rEyeRot.z));
+            curves[3 + rEyeIndex * 4 + 3].AddKey(new Keyframe(time, rEyeRot.w));
+        }
+
+        // Create eye animation clip
+        var eyeClip = LEAPAssetUtil.CreateAnimationClipOnModel(eyeAnimationClipName, Model);
+        LEAPAssetUtil.SetAnimationCurvesOnClip(Model, eyeClip, curves);
+        return eyeClip;
     }
 
     // Load eye tracking data parameters
@@ -457,8 +643,8 @@ public class EyeTrackData
                 // Add sample
                 var sample = new EyeTrackSample(
                     new Vector2(imgPosX + ImageXCorrection, imgPosY + ImageYCorrection),
-                    new Vector3(lEyeDirX, lEyeDirY, lEyeDirZ),
-                    new Vector3(rEyeDirX, rEyeDirY, rEyeDirZ),
+                    new Vector3(-lEyeDirX, lEyeDirY, lEyeDirZ),
+                    new Vector3(-rEyeDirX, rEyeDirY, rEyeDirZ),
                     eventType);
                 _samples.Add(sample);
             }

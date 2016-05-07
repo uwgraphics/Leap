@@ -546,7 +546,6 @@ public static class LEAPAssetUtil
     {
         Transform rootBone = model.tag == "Agent" ? ModelUtil.FindRootBone(model) : model.transform;
         AnimationClipCurveData[] allCurvesData = AnimationUtility.GetAllCurves(clip, true);
-        clip.ClearCurves();
         foreach (var curveData in allCurvesData)
         {
             string boneName = curveData.path.LastIndexOf('/') >= 0 ?
@@ -557,8 +556,14 @@ public static class LEAPAssetUtil
             {
                 // Bone found, make sure the curve has the right path
                 string bonePath = ModelUtil.GetBonePath(bone);
-                clip.SetCurve(bonePath, curveData.type, curveData.propertyName, curveData.curve);
+                if (curveData.path != bonePath)
+                {
+                    clip.SetCurve(bonePath, curveData.type, curveData.propertyName, curveData.curve);
+                    clip.SetCurve(curveData.path, curveData.type, curveData.propertyName.Substring(0, curveData.propertyName.Length - 2), null);
+                }
             }
+            else
+                clip.SetCurve(curveData.path, curveData.type, curveData.propertyName.Substring(0, curveData.propertyName.Length - 2), null);
         }
     }
 
