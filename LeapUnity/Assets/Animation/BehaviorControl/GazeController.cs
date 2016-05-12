@@ -740,6 +740,7 @@ public class GazeController : AnimController
     {
         Quaternion fixRootRot1 = Root.rotation;
         Quaternion dq = Quaternion.Inverse(_fixRootRot) * fixRootRot1;
+        dq.eulerAngles = new Vector3(0f, dq.eulerAngles.y, 0f);
         torso._FixSourceDirection = dq * torso._FixSourceDirectionOriginal;
         head._FixSourceDirection = dq * head._FixSourceDirectionOriginal;
         lEye._FixSourceDirection = dq * lEye._FixSourceDirectionOriginal;
@@ -751,7 +752,7 @@ public class GazeController : AnimController
     {
         torso.RotateTowards(torso._FixSourceDirection);
         head.RotateTowards(head._FixSourceDirection);
-        lEye.RotateTowards(lEye._FixSourceDirection);
+        lEye.RotateTowards(lEye._FixSourceDirection); 
         rEye.RotateTowards(rEye._FixSourceDirection);
     }
 
@@ -766,6 +767,7 @@ public class GazeController : AnimController
     {
         Quaternion rootRot1 = Root.rotation;
         Quaternion dq = Quaternion.Inverse(_rootRot) * rootRot1;
+        dq.eulerAngles = new Vector3(0f, dq.eulerAngles.y, 0f);
         torso._SourceDirection = dq * torso._SourceDirectionOriginal;
         head._SourceDirection = dq * head._SourceDirectionOriginal;
         lEye._SourceDirection = dq * lEye._SourceDirectionOriginal;

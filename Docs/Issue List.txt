@@ -1,5 +1,9 @@
 Animation Editor:
 
+#149 [X] Source directions sometimes become absurd, resulting in unusually arced gaze shifts
+  - Especially noticeable in StealDiamond-Edits, where head source directions almost become vertical at one point
+  - When updating source directions with changes in root orientation, only take into account rotation around y!
+  
 #148 [X] Gaze shifts always proceed along shortest arcs, even when longer arcs would be anatomically correct
   - Fixed by identifying long-arc gaze shifts, and flipping aligning target direction to the right side of the rotation sphere in _UpdateTargetDirection()
   - Sometimes wrong gaze shifts are labeled as long-arc - fixed that now!

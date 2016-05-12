@@ -200,12 +200,12 @@ public class AnimationEditGizmos : MonoBehaviour
 
     private void _DrawGazeSequence(bool showLocal)
     {
-        for (int gazeIndex = 1; gazeIndex < _gazeSequence.Count; ++gazeIndex)
+        for (int gazeIndex = 0; gazeIndex < _gazeSequence.Count; ++gazeIndex)
         {
             if (showLocal && !_gazeSequence[gazeIndex].isLocal)
                 continue;
 
-            Vector3 p1 = _gazeSequence[gazeIndex - 1].targetPosition;
+            Vector3 p1 = gazeIndex > 0 ? _gazeSequence[gazeIndex - 1].targetPosition : Vector3.zero;
             Vector3 p2 = _gazeSequence[gazeIndex].targetPosition;
 
             // Draw gaze shift line

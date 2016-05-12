@@ -1,4 +1,5 @@
-﻿using System;
+﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,7 @@ using System.Text;
 public static class StatUtil
 {
     /// <summary>
-    /// Compute Cohen's kappa as a measure of intercoder reliability
+    /// Compute Cohen's kappa as a measure of intercoder reliability.
     /// </summary>
     /// <typeparam name="TItem">Item type</typeparam>
     /// <typeparam name="TCat">Category type</typeparam>
@@ -53,6 +54,71 @@ public static class StatUtil
 
         float k = pe < 0.99995f ? (po - pe) / (1 - pe) : 0f;
         return k;
+    }
+
+    /// <summary>
+    /// Compute Pearson's r for two sets of samples.
+    /// </summary>
+    /// <param name="x">Samples of x</param>
+    /// <param name="y">Samples of y</param>
+    /// <returns>Pearson's r</returns>
+    public static float ComputePearsonR(float[] x, float[] y)
+    {
+        if (x.Length != y.Length)
+            throw new ArgumentException("Cannot compute Pearson r, both variables need to have the same number of samples",
+                "y");
+
+        int n = x.Length;
+        float xm = x.Sum() / n;
+        float ym = y.Sum() / n;
+
+        float rn = 0f;
+        float rdx = 0f;
+        float rdy = 0f;
+        for (int i = 0; i < n; ++i)
+        {
+            float dxi = x[i] - xm;
+            float dyi = y[i] - ym;
+            rn +=  dxi * dyi;
+            rdx += dxi * dxi;
+            rdy += dyi * dyi;
+        }
+
+        float r = rn / (Mathf.Sqrt(rdx) * Mathf.Sqrt(rdy));
+        return r;
+    }
+
+    /// <summary>
+    /// Compute Fisher's r for two sets of samples as a measure of intraclass correlation.
+    /// </summary>
+    /// <param name="x">Samples of x</param>
+    /// <param name="y">Samples of y</param>
+    /// <returns>Pearson's r</returns>
+    public static float ComputeFisherR(float[] x, float[] y)
+    {
+        if (x.Length != y.Length)
+            throw new ArgumentException("Cannot compute Pearson r, both variables need to have the same number of samples",
+                "y");
+
+        int n = x.Length;
+        float m = 0f;
+        for (int i = 0; i < n; ++i)
+            m += (x[i] + y[i]);
+        m /= (2f * n);
+
+        float r = 0f;
+        float s2 = 0f;
+        for (int i = 0; i < n; ++i)
+        {
+            float dxi = x[i] - m;
+            float dyi = y[i] - m;
+            r += dxi * dyi;
+            s2 += (dxi * dxi + dyi * dyi);
+        }
+        s2 /= (2f * n);
+        r /= (s2 * n);
+
+        return r;
     }
 }
 

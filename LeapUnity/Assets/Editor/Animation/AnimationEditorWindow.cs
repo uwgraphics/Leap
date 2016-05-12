@@ -365,7 +365,7 @@ public class AnimationEditorWindow : EditorWindow
             // Create the new gaze instance and schedule it
             var newGazeInstance = new EyeGazeInstance(gazeInstanceName, LastSelectedModel, 30, -1, gazeTarget,
                 1f, 0f, true, (baseInstance.Animation as AnimationClipInstance).AnimationClip,
-                (targetInstance.Animation as AnimationClipInstance).AnimationClip);
+                targetInstance != null ? (targetInstance.Animation as AnimationClipInstance).AnimationClip : null);
             EyeGazeEditor.AddEyeGaze(Timeline, newGazeInstance, currentFrame, LEAPCore.eyeGazeAnimationLayerName, false);
         }
     }

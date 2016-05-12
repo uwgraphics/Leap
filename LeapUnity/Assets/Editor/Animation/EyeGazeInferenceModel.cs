@@ -591,114 +591,65 @@ public class EyeGazeInferenceModel
         if (data.NumberOfRows <= 0)
             // No ground-truth gaze shift data
             return;
+        int firstStartFrameIndex = data[0].GetValue<int>(1); // no ground-truth data before this frame
 
-        // Compute content frame range
-        int baseStartFrameIndex = data.NumberOfRows > 0 ? data[0].GetValue<int>(1) : 0;
-        int baseEndFrameIndex = data.NumberOfRows > 0 ? data[data.NumberOfRows - 1].GetValue<int>(2) : timeline.FrameLength - 1;
+        // Count only gaze shifts within valid range
+        int num1 = 0;
+        for (int rowIndex = 0; rowIndex < data.NumberOfRows; ++rowIndex)
+            if (data[rowIndex].GetValue<string>(0) == "GazeShift")
+                ++num1;
+        int num2 = 0;
+        foreach (var gazeInstance in gazeLayer.Animations)
+            if ((gazeInstance.Animation as EyeGazeInstance).Target != null && gazeInstance.EndFrame >= firstStartFrameIndex)
+                ++num2;
 
-        // Count accurately inferred gaze instances
-        int numCorrect = 0, numMissed = 0;
+        // Identify pairs of overlapping gaze instances
+        var startTimes1 = new List<float>();
+        var startTimes2 = new List<float>();
+        var fixationStartTimes1 = new List<float>();
+        var fixationStartTimes2 = new List<float>();
+        var matched1 = new HashSet<int>();
+        var matched2 = new HashSet<int>();
         for (int rowIndex = 0; rowIndex < data.NumberOfRows; ++rowIndex)
         {
             string eventType = data[rowIndex].GetValue<string>(0);
-            if (eventType == "Other")
+            if (eventType != "GazeShift")
                 continue;
 
             // Get gaze shift start and end frames
-            int startFrameIndex = data[rowIndex].GetValue<int>(1);
-            int fixationStartFrameIndex = data[rowIndex].GetValue<int>(2);
+            int startFrameIndex1 = data[rowIndex].GetValue<int>(1);
+            int fixationStartFrameIndex1 = data[rowIndex].GetValue<int>(2);
 
             // Find match for current ground-truth gaze shift
-            bool matchFound = false;
-            foreach (var gazeInstance in gazeLayer.Animations)
+            for (int gazeInstanceIndex = 0; gazeInstanceIndex < gazeLayer.Animations.Count; ++gazeInstanceIndex)
             {
-                if ((gazeInstance.Animation as EyeGazeInstance).Target == null)
+                var gazeInstance = gazeLayer.Animations[gazeInstanceIndex];
+                if ((gazeInstance.Animation as EyeGazeInstance).Target == null || gazeInstance.EndFrame < firstStartFrameIndex)
                     continue;
 
-                int matchStartFrameIndex = Mathf.Max(startFrameIndex, gazeInstance.StartFrame);
-                int matchFixationStartFrameIndex = Mathf.Min(fixationStartFrameIndex,
-                    gazeInstance.StartFrame + (gazeInstance.Animation as EyeGazeInstance).FixationStartFrame);
+                int startFrameIndex2 = gazeInstance.StartFrame;
+                int fixationStartFrameIndex2 = gazeInstance.StartFrame + (gazeInstance.Animation as EyeGazeInstance).FixationStartFrame;
+                int matchStartFrameIndex = Mathf.Max(startFrameIndex1, startFrameIndex2);
+                int matchFixationStartFrameIndex = Mathf.Min(fixationStartFrameIndex1, fixationStartFrameIndex2);
 
                 if (matchFixationStartFrameIndex >= matchStartFrameIndex)
                 {
-                    float matchGroundTruth = ((float)(matchFixationStartFrameIndex - matchStartFrameIndex + 1)) /
-                        (fixationStartFrameIndex - startFrameIndex + 1);
-                    float matchInferred = ((float)(matchFixationStartFrameIndex - matchStartFrameIndex + 1)) /
-                        ((gazeInstance.Animation as EyeGazeInstance).FixationStartFrame + 1);
+                    startTimes1.Add(LEAPCore.ToTime(startFrameIndex1));
+                    startTimes2.Add(LEAPCore.ToTime(startFrameIndex2));
+                    fixationStartTimes1.Add(LEAPCore.ToTime(fixationStartFrameIndex1));
+                    fixationStartTimes2.Add(LEAPCore.ToTime(fixationStartFrameIndex2));
 
-                    if (matchGroundTruth >= LEAPCore.gazeInferenceMatchThreshold &&
-                        matchInferred >= LEAPCore.gazeInferenceMatchThreshold)
-                    {
-                        matchFound = true;
-                        Debug.Log(string.Format("{0} matches ground-truth gaze shift from {1} to {2}",
-                            gazeInstance.Animation.Name, startFrameIndex, fixationStartFrameIndex));
-                        break;
-                    }
+                    matched1.Add(rowIndex);
+                    matched2.Add(gazeInstanceIndex);
                 }
-            }
-
-            if (matchFound)
-                ++numCorrect;
-            else
-            {
-                ++numMissed;
-                Debug.LogWarning(string.Format("No match for ground-truth gaze shift from {0} to {1}",
-                    startFrameIndex, fixationStartFrameIndex));
             }
         }
 
-        // Compute instance-based inference performance
-        int numInferred = gazeLayer.Animations.Count(inst => inst.EndFrame > baseStartFrameIndex && inst.StartFrame < baseEndFrameIndex
-            && (inst.Animation as EyeGazeInstance).Target != null);
-        int numWrong = numInferred - numCorrect;
-        float sens = ((float)numCorrect) / (numCorrect + numMissed);
-        float prec = ((float)numCorrect) / (numCorrect + numWrong);
-        float fdr = ((float)numWrong) / (numCorrect + numWrong);
-        Debug.Log(string.Format("[Instances] Sensitivity = {0}%, Precision = {1}%, FDR = {2}%", sens * 100f, prec * 100f, fdr * 100f));
-
-        // Count accurately inferred frames
-        numCorrect = numMissed = numWrong = 0;
-        for (int frameIndex = baseStartFrameIndex; frameIndex <= baseEndFrameIndex; ++frameIndex)
-        {
-            // Is current frame in a ground-truth gaze shift?
-            bool isGazeShift = false;
-            for (int rowIndex = 0; rowIndex < data.NumberOfRows; ++rowIndex)
-            {
-                string eventType = data[rowIndex].GetValue<string>(0);
-                if (eventType == "Other")
-                    continue;
-
-                // Get gaze shift start and end frames
-                int startFrameIndex = data[rowIndex].GetValue<int>(1);
-                int fixationStartFrameIndex = data[rowIndex].GetValue<int>(2);
-
-                if (frameIndex >= startFrameIndex && frameIndex <= fixationStartFrameIndex)
-                {
-                    isGazeShift = true;
-                    break;
-                }
-                else if (frameIndex < startFrameIndex)
-                    break;
-            }
-
-            // Is current frame in an inferred gaze shift?
-            bool isGazeShiftInferred = gazeLayer.Animations.Any(inst => frameIndex >= inst.StartFrame &&
-                frameIndex <= inst.StartFrame + (inst.Animation as EyeGazeInstance).FixationStartFrame &&
-                (inst.Animation as EyeGazeInstance).Target != null);
-
-            if (isGazeShift && isGazeShiftInferred)
-                ++numCorrect;
-            else if (isGazeShift && !isGazeShiftInferred)
-                ++numMissed;
-            else if (!isGazeShift && isGazeShiftInferred)
-                ++numWrong;
-        }
-
-        // Compute frame-based inference performance
-        sens = ((float)numCorrect) / (numCorrect + numMissed);
-        prec = ((float)numCorrect) / (numCorrect + numWrong);
-        fdr = ((float)numWrong) / (numCorrect + numWrong);
-        Debug.Log(string.Format("[Instances] Sensitivity = {0}%, Precision = {1}%, FDR = {2}%", sens * 100f, prec * 100f, fdr * 100f));
+        // Report Fisher's r
+        float rs = StatUtil.ComputeFisherR(startTimes1.ToArray(), startTimes2.ToArray());
+        float re = StatUtil.ComputeFisherR(fixationStartTimes1.ToArray(), fixationStartTimes2.ToArray());
+        Debug.Log(string.Format("Gaze instance inference accuracy: rs = {0}, re = {1}; unmatched {2}/{3} and {4}/{5} gaze shifts, respectively",
+            rs, re, num1 - matched1.Count, num1, num2 - matched2.Count, num2));
     }
 
     /// <summary>

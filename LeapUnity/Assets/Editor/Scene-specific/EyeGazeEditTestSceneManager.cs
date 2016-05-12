@@ -732,10 +732,6 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
             EyeGazeEditor.PrintEyeGaze(timeline);
-
-            // Prepare eye gaze inference evaluations
-            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 1066, 1359);
-            ComputeIntercoderReliabilityTargets(sceneName);
         }
         else if (sceneName == "WaitForBusNew")
         {
@@ -920,13 +916,13 @@ public static class EyeGazeEditTestSceneManager
                     "StackBoxesNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
             var cameraAnimation = new AnimationClipInstance("StackBoxesNewCamera1",
-                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew1").gameObject,
-                //envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew1-CloseUp").gameObject,
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name.StartsWith("CameraStackBoxesNew1") &&
+                cam.gameObject.active).gameObject,
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
             cameraAnimation = new AnimationClipInstance("StackBoxesNewCamera2",
-                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew2").gameObject,
-                //envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew2-CloseUp").gameObject,
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name.StartsWith("CameraStackBoxesNew2") &&
+                cam.gameObject.active).gameObject,
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
 
@@ -1365,13 +1361,13 @@ public static class EyeGazeEditTestSceneManager
                     "StackBoxesNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
             var cameraAnimation = new AnimationClipInstance("StackBoxesNewCamera1",
-                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew1").gameObject,
-                //envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew1-CloseUp").gameObject,
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name.StartsWith("CameraStackBoxesNew1") &&
+                cam.gameObject.active).gameObject,
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
             cameraAnimation = new AnimationClipInstance("StackBoxesNewCamera2",
-                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew2").gameObject,
-                //envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew2-CloseUp").gameObject,
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name.StartsWith("CameraStackBoxesNew2") &&
+                cam.gameObject.active).gameObject,
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
         }
@@ -1570,13 +1566,13 @@ public static class EyeGazeEditTestSceneManager
                     false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, envAnimationGem);
             var cameraAnimation = new AnimationClipInstance("StealDiamondNewCamera1",
-                //envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStealDiamondNew1").gameObject,
-                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStealDiamondNew1-CloseUp").gameObject,
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name.StartsWith("CameraStealDiamondNew1") &&
+                cam.gameObject.active).gameObject,
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
             cameraAnimation = new AnimationClipInstance("StealDiamondNewCamera2",
-                //envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStealDiamondNew2").gameObject,
-                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStealDiamondNew2-CloseUp").gameObject,
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name.StartsWith("CameraStealDiamondNew2") &&
+                cam.gameObject.active).gameObject,
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
         }
@@ -1621,13 +1617,13 @@ public static class EyeGazeEditTestSceneManager
                     "StackBoxesNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
             var cameraAnimation = new AnimationClipInstance("StackBoxesNewCamera1",
-                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew1").gameObject,
-                //envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew1-CloseUp").gameObject,
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name.StartsWith("CameraStackBoxesNew1") &&
+                cam.gameObject.active).gameObject,
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
             cameraAnimation = new AnimationClipInstance("StackBoxesNewCamera2",
-                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew2").gameObject,
-                //envController.Cameras.FirstOrDefault(cam => cam.gameObject.name == "CameraStackBoxesNew2-CloseUp").gameObject,
+                envController.Cameras.FirstOrDefault(cam => cam.gameObject.name.StartsWith("CameraStackBoxesNew2") &&
+                cam.gameObject.active).gameObject,
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
         }
@@ -1951,63 +1947,75 @@ public static class EyeGazeEditTestSceneManager
         data2.AddAttribute("EndFrame", typeof(int));
         data2.ReadFromFile(path2);
 
-        // For each frame window, determine how it was categorized by each coder
-        int frameWindowSize = 10;
-        int numFrameWindows = (sceneEndFrame - sceneStartFrame + 1) / frameWindowSize;
-        bool[] frameWindows1 = new bool[numFrameWindows];
-        bool[] frameWindows2 = new bool[numFrameWindows];
-        for (int frameWindowIndex = 0; frameWindowIndex < numFrameWindows; ++frameWindowIndex)
+        // Remove non-gaze shifts
+        for (int rowIndex1 = 0; rowIndex1 < data1.NumberOfRows; ++rowIndex1)
+            if (data1[rowIndex1].GetValue<string>(0) != "GazeShift")
+                data1.RemoveData(rowIndex1--);
+        for (int rowIndex2 = 0; rowIndex2 < data2.NumberOfRows; ++rowIndex2)
+            if (data1[rowIndex2].GetValue<string>(0) != "GazeShift")
+                data1.RemoveData(rowIndex2--);
+
+        // Identify pairs of overlapping annotations
+        var startTimes1 = new List<float>();
+        var startTimes2 = new List<float>();
+        var endTimes1 = new List<float>();
+        var endTimes2 = new List<float>();
+        var matched1 = new HashSet<int>();
+        var matched2 = new HashSet<int>();
+        int num1 = data1.NumberOfRows;
+        int num2 = data2.NumberOfRows;
+        for (int rowIndex1 = 0; rowIndex1 < data1.NumberOfRows; ++rowIndex1)
         {
-            int wndStartFrame = sceneStartFrame + frameWindowIndex * frameWindowSize;
-            int wndEndFrame = Mathf.Min(wndStartFrame + frameWindowSize - 1, sceneEndFrame);
+            float startTime1 = LEAPCore.ToTime(data1[rowIndex1].GetValue<int>(1));
+            float endTime1 = LEAPCore.ToTime(data1[rowIndex1].GetValue<int>(2));
+            float startTime2 = -1f;
+            float endTime2 = -1f;
+            float maxOverlapLength = -1f;
+            int maxOverlapRowIndex = -1;
 
-            // Does coder 1 say it is a gaze shift?
-            frameWindows1[frameWindowIndex] = false;
-            for (int rowIndex = 0; rowIndex < data1.NumberOfRows; ++rowIndex)
+            for (int rowIndex2 = 0; rowIndex2 < data2.NumberOfRows; ++rowIndex2)
             {
-                string eventType = data1[rowIndex].GetValue<string>(0);
-                if (eventType != "GazeShift")
-                    continue;
+                float curStartTime2 = LEAPCore.ToTime(data2[rowIndex2].GetValue<int>(1));
+                float curEndTime2 = LEAPCore.ToTime(data2[rowIndex2].GetValue<int>(2));
 
-                int startFrame = data1[rowIndex].GetValue<int>(1);
-                int endFrame = data1[rowIndex].GetValue<int>(2);
-                int meanFrame = (startFrame + endFrame) / 2;
-                if (wndStartFrame <= meanFrame && meanFrame <= wndEndFrame)
+                float overlapLength = Mathf.Min(endTime1, curEndTime2) - Mathf.Max(startTime1, curStartTime2);
+                if (overlapLength > 0f)
                 {
-                    frameWindows1[frameWindowIndex] = true;
-                    break;
+                    startTimes1.Add(startTime1);
+                    startTimes2.Add(curStartTime2);
+                    endTimes1.Add(endTime1);
+                    endTimes2.Add(curEndTime2);
+
+                    matched1.Add(rowIndex1);
+                    matched2.Add(rowIndex2);
                 }
+                /*if (overlapLength > 0f && overlapLength > maxOverlapLength)
+                {
+                    startTime2 = curStartTime2;
+                    endTime2 = curEndTime2;
+                    maxOverlapLength = overlapLength;
+                    maxOverlapRowIndex = rowIndex2;
+                }*/
             }
 
-            // Does coder 2 say it is a gaze shift?
-            frameWindows2[frameWindowIndex] = false;
-            for (int rowIndex = 0; rowIndex < data2.NumberOfRows; ++rowIndex)
+            /*if (maxOverlapLength > 0f)
             {
-                string eventType = data2[rowIndex].GetValue<string>(0);
-                if (eventType != "GazeShift")
-                    continue;
+                startTimes1.Add(startTime1);
+                startTimes2.Add(startTime2);
+                endTimes1.Add(endTime1);
+                endTimes2.Add(endTime2);
+                data2.RemoveData(maxOverlapRowIndex);
 
-                int startFrame = data2[rowIndex].GetValue<int>(1);
-                int endFrame = data2[rowIndex].GetValue<int>(2);
-                int meanFrame = (startFrame + endFrame) / 2;
-                if (wndStartFrame <= meanFrame && meanFrame <= wndEndFrame)
-                {
-                    frameWindows2[frameWindowIndex] = true;
-                    break;
-                }
-            }
+                matched1.Add(rowIndex1);
+                matched2.Add(maxOverlapRowIndex);
+            }*/
         }
 
-        // Generate frame window indices
-        int[] frameWindowIndexes = new int[numFrameWindows];
-        for (int frameWindowIndex = 0; frameWindowIndex < numFrameWindows; ++frameWindowIndex)
-            frameWindowIndexes[frameWindowIndex] = frameWindowIndex;
-
-        // Report Cohen's kappa
-        float kappa = StatUtil.ComputeCohenKappa<int, bool>(frameWindowIndexes,
-            new bool[] {true, false}, frameWindows1, frameWindows2);
-        Debug.Log(string.Format("Gaze instance intercoder reliability for scene {0} is kappa = {1}",
-            sceneName, kappa));
+        // Report Fisher's r
+        float rs = StatUtil.ComputeFisherR(startTimes1.ToArray(), startTimes2.ToArray());
+        float re = StatUtil.ComputeFisherR(endTimes1.ToArray(), endTimes2.ToArray());
+        Debug.Log(string.Format("Gaze instance intercoder agreement for scene {0} is rs = {1}, re = {2}; unmatched {3}/{4} and {5}/{6} gaze shifts, respectively",
+            sceneName, rs, re, num1 - matched1.Count, num1, num2 - matched2.Count, num2));
     }
 
     /// <summary>
