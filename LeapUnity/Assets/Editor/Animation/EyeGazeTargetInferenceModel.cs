@@ -215,6 +215,10 @@ public class EyeGazeTargetInferenceModel
     private GameObject _InferEyeGazeTarget(AnimationTimeline timeline, int baseAnimationInstanceId,
         int eyeGazeInstanceId)
     {
+        // Enable eye gaze camera
+        EyeGazeCamera.gameObject.active = true;
+        EyeGazeCamera.enabled = true;
+
         var baseInstance = timeline.GetAnimation(baseAnimationInstanceId) as AnimationClipInstance;
         var bones = ModelUtil.GetAllBones(Model);
         var gazeController = Model.GetComponent<GazeController>();
@@ -438,6 +442,10 @@ public class EyeGazeTargetInferenceModel
         // Unhide filtered models
         foreach (var manipObj in manipObjsToReactivate)
             manipObj.active = true;
+
+        // Disable eye gaze camera
+        EyeGazeCamera.gameObject.active = false;
+        EyeGazeCamera.enabled = false;
 
         return gazeTarget;
     }

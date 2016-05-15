@@ -125,7 +125,7 @@ public static class EyeGazeEditTestSceneManager
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNorman);
-            timeline.OwningManager.AddModel(testScenes.modelNormanette);
+            //timeline.OwningManager.AddModel(testScenes.modelNormanette);
             timeline.OwningManager.AddModel(testScenes.modelRoman);
 
             // Set environment in the timeline
@@ -1029,7 +1029,7 @@ public static class EyeGazeEditTestSceneManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits2");
             EyeGazeEditor.PrintEyeGaze(timeline);
         }
-        else if (sceneName == "MakeSandwich")
+        else if (sceneName == "MakeSandwich1")
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelMakeSandwichEnv.SetActive(true);
@@ -1037,6 +1037,10 @@ public static class EyeGazeEditTestSceneManager
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = true;
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = false;
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = false;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = true;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1082,8 +1086,64 @@ public static class EyeGazeEditTestSceneManager
                     false, false, false));
 
             // Prepare eye gaze inference evaluations
-            ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 819, 1834);
-            ComputeIntercoderReliabilityTargets(sceneName);
+            ExtractEyeTrackFixationFrames("MakeSandwich", timeline, testScenes.modelNormanNew, 819, 1834);
+            ComputeIntercoderReliabilityTargets("MakeSandwich");
+        }
+        else if (sceneName == "MakeSandwich2")
+        {
+            testScenes.modelNormanNew.SetActive(true);
+            testScenes.modelMakeSandwichEnv.SetActive(true);
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = false;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = false;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = true;
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanNew);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelMakeSandwichEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("MakeSandwich", testScenes.modelNormanNew);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            var envController = testScenes.modelMakeSandwichEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBread1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bread1"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBread2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bread2"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBacon", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bacon"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichLettuce", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Lettuce"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichTomato", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Tomato"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichSwiss", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Swiss"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichTurkey", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Turkey"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "MakeSandwichMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
         }
         else if (sceneName == "MakeSandwich-Edits")
         {
@@ -1093,6 +1153,10 @@ public static class EyeGazeEditTestSceneManager
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = false;
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = true;
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = true;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = false;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = true;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1379,6 +1443,10 @@ public static class EyeGazeEditTestSceneManager
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = true;
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = false;
             ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = false;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = true;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1459,7 +1527,7 @@ public static class EyeGazeEditTestSceneManager
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNorman);
-            timeline.OwningManager.AddModel(testScenes.modelNormanette);
+            //timeline.OwningManager.AddModel(testScenes.modelNormanette);
             timeline.OwningManager.AddModel(testScenes.modelRoman);
 
             // Set environment in the timeline
@@ -1659,6 +1727,14 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanElliot.SetActive(true);
             testScenes.modelMakeSandwichEnv.SetActive(true);
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = false;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = true;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanElliot);
@@ -1795,6 +1871,62 @@ public static class EyeGazeEditTestSceneManager
                 false, false, false);
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName, cameraAnimation);
         }
+        else if (sceneName == "MakeSandwich-HandEdits")
+        {
+            testScenes.modelNormanElliot.SetActive(true);
+            testScenes.modelMakeSandwichEnv.SetActive(true);
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = true;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = false;
+            GameObject.FindGameObjectsWithTag("MainCamera")
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = true;
+
+            // Add character models to the timeline
+            timeline.OwningManager.AddModel(testScenes.modelNormanElliot);
+
+            // Set environment in the timeline
+            timeline.OwningManager.SetEnvironment(testScenes.modelMakeSandwichEnv);
+
+            // Create animation instances
+            var bodyAnimationNorman = new AnimationClipInstance("MakeSandwich-HandEdits", testScenes.modelNormanElliot);
+            int bodyAnimationNormanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
+                bodyAnimationNorman, 0, LEAPCore.helperAnimationLayerName);
+
+            // Load eye gaze
+            EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
+            EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Create environment animations
+            var envController = testScenes.modelMakeSandwichEnv.GetComponent<EnvironmentController>();
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBread1", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bread1"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBread2", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bread2"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichBacon", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Bacon"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichLettuce", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Lettuce"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichTomato", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Tomato"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichSwiss", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Swiss"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance("MakeSandwichTurkey", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Turkey"),
+                    false, false, false));
+            timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
+                new AnimationClipInstance(
+                    "MakeSandwichMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
+                    false, false, false));
+        }
         else // if (sceneName == "InitialPose")
         {
             testScenes.modelNorman.SetActive(true);
@@ -1820,11 +1952,172 @@ public static class EyeGazeEditTestSceneManager
     }
 
     /// <summary>
+    /// Export videos for all the scenarios.
+    /// </summary>
+    public static void ExportAllVideos()
+    {
+        var timeline = AnimationManager.Instance.Timeline;
+
+        // Export animations with no gaze
+        _EnableBlinks(false);
+        /*_ExportVideoOriginal("WindowWashingNew");
+        _ExportVideoOriginal("PassSoda");
+        _ExportVideoOriginal("WalkConesNew");
+        _ExportVideoOriginal("HandShake");
+        _ExportVideoOriginal("BookShelfNew", true);
+        _ExportVideoOriginal("StealDiamondNew");
+        _ExportVideoOriginal("WaitForBusNew");
+        _ExportVideoOriginal("StackBoxesNew");
+        _ExportVideoOriginal("MakeSandwich1");
+        _ExportVideoOriginal("MakeSandwichDemo");
+        _ExportVideoOriginal("ChatWithFriend");*/
+
+        // Export animations with inferred gaze
+        /*_EnableBlinks(false);
+        _ExportVideoInferred("WindowWashingNew");
+        _ExportVideoInferred("PassSoda");
+        _ExportVideoInferred("WalkConesNew");
+        _ExportVideoInferred("HandShake");
+        _ExportVideoInferred("BookShelfNew", true);
+        _ExportVideoInferred("StealDiamondNew");
+        _ExportVideoInferred("WaitForBusNew");
+        _ExportVideoInferred("StackBoxesNew");
+        _ExportVideoInferred("MakeSandwich1", false, "Inferred1");
+        _ExportVideoInferred("MakeSandwich2", false, "Inferred2");
+        _ExportVideoInferred("MakeSandwichDemo");
+        _ExportVideoInferred("ChatWithFriend");*/
+
+        // Export animations with edited gaze
+        _ExportVideoEdits("WindowWashingNew-Edits");
+        _ExportVideoEdits("PassSoda-Edits");
+        _ExportVideoEdits("HandShake-Edits", -1f, -1f, true);
+        _ExportVideoEdits("BookShelfNew-Edits", -1f, 0f, true);
+        _ExportVideoEdits("StealDiamondNew-Edits");
+        _ExportVideoEdits("WaitForBusNew-Edits1", 1f, 0f);
+        _ExportVideoEdits("MakeSandwich-Edits");
+        _ExportVideoEdits("MakeSandwichDemo-Edits", -1f, -1f, true);
+        _ExportVideoEdits("ChatWithFriend-Edits1", 0.5f, 0f, false, "Edits1");
+        _ExportVideoEdits("ChatWithFriend-Edits2", 0.5f, 0f, false, "Edits2");
+
+        // Export animations with inferred gaze, but no blinks
+        /*_EnableBlinks(false);
+        _ExportVideoInferred("PassSoda", false, "InferredNoBlinks");
+        _ExportVideoInferred("WalkConesNew", false, "InferredNoBlinks");
+        _ExportVideoInferred("HandShake", false, "InferredNoBlinks");
+        _ExportVideoInferred("StealDiamondNew", false, "InferredNoBlinks");
+        _ExportVideoInferred("StackBoxesNew", false, "InferredNoBlinks");
+        _ExportVideoInferred("MakeSandwich1", false, "Inferred1NoBlinks");
+        _ExportVideoInferred("MakeSandwich2", false, "Inferred2NoBlinks");
+        _ExportVideoInferred("ChatWithFriend", false, "InferredNoBlinks");
+
+        // Export animations with edited gaze, but no blinks
+        _ExportVideoEdits("PassSodaEdits", -1f, 0f, false, "EditsNoBlinks");
+        _ExportVideoEdits("HandShakeEdits", -1f, -1f, true, "EditsNoBlinks");
+        _ExportVideoEdits("StealDiamondNewEdits", -1f, 0f, false, "EditsNoBlinks");
+        _ExportVideoEdits("MakeSandwichEdits", -1f, 0f, false, "EditsNoBlinks");*/
+
+        // Export animations with recorded gaze
+        /*_ExportVideoOriginal("WalkConesNew-GroundTruth", false, "Recorded");
+        _ExportVideoOriginal("StealDiamondNew-GroundTruth", false, "Recorded");
+        _ExportVideoOriginal("StackBoxesNew-GroundTruth", false, "Recorded");
+        _ExportVideoOriginal("MakeSandwich-GroundTruth", false, "Recorded");
+        _ExportVideoOriginal("ChatWithFriend-GroundTruth", false, "Recorded");
+
+        // Export animations with hand-authored gaze
+        _ExportVideoOriginal("PassSoda-Eyes", false, "HandAuthored");
+        _ExportVideoOriginal("HandShake-Eyes", false, "HandAuthored");
+        _ExportVideoOriginal("WalkConesNew-Eyes", false, "HandAuthored");
+        _ExportVideoOriginal("StealDiamondNew-Eyes", false, "HandAuthored");
+        _ExportVideoOriginal("StackBoxesNew-Eyes", false, "HandAuthored");
+        _ExportVideoOriginal("MakeSandwich-Eyes", false, "HandAuthored");
+        _ExportVideoOriginal("ChatWithFriend-Eyes", false, "HandAuthored");
+
+        // Export animations with hand-edited gaze
+        _ExportVideoOriginal("PassSoda-HandEdits", false, "HandEdits");
+        _ExportVideoOriginal("HandShake-HandEdits", false, "HandEdits");
+        _ExportVideoOriginal("StealDiamondNew-HandEdits", false, "HandEdits");*/
+        //_ExportVideoOriginal("MakeSandwich-HandEdits", false, "HandEdits");
+    }
+
+    private static void _EnableBlinks(bool enable = true)
+    {
+        var testScenes = GameObject.FindGameObjectWithTag("EyeGazeEditor").GetComponent<EyeGazeEditTestSceneData>();
+        testScenes.modelNorman.GetComponent<BlinkController>().enabled = enable;
+        testScenes.modelRoman.GetComponent<BlinkController>().enabled = enable;
+        testScenes.modelNormanNew.GetComponent<BlinkController>().enabled = enable;
+    }
+
+    private static void _ExportVideoOriginal(string sceneName, bool enableIK = false,
+        string exportSuffix = "Original", int exportStartFrame = 0, int exportEndFrame = -1)
+    {
+        var timeline = AnimationManager.Instance.Timeline;
+        timeline.ActiveBakedTimelineIndex = -1;
+        LEAPCore.timelineBakeRangeStart = 0;
+        LEAPCore.timelineBakeRangeEnd = -1;
+
+        LoadExampleScene(sceneName);
+        LEAPCore.gazeHeadBlendWeightOverride = 0f;
+        LEAPCore.gazeTorsoBlendWeightOverride = 0f;
+        LEAPCore.useGazeIK = false;
+        timeline.SetIKEnabled(false);
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
+        timeline.GoToFrame(0);
+        timeline.Active = true;
+        timeline.InitBake(LEAPCore.defaultBakedTimelineName);
+        timeline.Bake();
+        CaptureVideo(exportSuffix);
+    }
+
+    private static void _ExportVideoInferred(string sceneName, bool enableIK = false,
+        string exportSuffix = "Inferred", int exportStartFrame = 0, int exportEndFrame = -1)
+    {
+        var timeline = AnimationManager.Instance.Timeline;
+        timeline.ActiveBakedTimelineIndex = -1;
+        LEAPCore.timelineBakeRangeStart = 0;
+        LEAPCore.timelineBakeRangeEnd = -1;
+
+        LoadExampleScene(sceneName);
+        LEAPCore.gazeHeadBlendWeightOverride = 0f;
+        LEAPCore.gazeTorsoBlendWeightOverride = 0f;
+        LEAPCore.useGazeIK = false;
+        timeline.SetIKEnabled(false);
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = true;
+        timeline.GoToFrame(0);
+        timeline.Active = true;
+        timeline.InitBake(LEAPCore.defaultBakedTimelineName);
+        timeline.Bake();
+        CaptureVideo(exportSuffix);
+    }
+
+    private static void _ExportVideoEdits(string sceneName,
+        float headBlendWeight = -1f, float torsoBlendWeight = 0f, bool enableIK = false,
+        string exportSuffix = "Edits", int exportStartFrame = 0, int exportEndFrame = -1)
+    {
+        var timeline = AnimationManager.Instance.Timeline;
+        timeline.ActiveBakedTimelineIndex = -1;
+        LEAPCore.timelineBakeRangeStart = 0;
+        LEAPCore.timelineBakeRangeEnd = -1;
+
+        LoadExampleScene(sceneName);
+        LEAPCore.gazeHeadBlendWeightOverride = headBlendWeight;
+        LEAPCore.gazeTorsoBlendWeightOverride = torsoBlendWeight;
+        LEAPCore.useGazeIK = enableIK;
+        timeline.SetIKEnabled(enableIK);
+        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = true;
+        timeline.GoToFrame(0);
+        timeline.Active = true;
+        timeline.InitBake(LEAPCore.defaultBakedTimelineName);
+        timeline.Bake();
+        CaptureVideo(exportSuffix);
+    }
+
+    /// <summary>
     /// Capture video of the currently loaded scenario.
     /// </summary>
     public static void CaptureVideo(string suffix = "")
     {
         var timeline = AnimationManager.Instance.Timeline;
+        timeline.Active = true;
         var videoCapture = GameObject.FindGameObjectWithTag("EyeGazeEditor").GetComponent<VideoCapture>();
         if (timeline.ActiveBakedTimeline == null)
         {
@@ -1839,19 +2132,20 @@ public static class EyeGazeEditTestSceneManager
         var texScreen = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
 
         // Advance through the animation and capture a sceenshot at each frame
-
         int startFrame = Mathf.Clamp(LEAPCore.gazeVideoCaptureStartFrame, 0, timeline.FrameLength - 1);
         int endFrame = LEAPCore.gazeVideoCaptureEndFrame < 0 ? timeline.FrameLength - 1 :
             Mathf.Clamp(LEAPCore.gazeVideoCaptureEndFrame, startFrame, timeline.FrameLength - 1);
         videoCapture.Start();
+        var camObjs = GameObject.FindGameObjectsWithTag("MainCamera");
         for (int frameIndex = startFrame; frameIndex <= endFrame; ++frameIndex)
         {
             timeline.GoToFrame(frameIndex);
-            timeline.ApplyBakedAnimation();
+            timeline.Advance(0f);
 
             // Render active cameras
-            foreach (var camera in envController.Cameras)
+            foreach (var camObj in camObjs)
             {
+                var camera = camObj.camera;
                 if (camera.enabled)
                 {
                     camera.targetTexture = rtScreen;
@@ -1865,9 +2159,12 @@ public static class EyeGazeEditTestSceneManager
             RenderTexture.active = null;
 
             // Reset camera render targets
-            foreach (var camera in envController.Cameras)
+            foreach (var camObj in camObjs)
+            {
+                var camera = camObj.camera;
                 if (camera.enabled)
                     camera.targetTexture = null;
+            }
 
             // Save screenshot to file
             var data = texScreen.EncodeToPNG();
@@ -1900,7 +2197,8 @@ public static class EyeGazeEditTestSceneManager
                 args = sceneName + suffix;
                 break;
         }
-        System.Diagnostics.Process.Start(cmd, args);
+        var process = System.Diagnostics.Process.Start(cmd, args);
+        process.WaitForExit();
     }
 
     /// <summary>
@@ -1989,26 +2287,7 @@ public static class EyeGazeEditTestSceneManager
                     matched1.Add(rowIndex1);
                     matched2.Add(rowIndex2);
                 }
-                /*if (overlapLength > 0f && overlapLength > maxOverlapLength)
-                {
-                    startTime2 = curStartTime2;
-                    endTime2 = curEndTime2;
-                    maxOverlapLength = overlapLength;
-                    maxOverlapRowIndex = rowIndex2;
-                }*/
             }
-
-            /*if (maxOverlapLength > 0f)
-            {
-                startTimes1.Add(startTime1);
-                startTimes2.Add(startTime2);
-                endTimes1.Add(endTime1);
-                endTimes2.Add(endTime2);
-                data2.RemoveData(maxOverlapRowIndex);
-
-                matched1.Add(rowIndex1);
-                matched2.Add(maxOverlapRowIndex);
-            }*/
         }
 
         // Report Fisher's r
@@ -2135,5 +2414,12 @@ public static class EyeGazeEditTestSceneManager
             targetNames.ToArray(), frameTargets1.ToArray(), frameTargets2.ToArray());
         Debug.Log(string.Format("Gaze target intercoder reliability for scene {0} is kappa = {1}",
             sceneName, kappa));
+    }
+
+    private static int _GetBaseAnimationInstanceId(AnimationTimeline timeline, GameObject model)
+    {
+        return timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations
+            .FirstOrDefault(inst => inst.Animation.Model == model).InstanceId;
+
     }
 }

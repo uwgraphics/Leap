@@ -909,8 +909,8 @@ public class LEAPMenu
         EyeGazeEditTestSceneManager.LoadExampleScene("ChatWithFriend-Edits2");
     }
 
-    [MenuItem("LEAP/Scenes/MakeSandwich", true)]
-    private static bool ValidateTestMakeSandwich()
+    [MenuItem("LEAP/Scenes/MakeSandwich1", true)]
+    private static bool ValidateTestMakeSandwich1()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         if (wnd.Timeline == null)
@@ -921,10 +921,28 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Scenes/MakeSandwich", false)]
-    private static void TestMakeSandwich()
+    [MenuItem("LEAP/Scenes/MakeSandwich1", false)]
+    private static void TestMakeSandwich1()
     {
-        EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich");
+        EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich1");
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich2", true)]
+    private static bool ValidateTestMakeSandwich2()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich2", false)]
+    private static void TestMakeSandwich2()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich2");
     }
 
     [MenuItem("LEAP/Scenes/MakeSandwich-Edits", true)]
@@ -1249,6 +1267,24 @@ public class LEAPMenu
     private static void TestStealDiamondNewHandEdits()
     {
         EyeGazeEditTestSceneManager.LoadExampleScene("StealDiamondNew-HandEdits");
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich-HandEdits", true)]
+    private static bool ValidateTestMakeSandwichHandEdits()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        if (wnd.Timeline == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [MenuItem("LEAP/Scenes/MakeSandwich-HandEdits", false)]
+    private static void TestMakeSandwichHandEdits()
+    {
+        EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich-HandEdits");
     }
 
     [MenuItem("LEAP/Capture Video/[None]", true)]
@@ -1689,42 +1725,36 @@ public class LEAPMenu
         return lmcPath;
     }
 
+    [MenuItem("LEAP/Custom Scripts/Export Gaze Videos", true)]
+    private static bool ValidateCaptureVideoExportAll()
+    {
+        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
+        return true;
+    }
 
-    /// <summary>
-    /// Validate run a custom script.
-    /// </summary>
-    /// <returns>
-    /// Always true
-    /// </returns>
+    [MenuItem("LEAP/Custom Scripts/Export Gaze Videos", false)]
+    private static void CaptureVideoExportAll()
+    {
+        EyeGazeEditTestSceneManager.ExportAllVideos();
+    }
+
     [MenuItem("LEAP/Custom Scripts/Run Script 1", true)]
     private static bool ValidateRunScript1()
     {
         return true;
     }
 
-    /// <summary>
-    /// Run a custom script.
-    /// </summary>
     [MenuItem("LEAP/Custom Scripts/Run Script 1")]
     private static void RunScript1()
     {
     }
 
-    /// <summary>
-    /// Validate run a custom script.
-    /// </summary>
-    /// <returns>
-    /// Always true
-    /// </returns>
     [MenuItem("LEAP/Custom Scripts/Run Script 2", true)]
     private static bool ValidateRunScript2()
     {
         return true;
     }
 
-    /// <summary>
-    /// Run a custom script.
-    /// </summary>
     [MenuItem("LEAP/Custom Scripts/Run Script 2")]
     private static void RunScript2()
     {

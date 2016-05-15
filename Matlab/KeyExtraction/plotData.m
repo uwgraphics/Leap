@@ -1,5 +1,5 @@
 % Plot configuration:
-boneMask = [6];
+boneMask = [4 6];
 endEffectorMask = [];
 numberOfBones = 6;
 numberOfEndEffectors = 4;
@@ -12,16 +12,18 @@ showP0Bones = false;
 showPRoot = false;
 showPBones = false;
 showWRoot = false;
-showWBones = true;
+showWBones = false;
 showPEndEff = false;
 showWEndEff = false;
 showP0 = false;
 showP = true;
-showKeyFrames = true;
+showKeyFrames = false;
 showRootKeyFrames = false;
 showBoneKeyFrames = false;
-showVBones = false;
+normalizeV = true;
+vNormCoeff = 1;
 normalizeA = true;
+aNormCoeff = 1;
 
 % Bone indexes:
 %
@@ -111,26 +113,35 @@ p = dataPerFrame(startFrame:endFrame, indexP);
 
 % Normalize accelerations
 if normalizeA
-    aRoot = aRoot / max(aRoot);
+    aRoot = aNormCoeff * aRoot / max(aRoot);
     for i = 1:size(aBones, 2)
         aBonesSub = aBones(:, i);
-        aBones(:, i) = aBonesSub / max(aBonesSub);
+        aBones(:, i) = aNormCoeff * aBonesSub / max(aBonesSub);
+    end
+end
+
+% Normalize velocities
+if normalizeV
+    vRoot = vNormCoeff * vRoot / max(vRoot);
+    for i = 1:size(vBones, 2)
+        vBonesSub = vBones(:, i);
+        vBones(:, i) = vNormCoeff * vBonesSub / max(vBonesSub);
     end
 end
 
 % Plot per-frame data
 hold on;
 if showVRoot
-    plot(frames, vRoot, '-k');
+    plot(frames, vRoot, '-r');
 end
 if showVBones
     if size(boneMask, 2) == 0
         for i = 1:size(vBones, 2)
-            plot(frames, vBones, '-k');
+            plot(frames, vBones, '-r');
         end
     else
         for i = 1:size(boneMask, 2)
-            plot(frames, vBones(:,boneMask(:, i)), '-k');
+            plot(frames, vBones(:,boneMask(:, i)), '-r');
         end
     end
 end
@@ -213,10 +224,10 @@ if showWEndEff
     end
 end
 if showP0
-    plot(frames, p0, '-m');
+    plot(frames, p0, '-k');
 end
 if showP
-    plot(frames, p, '-r');
+    plot(frames, p, '-xk');
 end
 
 % Load per-key data

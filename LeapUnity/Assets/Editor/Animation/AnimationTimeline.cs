@@ -1097,6 +1097,9 @@ public class AnimationTimeline
                     startFrame, endEffectorTargetHelperInstance, endEffectorTargetLayerContainer);
                 endEffectorTargetLayerContainer._AddAnimation(endEffectorTargetHelperScheduledInstance);
                 _endEffectorTargetHelperInstances[instanceId].Add(endEffectorTargetHelperInstanceId);
+
+                // Also add the instance so it can be fetched by ID
+                _animationInstancesById.Add(endEffectorTargetHelperInstanceId, endEffectorTargetHelperScheduledInstance);
             }
         }
 
@@ -1987,12 +1990,18 @@ public class AnimationTimeline
         foreach (int activeInstanceId in _activeAnimationInstanceIds)
         {
             var instance = GetAnimation(activeInstanceId);
-            if (instance is AnimationControllerInstance)
+            if (instance == null)
+                throw new Exception();
+            /*if (instance is AnimationControllerInstance)
             {
                 var controller = (instance as AnimationControllerInstance).Controller;
                 if (controller.enabled)
                     activeControllers.Add(controller);
-            }
+            }*/
+            var controllers = instance.Model.GetComponents<AnimController>();
+            foreach (var controller in controllers)
+                if (controller.enabled)
+                    activeControllers.Add(controller);
         }
     }
 
