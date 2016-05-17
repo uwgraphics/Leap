@@ -218,7 +218,75 @@ public class AnimationClipInstance : AnimationInstance
 
         // Reapply root position
         root.position = rootPosition;
+
+        // TODO: remove this
+        if (Name == "MakeSandwichDemo")
+        {
+            // Filter elbows
+            var lElbow = ModelUtil.FindBoneWithTag(root, "LElbowBone");
+            var rElbow = ModelUtil.FindBoneWithTag(root, "RElbowBone");
+            float lAlpha = Quaternion.Angle(lElbow.localRotation, prevLElbowRot);
+            float rAlpha = Quaternion.Angle(rElbow.localRotation, prevRElbowRot);
+            float alphaMin = 1f;
+            float alphaMax = 5f;
+            float wMin = 0.2f;
+            float lw = 1f;
+            float rw = 1f;
+            if (lAlpha <= alphaMin)
+                lw = 1f;
+            else if (lAlpha > alphaMin && lAlpha < alphaMax)
+                lw = 1f + (lAlpha - alphaMin) / (alphaMax - alphaMin) * (wMin - 1f);
+            else
+                lw = wMin;
+            if (rAlpha <= alphaMin)
+                rw = 1f;
+            else if (rAlpha > alphaMin && rAlpha < alphaMax)
+                rw = 1f + (rAlpha - alphaMin) / (alphaMax - alphaMin) * (wMin - 1f);
+            else
+                rw = wMin;
+            lElbow.localRotation = Quaternion.Slerp(prevLElbowRot, lElbow.localRotation, lw);
+            rElbow.localRotation = Quaternion.Slerp(prevRElbowRot, rElbow.localRotation, rw);
+            prevLElbowRot = lElbow.localRotation;
+            prevRElbowRot = rElbow.localRotation;
+
+            // Filter shoudlers
+            var lShoulder = ModelUtil.FindBoneWithTag(root, "LShoulderBone");
+            var rShoulder = ModelUtil.FindBoneWithTag(root, "RShoulderBone");
+            lAlpha = Quaternion.Angle(lShoulder.localRotation, prevLShoulderRot);
+            rAlpha = Quaternion.Angle(rShoulder.localRotation, prevRShoulderRot);
+            alphaMin = 1f;
+            alphaMax = 5f;
+            wMin = 0.2f;
+            lw = 1f;
+            rw = 1f;
+            if (lAlpha <= alphaMin)
+                lw = 1f;
+            else if (lAlpha > alphaMin && lAlpha < alphaMax)
+                lw = 1f + (lAlpha - alphaMin) / (alphaMax - alphaMin) * (wMin - 1f);
+            else
+                lw = wMin;
+            if (rAlpha <= alphaMin)
+                rw = 1f;
+            else if (rAlpha > alphaMin && rAlpha < alphaMax)
+                rw = 1f + (rAlpha - alphaMin) / (alphaMax - alphaMin) * (wMin - 1f);
+            else
+                rw = wMin;
+            lShoulder.localRotation = Quaternion.Slerp(prevLShoulderRot, lShoulder.localRotation, lw);
+            rShoulder.localRotation = Quaternion.Slerp(prevRShoulderRot, rShoulder.localRotation, rw);
+            prevLShoulderRot = lShoulder.localRotation;
+            prevRShoulderRot = rShoulder.localRotation;
+        }
+        //
     }
+
+    // TODO: remove this
+    private Quaternion prevLElbowRot;
+    private Quaternion prevRElbowRot;
+    private Quaternion prevLShoulderRot;
+    private Quaternion prevRShoulderRot;
+    private Quaternion prevLClavicleRot;
+    private Quaternion prevRClavicleRot;
+    //
 
     /// <summary>
     /// Get active end-effector constraints at the specified times.

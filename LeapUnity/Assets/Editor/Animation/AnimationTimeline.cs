@@ -1992,16 +1992,16 @@ public class AnimationTimeline
             var instance = GetAnimation(activeInstanceId);
             if (instance == null)
                 throw new Exception();
-            /*if (instance is AnimationControllerInstance)
+            if (instance is AnimationControllerInstance)
             {
                 var controller = (instance as AnimationControllerInstance).Controller;
                 if (controller.enabled)
                     activeControllers.Add(controller);
-            }*/
-            var controllers = instance.Model.GetComponents<AnimController>();
+            }
+            /*var controllers = instance.Model.GetComponents<AnimController>();
             foreach (var controller in controllers)
                 if (controller.enabled)
-                    activeControllers.Add(controller);
+                    activeControllers.Add(controller);*/
         }
     }
 

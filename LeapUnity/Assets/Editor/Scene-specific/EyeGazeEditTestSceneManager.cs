@@ -586,11 +586,11 @@ public static class EyeGazeEditTestSceneManager
 
             // Create environment animations
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook1", book1, false, false, false));
+                new AnimationClipInstance("BookShelfNewBook1-1", book1, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook2", book2, false, false, false));
+                new AnimationClipInstance("BookShelfNewBook2-1", book2, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook3", book3, false, false, false));
+                new AnimationClipInstance("BookShelfNewBook3-1", book3, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "BookShelfNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
@@ -639,11 +639,11 @@ public static class EyeGazeEditTestSceneManager
 
             // Create environment animations
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook1", book1, false, false, false));
+                new AnimationClipInstance("BookShelfNewBook1-2", book1, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook2", book2, false, false, false));
+                new AnimationClipInstance("BookShelfNewBook2-2", book2, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
-                new AnimationClipInstance("BookShelfNewBook3", book3, false, false, false));
+                new AnimationClipInstance("BookShelfNewBook3-2", book3, false, false, false));
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance(
                     "BookShelfNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
