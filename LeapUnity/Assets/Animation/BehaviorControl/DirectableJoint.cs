@@ -21,7 +21,7 @@ public class DirectableJoint
     //protected GameObject agent; // This is the agent root!
     protected Transform rootBone = null;
     protected Quaternion COBRot;
-    protected ModelController mdlCtrl;
+    protected ModelController modelController;
 
     /// <summary>
     /// Joint pitch. 
@@ -153,7 +153,7 @@ public class DirectableJoint
     {
         get
         {
-            return mdlCtrl.GetInitPosition(bone);
+            return modelController.GetInitPosition(bone);
         }
     }
 
@@ -164,7 +164,7 @@ public class DirectableJoint
     {
         get
         {
-            return mdlCtrl.GetInitRotation(bone);
+            return modelController.GetInitRotation(bone);
         }
     }
 
@@ -193,7 +193,7 @@ public class DirectableJoint
     public virtual void Init(GameObject agent)
     {
         rootBone = agent.transform;
-        mdlCtrl = agent.GetComponent<ModelController>();
+        modelController = agent.GetComponent<ModelController>();
 
         if (!helper)
         {
@@ -214,8 +214,8 @@ public class DirectableJoint
 
         Vector3 vroll = -Direction;
         // TODO: need a more general way of defining the basis (what if there's only one eye?)
-        Vector3 vpitch = (mdlCtrl.LEye.position -
-                          mdlCtrl.REye.position).normalized;
+        Vector3 vpitch = (modelController.LEye.position -
+                          modelController.REye.position).normalized;
         Vector3 vyaw = Vector3.Cross(vroll, vpitch);
         Quaternion qb = Quaternion.AngleAxis(0, vroll) *
             Quaternion.AngleAxis(0, vpitch) *

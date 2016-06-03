@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using System.Linq;
 using MathNet.Numerics;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.RandomSources;
@@ -59,8 +60,6 @@ public class FaceController : AnimController
     /// For generating random head motion accompanying speech.
     /// </summary>
     public PerlinMotionGenerator speechMotionGen = new PerlinMotionGenerator();
-
-    // TODO: magnitude and frequency of speech motion
 
     /// <summary>
     /// If true, the agent will begin a head gesture on next frame.
@@ -136,10 +135,10 @@ public class FaceController : AnimController
     protected bool sustain;
     protected float time;
     protected float length;
-    protected UnityEngine.Quaternion origRot;
+    //protected UnityEngine.Quaternion origRot;
     protected UnityEngine.Quaternion trgRot;
     protected UnityEngine.Quaternion retRot;
-    protected UnityEngine.Quaternion finRot;
+    //protected UnityEngine.Quaternion finRot;
     protected UnityEngine.Quaternion sustainRot;
     protected float maxHeadVelocity;
 
@@ -149,10 +148,7 @@ public class FaceController : AnimController
     protected float pauseTime;
     protected float pauseLength;
 
-    /// <summary>
-    /// Shorthand for getting the head joint.
-    /// </summary>
-    public DirectableJoint head;
+    protected Transform head;
 
     /// <summary>
     /// Performs a head gesture. 
@@ -268,6 +264,18 @@ public class FaceController : AnimController
 
     public override void Start()
     {
+        base.Start();
+
+        // Get head bone
+        var headBones = ModelUtil.GetAllBonesWithTag(gameObject, "HeadBone");
+        head = headBones[headBones.Length - 1];
+
+        // Initialize gesture speed multipliers
+        gestSpeedMults = new FaceController.GestureSpeedMultDef[3];
+        gestSpeedMults[0] = new FaceController.GestureSpeedMultDef(FaceGestureSpeed.Slow, 0.3f);
+        gestSpeedMults[1] = new FaceController.GestureSpeedMultDef(FaceGestureSpeed.Normal, 1f);
+        gestSpeedMults[2] = new FaceController.GestureSpeedMultDef(FaceGestureSpeed.Fast, 3f);
+
         // Initialize random motion generators
         randomMotionGen.Init(gameObject);
         speechMotionGen.Init(gameObject);
@@ -346,7 +354,8 @@ public class FaceController : AnimController
             rot = sustainRot;
         else if (gestLeft == numGestures && gestLeft > 0 && !ret)
             // First attack phase of the gesture
-            rot = UnityEngine.Quaternion.Slerp(origRot, trgRot, t);
+            //rot = UnityEngine.Quaternion.Slerp(origRot, trgRot, t);
+            rot = UnityEngine.Quaternion.Slerp(UnityEngine.Quaternion.identity, trgRot, t);
         else if (gestLeft > 0 && ret)
             // Return phase of the gesture
             rot = UnityEngine.Quaternion.Slerp(trgRot, retRot, t);
@@ -355,10 +364,11 @@ public class FaceController : AnimController
             rot = UnityEngine.Quaternion.Slerp(retRot, trgRot, t);
         else if (gestLeft <= 0 && ret)
             // Final phase of the gesture
-            rot = UnityEngine.Quaternion.Slerp(trgRot, finRot, t);
+            //rot = UnityEngine.Quaternion.Slerp(trgRot, finRot, t);
+            rot = UnityEngine.Quaternion.Slerp(trgRot, UnityEngine.Quaternion.identity, t);
         else
-            rot = finRot;
-        head.bone.localRotation = rot;
+            rot = UnityEngine.Quaternion.identity;
+        head.localRotation *= rot;
 
         time += DeltaTime;
         if (time > length)
@@ -386,13 +396,13 @@ public class FaceController : AnimController
             else
             {
                 // We just finished a sustain phase
-
                 sustain = false;
 
                 // Compute length of next phase
                 if (gestLeft == numGestures && gestLeft > 0 && !ret)
                     // First attack phase of the gesture
-                    length = _ComputeHeadRotationLength(origRot, trgRot);
+                    //length = _ComputeHeadRotationLength(origRot, trgRot);
+                    length = _ComputeHeadRotationLength(UnityEngine.Quaternion.identity, trgRot);
                 else if (gestLeft > 0 && ret)
                     // Return phase of the gesture
                     length = _ComputeHeadRotationLength(trgRot, retRot);
@@ -401,7 +411,8 @@ public class FaceController : AnimController
                     length = _ComputeHeadRotationLength(retRot, trgRot);
                 else if (gestLeft == 0 && ret)
                     // Final phase of the gesture
-                    length = _ComputeHeadRotationLength(trgRot, finRot);
+                    //length = _ComputeHeadRotationLength(trgRot, finRot);
+                    length = _ComputeHeadRotationLength(trgRot, UnityEngine.Quaternion.identity);
             }
         }
 
@@ -457,21 +468,23 @@ public class FaceController : AnimController
         gestLeft = numGestures;
         ret = false;
         sustain = false;
-        origRot = head.bone.localRotation;
+        //origRot = head.bone.localRotation;
         trgRot = _ComputeTargetHeadRotation(gestTargetVert, gestTargetHor);
         retRot = _ComputeTargetHeadRotation(gestReturnVert, gestReturnHor);
-        finRot = _ComputeTargetHeadRotation(gestFinalVert, gestFinalHor);
+        //finRot = _ComputeTargetHeadRotation(gestFinalVert, gestFinalHor);
         time = 0;
-        length = _ComputeHeadRotationLength(origRot, trgRot);
+        //length = _ComputeHeadRotationLength(origRot, trgRot);
+        length = _ComputeHeadRotationLength(UnityEngine.Quaternion.identity, trgRot);
     }
 
-    // Compute bone rotation after change to yaw and pitch has been applied
+    // Compute bone rotation after change to target yaw and pitch has been applied
     private UnityEngine.Quaternion _ComputeTargetHeadRotation(float vert, float hor)
     {
-        head.Pitch += vert;
-        head.Yaw += hor;
-        UnityEngine.Quaternion rot = head.bone.localRotation;
-        head.bone.localRotation = origRot;
+        UnityEngine.Quaternion curRot = head.localRotation;
+        head.localRotation = UnityEngine.Quaternion.Euler(curRot.eulerAngles.x + vert, curRot.eulerAngles.y + hor, curRot.eulerAngles.z);
+        UnityEngine.Quaternion rot = head.localRotation;
+        rot = UnityEngine.Quaternion.Inverse(curRot) * rot;
+        head.localRotation = curRot;
 
         return rot;
     }
@@ -528,12 +541,6 @@ public class FaceController : AnimController
         gen.transforms[0].bone = bone;
         gen.transforms[0].transfTypes = PerlinMotionGenerator.TransformType.Rotation;
         gen.transforms[0].rotationAxis = PerlinMotionGenerator.Axis.All;
-
-        // Initialize gesture speed multipliers
-        faceCtrl.gestSpeedMults = new FaceController.GestureSpeedMultDef[3];
-        faceCtrl.gestSpeedMults[0] = new FaceController.GestureSpeedMultDef(FaceGestureSpeed.Slow, 0.3f);
-        faceCtrl.gestSpeedMults[1] = new FaceController.GestureSpeedMultDef(FaceGestureSpeed.Normal, 1f);
-        faceCtrl.gestSpeedMults[2] = new FaceController.GestureSpeedMultDef(FaceGestureSpeed.Fast, 3f);
     }
 
     public override void _CreateStates()
