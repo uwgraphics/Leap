@@ -158,7 +158,7 @@ public class CMCCollabScenario : Scenario
 		   condition == CMCCollabCondition.AvSmile )
 		{
 			videoPlane.active = false;
-			videoPlane.renderer.material.color = Color.white;
+			videoPlane.GetComponent<Renderer>().material.color = Color.white;
 			
 			// Unfreeze all animation
 			faceCtrl.randomMotionEnabled = true;
@@ -198,17 +198,17 @@ public class CMCCollabScenario : Scenario
 		else
 		{
 			videoPlane.active = true;
-			videoPlane.renderer.material.color = Color.white;
+			videoPlane.GetComponent<Renderer>().material.color = Color.white;
 			
 			string clip_name = vidPartnerName +
 				(( condition == CMCCollabCondition.VidNeutral ) ? "Neutral" : "Smiling" ) +
 					clipIndex;
-			videoPlane.renderer.material.mainTexture = videoMap[clip_name];
-			MovieTexture vid_tex = (MovieTexture)videoPlane.renderer.material.mainTexture;
+			videoPlane.GetComponent<Renderer>().material.mainTexture = videoMap[clip_name];
+			MovieTexture vid_tex = (MovieTexture)videoPlane.GetComponent<Renderer>().material.mainTexture;
 			vid_tex.Play();
 			// Play audio, too
-			videoPlane.audio.clip = vid_tex.audioClip;
-			videoPlane.audio.Play();
+			videoPlane.GetComponent<AudioSource>().clip = vid_tex.audioClip;
+			videoPlane.GetComponent<AudioSource>().Play();
 		}
 	}
 	
@@ -238,7 +238,7 @@ public class CMCCollabScenario : Scenario
 			string clip_name = vidPartnerName +
 				(( condition == CMCCollabCondition.VidNeutral ) ? "Neutral" : "Smiling" ) +
 					clipIndex;
-			videoPlane.renderer.material.mainTexture = staticImageMap[clip_name];
+			videoPlane.GetComponent<Renderer>().material.mainTexture = staticImageMap[clip_name];
 		}
 	}
 	
@@ -423,7 +423,7 @@ public class CMCCollabScenario : Scenario
 		      speechCtrl.doSpeech ||
 		      ( condition == CMCCollabCondition.VidNeutral ||
 		      condition == CMCCollabCondition.VidSmile ) &&
-		      ((MovieTexture)videoPlane.renderer.material.mainTexture).isPlaying )
+		      ((MovieTexture)videoPlane.GetComponent<Renderer>().material.mainTexture).isPlaying )
 		{	
 			if( faceCtrl != null )
 			{
@@ -695,7 +695,7 @@ public class CMCCollabScenario : Scenario
 				staticImageMap[img.name] = img;
 			}
 			
-			videoPlane.renderer.material.color = Color.black;
+			videoPlane.GetComponent<Renderer>().material.color = Color.black;
 		}
 		
 		if( condition == CMCCollabCondition.AvNeutral ||

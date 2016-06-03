@@ -10,10 +10,10 @@ public class ErinLectureScenario : LectureScenario
 		GameObject spotlight = GameObject.FindGameObjectWithTag("Spotlight");
 			
 		float numSteps = 40f;
-		float maxIntensityPoint = mainLight.light.intensity;
+		float maxIntensityPoint = mainLight.GetComponent<Light>().intensity;
 		float maxIntensitySpot = 1f;
 		
-		mainLight.light.intensity = 0f;
+		mainLight.GetComponent<Light>().intensity = 0f;
 		
 		//Initialize head alignment parameters based on the condition
 		if (condition == ConditionType.Affiliative) {
@@ -72,7 +72,7 @@ public class ErinLectureScenario : LectureScenario
 			yield return new WaitForSeconds(2f);
 		}
 		
-		mainLight.light.intensity = maxIntensityPoint;
+		mainLight.GetComponent<Light>().intensity = maxIntensityPoint;
 		
 		// Start 1. paragraph
 		speechCtrl.Speak("ErinLecture1");
@@ -85,15 +85,15 @@ public class ErinLectureScenario : LectureScenario
 			float i = 0f;
 			while (i < numSteps) {
 				
-				mainLight.light.intensity -= maxIntensityPoint/numSteps;
-				spotlight.light.intensity += maxIntensitySpot/numSteps;
+				mainLight.GetComponent<Light>().intensity -= maxIntensityPoint/numSteps;
+				spotlight.GetComponent<Light>().intensity += maxIntensitySpot/numSteps;
 			
 				yield return new WaitForSeconds(1f/numSteps);
 				i += 1f;
 			}
 			
-			mainLight.light.intensity = 0f;
-			spotlight.light.intensity = maxIntensitySpot;
+			mainLight.GetComponent<Light>().intensity = 0f;
+			spotlight.GetComponent<Light>().intensity = maxIntensitySpot;
 		}
 		
 		yield return StartCoroutine( WaitForSpeechFinished() );
@@ -244,15 +244,15 @@ public class ErinLectureScenario : LectureScenario
 			float i = 0f;
 			while (i < numSteps) {
 				
-				mainLight.light.intensity += maxIntensityPoint/numSteps;
-				spotlight.light.intensity -= maxIntensitySpot/numSteps;
+				mainLight.GetComponent<Light>().intensity += maxIntensityPoint/numSteps;
+				spotlight.GetComponent<Light>().intensity -= maxIntensitySpot/numSteps;
 			
 				yield return new WaitForSeconds(1f/numSteps);
 				i += 1f;
 			}
 			
-			mainLight.light.intensity = maxIntensityPoint;
-			spotlight.light.intensity = 0f;
+			mainLight.GetComponent<Light>().intensity = maxIntensityPoint;
+			spotlight.GetComponent<Light>().intensity = 0f;
 		}
 		
 		yield return StartCoroutine( WaitForSpeechFinished() );

@@ -109,12 +109,12 @@ public class LEAPModelPostprocessor : AssetPostprocessor
             new_clips.Add(new_clip);
 
             // Destroy original clip
-            gameObj.animation.RemoveClip(clip.name);
+            gameObj.GetComponent<Animation>().RemoveClip(clip.name);
             UnityEngine.Object.DestroyImmediate(clip, true);
         }
 
         // Link new (duplicate) clips to the agent's anim. component
         foreach (AnimationClip new_clip in new_clips)
-            gameObj.animation.AddClip(new_clip, new_clip.name);
+            gameObj.GetComponent<Animation>().AddClip(new_clip, new_clip.name);
     }
 }

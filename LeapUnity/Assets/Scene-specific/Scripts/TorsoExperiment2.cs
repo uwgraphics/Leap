@@ -210,7 +210,7 @@ public class TorsoExperiment2 : Scenario
 	/// </param>
 	protected virtual void SetImageOnPlane( Texture2D img, GameObject plane )
 	{
-		plane.renderer.material.mainTexture = img;
+		plane.GetComponent<Renderer>().material.mainTexture = img;
 		Vector3 scal = plane.transform.localScale;
 		scal.x = scal.z = scal.y;
 		if( img.width > img.height )
@@ -1138,13 +1138,13 @@ public class TorsoExperiment2 : Scenario
 					partLocationsAssigned[ParticipantClass.Participant] )
 					break;
 			string anim = partWalkUpAnims[loc_i];
-			if( partApproachTime >= 0.5f && !cam.animation[anim].enabled )
+			if( partApproachTime >= 0.5f && !cam.GetComponent<Animation>()[anim].enabled )
 			{
-				cam.animation[anim].enabled = true;
-				cam.animation[anim].blendMode = AnimationBlendMode.Blend;
-				cam.animation[anim].time = 0;
-				cam.animation[anim].weight = 1f;
-				cam.animation[anim].speed = 0.7f;
+				cam.GetComponent<Animation>()[anim].enabled = true;
+				cam.GetComponent<Animation>()[anim].blendMode = AnimationBlendMode.Blend;
+				cam.GetComponent<Animation>()[anim].time = 0;
+				cam.GetComponent<Animation>()[anim].weight = 1f;
+				cam.GetComponent<Animation>()[anim].speed = 0.7f;
 				
 				partApproachTime = 0;
 			}

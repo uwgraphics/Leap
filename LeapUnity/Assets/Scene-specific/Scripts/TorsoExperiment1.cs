@@ -78,7 +78,7 @@ public class TorsoExperiment1 : Scenario
 	/// </param>
 	public virtual void SetImageOnPlane( Texture2D img, GameObject plane )
 	{
-		plane.renderer.material.mainTexture = img;
+		plane.GetComponent<Renderer>().material.mainTexture = img;
 		Vector3 scal = plane.transform.localScale;
 		scal.x = scal.z = scal.y;
 		if( img.width > img.height )
@@ -253,14 +253,14 @@ public class TorsoExperiment1 : Scenario
 					cond = "2-UpperBody0";
 				else if( gs == GazeShiftType.UpperBody1 )
 					cond = "3-UpperBody1";
-				Texture2D img = (Texture2D)plane.renderer.material.mainTexture;
+				Texture2D img = (Texture2D)plane.GetComponent<Renderer>().material.mainTexture;
 				int p0_i = plane_map[img];
 				cond_map.Add(p0_i, cond);
 				img_map.Add(p0_i, img.name);
 			}
 			
 			// Store info for no gaze
-			Texture2D ng_img = (Texture2D)planes[0].renderer.material.mainTexture;
+			Texture2D ng_img = (Texture2D)planes[0].GetComponent<Renderer>().material.mainTexture;
 			int p1_i = plane_map[ng_img];
 			cond_map.Add(p1_i, "0-NoGaze");
 			img_map.Add(p1_i, ng_img.name);

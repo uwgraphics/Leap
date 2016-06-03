@@ -228,6 +228,33 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
     /// <param name="agentName">
     /// Virtual agent.
     /// </param>
+    /// <param name="target">
+    /// Target object. <see cref="GameObject"/>
+    /// </param>
+    /// <param name="headAlign">
+    /// Head alignment parameter.
+    /// </param>
+    /// <param name="torsoAlign">
+    /// Torso alignment parameter.
+    /// </param>
+    /// <param name="bodyAlign">
+    /// Body alignment parameter.
+    /// </param>
+    /// <returns>
+    /// Action ID.
+    /// </returns>
+    public virtual int GazeAt(string agentName, string targetName,
+                              float headAlign, float torsoAlign, float bodyAlign)
+    {
+        return DoAction(new GazeAtAction(agents[agentName], objects[targetName], headAlign, torsoAlign, bodyAlign));
+    }
+
+    /// <summary>
+    /// Have an agent gaze at something.
+    /// </summary>
+    /// <param name="agentName">
+    /// Virtual agent.
+    /// </param>
     /// <returns>
     /// Action ID.
     /// </returns>
@@ -280,6 +307,32 @@ public abstract class Scenario : MonoBehaviour, System.Collections.IEnumerable
         if (cam == null)
             cam = GameObject.FindGameObjectWithTag("MainCamera");
         return DoAction(new GazeAtAction(agents[agentName], cam, headAlign, torsoAlign));
+    }
+
+    /// <summary>
+    /// Have an agent gaze at something.
+    /// </summary>
+    /// <param name="agentName">
+    /// Virtual agent.
+    /// </param>
+    /// <param name="headAlign">
+    /// Head alignment parameter.
+    /// </param>
+    /// <param name="torsoAlign">
+    /// Torso alignment parameter.
+    /// </param>
+    /// <param name="bodyAlign">
+    /// Body alignment parameter.
+    /// </param>
+    /// <returns>
+    /// Action ID.
+    /// </returns>
+    public virtual int GazeAtCamera(string agentName, float headAlign, float torsoAlign, float bodyAlign)
+    {
+        GameObject cam = GameObject.FindGameObjectWithTag("EyeContactHelper");
+        if (cam == null)
+            cam = GameObject.FindGameObjectWithTag("MainCamera");
+        return DoAction(new GazeAtAction(agents[agentName], cam, headAlign, torsoAlign, bodyAlign));
     }
 
     /// <summary>

@@ -19,9 +19,9 @@ function CalculateObliqueMatrix( projection : Matrix4x4 , clipPlane : Vector4 ) 
 
 function OnPreCull()
 {
-	var projection : Matrix4x4 = camera.projectionMatrix;
+	var projection : Matrix4x4 = GetComponent.<Camera>().projectionMatrix;
 	
-	var m : Matrix4x4 = camera.worldToCameraMatrix;
+	var m : Matrix4x4 = GetComponent.<Camera>().worldToCameraMatrix;
 	var planePos : Vector3 = m.MultiplyPoint(plane.position);
 	var planeNormal : Vector3 = m.MultiplyVector(-Vector3.up);
 	planeNormal.Normalize();
@@ -29,5 +29,5 @@ function OnPreCull()
 	nearPlane.w = -Vector3.Dot(planeNormal, planePos);
 	
 	
-	camera.projectionMatrix = CalculateObliqueMatrix(projection, nearPlane);
+	GetComponent.<Camera>().projectionMatrix = CalculateObliqueMatrix(projection, nearPlane);
 }

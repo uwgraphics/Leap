@@ -50,7 +50,7 @@ public class PhotoPanel : MonoBehaviour
 		if( curPhotoIndex != photoIndex &&
 		   photoIndex > 0 && photoIndex < photos.Length )
 		{
-			renderer.material.mainTexture = photos[photoIndex];
+			GetComponent<Renderer>().material.mainTexture = photos[photoIndex];
 			curPhotoIndex = photoIndex;
 		
 			// Scale the panel correctly

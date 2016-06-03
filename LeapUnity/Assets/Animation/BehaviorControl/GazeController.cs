@@ -61,6 +61,7 @@ public struct GazeControllerState : IAnimControllerState
     public bool fixGaze;
     public bool useTorso;
     public float pelvisAlign;
+    public float bodyAlign;
     public float predictability;
     public Vector3 movingTargetPosOff;
     public bool removeRoll;
@@ -73,6 +74,9 @@ public struct GazeControllerState : IAnimControllerState
     public Quaternion rootRot;
     public Quaternion fixRootRot;
     public bool curUseTorso;
+    public float curBodyAlign;
+    public float bodyTurnAngle;
+    public float bodyLatency;
     public bool reenableRandomHeadMotion;
     public bool reenableRandomSpeechMotion;
 
@@ -138,6 +142,11 @@ public class GazeController : AnimController
     /// How much the pelvis contributes to torso rotation toward the gaze target.
     /// </summary>
     public float pelvisAlign = 0.5f;
+
+    /// <summary>
+    /// How much the whole body contributes to torso rotation toward the gaze target.
+    /// </summary>
+    public float bodyAlign = 0f;
 
     /// <summary>
     /// Predictability of the gaze target (0-1). 
@@ -361,6 +370,9 @@ public class GazeController : AnimController
     // Current gaze shift settings:
     protected Vector3 _curMovingTargetPosOff = Vector3.zero; // Rel. position offset of the current target in near future
     protected bool _curUseTorso = true;
+    protected float _curBodyAlign = 0f;
+    protected float _bodyTurnAngle = 0f;
+    protected float _bodyLatency = 0f;
 
     // Current gaze shift state:
     protected Quaternion _rootRot;
@@ -370,6 +382,7 @@ public class GazeController : AnimController
     protected FaceController _faceController = null;
     protected bool _reenableRandomHeadMotion = false;
     protected bool _reenableRandomSpeechMotion = false;
+    protected TurnInPlaceController _turnInPlaceController = null;
 
     /// <summary>
     /// Constructor.
@@ -403,6 +416,7 @@ public class GazeController : AnimController
 
         // Get other relevant anim. controllers
         _faceController = gameObject.GetComponent<FaceController>();
+        _turnInPlaceController = gameObject.GetComponent<TurnInPlaceController>();
     }
 
     /// <summary>
@@ -552,26 +566,27 @@ public class GazeController : AnimController
         _InitHeadTargetDirection();
         //
         _ApplySourceDirections();
+        _UpdateBodyTurn();
 
         bool torsoAligned = true;
         if (torso.Defined)
         {
             // Advance torso gaze shift
             torso._UpdateTargetDirection();
-            torsoAligned = torso._AdvanceGazeShift(deltaTime);
+            torsoAligned = torso._AdvanceGazeShift(DeltaTime);
             torso._ApplyGazeShift();
         }
 
         // Advance head gaze shift
         head._UpdateTargetDirection();
-        bool headAligned = head._AdvanceGazeShift(deltaTime);
+        bool headAligned = head._AdvanceGazeShift(DeltaTime);
         head._ApplyGazeShift();
 
         // Advance eye gaze shifts
         lEye._UpdateTargetDirection();
         rEye._UpdateTargetDirection();
-        bool lEyeAligned = lEye._AdvanceGazeShift(deltaTime);
-        bool rEyeAligned = rEye._AdvanceGazeShift(deltaTime);
+        bool lEyeAligned = lEye._AdvanceGazeShift(DeltaTime);
+        bool rEyeAligned = rEye._AdvanceGazeShift(DeltaTime);
         lEye._ApplyGazeShift();
         rEye._ApplyGazeShift();
 
@@ -689,6 +704,7 @@ public class GazeController : AnimController
         CurrentGazeTarget = gazeTarget;
         _curMovingTargetPosOff = _MovingTargetPositionOffset;
         _curUseTorso = useTorso;
+        _curBodyAlign = Mathf.Clamp01(bodyAlign);
         if (!_curUseTorso)
             torso.align = 0f;
         _InitRootRotation();
@@ -705,6 +721,7 @@ public class GazeController : AnimController
         _InitOMR();
         _InitTargetDirections();
         _InitLongArcGazeShift();
+        _InitBodyTurnAngle();
         _InitLatencies();
         _InitMaxVelocities();
     }
@@ -717,6 +734,9 @@ public class GazeController : AnimController
         head._InitBaseRotations();
         if (torso.Defined)
             torso._InitBaseRotations();
+
+        if (_turnInPlaceController != null)
+            _turnInPlaceController.InitBaseFeetPose();
     }
 
     // Apply current body posture (before gaze is applied)
@@ -812,6 +832,27 @@ public class GazeController : AnimController
             return;
 
         gazeBodyPart._UpdateFixTargetDirection();
+    }
+
+    // Initiate body turn if ready
+    protected virtual void _UpdateBodyTurn()
+    {
+        if (_bodyLatency > 0f)
+        {
+            // Still in latency phase
+            _bodyLatency -= DeltaTime;
+            return;
+        }
+
+        if (_bodyTurnAngle == 0f)
+            return;
+
+        if (_turnInPlaceController.StateId == (int)TurnInPlaceState.Static)
+        {
+            float bodyTurnTime = Mathf.Abs(_bodyTurnAngle) / (0.625f * torso._MaxVelocity);
+            _turnInPlaceController.Turn(_bodyTurnAngle, bodyTurnTime);
+            _bodyTurnAngle = 0f;
+        }
     }
 
     // Compute overall amplitude of the gaze shift toward the next target
@@ -917,6 +958,35 @@ public class GazeController : AnimController
         rEye._InitTargetDirection();
         rEye._InitOMRTargetDirection();
     }
+
+    // Initialize angle of the full-body turn
+    protected virtual void _InitBodyTurnAngle()
+    {
+        if (!torso.Defined || _curBodyAlign <= 0f || _turnInPlaceController == null)
+        {
+            _bodyTurnAngle = 0f;
+            return;
+        }
+
+        // Compute body turn angle
+        torso.RotateTowards(torso._FixTargetDirectionAlign);
+        Vector3 srcDirRoot = GeometryUtil.ProjectVectorOntoPlane(torso.GetDirection(torso.gazeJoints.Length - 1), Vector3.up);
+        torso._ApplyBaseRotations();
+        Vector3 trgDirRoot = GeometryUtil.ProjectVectorOntoPlane(torso._TargetDirectionAlign, Vector3.up);
+        Quaternion trgRotRoot = Quaternion.FromToRotation(srcDirRoot, trgDirRoot);
+        trgRotRoot = Quaternion.Slerp(Quaternion.identity, trgRotRoot, _curBodyAlign);
+        _bodyTurnAngle = QuaternionUtil.Angle(trgRotRoot);
+        if (_bodyTurnAngle < 0.001f)
+        {
+            _bodyTurnAngle = 0f;
+            return;
+        }
+
+        // Compute body turn direction
+        Vector3 rootAxis = Vector3.Cross(srcDirRoot, trgDirRoot).normalized;
+        if (rootAxis.y < 0f)
+            _bodyTurnAngle *= -1f;
+    }
     
     // Initialize latency times of all gaze body parts
     protected virtual void _InitLatencies()
@@ -927,6 +997,7 @@ public class GazeController : AnimController
         head._Latency = minLatency >= 0f ? headLatency : headLatency + Mathf.Abs(minLatency);
         if (torso.Defined)
             torso._Latency = minLatency >= 0f ? torsoLatency : torsoLatency + Mathf.Abs(minLatency);
+        _bodyLatency = torsoLatency;
     }
 
     // Compute head latency from gaze shift amplitude and target predictability
@@ -1056,7 +1127,7 @@ public class GazeController : AnimController
             helperTarget = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             helperTarget.name = helperTargetName;
             helperTarget.tag = "GazeTarget";
-            helperTarget.renderer.enabled = false;
+            helperTarget.GetComponent<Renderer>().enabled = false;
             helperTarget.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
         }
 
@@ -1078,6 +1149,7 @@ public class GazeController : AnimController
         state.fixGaze = fixGaze;
         state.useTorso = useTorso;
         state.pelvisAlign = pelvisAlign;
+        state.bodyAlign = bodyAlign;
         state.predictability = predictability;
         state.movingTargetPosOff = _MovingTargetPositionOffset;
         state.removeRoll = removeRoll;
@@ -1089,6 +1161,9 @@ public class GazeController : AnimController
         state.rootRot = _rootRot;
         state.fixRootRot = _fixRootRot;
         state.curUseTorso = _curUseTorso;
+        state.curBodyAlign = _curBodyAlign;
+        state.bodyTurnAngle = _bodyTurnAngle;
+        state.bodyLatency = _bodyLatency;
         state.reenableRandomHeadMotion = _reenableRandomHeadMotion;
         state.reenableRandomSpeechMotion = _reenableRandomSpeechMotion;
 
@@ -1114,6 +1189,7 @@ public class GazeController : AnimController
         fixGaze = gazeControllerState.fixGaze;
         useTorso = gazeControllerState.useTorso;
         pelvisAlign = gazeControllerState.pelvisAlign;
+        bodyAlign = gazeControllerState.bodyAlign;
         predictability = gazeControllerState.predictability;
         _MovingTargetPositionOffset = gazeControllerState.movingTargetPosOff;
         removeRoll = gazeControllerState.removeRoll;
@@ -1124,6 +1200,10 @@ public class GazeController : AnimController
         _curMovingTargetPosOff = gazeControllerState.curMovingTargetPosOff;
         _rootRot = gazeControllerState.rootRot;
         _fixRootRot = gazeControllerState.fixRootRot;
+        _curUseTorso = gazeControllerState.curUseTorso;
+        _curBodyAlign = gazeControllerState.curBodyAlign;
+        _bodyTurnAngle = gazeControllerState.bodyTurnAngle;
+        _bodyLatency = gazeControllerState.bodyLatency;
         _reenableRandomHeadMotion = gazeControllerState.reenableRandomHeadMotion;
         _reenableRandomSpeechMotion = gazeControllerState.reenableRandomSpeechMotion;
 
@@ -1148,6 +1228,7 @@ public class GazeController : AnimController
         state.fixGaze = false;
         state.useTorso = true;
         state.pelvisAlign = 0.5f;
+        state.bodyAlign = 0f;
         state.predictability = 1f;
         state.movingTargetPosOff = Vector3.zero;
         state.removeRoll = true;
@@ -1158,6 +1239,9 @@ public class GazeController : AnimController
         state.amplitude = 0f;
         state.curMovingTargetPosOff = Vector3.zero;
         state.curUseTorso = true;
+        state.curBodyAlign = 0f;
+        state.bodyTurnAngle = 0f;
+        state.bodyLatency = 0f;
         state.reenableRandomHeadMotion = false;
         state.reenableRandomSpeechMotion = false;
 
@@ -1199,27 +1283,5 @@ public class GazeController : AnimController
         states[(int)GazeState.Shifting].lateUpdateHandler = "LateUpdate_Shifting";
         states[(int)GazeState.Shifting].nextStates[0].nextState = "NoGaze";
         states[(int)GazeState.Shifting].nextStates[0].transitionHandler = "Transition_ShiftingNoGaze";
-
-        // Get all bones needed for gaze actuation
-        var lEyeBone = ModelUtil.FindBoneWithTag(gameObject.transform, "LEyeBone");
-        var rEyeBone = ModelUtil.FindBoneWithTag(gameObject.transform, "REyeBone");
-        var headBones = ModelUtil.GetAllBonesWithTag(gameObject, "HeadBone");
-        var torsoBones = ModelUtil.GetAllBonesWithTag(gameObject, "TorsoBone");
-
-        // Add default eye joints
-        lEye.gazeJoints = new Transform[1];
-        lEye.gazeJoints[0] = lEyeBone;
-        lEye.velocity = 150f;
-        rEye.gazeJoints = new Transform[1];
-        rEye.gazeJoints[0] = rEyeBone;
-        rEye.velocity = 150f;
-
-        // Add default head joints
-        head.gazeJoints = headBones;
-        head.velocity = 70f;
-
-        // Add default torso joints
-        torso.gazeJoints = torsoBones;
-        torso.velocity = 40f; // TODO: make sure this is correct
     }
 }

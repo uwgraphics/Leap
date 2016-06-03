@@ -737,18 +737,18 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelWaitForBusNewEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits1").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits2").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits1").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits2").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits1").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits2").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits1").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits2").active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits1").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits2").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits1").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits2").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits1").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits2").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits1").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits2").gameObject.active = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -785,18 +785,18 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelWaitForBusNewEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits1").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits2").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits1").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits2").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits1").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits2").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits1").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits2").active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits1").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits2").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits1").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits2").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits1").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits2").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits1").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits2").gameObject.active = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -830,18 +830,18 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelWaitForBusNewEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits1").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits2").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits1").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits2").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits1").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits2").active = true;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits1").active = false;
-            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits2").active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits1").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Grass2-Edits2").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits1").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Road-Edits2").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits1").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Sidewalk-Edits2").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits1").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelWaitForBusNewEnv.transform, "Background-Edits2").gameObject.active = true;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1033,14 +1033,14 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelMakeSandwichEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").gameObject.active = false;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = true;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").GetComponent<Camera>().enabled = true;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = false;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").GetComponent<Camera>().enabled = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1093,14 +1093,14 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelMakeSandwichEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").gameObject.active = false;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = false;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").GetComponent<Camera>().enabled = false;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = true;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").GetComponent<Camera>().enabled = true;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1149,14 +1149,14 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelMakeSandwichEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").gameObject.active = true;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = false;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").GetComponent<Camera>().enabled = false;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = true;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").GetComponent<Camera>().enabled = true;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1205,8 +1205,8 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelMakeSandwichDemoEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelMakeSandwichDemoEnv.transform, "Screen").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichDemoEnv.transform, "Screen-Edits").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichDemoEnv.transform, "Screen").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichDemoEnv.transform, "Screen-Edits").gameObject.active = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1265,8 +1265,8 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelMakeSandwichDemoEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelMakeSandwichDemoEnv.transform, "Screen").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichDemoEnv.transform, "Screen-Edits").active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichDemoEnv.transform, "Screen").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichDemoEnv.transform, "Screen-Edits").gameObject.active = true;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1439,14 +1439,14 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanNew.SetActive(true);
             testScenes.modelMakeSandwichEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").gameObject.active = false;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = true;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").GetComponent<Camera>().enabled = true;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = false;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").GetComponent<Camera>().enabled = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanNew);
@@ -1727,14 +1727,14 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanElliot.SetActive(true);
             testScenes.modelMakeSandwichEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").gameObject.active = false;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = true;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").GetComponent<Camera>().enabled = true;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = false;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").GetComponent<Camera>().enabled = false;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanElliot);
@@ -1875,14 +1875,14 @@ public static class EyeGazeEditTestSceneManager
         {
             testScenes.modelNormanElliot.SetActive(true);
             testScenes.modelMakeSandwichEnv.SetActive(true);
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").active = false;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").active = true;
-            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background").gameObject.active = false;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Floor-Edits").gameObject.active = true;
+            ModelUtil.FindChild(testScenes.modelMakeSandwichEnv.transform, "Background-Edits").gameObject.active = true;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").camera.enabled = false;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwich").GetComponent<Camera>().enabled = false;
             GameObject.FindGameObjectsWithTag("MainCamera")
-                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").camera.enabled = true;
+                .FirstOrDefault(cam => cam.name == "CameraMakeSandwichDemo").GetComponent<Camera>().enabled = true;
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNormanElliot);
@@ -2145,7 +2145,7 @@ public static class EyeGazeEditTestSceneManager
             // Render active cameras
             foreach (var camObj in camObjs)
             {
-                var camera = camObj.camera;
+                var camera = camObj.GetComponent<Camera>();
                 if (camera.enabled)
                 {
                     camera.targetTexture = rtScreen;
@@ -2161,7 +2161,7 @@ public static class EyeGazeEditTestSceneManager
             // Reset camera render targets
             foreach (var camObj in camObjs)
             {
-                var camera = camObj.camera;
+                var camera = camObj.GetComponent<Camera>();
                 if (camera.enabled)
                     camera.targetTexture = null;
             }
@@ -2266,10 +2266,6 @@ public static class EyeGazeEditTestSceneManager
         {
             float startTime1 = LEAPCore.ToTime(data1[rowIndex1].GetValue<int>(1));
             float endTime1 = LEAPCore.ToTime(data1[rowIndex1].GetValue<int>(2));
-            float startTime2 = -1f;
-            float endTime2 = -1f;
-            float maxOverlapLength = -1f;
-            int maxOverlapRowIndex = -1;
 
             for (int rowIndex2 = 0; rowIndex2 < data2.NumberOfRows; ++rowIndex2)
             {

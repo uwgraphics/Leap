@@ -56,7 +56,7 @@ function Start()
 	// Cache component lookups at startup instead of every frame
 	thisTransform = transform;
 	zoomCamera = cameraObject.GetComponent( ZoomCamera );
-	cam = cameraObject.camera;
+	cam = cameraObject.GetComponent.<Camera>();
 	character = GetComponent( CharacterController );
 	
 	// Initialize control state

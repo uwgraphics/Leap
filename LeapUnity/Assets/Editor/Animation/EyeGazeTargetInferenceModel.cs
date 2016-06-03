@@ -466,11 +466,11 @@ public class EyeGazeTargetInferenceModel
         var dome = GameObject.FindGameObjectWithTag("GazeTargetDome");
         if (mode == _DomeRenderMode.Disabled)
         {
-            dome.renderer.enabled = false;
+            dome.GetComponent<Renderer>().enabled = false;
         }
         else
         {
-            dome.renderer.enabled = true;
+            dome.GetComponent<Renderer>().enabled = true;
 
             if (mode == _DomeRenderMode.ModelOnly)
             {
@@ -557,10 +557,10 @@ public class EyeGazeTargetInferenceModel
 
         foreach (var envModel in envModels)
         {
-            if (envModel.renderer != null)
+            if (envModel.GetComponent<Renderer>() != null)
             {
                 float id = ((float)modelIndex) / scale;
-                envModel.renderer.material.SetFloat("_GameObjectID", id);
+                envModel.GetComponent<Renderer>().material.SetFloat("_GameObjectID", id);
                 ++modelIndex;
             }
         }
@@ -583,14 +583,14 @@ public class EyeGazeTargetInferenceModel
         var envModels = ModelUtil.GetSubModels(Environment);
         foreach (var envModel in envModels)
         {
-            if (envModel.renderer != null)
+            if (envModel.GetComponent<Renderer>() != null)
             {
                 bool isFiltered = LEAPCore.gazeInferenceTaskRelevantObjectFilter.Any(on =>
                     on == envModel.name || on == envModel.transform.parent.name);
                 float taskRelevance = (envModel.tag == "ManipulatedObject" || envModel.tag == "GazeTarget" ||
                     envModel.transform.parent.tag == "ManipulatedObject" || envModel.transform.parent.tag == "GazeTarget")
                     && !isFiltered ? 1f : 0f;
-                envModel.renderer.material.SetFloat("_TaskRelevance", taskRelevance);
+                envModel.GetComponent<Renderer>().material.SetFloat("_TaskRelevance", taskRelevance);
             }
         }
     }
@@ -650,14 +650,14 @@ public class EyeGazeTargetInferenceModel
         foreach (var envEndEffectorTarget in envEndEffectorTargets)
         {
             var envModel = envEndEffectorTarget.transform.parent.gameObject;
-            if (envModel.renderer != null)
-                envModel.renderer.material.SetFloat("_HandContactWeight", 0f);
+            if (envModel.GetComponent<Renderer>() != null)
+                envModel.GetComponent<Renderer>().material.SetFloat("_HandContactWeight", 0f);
         }
 
         foreach (var envEndEffectorTarget in envEndEffectorTargets)
         {
             var envModel = envEndEffectorTarget.transform.parent.gameObject;
-            if (envModel.renderer != null)
+            if (envModel.GetComponent<Renderer>() != null)
             {
                 // Compute highest hand contact weight for end effector targets on the current model
                 float handContactWeight = 0f;
@@ -677,8 +677,8 @@ public class EyeGazeTargetInferenceModel
                     }
                 }
 
-                float prevHandContactWeight = envModel.renderer.material.GetFloat("_HandContactWeight");
-                envModel.renderer.material.SetFloat("_HandContactWeight", Mathf.Max(handContactWeight, prevHandContactWeight));
+                float prevHandContactWeight = envModel.GetComponent<Renderer>().material.GetFloat("_HandContactWeight");
+                envModel.GetComponent<Renderer>().material.SetFloat("_HandContactWeight", Mathf.Max(handContactWeight, prevHandContactWeight));
             }
         }
     }
@@ -767,7 +767,7 @@ public class EyeGazeTargetInferenceModel
 
         foreach (var envModel in envModels)
         {
-            if (envModel.renderer != null)
+            if (envModel.GetComponent<Renderer>() != null)
             {
                 if (modelIndex == modelIndexAtTexel)
                     return envModel;
@@ -909,9 +909,9 @@ public class EyeGazeTargetInferenceModel
         for (int childIndex = 0; childIndex < headBone.childCount; ++childIndex)
         {
             var child = headBone.GetChild(childIndex);
-            if (child.gameObject.camera != null)
+            if (child.gameObject.GetComponent<Camera>() != null)
             {
-                return child.gameObject.camera;
+                return child.gameObject.GetComponent<Camera>();
             }
         }
 

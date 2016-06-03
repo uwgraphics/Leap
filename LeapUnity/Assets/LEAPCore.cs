@@ -78,7 +78,7 @@ public class LEAPCore : MonoBehaviour
     /// <summary>
     /// How far the IK solver is allowed to extend a limb when solving for its pose.
     /// </summary>
-    public static float maxLimbExtension = 0.95f;
+    public static float maxLimbExtension = 0.99f;
 
     /// <summary>
     /// Asset subdirectory for agent models.
@@ -508,4 +508,7 @@ public class LEAPCore : MonoBehaviour
         timelineBakeRangeEnd = cfgFile.HasValue("timelineBakeRangeEnd") ?
             cfgFile.GetValue<int>("timelineBakeRangeEnd") : timelineBakeRangeEnd;
     }
+
+    // Global runtime state:
+    public static float editorDeltaTime = 0f;
 }

@@ -85,7 +85,7 @@ public sealed class EnvironmentController : MonoBehaviour
         }
         else if (obj.tag == "MainCamera")
         {
-            _cameras.Add(obj.camera);
+            _cameras.Add(obj.GetComponent<Camera>());
             _initObjPositions[obj] = obj.transform.localPosition;
             _initObjRotations[obj] = obj.transform.localRotation;
         }

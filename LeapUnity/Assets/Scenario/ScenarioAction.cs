@@ -61,6 +61,7 @@ public class GazeAtAction : ScenarioAction
     protected GazeController gazeCtrl;
     protected float headAlign = 1f;
     protected float torsoAlign = 0f;
+    protected float bodyAlign = 0f;
     protected bool dummyTarget = false;
 
     /// <summary>
@@ -84,35 +85,23 @@ public class GazeAtAction : ScenarioAction
     /// <param name="target">
     /// Gaze target object.
     /// </param>
-    public GazeAtAction(GameObject agent, GameObject target)
-        : base(agent)
-    {
-        this.target = target;
-        gazeCtrl = Subject.GetComponent<GazeController>();
-        if (gazeCtrl == null)
-        {
-            UnityEngine.Debug.LogWarning("Gaze Controller not defined on object " + Subject.name);
-            return;
-        }
-    }
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="agent">
-    /// Virtual agent object.
-    /// </param>
-    /// <param name="target">
-    /// Gaze target object.
-    /// </param>
     /// <param name="headAlign">
     /// Head alignment parameter.
     /// </param>
-    public GazeAtAction(GameObject agent, GameObject target, float headAlign)
+    /// <param name="torsoAlign">
+    /// Torso alignment parameter.
+    /// </param>
+    /// <param name="bodyAlign">
+    /// Body alignment parameter.
+    /// </param>
+    public GazeAtAction(GameObject agent, GameObject target,
+                        float headAlign = 1f, float torsoAlign = 0f, float bodyAlign = 0f)
         : base(agent)
     {
         this.target = target;
         this.headAlign = headAlign;
+        this.torsoAlign = torsoAlign;
+        this.bodyAlign = bodyAlign;
         gazeCtrl = Subject.GetComponent<GazeController>();
         if (gazeCtrl == null)
         {
@@ -129,54 +118,6 @@ public class GazeAtAction : ScenarioAction
     /// </param>
     /// <param name="gazeTargetWPos">
     /// Gaze target world position.
-    /// </param>
-    public GazeAtAction(GameObject agent, Vector3 gazeTargetWPos)
-        : base(agent)
-    {
-        this.targetPos = gazeTargetWPos;
-        this.dummyTarget = true;
-        gazeCtrl = Subject.GetComponent<GazeController>();
-        if (gazeCtrl == null)
-        {
-            UnityEngine.Debug.LogWarning("Gaze Controller not defined on object " + Subject.name);
-            return;
-        }
-    }
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="agent">
-    /// Virtual agent object.
-    /// </param>
-    /// <param name="gazeTargetWPos">
-    /// Gaze target world position.
-    /// </param>
-    /// <param name="headAlign">
-    /// Head alignment parameter.
-    /// </param>
-    public GazeAtAction(GameObject agent, Vector3 gazeTargetWPos, float headAlign)
-        : base(agent)
-    {
-        this.targetPos = gazeTargetWPos;
-        this.dummyTarget = true;
-        this.headAlign = headAlign;
-        gazeCtrl = Subject.GetComponent<GazeController>();
-        if (gazeCtrl == null)
-        {
-            UnityEngine.Debug.LogWarning("Gaze Controller not defined on object " + Subject.name);
-            return;
-        }
-    }
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="agent">
-    /// Virtual agent object.
-    /// </param>
-    /// <param name="target">
-    /// Gaze target object.
     /// </param>
     /// <param name="headAlign">
     /// Head alignment parameter.
@@ -184,13 +125,18 @@ public class GazeAtAction : ScenarioAction
     /// <param name="torsoAlign">
     /// Torso alignment parameter.
     /// </param>
-    public GazeAtAction(GameObject agent, GameObject target,
-                        float headAlign, float torsoAlign)
+    /// <param name="bodyAlign">
+    /// Body alignment parameter.
+    /// </param>
+    public GazeAtAction(GameObject agent, Vector3 gazeTargetWPos,
+                        float headAlign = 1f, float torsoAlign = 0f, float bodyAlign = 0f)
         : base(agent)
     {
-        this.target = target;
+        this.targetPos = gazeTargetWPos;
+        this.dummyTarget = true;
         this.headAlign = headAlign;
         this.torsoAlign = torsoAlign;
+        this.bodyAlign = bodyAlign;
         gazeCtrl = Subject.GetComponent<GazeController>();
         if (gazeCtrl == null)
         {
@@ -209,9 +155,8 @@ public class GazeAtAction : ScenarioAction
 
         gazeCtrl.head.align = headAlign;
         if (gazeCtrl.torso != null)
-        {
             gazeCtrl.torso.align = torsoAlign;
-        }
+        gazeCtrl.bodyAlign = bodyAlign;
         gazeCtrl.GazeAt(target);
     }
 
@@ -476,7 +421,7 @@ public class PostureShiftAction : ScenarioAction
         get
         {
             return !bodyIdleCtrl.changePosture &&
-                !bodyIdleCtrl.gameObject.animation[postureAnim].enabled;
+                !bodyIdleCtrl.gameObject.GetComponent<Animation>()[postureAnim].enabled;
         }
     }
 
@@ -786,7 +731,7 @@ public class PlayAnimationAction : ScenarioAction
     {
         get
         {
-            return !subj.animation[anim].enabled;
+            return !subj.GetComponent<Animation>()[anim].enabled;
         }
     }
 
@@ -836,10 +781,10 @@ public class PlayAnimationAction : ScenarioAction
     /// </summary>
     public override void Execute()
     {
-        subj.animation[anim].weight = 1f;
-        subj.animation[anim].wrapMode = loop ? WrapMode.Loop : WrapMode.Once;
-        subj.animation[anim].speed = speed;
-        subj.animation[anim].enabled = true;
+        subj.GetComponent<Animation>()[anim].weight = 1f;
+        subj.GetComponent<Animation>()[anim].wrapMode = loop ? WrapMode.Loop : WrapMode.Once;
+        subj.GetComponent<Animation>()[anim].speed = speed;
+        subj.GetComponent<Animation>()[anim].enabled = true;
     }
 
     /// <summary>
@@ -847,6 +792,6 @@ public class PlayAnimationAction : ScenarioAction
     /// </summary>
     public override void Stop()
     {
-        subj.animation[anim].enabled = false;
+        subj.GetComponent<Animation>()[anim].enabled = false;
     }
 };

@@ -242,11 +242,11 @@ public static class ModelUtil
             // Create bone gizmo
             var gizmoObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             gizmoObj.name = gizmoName;
-            gizmoObj.renderer.material = Resources.Load("BoneGizmo", typeof(Material)) as Material;
+            gizmoObj.GetComponent<Renderer>().material = Resources.Load("BoneGizmo", typeof(Material)) as Material;
             gizmo = gizmoObj.transform;
             gizmo.tag = "BoneGizmo";
             gizmo.parent = bone.parent;
-            Component.DestroyImmediate(gizmo.collider);
+            Component.DestroyImmediate(gizmo.GetComponent<Collider>());
 
             // Position, orient, and scale the bone gizmo
             Vector3 gizmoPosition = 0.5f * bone.localPosition;
@@ -735,7 +735,7 @@ public static class ModelUtil
             helper = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             helper.name = helperName;
             helper.tag = "EndEffectorTarget";
-            GameObject.DestroyImmediate(helper.renderer);
+            GameObject.DestroyImmediate(helper.GetComponent<Renderer>());
         }
         
         return helper;

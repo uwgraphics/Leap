@@ -42,10 +42,10 @@ public class GestureController : AnimController
 	{
 		if(doGesture)
 		{
-			animation[gestureAnimation].enabled = true;
-			animation[gestureAnimation].layer = 1;
-			animation[gestureAnimation].weight = 1f;
-			animation[gestureAnimation].wrapMode = WrapMode.Once;
+			GetComponent<Animation>()[gestureAnimation].enabled = true;
+			GetComponent<Animation>()[gestureAnimation].layer = 1;
+			GetComponent<Animation>()[gestureAnimation].weight = 1f;
+			GetComponent<Animation>()[gestureAnimation].wrapMode = WrapMode.Once;
 			
 			doGesture = false;
 			GoToState((int)GestureState.Gesturing);
@@ -54,7 +54,7 @@ public class GestureController : AnimController
 	
 	protected virtual void Update_Gesturing()
 	{
-		if( animation[gestureAnimation].enabled == false )
+		if( GetComponent<Animation>()[gestureAnimation].enabled == false )
 			GoToState((int)GestureState.NoGesture);
 	}
 	

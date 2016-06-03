@@ -32,7 +32,7 @@ class EdgeDetectEffectNormals extends PostEffectsBase {
 	}
 	
 	function OnEnable () {
-		camera.depthTextureMode |= DepthTextureMode.DepthNormals;	
+		GetComponent.<Camera>().depthTextureMode |= DepthTextureMode.DepthNormals;	
 	}
 	
 	function OnRenderImage (source : RenderTexture, destination : RenderTexture)

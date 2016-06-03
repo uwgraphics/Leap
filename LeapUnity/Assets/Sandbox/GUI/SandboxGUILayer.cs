@@ -115,7 +115,7 @@ public class SandboxGUILayer : MonoBehaviour
 				// Just guess where it might be
 				pos = selSBAgentObj.gameObject.transform.position + new Vector3( 0, 1.8f, 0 );
 			pos -= new Vector3( 0, overheadIconHeight, 0 );
-			Vector3 scrpos = Camera.mainCamera.WorldToScreenPoint(pos);
+			Vector3 scrpos = Camera.main.WorldToScreenPoint(pos);
 			
 			// Render icon
 			GUI.DrawTexture( new Rect( scrpos.x - 20 * overheadIconScale, scrpos.y - 20 * overheadIconScale, 40 * overheadIconScale, 40 * overheadIconScale ),

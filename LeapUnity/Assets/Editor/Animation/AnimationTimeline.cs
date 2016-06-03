@@ -591,7 +591,6 @@ public class AnimationTimeline
 
         private List<BakedAnimationContainer> _animationContainers = new List<BakedAnimationContainer>();
         private List<BakedAnimationContainer> _manipulatedObjectAnimationContainers = new List<BakedAnimationContainer>();
-        private List<BakedAnimationContainer> _cameraAnimationContainers = new List<BakedAnimationContainer>();
 
         /// <summary>
         /// Constructor.
@@ -1813,7 +1812,7 @@ public class AnimationTimeline
         }
 
         // Make sure controllers have access to the latest delta time
-        AnimController.deltaTime = deltaTime;
+        LEAPCore.editorDeltaTime = deltaTime;
 
         return loopedAround;
     }

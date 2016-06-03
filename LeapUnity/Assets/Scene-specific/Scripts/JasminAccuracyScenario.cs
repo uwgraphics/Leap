@@ -134,8 +134,8 @@ public class JasminAccuracyScenario : TestScenario
 			Texture tex = gtLitTextures[texi];
 			if( tex.name == texname )
 			{
-				gtUnlitTextures[texi] = gazeTargets[gtName].renderer.material.mainTexture;
-				gazeTargets[gtName].renderer.material.mainTexture = tex;
+				gtUnlitTextures[texi] = gazeTargets[gtName].GetComponent<Renderer>().material.mainTexture;
+				gazeTargets[gtName].GetComponent<Renderer>().material.mainTexture = tex;
 			}
 		}
 	}
@@ -147,7 +147,7 @@ public class JasminAccuracyScenario : TestScenario
 		{
 			Texture tex = gtLitTextures[texi];
 			if( tex.name == texname )
-				gazeTargets[gtName].renderer.material.mainTexture = gtUnlitTextures[texi];
+				gazeTargets[gtName].GetComponent<Renderer>().material.mainTexture = gtUnlitTextures[texi];
 		}
 	}
 }

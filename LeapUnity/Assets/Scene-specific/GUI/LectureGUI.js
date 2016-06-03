@@ -25,7 +25,7 @@ function OnGUI()
 	}
 	else if (lectinf.curLectureIndex == (lectinf.lectures.Length - 1) ) {
 		if ( lectinf.IsLectureFinished() ) {
-			GameObject.FindGameObjectWithTag("MainLight").light.intensity = 0f;
+			GameObject.FindGameObjectWithTag("MainLight").GetComponent.<Light>().intensity = 0f;
 			if ( GUI.Button( Rect( Screen.width/2 - 120, Screen.height/2, 240, 60 ), "Thank You!" ) ) {
 				Application.Quit();
 			}

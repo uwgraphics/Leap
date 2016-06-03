@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityVS.LeapUnity.CSharp.Pl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityVS.LeapUnity.CSharp", "UnityVS.LeapUnity.CSharp.csproj", "{82D523C5-FDB7-AA01-284E-6FCBF9F7A7FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityVS.LeapUnity.CSharp.Editor.Plugins", "UnityVS.LeapUnity.CSharp.Editor.Plugins.csproj", "{E3A2CE69-A544-9A86-96D9-ECB38FF8E219}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityVS.LeapUnity.CSharp.Editor", "UnityVS.LeapUnity.CSharp.Editor.csproj", "{CA7E627E-FC07-D3B4-AE11-745B23A4E14C}"
 EndProject
 Global
@@ -21,6 +23,10 @@ Global
 		{82D523C5-FDB7-AA01-284E-6FCBF9F7A7FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82D523C5-FDB7-AA01-284E-6FCBF9F7A7FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82D523C5-FDB7-AA01-284E-6FCBF9F7A7FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3A2CE69-A544-9A86-96D9-ECB38FF8E219}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3A2CE69-A544-9A86-96D9-ECB38FF8E219}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3A2CE69-A544-9A86-96D9-ECB38FF8E219}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3A2CE69-A544-9A86-96D9-ECB38FF8E219}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CA7E627E-FC07-D3B4-AE11-745B23A4E14C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CA7E627E-FC07-D3B4-AE11-745B23A4E14C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA7E627E-FC07-D3B4-AE11-745B23A4E14C}.Release|Any CPU.ActiveCfg = Release|Any CPU

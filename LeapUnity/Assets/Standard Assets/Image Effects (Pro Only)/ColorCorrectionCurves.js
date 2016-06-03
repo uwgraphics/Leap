@@ -79,7 +79,7 @@ class ColorCorrectionCurves extends PostEffectsBase
 	
 	function OnEnable() {
 		if(useDepthCorrection)
-			camera.depthTextureMode |= DepthTextureMode.Depth;	
+			GetComponent.<Camera>().depthTextureMode |= DepthTextureMode.Depth;	
 	}
 	
 	function OnDisable () {
@@ -127,7 +127,7 @@ class ColorCorrectionCurves extends PostEffectsBase
 		UpdateParameters();	
 		
 	if(useDepthCorrection)
-		camera.depthTextureMode |= DepthTextureMode.Depth;			
+		GetComponent.<Camera>().depthTextureMode |= DepthTextureMode.Depth;			
 		
 		var renderTarget2Use : RenderTexture = destination;
 		

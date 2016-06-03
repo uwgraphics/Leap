@@ -7,7 +7,7 @@ private var previousPosition : Vector3;
 function Start()
 {
 	//Find the circumference of the circle so that the circle can be rotated the appropriate amount when rolling
-	circ = 2 * Mathf.PI * collider.bounds.extents.x;	
+	circ = 2 * Mathf.PI * GetComponent.<Collider>().bounds.extents.x;	
 	previousPosition = transform.position;
 }
 
@@ -16,7 +16,7 @@ function Update () {
 	tilt.x = -Input.acceleration.y;
 	tilt.z = Input.acceleration.x;
 	
-	rigidbody.AddForce(tilt * speed * Time.deltaTime);
+	GetComponent.<Rigidbody>().AddForce(tilt * speed * Time.deltaTime);
 }
 
 function LateUpdate()

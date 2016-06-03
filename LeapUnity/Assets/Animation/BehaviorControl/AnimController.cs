@@ -23,7 +23,10 @@ public abstract class AnimController : MonoBehaviour
     /// <summary>
     /// Time elapsed since last update.
     /// </summary>
-    public static float deltaTime = 0f;
+    public static float DeltaTime
+    {
+        get { return Application.isPlaying ? Time.deltaTime : LEAPCore.editorDeltaTime; }
+    }
 
     /// <summary>
     /// Enable/disable all animation controllers on the specified character model.
@@ -82,20 +85,6 @@ public abstract class AnimController : MonoBehaviour
     protected AnimController _parentController = null;
     protected MorphController _morphController = null;
     protected ModelController _modelController = null;
-
-    /// <summary>
-    /// Time elapsed since last update.
-    /// </summary>
-    public float DeltaTime
-    {
-        get
-        {
-            if (Application.isEditor)
-                return AnimController.deltaTime;
-
-            return Time.deltaTime;
-        }
-    }
 
     /// <summary>
     /// Animation controller name. 

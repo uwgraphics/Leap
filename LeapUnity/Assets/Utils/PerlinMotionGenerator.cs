@@ -150,7 +150,7 @@ public class PerlinMotionGenerator
         get
         {
             if (Application.isEditor)
-                return AnimController.deltaTime;
+                return AnimController.DeltaTime;
 
             return Time.deltaTime;
         }

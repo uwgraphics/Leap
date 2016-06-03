@@ -78,7 +78,7 @@ public class SandboxObject : MonoBehaviour
 	{
 		if( isDragDroppable && dragDropMode )
 		{
-			Camera cam = GameObject.FindGameObjectWithTag("MainCamera").camera;
+			Camera cam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
 			/*transform.position += ( cam.ScreenToWorldPoint(Input.mousePosition) -
 			                       cam.ScreenToWorldPoint(cam.WorldToScreenPoint(transform.position)) );*/
 		}

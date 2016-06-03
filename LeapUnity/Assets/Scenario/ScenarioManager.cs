@@ -25,7 +25,12 @@ public class ScenarioManager : MonoBehaviour
     /// <remarks>Set this to -1 to allow variable frame rate.</remarks>
     public int frameRate = 30;
 
-    IEnumerator Start()
+    private void Awake()
+    {
+        LEAPCore.LoadConfiguration();
+    }
+
+    private IEnumerator Start()
     {
         // Set frame rate and resolution
         Application.targetFrameRate = frameRate;

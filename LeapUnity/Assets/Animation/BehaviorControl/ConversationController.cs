@@ -362,28 +362,27 @@ public class ConversationController : AnimController
                         prefTarget;
                 gazeCtrl.torso.align = (prefTarget == null) ?
                     0 : prefTorsoAlign;
-                //
+                
+
                 Debug.Log(string.Format("Gazing at pref. target {0} with alignment {1}",
                     next_target, gazeCtrl.torso.align));
-                //
             }
             else if (StateId == (int)ConversationState.WaitForSpeech)
             {
                 next_target = listenTarget;
                 gazeCtrl.torso.align = defaultTorsoAlign;
-                //
+                
+
                 Debug.Log(string.Format("Gazing at listen target {0} with alignment {1}",
                     next_target, gazeCtrl.torso.align));
-                //
             }
             else if (StateId == (int)ConversationState.Listen)
             {
                 next_target = addressTarget;
                 gazeCtrl.torso.align = defaultTorsoAlign;
-                //
+                
                 Debug.Log(string.Format("Gazing at address target {0} with alignment {1}",
                     next_target, gazeCtrl.torso.align));
-                //
             }
             else if (StateId == (int)ConversationState.Address)
             {
@@ -392,10 +391,9 @@ public class ConversationController : AnimController
                         prefTarget;
                 gazeCtrl.torso.align = (prefTarget == null) ?
                     0 : prefTorsoAlign;
-                //
+
                 Debug.Log(string.Format("Gazing at pref./rand. target {0} with alignment {1}",
                     next_target, gazeCtrl.torso.align));
-                //
             }
         }
         else if (targets.Length > 1)
@@ -410,10 +408,9 @@ public class ConversationController : AnimController
                     gazeCtrl.torso.align = 0.5f;
                 else
                     gazeCtrl.torso.align = 0f;
-                //
+
                 Debug.Log(string.Format("Gazing at new target {0} with alignment {1}",
                     next_target, gazeCtrl.torso.align));
-                //
             }
             else if (StateId == (int)ConversationState.NewParticipant)
             {
@@ -423,10 +420,9 @@ public class ConversationController : AnimController
                     while (next_target == gazeCtrl.gazeTarget)
                         next_target = targets[UnityEngine.Random.Range(0, targets.Length)];
                 gazeCtrl.torso.align = 0f;
-                //
+
                 Debug.Log(string.Format("Gazing back at target {0} with alignment {1}",
                     next_target, gazeCtrl.torso.align));
-                //
             }
             else if (StateId == (int)ConversationState.Intro ||
                 (StateId == (int)ConversationState.WaitForSpeech ||
@@ -451,10 +447,9 @@ public class ConversationController : AnimController
                 }
 
                 gazeCtrl.torso.align = 0;
-                //
+
                 Debug.Log(string.Format("Gazing at target {0} with alignment {1}",
                     next_target, gazeCtrl.torso.align));
-                //
             }
             else
             {

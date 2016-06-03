@@ -130,8 +130,8 @@ public static class LEAPAssetUtil
     public static void RefreshAgentModel(GameObject mdlBase, GameObject mdlInst)
     {
         // Relink animations (Why the hell do they get unlinked, anyway?!! Stupid!!)
-        AnimationUtility.SetAnimationClips(mdlInst.animation,
-                                           AnimationUtility.GetAnimationClips(mdlBase.animation));
+        AnimationUtility.SetAnimationClips(mdlInst.GetComponent<Animation>(),
+                                           AnimationUtility.GetAnimationClips(mdlBase.GetComponent<Animation>()));
 
         // Refresh the morph controller
         MorphController base_mctrl = mdlBase.GetComponent<MorphController>();
@@ -200,7 +200,7 @@ public static class LEAPAssetUtil
     public static AnimationClip CreateAnimationClipOnModel(string animationClipName, GameObject model)
     {
         // Does the model already have an animation clip with that name? If yes, then remove it
-        var animationComponent = model.animation;
+        var animationComponent = model.GetComponent<Animation>();
         foreach (AnimationState animationState in animationComponent)
         {
             if (animationState.name == animationClipName && animationState.clip != null)
@@ -213,7 +213,6 @@ public static class LEAPAssetUtil
         // Create the new animation clip
         var newClip = new AnimationClip();
         newClip.name = animationClipName;
-        AnimationUtility.SetAnimationType(newClip, ModelImporterAnimationType.Legacy);
         animationComponent.AddClip(newClip, newClip.name);
 
         return newClip;
@@ -228,7 +227,7 @@ public static class LEAPAssetUtil
     public static AnimationClip GetAnimationClipOnModel(string animationClipName, GameObject model)
     {
         AnimationClip clip = null;
-        var animationComponent = model.gameObject.animation;
+        var animationComponent = model.gameObject.GetComponent<Animation>();
         foreach (AnimationState animationState in animationComponent)
         {
             if (animationState.name == animationClipName)
@@ -245,7 +244,7 @@ public static class LEAPAssetUtil
     /// <returns>Array of animation clips</returns>
     public static AnimationClip[] GetAllAnimationClipsOnModel(GameObject model)
     {
-        var animationComponent = model.gameObject.animation;
+        var animationComponent = model.gameObject.GetComponent<Animation>();
         var animationClips = new List<AnimationClip>();
         foreach (AnimationState animationState in animationComponent)
         {
@@ -263,7 +262,7 @@ public static class LEAPAssetUtil
     /// <param name="model">Character model</param>
     public static void AddAnimationClipToModel(AnimationClip clip, GameObject model)
     {
-        var animationComponent = model.gameObject.animation;
+        var animationComponent = model.gameObject.GetComponent<Animation>();
         foreach (AnimationState animationState in animationComponent)
         {
             if (animationState.clip != null && animationState.clip.name == clip.name)
@@ -575,7 +574,7 @@ public static class LEAPAssetUtil
     /// <returns>Asset directory</returns>
     public static string GetModelDirectory(GameObject model, bool full = false)
     {
-        string path = AssetDatabase.GetAssetPath(model.animation["InitialPose"].clip);
+        string path = AssetDatabase.GetAssetPath(model.GetComponent<Animation>()["InitialPose"].clip);
         string dir = path.Substring(0, path.LastIndexOf('/') + 1);
         if (full)
         {

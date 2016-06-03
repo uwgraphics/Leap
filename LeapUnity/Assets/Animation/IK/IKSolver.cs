@@ -72,6 +72,14 @@ public abstract class IKSolver : MonoBehaviour
     }
 
     /// <summary>
+    /// Get the number of IK goals specified.
+    /// </summary>
+    public int NumGoals
+    {
+        get { return _goals.Count; }
+    }
+
+    /// <summary>
     /// Character model controller.
     /// </summary>
     public ModelController Model
@@ -97,6 +105,22 @@ public abstract class IKSolver : MonoBehaviour
     public void ClearGoals()
     {
         _goals.Clear();
+    }
+
+    /// <summary>
+    /// Update specified IK goal.
+    /// </summary>
+    /// <param name="goalIndex">IK goal index</param>
+    /// <param name="position">End-effector target position</param>
+    /// <param name="rotation">End-effector target rotation</param>
+    /// <param name="weight">Goal weight</param>
+    public void UpdateGoal(int goalIndex, Vector3 position, Quaternion rotation, float weight)
+    {
+        var goal = _goals[goalIndex];
+        goal.position = position;
+        goal.rotation = rotation;
+        goal.weight = weight;
+        _goals[goalIndex] = goal;
     }
 
     /// <summary>

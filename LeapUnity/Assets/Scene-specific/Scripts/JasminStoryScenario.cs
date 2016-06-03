@@ -11,7 +11,7 @@ public class JasminStoryScenario : StoryScenario
 		int curspeak = -1;
 		int curgaze = -1;
 		int curexpr = -1;
-		float pitch = agents[agentName].audio.pitch;
+		float pitch = agents[agentName].GetComponent<AudioSource>().pitch;
 		
 		yield return StartCoroutine(base._Run());
 		

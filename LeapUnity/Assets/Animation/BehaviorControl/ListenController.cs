@@ -194,8 +194,8 @@ public class ListenController : AnimController
     //Listening
     protected virtual void Update_Listening()
     {
-        readyText.guiText.enabled = true;
-        audioGui.guiTexture.enabled = false;
+        readyText.GetComponent<GUIText>().enabled = true;
+        audioGui.GetComponent<GUITexture>().enabled = false;
 
         if (stopListening)
             GoToState((int)ListenState.NotListening);
@@ -209,8 +209,8 @@ public class ListenController : AnimController
     //Hearing Audio
     protected virtual void Update_HearingAudio()
     {
-        readyText.guiText.enabled = true;
-        audioGui.guiTexture.enabled = true;
+        readyText.GetComponent<GUIText>().enabled = true;
+        audioGui.GetComponent<GUITexture>().enabled = true;
 
         if (stopListening)
             GoToState((int)ListenState.NotListening);
@@ -228,8 +228,8 @@ public class ListenController : AnimController
     //Hearing Speech
     protected virtual void Update_HearingSpeech()
     {
-        readyText.guiText.enabled = false;
-        audioGui.guiTexture.enabled = true;
+        readyText.GetComponent<GUIText>().enabled = false;
+        audioGui.GetComponent<GUITexture>().enabled = true;
 
         if (ListenController.speechRecognized)
         {
@@ -252,8 +252,8 @@ public class ListenController : AnimController
         if (readyText == null || audioGui == null)
             return;
 
-        readyText.guiText.enabled = false;
-        audioGui.guiTexture.enabled = false;
+        readyText.GetComponent<GUIText>().enabled = false;
+        audioGui.GetComponent<GUITexture>().enabled = false;
 
         if (startListening)
         {
@@ -269,8 +269,8 @@ public class ListenController : AnimController
     //Open Listening
     protected virtual void Update_OpenListening()
     {
-        readyText.guiText.enabled = false;
-        audioGui.guiTexture.enabled = false;
+        readyText.GetComponent<GUIText>().enabled = false;
+        audioGui.GetComponent<GUITexture>().enabled = false;
 
         if (stopListening)
         {
@@ -290,8 +290,8 @@ public class ListenController : AnimController
     //Open Hearing Audio
     protected virtual void Update_OpenHearingAudio()
     {
-        readyText.guiText.enabled = false;
-        audioGui.guiTexture.enabled = true;
+        readyText.GetComponent<GUIText>().enabled = false;
+        audioGui.GetComponent<GUITexture>().enabled = true;
 
         if (stopListening)
         {
@@ -313,15 +313,15 @@ public class ListenController : AnimController
     //Open Hearing Speech
     protected virtual void Update_OpenHearingSpeech()
     {
-        readyText.guiText.enabled = false;
+        readyText.GetComponent<GUIText>().enabled = false;
 
         if (ListenController.speechHypothesized)
         {
-            audioGui.guiTexture.enabled = true;
+            audioGui.GetComponent<GUITexture>().enabled = true;
         }
         else if (ListenController.speechRejected || ListenController.speechRecognized)
         {
-            audioGui.guiTexture.enabled = false;
+            audioGui.GetComponent<GUITexture>().enabled = false;
         }
 
         if (stopListening)

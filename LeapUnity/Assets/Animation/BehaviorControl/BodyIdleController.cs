@@ -79,14 +79,14 @@ public class BodyIdleController : AnimController
 		if(changePosture)
 		{
 			if( curPostureAnim != "" )
-				animation[curPostureAnim].enabled = false;
+				GetComponent<Animation>()[curPostureAnim].enabled = false;
 			
-			animation[postureAnimation].time = 0;
-			animation[postureAnimation].enabled = true;
-			animation[postureAnimation].layer = 0;
-			animation[postureAnimation].speed = animation[postureAnimation].length/(postureChangeTime+0.00001f);
-			animation[postureAnimation].weight = postureWeight;
-			animation[postureAnimation].wrapMode = WrapMode.ClampForever;
+			GetComponent<Animation>()[postureAnimation].time = 0;
+			GetComponent<Animation>()[postureAnimation].enabled = true;
+			GetComponent<Animation>()[postureAnimation].layer = 0;
+			GetComponent<Animation>()[postureAnimation].speed = GetComponent<Animation>()[postureAnimation].length/(postureChangeTime+0.00001f);
+			GetComponent<Animation>()[postureAnimation].weight = postureWeight;
+			GetComponent<Animation>()[postureAnimation].wrapMode = WrapMode.ClampForever;
 			
 			curPostureAnim = postureAnimation;
 			changePosture = false;
@@ -119,13 +119,13 @@ public class BodyIdleController : AnimController
 		if(changePosture)
 		{
 			if( curPostureAnim != "" )
-				animation[curPostureAnim].enabled = false;
+				GetComponent<Animation>()[curPostureAnim].enabled = false;
 			
-			animation[postureAnimation].enabled = true;
-			animation[postureAnimation].layer = 0;
-			animation[postureAnimation].speed = animation[postureAnimation].length/(postureChangeTime+0.00001f);
-			animation[postureAnimation].weight = postureWeight;
-			animation[postureAnimation].wrapMode = WrapMode.ClampForever;
+			GetComponent<Animation>()[postureAnimation].enabled = true;
+			GetComponent<Animation>()[postureAnimation].layer = 0;
+			GetComponent<Animation>()[postureAnimation].speed = GetComponent<Animation>()[postureAnimation].length/(postureChangeTime+0.00001f);
+			GetComponent<Animation>()[postureAnimation].weight = postureWeight;
+			GetComponent<Animation>()[postureAnimation].wrapMode = WrapMode.ClampForever;
 			
 			curPostureAnim = postureAnimation;
 			changePosture = false;

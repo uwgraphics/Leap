@@ -67,8 +67,8 @@ public class GazeAversion_Turntaking : Scenario
 		GameObject[] lights = GameObject.FindGameObjectsWithTag("Spotlight");
 		float[] lightIntensities = new float[lights.Length];
 		for (int i = 0; i < lights.Length; ++i) {
-			lightIntensities[i] = lights[i].light.intensity;
-			lights[i].light.intensity = 0f;	
+			lightIntensities[i] = lights[i].GetComponent<Light>().intensity;
+			lights[i].GetComponent<Light>().intensity = 0f;	
 		}
 		
 		// Initialize gaze
@@ -93,7 +93,7 @@ public class GazeAversion_Turntaking : Scenario
 		GameObject.Find ("Shield").SetActive(false);
 		
 		for (int i = 0; i < lights.Length; ++i) {
-			lights[i].light.intensity = lightIntensities[i];	
+			lights[i].GetComponent<Light>().intensity = lightIntensities[i];	
 		}
 		
 		if (captureVideo) {

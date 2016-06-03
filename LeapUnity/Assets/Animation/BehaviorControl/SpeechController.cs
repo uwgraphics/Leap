@@ -99,7 +99,7 @@ public class SpeechController : AnimController
         get
         {
             if (speechClip != null)
-                return (speechClip.length / audio.pitch);
+                return (speechClip.length / GetComponent<AudioSource>().pitch);
             else
                 return 0f;
         }
@@ -197,12 +197,12 @@ public class SpeechController : AnimController
             return;
         }
 
-        if (!audio.isPlaying)
+        if (!GetComponent<AudioSource>().isPlaying)
         {
             curDelayTime += DeltaTime;
             if (curDelayTime > audioDelayTime)
                 // Delay done, start playing the audio clip
-                audio.Play();
+                GetComponent<AudioSource>().Play();
         }
         else
         {
@@ -211,7 +211,7 @@ public class SpeechController : AnimController
             if (roboSpeech && mouth != null)
             {
                 float[] samples = new float[qSamples];
-                audio.GetOutputData(samples, 0); // fill array with samples
+                GetComponent<AudioSource>().GetOutputData(samples, 0); // fill array with samples
                 float sum = 0f;
                 for (int i = 0; i < qSamples; i++)
                 {
@@ -228,7 +228,7 @@ public class SpeechController : AnimController
                 }
             }
 
-            if (curPlayTime > speechClip.length / audio.pitch)
+            if (curPlayTime > speechClip.length / GetComponent<AudioSource>().pitch)
             {
                 // Speech action done
                 GoToState((int)SpeechState.NoSpeech);
@@ -265,20 +265,20 @@ public class SpeechController : AnimController
             // Render speech from audio clip
 
             // Play audio
-            audio.clip = speechClip;
+            GetComponent<AudioSource>().clip = speechClip;
             if (audioDelayTime <= 0)
-                audio.Play();
+                GetComponent<AudioSource>().Play();
             curDelayTime = 0;
             curPlayTime = 0;
 
             // Play lip animation
-            AnimationState anim = animation[speechClip.name];
+            AnimationState anim = GetComponent<Animation>()[speechClip.name];
             if (anim != null)
             {
                 // Enable playback
                 anim.enabled = true;
                 anim.time = 0;
-                anim.speed = audio.pitch;
+                anim.speed = GetComponent<AudioSource>().pitch;
 
                 // Make sure it affects only the face
                 for (int child_i = 0; child_i < transform.childCount; ++child_i)
@@ -326,11 +326,11 @@ public class SpeechController : AnimController
             }
         }
 
-        if (audio.clip != null)
+        if (GetComponent<AudioSource>().clip != null)
         {
             // Stop animation and audio
-            animation.Stop(audio.clip.name);
-            audio.Stop();
+            GetComponent<Animation>().Stop(GetComponent<AudioSource>().clip.name);
+            GetComponent<AudioSource>().Stop();
         }
 
         if (faceCtrl != null)
