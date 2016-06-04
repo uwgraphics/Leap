@@ -1,7 +1,10 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.IO;
+using System;
 
 public enum SpeechState
 {
@@ -29,6 +32,7 @@ public class SpeechController : AnimController
     /// where documentation says one thing while the engine does the opposite.
     /// </summary>
     public AudioClip[] speechClips;
+    public TextAsset[] visemeFiles;
 
     /// <summary>
     /// Audio clip containing next speech.
@@ -65,9 +69,19 @@ public class SpeechController : AnimController
     /// <summary>
     /// Scale factor to apply to lip-sync animations. 
     /// </summary>
-    /// <remarks>Things like this will be removed soon,
-    /// and specified at AnimController level.</remarks>
-    public float lipSyncScale = 1f; // TODO: get rid of this later
+    public float lipSyncScale = 1f;
+
+    /// <summary>
+    /// true if pregenerated viseme output is used for lip-sync, false otherwise.
+    /// </summary>
+    public bool UsingVisemeFiles
+    {
+        get
+        {
+            return visemeFiles != null && visemeFiles.Length == speechClips.Length &&
+                visemeFiles.All(f => f != null);
+        }
+    }
 
     protected float curDelayTime = 0;
     [HideInInspector]
@@ -76,6 +90,7 @@ public class SpeechController : AnimController
     protected BodyIdleController bodyIdleCtrl;
     protected FaceController faceCtrl;
     protected GazeController gazeCtrl;
+    protected MorphController morphCtrl;
 
     public bool roboSpeech = false;
     public Transform mouth = null;
@@ -85,11 +100,17 @@ public class SpeechController : AnimController
     [HideInInspector]
     public bool prepareSpeech = false;
 
-    //Get audio intensity for robo speech
+    // Get audio intensity for robo speech
     protected int qSamples = 2048;  // array size
     protected float rmsValue;   // sound level - RMS
     protected float maxRmsValue = 0f;
     protected float maxLightIntensity = 8f;
+
+    protected float visemeTimer = 0f;
+    protected List<float> visemeTriggerTimes = new List<float>();
+    protected List<int> visemesToTrigger = new List<int>();
+    protected Dictionary<int, string> visemeToMorphChannel = new Dictionary<int, string>();
+    protected StreamReader visemeInfo = null;
 
     /// <summary>
     /// Length of the current speech utterance.
@@ -173,7 +194,30 @@ public class SpeechController : AnimController
         bodyIdleCtrl = gameObject.GetComponent<BodyIdleController>();
         faceCtrl = gameObject.GetComponent<FaceController>();
         gazeCtrl = gameObject.GetComponent<GazeController>();
+        morphCtrl = gameObject.GetComponent<MorphController>();
         prepareSpeech = false;
+
+        visemeToMorphChannel.Add(1, "VisemeAh");
+        visemeToMorphChannel.Add(2, "VisemeAah");
+        visemeToMorphChannel.Add(3, "VisemeAh");
+        visemeToMorphChannel.Add(4, "VisemeEh");
+        visemeToMorphChannel.Add(5, "VisemeEr");
+        visemeToMorphChannel.Add(6, "VisemeIh");
+        visemeToMorphChannel.Add(7, "VisemeW");
+        visemeToMorphChannel.Add(8, "VisemeOh");
+        visemeToMorphChannel.Add(9, "VisemeOh");
+        visemeToMorphChannel.Add(10, "VisemeOh");
+        visemeToMorphChannel.Add(11, "VisemeEh");
+        visemeToMorphChannel.Add(12, "VisemeR");
+        visemeToMorphChannel.Add(13, "VisemeR");
+        visemeToMorphChannel.Add(14, "VisemeDST");
+        visemeToMorphChannel.Add(15, "VisemeDST");
+        visemeToMorphChannel.Add(16, "VisemeChJSh");
+        visemeToMorphChannel.Add(17, "VisemeTh");
+        visemeToMorphChannel.Add(18, "VisemeFV");
+        visemeToMorphChannel.Add(19, "VisemeN");
+        visemeToMorphChannel.Add(20, "VisemeKG");
+        visemeToMorphChannel.Add(21, "VisemeBMP");
     }
 
     protected virtual void Update_NoSpeech()
@@ -195,6 +239,34 @@ public class SpeechController : AnimController
             // Interrupt speech action
             GoToState((int)SpeechState.NoSpeech);
             return;
+        }
+
+        if (UsingVisemeFiles)
+        {
+            _ResetVisemeWeights();
+
+            visemeTimer += Time.deltaTime;
+            for (int idx = 1; idx < visemeTriggerTimes.Count; ++idx)
+            {
+                if (visemeTimer < visemeTriggerTimes[idx])
+                {
+                    float t = visemeTimer - visemeTriggerTimes[idx - 1];
+                    float interval = visemeTriggerTimes[idx] - visemeTriggerTimes[idx - 1];
+
+                    if (visemesToTrigger[idx - 1] != 0)
+                    {
+                        int lastVisemeMorphChannel = morphCtrl.GetMorphChannelIndex(visemeToMorphChannel[visemesToTrigger[idx - 1]]);
+                        morphCtrl.morphChannels[lastVisemeMorphChannel].weight = lipSyncScale * (1.0f - (t / interval));
+                    }
+
+                    if (visemesToTrigger[idx] != 0)
+                    {
+                        int nextVisemeMorphChannel = morphCtrl.GetMorphChannelIndex(visemeToMorphChannel[visemesToTrigger[idx]]);
+                        morphCtrl.morphChannels[nextVisemeMorphChannel].weight = lipSyncScale * (t / interval);
+                    }
+                    break;
+                }
+            }
         }
 
         if (!GetComponent<AudioSource>().isPlaying)
@@ -256,10 +328,47 @@ public class SpeechController : AnimController
     protected virtual void Transition_NoSpeechPrepareSpeech()
     {
         doSpeech = false;
+
+        if (UsingVisemeFiles)
+        {
+            visemeTriggerTimes.Clear();
+            visemesToTrigger.Clear();
+            int visemeFileIndex = -1;
+            for (int speechIndex = 0; speechIndex < speechClips.Length; ++speechIndex)
+            {
+                if (speechClip == speechClips[speechIndex])
+                {
+                    visemeFileIndex = speechIndex;
+                    break;
+                }
+            }
+
+            if (visemeFileIndex >= 0)
+            {
+                var visemeFile = visemeFiles[visemeFileIndex];
+                string[] lines = visemeFile.text.Split('\n');
+                foreach (string line in lines)
+                {
+                    if (line != null && line.Length > 0)
+                    {
+                        string[] elements = line.Split(',');
+                        if (elements.Length == 2)
+                        {
+                            float newTime = (float)Convert.ToDouble(elements[0]);
+                            int newViseme = Convert.ToInt32(elements[1]);
+                            visemeTriggerTimes.Add(newTime);
+                            visemesToTrigger.Add(newViseme);
+                        }
+                    }
+                }
+            }
+        }
+        visemeTimer = 0f;
     }
 
     protected virtual void Transition_PrepareSpeechSpeaking()
     {
+        visemeTimer = 0f;
         if (speechClip != null)
         {
             // Render speech from audio clip
@@ -271,36 +380,39 @@ public class SpeechController : AnimController
             curDelayTime = 0;
             curPlayTime = 0;
 
-            // Play lip animation
-            AnimationState anim = GetComponent<Animation>()[speechClip.name];
-            if (anim != null)
+            if (!UsingVisemeFiles)
             {
-                // Enable playback
-                anim.enabled = true;
-                anim.time = 0;
-                anim.speed = GetComponent<AudioSource>().pitch;
-
-                // Make sure it affects only the face
-                for (int child_i = 0; child_i < transform.childCount; ++child_i)
+                // Play lip animation
+                AnimationState anim = GetComponent<Animation>()[speechClip.name];
+                if (anim != null)
                 {
-                    Transform mcbone = transform.GetChild(child_i);
+                    // Enable playback
+                    anim.enabled = true;
+                    anim.time = 0;
+                    anim.speed = GetComponent<AudioSource>().pitch;
 
-                    if (mcbone.name.StartsWith(LEAPCore.morphAnimationPrefix))
+                    // Make sure it affects only the face
+                    for (int child_i = 0; child_i < transform.childCount; ++child_i)
                     {
-                        anim.AddMixingTransform(mcbone);
-                    }
-                }
+                        Transform mcbone = transform.GetChild(child_i);
 
-                // Configure blending and wrapping
-                anim.wrapMode = WrapMode.Once;
-                anim.blendMode = AnimationBlendMode.Additive;
-                anim.weight = lipSyncScale;
-                anim.layer = 10;
-            }
-            else
-            {
-                Debug.LogWarning(string.Format("Missing lip animation for {0}", speechClip.name));
-                curDelayTime = audioDelayTime;
+                        if (mcbone.name.StartsWith(LEAPCore.morphAnimationPrefix))
+                        {
+                            anim.AddMixingTransform(mcbone);
+                        }
+                    }
+
+                    // Configure blending and wrapping
+                    anim.wrapMode = WrapMode.Once;
+                    anim.blendMode = AnimationBlendMode.Additive;
+                    anim.weight = lipSyncScale;
+                    anim.layer = 10;
+                }
+                else
+                {
+                    Debug.LogWarning(string.Format("Missing lip animation for {0}", speechClip.name));
+                    curDelayTime = audioDelayTime;
+                }
             }
         }
         else if (speechText != "")
@@ -314,6 +426,8 @@ public class SpeechController : AnimController
     protected virtual void Transition_SpeakingNoSpeech()
     {
         stopSpeech = false;
+
+        _ResetVisemeWeights();
 
         //If this is a robot with light-up mouth, turn off its mouth lights
         if (roboSpeech && mouth != null)
@@ -340,6 +454,14 @@ public class SpeechController : AnimController
             // Enable random body motion
             bodyIdleCtrl.speechMotionEnabled = false;
 
+    }
+
+    protected virtual void _ResetVisemeWeights()
+    {
+        // Reset all viseme weights
+        foreach (var morphChannel in morphCtrl.morphChannels)
+            if (morphChannel.name.StartsWith("Viseme"))
+                morphChannel.weight = 0f;
     }
 
     public override void _CreateStates()

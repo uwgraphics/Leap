@@ -118,6 +118,8 @@ public class MorphController : MonoBehaviour
     /// </summary>
     public void Apply()
     {
+        _ResetAllBlendShapeWeights();
+
         // Make sure all affected facial bones are set to initial pose
         for (int mci = 0; mci < morphChannels.Length; ++mci)
         {
@@ -148,7 +150,7 @@ public class MorphController : MonoBehaviour
                     {
                         int mti = mtm.morphTargetIndexes[mtii];
                         float mtw = weight * mtm.refValues[mtii];
-                        smr.SetBlendShapeWeight(mti, mtw);
+                        smr.SetBlendShapeWeight(mti, Mathf.Max(smr.GetBlendShapeWeight(mti), 100f * mtw));
                     }
                 }
             }
@@ -176,6 +178,29 @@ public class MorphController : MonoBehaviour
         foreach (MorphChannel mc in morphChannels)
         {
             mc.weight = 0f;
+        }
+    }
+
+    private void _ResetAllBlendShapeWeights()
+    {
+        for (int mci = 0; mci < morphChannels.Length; mci++)
+        {
+            MorphChannel mc = morphChannels[mci];
+
+            for (int mtmi = 0; mtmi < mc.morphTargets.Length; ++mtmi)
+            {
+                MorphChannel.MorphTargetMapping mtm = mc.morphTargets[mtmi];
+
+                var smr = mtm.sourceMesh.GetComponent<SkinnedMeshRenderer>();
+                if (smr != null)
+                {
+                    for (int mtii = 0; mtm.morphTargetIndexes != null && mtii < mtm.morphTargetIndexes.Length; ++mtii)
+                    {
+                        int mti = mtm.morphTargetIndexes[mtii];
+                        smr.SetBlendShapeWeight(mti, 0f);
+                    }
+                }
+            }
         }
     }
 

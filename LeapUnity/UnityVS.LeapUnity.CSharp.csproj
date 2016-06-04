@@ -13,13 +13,11 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.1.1f1</UnityVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -117,6 +115,7 @@
     <Compile Include="Assets\Animation\BehaviorControl\LocomotionController.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\SimpleListenController.cs" />
     <Compile Include="Assets\Animation\BehaviorControl\SpeechController.cs" />
+    <Compile Include="Assets\Animation\BehaviorControl\TurnInPlaceController.cs" />
     <Compile Include="Assets\Animation\EnvironmentController.cs" />
     <Compile Include="Assets\Animation\Gizmos\AnimationEditGizmos.cs" />
     <Compile Include="Assets\Animation\Gizmos\BoneGizmo.cs" />
@@ -132,6 +131,9 @@
     <Compile Include="Assets\Behavior\BehaviorParser.cs" />
     <Compile Include="Assets\Behavior\BehaviorScheduler.cs" />
     <Compile Include="Assets\LEAPCore.cs" />
+    <Compile Include="Assets\Locomotion Setup\Locomotion\Scripts\SimpleLocomotion.cs" />
+    <Compile Include="Assets\Locomotion Setup\Scripts\JoystickToEvents.cs" />
+    <Compile Include="Assets\Locomotion Setup\Scripts\LocomotionPlayer.cs" />
     <Compile Include="Assets\OSP\Scripts\OSPAudioSource.cs" />
     <Compile Include="Assets\OSP\Scripts\OSPManager.cs" />
     <Compile Include="Assets\OSP\Scripts\OSPReflectionZone.cs" />
@@ -195,7 +197,6 @@
     <Compile Include="Assets\Scene-specific\Scripts\TorsoExperiment2.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\TwoAgentsGazeAversion.cs" />
     <Compile Include="Assets\ShowSkin.cs" />
-    <Compile Include="Assets\Animation\BehaviorControl\TurnInPlaceController.cs" />
     <Compile Include="Assets\UMA\Content\UMA\Humanoid\DNA\HumanFemaleDNAConverterBehaviour.cs" />
     <Compile Include="Assets\UMA\Content\UMA\Humanoid\DNA\HumanMaleDNAConverterBehaviour.cs" />
     <Compile Include="Assets\UMA\Content\UMA\Humanoid\DNA\HumanoidDNAConverterBehaviour.cs" />

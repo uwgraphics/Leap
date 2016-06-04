@@ -300,19 +300,16 @@ public sealed class ModelController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Initialize the model controller.
-    /// </summary>
-    public void Init()
+    public void Awake()
     {
         _InitBones();
         _GetInitBoneTransforms();
         _InitBlendShapes();
     }
 
-    public void Awake()
+    public void Start()
     {
-        _InitBones();
+        
     }
 
     public void Update()

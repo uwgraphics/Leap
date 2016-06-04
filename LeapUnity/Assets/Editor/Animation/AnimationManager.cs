@@ -95,7 +95,7 @@ public class AnimationManager
         {
             throw new Exception(string.Format("Character model {0} does not have a ModelController", model.name));
         }
-        modelController.Init();
+        modelController.Awake();
 
         // Initialize the character morph controller
         var morphController = model.GetComponent<MorphController>();
@@ -112,7 +112,7 @@ public class AnimationManager
         }
         var initialPoseInstance = new AnimationClipInstance(initialPoseClip.name, model, false, false, false);
         initialPoseInstance.Apply(0, AnimationLayerMode.Override);
-        modelController.Init();
+        modelController.Awake();
 
         // Add the model to the timeline
         _models.Add(model);
