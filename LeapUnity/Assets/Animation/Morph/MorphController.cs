@@ -1,7 +1,7 @@
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System;
 
 /// <summary>
@@ -14,6 +14,8 @@ public class MorphController : MonoBehaviour
     /// Morph channels for controlling model deformation.
     /// </summary>
     public MorphChannel[] morphChannels = null;
+
+    public int[] morphChannelMask = new int[0];
 
     private Dictionary<string, int> morphChannelIndexes = null;
     private ModelController mdlCtrl;
@@ -56,6 +58,16 @@ public class MorphController : MonoBehaviour
             return morphChannelIndexes[mcName];
 
         return -1;
+    }
+
+    /// <summary>
+    /// true if the specified morph channel is masked, false otherwise.
+    /// </summary>
+    /// <param name="morphChannelIndex">Morph channel index</param>
+    /// <returns>true if the morph channel is makes, false otherwise</returns>
+    public bool IsMorphChannelMasked(int morphChannelIndex)
+    {
+        return morphChannelMask != null && morphChannelMask.Any(mci => mci == morphChannelIndex);
     }
 
     /// <summary>
@@ -123,6 +135,8 @@ public class MorphController : MonoBehaviour
         // Make sure all affected facial bones are set to initial pose
         for (int mci = 0; mci < morphChannels.Length; ++mci)
         {
+            if (IsMorphChannelMasked(mci))
+                continue;
             MorphChannel mc = morphChannels[mci];
 
             for (int bone_i = 0; bone_i < mc.bones.Length; ++bone_i)
@@ -136,6 +150,8 @@ public class MorphController : MonoBehaviour
         // Apply morph target deformations on each channel
         for (int mci = 0; mci < morphChannels.Length; mci++)
         {
+            if (IsMorphChannelMasked(mci))
+                continue;
             MorphChannel mc = morphChannels[mci];
             float weight = mc.weight;
 
@@ -185,6 +201,8 @@ public class MorphController : MonoBehaviour
     {
         for (int mci = 0; mci < morphChannels.Length; mci++)
         {
+            if (IsMorphChannelMasked(mci))
+                continue;
             MorphChannel mc = morphChannels[mci];
 
             for (int mtmi = 0; mtmi < mc.morphTargets.Length; ++mtmi)

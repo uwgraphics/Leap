@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LMC xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <animSettings>
-    <linkAnimations>true</linkAnimations>
-    <animTrackPrefix>MC_</animTrackPrefix>
-  </animSettings>
   <morphChannels>
     <LMCMorphChannel>
       <name>ExpressionAnger</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;Angry_body</mtName>
+          <mtName>Angry_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -20,22 +16,22 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthNarrowL_body</mtName>
+          <mtName>MouthNarrowL_body</mtName>
           <refValue>0.25</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthNarrowR_body</mtName>
+          <mtName>MouthNarrowR_body</mtName>
           <refValue>0.25</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;LipTopUpL_body</mtName>
+          <mtName>LipTopUpL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;NoseWrinkle_body</mtName>
+          <mtName>NoseWrinkle_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -45,62 +41,47 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;Fear_body</mtName>
+          <mtName>Fear_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
-      <bones>
-        <LMCBoneMapping>
-          <name>lowerJaw</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>11.8</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-      </bones>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>ExpressionSad</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpL_body</mtName>
+          <mtName>BrowInnerUpL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpR_body</mtName>
+          <mtName>BrowInnerUpR_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterDownL_body</mtName>
+          <mtName>BrowOuterDownL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterDownR_body</mtName>
+          <mtName>BrowOuterDownR_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthFrown_body</mtName>
+          <mtName>MouthFrown_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthNarrowL_body</mtName>
+          <mtName>MouthNarrowL_body</mtName>
           <refValue>0.25</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthNarrowR_body</mtName>
+          <mtName>MouthNarrowR_body</mtName>
           <refValue>0.25</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -110,7 +91,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthSmile_body</mtName>
+          <mtName>MouthSmile_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -120,7 +101,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthSmileOpen_body</mtName>
+          <mtName>MouthSmileOpen_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -130,57 +111,42 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowUpL_body</mtName>
+          <mtName>BrowUpL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowUpR_body</mtName>
+          <mtName>BrowUpR_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;EyeLidsTopUpL_body</mtName>
+          <mtName>EyeLidsTopUpL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;EyeLidsTopUpR_body</mtName>
+          <mtName>EyeLidsTopUpR_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthOpen_body</mtName>
+          <mtName>MouthOpen_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;MouthSmile_body</mtName>
+          <mtName>MouthSmile_body</mtName>
           <refValue>0.25</refValue>
         </LMCSubmeshMapping>
       </submeshes>
-      <bones>
-        <LMCBoneMapping>
-          <name>lowerJaw</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>6.000001</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-      </bones>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>ModifierBlinkLeft</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;EyesClosedL_body</mtName>
+          <mtName>EyesClosedL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -190,7 +156,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;EyesClosedR_body</mtName>
+          <mtName>EyesClosedR_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -200,7 +166,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowDownL_body</mtName>
+          <mtName>BrowDownL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -210,7 +176,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowDownR_body</mtName>
+          <mtName>BrowDownR_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -220,7 +186,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowSqueeze_body</mtName>
+          <mtName>BrowSqueeze_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -230,7 +196,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowUpL_body</mtName>
+          <mtName>BrowUpL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -240,17 +206,30 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;BrowUpR_body</mtName>
+          <mtName>BrowUpR_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
+    </LMCMorphChannel>
+    <LMCMorphChannel>
+      <name>ModifierBrowUp</name>
+      <subchannels>
+        <LMCSubchannelMapping>
+          <name>ModifierBrowUpLeft</name>
+          <refValue>1</refValue>
+        </LMCSubchannelMapping>
+        <LMCSubchannelMapping>
+          <name>ModifierBrowUpRight</name>
+          <refValue>1</refValue>
+        </LMCSubchannelMapping>
+      </subchannels>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>ModifierEyeSquintLeft</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;EyesSquintL_body</mtName>
+          <mtName>EyesSquintL_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -260,7 +239,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;EyesSquintR_body</mtName>
+          <mtName>EyesSquintR_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -270,33 +249,20 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;AA_body</mtName>
+          <mtName>AA_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
       <bones>
         <LMCBoneMapping>
-          <name>lowerJaw</name>
+          <name>upperJaw</name>
           <refPosition>
             <x>0</x>
             <y>0</y>
             <z>0</z>
           </refPosition>
           <refRotation>
-            <x>4.550001</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-        <LMCBoneMapping>
-          <name>tongue04</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>5.44999933</x>
+            <x>-1.5</x>
             <y>0</y>
             <z>0</z>
           </refRotation>
@@ -308,33 +274,20 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;AA_body</mtName>
+          <mtName>AA_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
       <bones>
         <LMCBoneMapping>
-          <name>lowerJaw</name>
+          <name>upperJaw</name>
           <refPosition>
             <x>0</x>
             <y>0</y>
             <z>0</z>
           </refPosition>
           <refRotation>
-            <x>4.550001</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-        <LMCBoneMapping>
-          <name>tongue04</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>5.44999933</x>
+            <x>-1.5</x>
             <y>0</y>
             <z>0</z>
           </refRotation>
@@ -346,7 +299,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;M_body</mtName>
+          <mtName>M_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -356,7 +309,7 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;SH_body</mtName>
+          <mtName>SH_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
@@ -366,45 +319,30 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;T_body</mtName>
+          <mtName>T_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
-      <bones>
-        <LMCBoneMapping>
-          <name>lowerJaw</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>0.200000018</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-      </bones>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>VisemeEh</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;EH_body</mtName>
+          <mtName>EH_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
       <bones>
         <LMCBoneMapping>
-          <name>lowerJaw</name>
+          <name>upperJaw</name>
           <refPosition>
             <x>0</x>
             <y>0</y>
             <z>0</z>
           </refPosition>
           <refRotation>
-            <x>2.73</x>
+            <x>-1.5</x>
             <y>0</y>
             <z>0</z>
           </refRotation>
@@ -416,109 +354,40 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;ER_body</mtName>
+          <mtName>ER_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
-      <bones>
-        <LMCBoneMapping>
-          <name>lowerJaw</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>2.18</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-        <LMCBoneMapping>
-          <name>tongue01</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>353.000031</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-        <LMCBoneMapping>
-          <name>tongue02</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>358.000031</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-        <LMCBoneMapping>
-          <name>tongue03</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>353.000031</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-      </bones>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>VisemeFV</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;F_body</mtName>
+          <mtName>F_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
-      <bones>
-        <LMCBoneMapping>
-          <name>lowerJaw</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>-0.1</z>
-          </refPosition>
-          <refRotation>
-            <x>2</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-      </bones>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>VisemeIh</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;IH_body</mtName>
+          <mtName>IH_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
       <bones>
         <LMCBoneMapping>
-          <name>lowerJaw</name>
+          <name>upperJaw</name>
           <refPosition>
             <x>0</x>
             <y>0</y>
             <z>0</z>
           </refPosition>
           <refRotation>
-            <x>1.5</x>
+            <x>-1.5</x>
             <y>0</y>
             <z>0</z>
           </refRotation>
@@ -530,58 +399,30 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;K_body</mtName>
+          <mtName>K_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
-      <bones>
-        <LMCBoneMapping>
-          <name>lowerJaw</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>0.25000003</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-      </bones>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>VisemeN</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;L_body</mtName>
+          <mtName>L_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
       <bones>
         <LMCBoneMapping>
-          <name>lowerJaw</name>
+          <name>upperJaw</name>
           <refPosition>
             <x>0</x>
             <y>0</y>
             <z>0</z>
           </refPosition>
           <refRotation>
-            <x>2.18</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-        <LMCBoneMapping>
-          <name>tongue03</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>341</x>
+            <x>-1.5</x>
             <y>0</y>
             <z>0</z>
           </refRotation>
@@ -593,20 +434,20 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;OW_body</mtName>
+          <mtName>OW_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
       <bones>
         <LMCBoneMapping>
-          <name>lowerJaw</name>
+          <name>upperJaw</name>
           <refPosition>
             <x>0</x>
             <y>0</y>
             <z>0</z>
           </refPosition>
           <refRotation>
-            <x>3.81999969</x>
+            <x>-1.5</x>
             <y>0</y>
             <z>0</z>
           </refRotation>
@@ -618,311 +459,28 @@
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;UW_body</mtName>
+          <mtName>UW_body</mtName>
           <refValue>0.75</refValue>
         </LMCSubmeshMapping>
       </submeshes>
-      <bones>
-        <LMCBoneMapping>
-          <name>lowerJaw</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>1.13000011</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-      </bones>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>VisemeTh</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;TH_body</mtName>
+          <mtName>TH_body</mtName>
           <refValue>1</refValue>
         </LMCSubmeshMapping>
       </submeshes>
-      <bones>
-        <LMCBoneMapping>
-          <name>lowerJaw</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>1.82000017</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-        <LMCBoneMapping>
-          <name>tongue04</name>
-          <refPosition>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-          </refPosition>
-          <refRotation>
-            <x>349.000031</x>
-            <y>0</y>
-            <z>0</z>
-          </refRotation>
-        </LMCBoneMapping>
-      </bones>
     </LMCMorphChannel>
     <LMCMorphChannel>
       <name>VisemeW</name>
       <submeshes>
         <LMCSubmeshMapping>
           <name>body</name>
-          <mtName>MT&amp;body&amp;W_body</mtName>
+          <mtName>W_body</mtName>
           <refValue>1</refValue>
-        </LMCSubmeshMapping>
-      </submeshes>
-    </LMCMorphChannel>
-    <LMCMorphChannel>
-      <name>ModifierGazeDown</name>
-      <submeshes>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;GazeDown_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;EyeLidsTopDown_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowDown_body</mtName>
-          <refValue>0.5</refValue>
-        </LMCSubmeshMapping>
-      </submeshes>
-    </LMCMorphChannel>
-    <LMCMorphChannel>
-      <name>ModifierGazeDownLeft</name>
-      <submeshes>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;GazeDownLeft_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;EyeLidsTopDown_body</mtName>
-          <refValue>0.125</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterDownL_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerDownR_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowDown_body</mtName>
-          <refValue>0.125</refValue>
-        </LMCSubmeshMapping>
-      </submeshes>
-    </LMCMorphChannel>
-    <LMCMorphChannel>
-      <name>ModifierGazeDownRight</name>
-      <submeshes>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;GazeDownRight_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;EyeLidsTopDown_body</mtName>
-          <refValue>0.125</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterDownR_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerDownL_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowDown_body</mtName>
-          <refValue>0.125</refValue>
-        </LMCSubmeshMapping>
-      </submeshes>
-    </LMCMorphChannel>
-    <LMCMorphChannel>
-      <name>ModifierGazeLeft</name>
-      <submeshes>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;GazeLeft_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterUpR_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterUpL_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpR_body</mtName>
-          <refValue>0.75</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpL_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-      </submeshes>
-    </LMCMorphChannel>
-    <LMCMorphChannel>
-      <name>ModifierGazeRight</name>
-      <submeshes>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;GazeRight_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterUpR_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterUpL_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpR_body</mtName>
-          <refValue>0.25</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpL_body</mtName>
-          <refValue>0.75</refValue>
-        </LMCSubmeshMapping>
-      </submeshes>
-    </LMCMorphChannel>
-    <LMCMorphChannel>
-      <name>ModifierGazeUp</name>
-      <submeshes>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;GazeUp_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;EyeLidsTopUp_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowUp_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-      </submeshes>
-    </LMCMorphChannel>
-    <LMCMorphChannel>
-      <name>ModifierGazeUpLeft</name>
-      <submeshes>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;GazeUpLeft_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;EyeLidsTopUp_body</mtName>
-          <refValue>0.5</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowUp_body</mtName>
-          <refValue>0.5</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterUpR_body</mtName>
-          <refValue>0.125</refValue>
-        </LMCSubmeshMapping>
-         <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterUpL_body</mtName>
-          <refValue>0.5</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpR_body</mtName>
-          <refValue>0.35</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpL_body</mtName>
-          <refValue>0.125</refValue>
-        </LMCSubmeshMapping>
-      </submeshes>
-    </LMCMorphChannel>
-    <LMCMorphChannel>
-      <name>ModifierGazeUpRight</name>
-      <submeshes>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;GazeUpRight_body</mtName>
-          <refValue>1</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;EyeLidsTopUp_body</mtName>
-          <refValue>0.5</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowUp_body</mtName>
-          <refValue>0.5</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterUpR_body</mtName>
-          <refValue>0.5</refValue>
-        </LMCSubmeshMapping>
-         <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowOuterUpL_body</mtName>
-          <refValue>0.125</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpR_body</mtName>
-          <refValue>0.125</refValue>
-        </LMCSubmeshMapping>
-        <LMCSubmeshMapping>
-          <name>body</name>
-          <mtName>MT&amp;body&amp;BrowInnerUpL_body</mtName>
-          <refValue>0.35</refValue>
         </LMCSubmeshMapping>
       </submeshes>
     </LMCMorphChannel>

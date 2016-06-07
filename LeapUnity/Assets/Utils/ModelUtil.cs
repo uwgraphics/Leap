@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -659,21 +658,6 @@ public static class ModelUtil
         {
             _GetAllMeshesWithBlendShapes(bone.GetChild(childIndex), meshesWithBlendShapes);
         }
-    }
-
-    /// <summary>
-    /// Get currently selected character model (or null if no model is selected)
-    /// </summary>
-    /// <returns>Selected character model</returns>
-    public static GameObject GetSelectedModel()
-    {
-        GameObject obj = Selection.activeGameObject;
-        if (obj == null || obj.GetComponent<ModelController>() == null)
-        {
-            return null;
-        }
-
-        return obj;
     }
 
     /// <summary>

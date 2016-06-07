@@ -1,0 +1,153 @@
+fileFormatVersion: 2
+guid: a3193fe645cc4614abb59e9fd36e472a
+timeCreated: 1465174069
+licenseType: Free
+SketchUpImporter:
+  generateBackFace: 0
+  mergeCoplanarFaces: 1
+  selectedNodes: 000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d0000000e0000000f00000010000000110000001200000013000000140000001500000016000000170000001800000019000000
+  assetHash:
+    serializedVersion: 2
+    Hash: 92628bb7f24e695d24877a43bbd2d181
+  longitude: -105.283
+  latitude: 40.017000000000003
+  northCorrection: -0
+  fileUnit: 0
+  sketchUpImportData:
+    defaultCamera:
+      position: {x: 81.2048874, y: 41.9123764, z: -31.7810116}
+      lookAt: {x: 41.4905663, y: .980880916, z: 34.6752014}
+      up: {x: -.239766359, y: .884046912, z: .401214629}
+      fov: 35
+      aspectRatio: 0
+      orthoSize: 1
+      isPerspective: 1
+    scenes: []
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: Obj_000001
+    100002: Obj_000002
+    100004: Obj_000003
+    100006: Obj_000004
+    100008: Obj_000005
+    100010: Obj_000006
+    100012: Obj_000007
+    100014: Obj_000008
+    100016: Obj_000009
+    100018: Obj_000010
+    100020: Obj_000011
+    100022: Obj_000012
+    100024: skpD76F
+    100026: //RootNode
+    400000: Obj_000001
+    400002: Obj_000002
+    400004: Obj_000003
+    400006: Obj_000004
+    400008: Obj_000005
+    400010: Obj_000006
+    400012: Obj_000007
+    400014: Obj_000008
+    400016: Obj_000009
+    400018: Obj_000010
+    400020: Obj_000011
+    400022: Obj_000012
+    400024: skpD76F
+    400026: //RootNode
+    2300000: Obj_000001
+    2300002: Obj_000002
+    2300004: Obj_000003
+    2300006: Obj_000004
+    2300008: Obj_000005
+    2300010: Obj_000006
+    2300012: Obj_000007
+    2300014: Obj_000008
+    2300016: Obj_000009
+    2300018: Obj_000010
+    2300020: Obj_000011
+    2300022: Obj_000012
+    3300000: Obj_000001
+    3300002: Obj_000002
+    3300004: Obj_000003
+    3300006: Obj_000004
+    3300008: Obj_000005
+    3300010: Obj_000006
+    3300012: Obj_000007
+    3300014: Obj_000008
+    3300016: Obj_000009
+    3300018: Obj_000010
+    3300020: Obj_000011
+    3300022: Obj_000012
+    4300000: Mesh Obj_000001
+    4300002: Mesh Obj_000002
+    4300004: Mesh Obj_000003
+    4300006: Mesh Obj_000004
+    4300008: Mesh Obj_000005
+    4300010: Mesh Obj_000006
+    4300012: Mesh Obj_000007
+    4300014: Mesh Obj_000008
+    4300016: Mesh Obj_000009
+    4300018: Mesh Obj_000010
+    4300020: Mesh Obj_000011
+    4300022: Mesh Obj_000012
+  materials:
+    importMaterials: 1
+    materialName: 2
+    materialSearch: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .0253999997
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 1
+    tangentImportMode: 1
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

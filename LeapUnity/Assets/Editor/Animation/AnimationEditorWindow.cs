@@ -121,7 +121,7 @@ public class AnimationEditorWindow : EditorWindow
         }
 
         // Update last selected character model
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = LEAPMenu.GetSelectedModel();
         var prevSelectedModel = LastSelectedModel;
         LastSelectedModel = selectedModel != null ? selectedModel : LastSelectedModel;
         LastSelectedModel = Timeline.OwningManager.Models.Contains(LastSelectedModel) ? LastSelectedModel : null;

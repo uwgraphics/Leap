@@ -61,7 +61,7 @@ public class LEAPMenu
     private static bool ValidateInferEyeGazeInstances()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = GetSelectedModel();
         return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
             selectedModel != null && selectedModel.tag == "Agent";
     }
@@ -77,7 +77,7 @@ public class LEAPMenu
         timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
 
         // Infer gaze shifts and fixations in the base animation
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = GetSelectedModel();
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
@@ -98,7 +98,7 @@ public class LEAPMenu
     private static bool ValidateInferEyeGazeAlignments()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = GetSelectedModel();
         return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
             selectedModel != null && selectedModel.tag == "Agent";
     }
@@ -114,7 +114,7 @@ public class LEAPMenu
         timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
 
         // Infer gaze shifts and fixations in the base animation
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = GetSelectedModel();
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
@@ -170,7 +170,7 @@ public class LEAPMenu
     private static bool ValidateInferEyeGazeEvaluateInstances()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = GetSelectedModel();
         return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
             selectedModel != null && selectedModel.tag == "Agent";
     }
@@ -180,7 +180,7 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         var timeline = wnd.Timeline;
-        var model = ModelUtil.GetSelectedModel();
+        var model = GetSelectedModel();
         
         var baseInstance = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(inst => inst.Animation.Model == model);
         if (baseInstance == null)
@@ -197,7 +197,7 @@ public class LEAPMenu
     private static bool ValidateInferEyeGazeEvaluateTargetDirections()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = GetSelectedModel();
         return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
             selectedModel != null && selectedModel.tag == "Agent" &&
             wnd.Timeline.BakedTimelineContainers.Count > 0;
@@ -215,7 +215,7 @@ public class LEAPMenu
         timeline.ActiveBakedTimelineIndex = timeline.BakedTimelineContainers.Count - 1;
 
         // Compute evaluation of gaze target location inference
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = GetSelectedModel();
         var baseLayer = timeline.GetLayer(LEAPCore.baseAnimationLayerName);
         foreach (var baseAnimation in baseLayer.Animations)
         {
@@ -231,7 +231,7 @@ public class LEAPMenu
     private static bool ValidateInferEyeGazeEvaluateTargets()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        var selectedModel = ModelUtil.GetSelectedModel();
+        var selectedModel = GetSelectedModel();
         return wnd.Timeline != null && wnd.Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName) != null &&
             selectedModel != null && selectedModel.tag == "Agent";
     }
@@ -241,7 +241,7 @@ public class LEAPMenu
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
         var timeline = wnd.Timeline;
-        var model = ModelUtil.GetSelectedModel();
+        var model = GetSelectedModel();
 
         var baseInstance = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(inst => inst.Animation.Model == model);
         if (baseInstance == null)
@@ -1758,5 +1758,18 @@ public class LEAPMenu
     [MenuItem("LEAP/Custom Scripts/Run Script 2")]
     private static void RunScript2()
     {
+    }
+
+    /// <summary>
+    /// Get currently selected character model (or null if no model is selected)
+    /// </summary>
+    /// <returns>Selected character model</returns>
+    public static GameObject GetSelectedModel()
+    {
+        GameObject obj = Selection.activeGameObject;
+        if (obj == null || obj.GetComponent<ModelController>() == null)
+            return null;
+
+        return obj;
     }
 }
