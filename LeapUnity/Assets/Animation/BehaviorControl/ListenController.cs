@@ -43,7 +43,7 @@ public class ListenController : AnimController
     private GameObject readyText = null;
     public float audioTimeOut = 0.2f;
     private float audioTime = 0f;
-    public string KinectArgument = null;
+    public string arg = null;
 
     public override void Start()
     {
@@ -53,11 +53,9 @@ public class ListenController : AnimController
         {
             //Set up the kinect speech application
             Process speechProcess = new Process();
-            speechProcess.StartInfo.FileName = "C:\\Users\\Sean\\Documents\\Kinect\\Speech\\Bin\\Debug\\Speech.exe";
-            if (KinectArgument != null)
-            {
-                speechProcess.StartInfo.Arguments = " " + KinectArgument;
-            }
+            speechProcess.StartInfo.FileName = "C:\\Local Users\\tpejsa\\Leap\\Tools\\SpeechServer\\bin\\Debug\\SpeechServer.exe";
+            if (arg != null)
+                speechProcess.StartInfo.Arguments = " " + arg;
             speechProcess.StartInfo.UseShellExecute = false;
             speechProcess.StartInfo.RedirectStandardOutput = true;
             speechProcess.OutputDataReceived += new DataReceivedEventHandler(SpeechOutputHandler);

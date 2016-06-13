@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>5.1.1f1</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -186,6 +188,7 @@
     <Compile Include="Assets\Scene-specific\Scripts\LectureScenario.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\LilyStylizedGazeScenario.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\NormanGazeAversion.cs" />
+    <Compile Include="Assets\Scene-specific\Scripts\ParticipantWalkUp.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\PatLectureScenario.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\SimpleScene_Shiyu.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\SophieTestScenario.cs" />
@@ -194,7 +197,6 @@
     <Compile Include="Assets\Scene-specific\Scripts\Test2Scenario.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\TestScenario.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\TorsoExperiment1.cs" />
-    <Compile Include="Assets\Scene-specific\Scripts\TorsoExperiment2.cs" />
     <Compile Include="Assets\Scene-specific\Scripts\TwoAgentsGazeAversion.cs" />
     <Compile Include="Assets\ShowSkin.cs" />
     <Compile Include="Assets\UMA\Content\UMA\Humanoid\DNA\HumanFemaleDNAConverterBehaviour.cs" />

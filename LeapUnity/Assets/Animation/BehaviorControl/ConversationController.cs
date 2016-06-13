@@ -1,110 +1,267 @@
 using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public enum ConversationState
 {
-    WaitForStart,
-    Intro, // say hi
     WaitForSpeech, // wait for someone to say something
     Listen, // listen to someone speak
     Address, // address/respond to someone
     NewParticipant // acknowledge/include new participant
 };
 
-public class ConversationController : AnimController
+public enum ConversationTargetType
 {
-    public GameObject[] targets = new GameObject[0];
-    public GameObject prefTarget = null;
-    public float defaultTorsoAlign = 0;
-    public float prefTorsoAlign = 0;
-    public bool introduce = false;
-    public GameObject listenTarget = null;
-    public float listenTime = 0;
-    public bool listen = false;
-    public GameObject addressTarget = null;
-    public bool address = false;
-    public bool addressAll = false;
-    public GameObject newTarget = null;
-    public bool addNewTarget = false;
-    public bool ackNewTarget = true;
-    public float speechPauseTime = 0.5f;
-    public string[] speechClips = new string[0];
+    Addressee,
+    Bystander
+}
 
-    public GameObject targetDummy = null;
+/// <summary>
+/// Target for conversational behaviors.
+/// </summary>
+[Serializable]
+[RequireComponent(typeof(GazeController))]
+[RequireComponent(typeof(SpeechController))]
+[RequireComponent(typeof(ListenController))]
+public class ConversationTarget
+{
+    public ConversationTargetType targetType;
+    public GameObject target, bodyTarget, leftEnvTarget, rightEnvTarget, downEnvTarget, upEnvTarget;
+    public float thetaRange, thetaRangeBody, thetaRangeEnv;
 
-    protected float curTurnTime = 0;
-    protected float turnTime = 0;
-    protected float curGazeHoldTime = 0;
-    protected float gazeHoldTime = 0;
-    protected MathNet.Numerics.Distributions.GammaDistribution gazeHoldDist
-        = new MathNet.Numerics.Distributions.GammaDistribution(1.5f, 1f);
-    protected bool newTargetDuringWaitForSpeech = false;
-    protected bool newTargetDuringListen = false;
-    protected int curSpeechClip = 0;
-    protected float curSpeechTime = 0;
-    protected bool speechPaused = false;
-    protected GazeController gazeCtrl = null;
-    protected GazeAversionController gazeAvCtrl = null;
-    protected SpeechController speechCtrl = null;
+    private Dictionary<GameObject, MathNet.Numerics.Distributions.ContinuousDistribution> _distributions;
 
-    public virtual void Introduce(string[] speechClips)
+    public ConversationTarget(ConversationTargetType targetType, GameObject target, GameObject bodyTarget,
+        GameObject leftEnvTarget = null, GameObject rightEnvTarget = null, GameObject downEnvTarget = null, GameObject upEnvTarget = null,
+        float thetaRange = 1f, float thetaRangeBody = 4f, float thetaRangeEnv = 15f)
     {
-        introduce = true;
-        this.speechClips = speechClips;
+        if (target == null)
+            throw new ArgumentNullException("target");
+
+        this.targetType = targetType;
+        this.target = target;
+        this.bodyTarget = bodyTarget;
+        this.leftEnvTarget = leftEnvTarget;
+        this.rightEnvTarget = rightEnvTarget;
+        this.downEnvTarget = downEnvTarget;
+        this.upEnvTarget = upEnvTarget;
+        this.thetaRange = thetaRange;
+        this.thetaRangeBody = thetaRangeBody;
+        this.thetaRangeEnv = thetaRangeEnv;
+
+        Init();
     }
 
-    public virtual void Listen(string targetName, float listenTime)
+    /// <summary>
+    /// Initialize gaze target probability distributions.
+    /// </summary>
+    public void Init()
     {
-        listenTarget = null;
-        foreach (GameObject obj in targets)
-        {
-            if (obj.name == targetName)
-            {
-                listenTarget = obj;
-                break;
-            }
-        }
+        _distributions[target] = new MathNet.Numerics.Distributions.NormalDistribution(0f, thetaRange / 2f);
+        if (bodyTarget != null)
+            _distributions[bodyTarget] = new MathNet.Numerics.Distributions.NormalDistribution(0f, thetaRangeBody / 2f);
+        var distEnv = new MathNet.Numerics.Distributions.ContinuousUniformDistribution(0, thetaRangeEnv);
+        if (leftEnvTarget != null)
+            _distributions[leftEnvTarget] = distEnv;
+        if (rightEnvTarget != null)
+            _distributions[rightEnvTarget] = distEnv;
+        if (downEnvTarget != null)
+            _distributions[downEnvTarget] = distEnv;
+        if (upEnvTarget != null)
+            _distributions[upEnvTarget] = distEnv;
+    }
 
-        if (listenTarget == null)
-            Debug.LogError(string.Format(
-                "Listen target {0} for ConversationController must be specified in the targets list.",
-                targetName));
+    /// <summary>
+    /// Generate a gaze target position by sampling from a probability distribution around
+    /// the target object.
+    /// </summary>
+    /// <param name="eyeCenter">Eye centroid position</param>
+    /// <returns>Target position</returns>
+    public Vector3 GenerateGazeTargetPosition(Vector3 eyeCenter, GameObject gazeTarget)
+    {
+        if (gazeTarget == null ||
+            (gazeTarget != target && gazeTarget != bodyTarget && gazeTarget != leftEnvTarget && gazeTarget != rightEnvTarget
+             && gazeTarget != downEnvTarget && gazeTarget != upEnvTarget))
+            throw new ArgumentException("Gaze target not specified as part of conversational target " + target.name);
 
-        this.listenTime = listenTime;
+        // Get probability distribution
+        if (!_distributions.ContainsKey(gazeTarget))
+            Init();
+        var thetaDist = _distributions[gazeTarget];
+
+        // Compute theta and phi angles
+        float phi = UnityEngine.Random.Range(0f, 360f);
+        float thetaRange = 0f;
+        if (thetaDist is MathNet.Numerics.Distributions.NormalDistribution)
+            thetaRange = ((float)(thetaDist as MathNet.Numerics.Distributions.NormalDistribution).Sigma) * 2f;
+        else // if (thetaDist is MathNet.Numerics.Distributions.ContinuousUniformDistribution)
+            thetaRange = (float)(thetaDist as MathNet.Numerics.Distributions.ContinuousUniformDistribution).UpperLimit;
+        float theta = 0f;
+        if (thetaRange > 0f)
+            theta = Mathf.Clamp((float)thetaDist.NextDouble(), 0f, thetaRange);
+
+        // Compute gaze target position
+        if (theta < 0.00001f)
+            return gazeTarget.transform.position;
+        Vector3 trgDir0 = gazeTarget.transform.position - eyeCenter;
+        float trgDistance = trgDir0.magnitude;
+        trgDir0.Normalize();
+        Vector3 trgDir = Quaternion.AngleAxis(theta, Vector3.up) * trgDir0;
+        trgDir = Quaternion.AngleAxis(phi, trgDir0) * trgDir;
+        Vector3 trgPos = eyeCenter + trgDistance * trgDir.normalized;
+
+        return trgPos;
+    }
+
+    /// <summary>
+    /// Select an environment target using a uniform distribution.
+    /// </summary>
+    /// <returns>Selected target</returns>
+    public GameObject SelectRandomEnvironmentTarget()
+    {
+        var envTargets = new List<GameObject>();
+        if (leftEnvTarget != null)
+            envTargets.Add(leftEnvTarget);
+        if (rightEnvTarget != null)
+            envTargets.Add(rightEnvTarget);
+        if (downEnvTarget != null)
+            envTargets.Add(downEnvTarget);
+        if (upEnvTarget != null)
+            envTargets.Add(upEnvTarget);
+
+        if (envTargets.Count <= 0)
+            return target;
+
+        return envTargets[UnityEngine.Random.Range(0, envTargets.Count - 1)];
+    }
+}
+
+/// <summary>
+/// Controller for conversational behaviors such as gaze and speech.
+/// </summary>
+public class ConversationController : AnimController
+{
+    // Targets are specified from left to right
+    public ConversationTarget[] targets = new ConversationTarget[0];
+    public string nextTargetName = null;
+    public bool listen = false;
+    public bool address = false;
+    public bool addressAll = false;
+    public string[] nextSpeechClips = new string[0];
+    public float speechPauseTime = 0.2f;
+    public ConversationTarget newTarget = null;
+    public bool addNewTarget = false;
+    public int newTargetIndex = -1;
+    public bool reorientBody = true;
+
+    //  Conversational behavior state:
+    protected int curTurnTargetIndex = -1;
+    protected ConversationTarget curTarget = null;
+    protected GameObject curGazeTarget = null;
+    protected bool curAddressAll = false;
+    protected float curGazeHoldTime = 0f;
+    protected float gazeHoldTime = 0f;
+    protected string[] curSpeechClips = null;
+    protected int curSpeechIndex = -1;
+    protected bool curSpeechPaused = false;
+    protected float curSpeechPauseTime = 0f;
+    protected ConversationState stateOnNewTarget = ConversationState.WaitForSpeech;
+
+    // Probability distributions for gaze target selection and gaze hold times:
+    protected float pAF1A = 0.26f, pAB1A = 0.48f, pE1A = 0.26f,
+        pAF1AB = 0.25f, pAB1AB = 0.51f, pBF1AB = 0.05f, pBB1AB = 0.03f, pE1AB = 0.16f,
+        pAF2A = 0.28f, pAB2A = 0.075f, pE2A = 0.29f;
+    protected MathNet.Numerics.Distributions.GammaDistribution dAF1A = new MathNet.Numerics.Distributions.GammaDistribution(1.65, 0.56);
+    protected MathNet.Numerics.Distributions.GammaDistribution dAB1A = new MathNet.Numerics.Distributions.GammaDistribution(1.92, 0.84);
+    protected MathNet.Numerics.Distributions.GammaDistribution dE1A = new MathNet.Numerics.Distributions.GammaDistribution(0.9, 1.14);
+    protected MathNet.Numerics.Distributions.GammaDistribution dAF1AB = new MathNet.Numerics.Distributions.GammaDistribution(0.74, 1.55);
+    protected MathNet.Numerics.Distributions.GammaDistribution dAB1AB = new MathNet.Numerics.Distributions.GammaDistribution(1.72, 1.2);
+    protected MathNet.Numerics.Distributions.GammaDistribution dBF1AB = new MathNet.Numerics.Distributions.GammaDistribution(2.19, 0.44);
+    protected MathNet.Numerics.Distributions.GammaDistribution dBB1AB = new MathNet.Numerics.Distributions.GammaDistribution(1.76, 0.57);
+    protected MathNet.Numerics.Distributions.GammaDistribution dE1AB = new MathNet.Numerics.Distributions.GammaDistribution(1.84, 0.59);
+    protected MathNet.Numerics.Distributions.GammaDistribution dAF2A = new MathNet.Numerics.Distributions.GammaDistribution(1.48, 1.1);
+    protected MathNet.Numerics.Distributions.GammaDistribution dAB2A = new MathNet.Numerics.Distributions.GammaDistribution(1.92, 0.52);
+    protected MathNet.Numerics.Distributions.GammaDistribution dE2A = new MathNet.Numerics.Distributions.GammaDistribution(2.23, 0.41);
+
+    // Low-level behavior controllers:
+    protected GazeController gazeCtrl = null;
+    protected SpeechController speechCtrl = null;
+    protected SimpleListenController listenCtrl = null;
+    protected FaceController faceCtrl = null;
+    protected ExpressionController exprCtrl = null;
+
+    /// <summary>
+    /// Get speech recognition results from the listen controller.
+    /// </summary>
+    public IList<ListenResult> ListenResults
+    {
+        get { return listenCtrl.Results.AsReadOnly(); }
+    }
+    
+    /// <summary>
+    /// Perform listening behavior toward the specified target.
+    /// </summary>
+    /// <param name="targetName">Listening target</param>
+    public virtual void Listen(string targetName)
+    {
+        nextTargetName = targetName;
         listen = true;
     }
 
+    /// <summary>
+    /// Perform addressing behavior toward the specified target.
+    /// </summary>
+    /// <param name="targetName"></param>
+    /// <param name="speechClips"></param>
     public virtual void Address(string targetName, string[] speechClips)
     {
-        addressTarget = null;
-        foreach (GameObject obj in targets)
-        {
-            if (obj.name == targetName)
-            {
-                addressTarget = obj;
-                break;
-            }
-        }
-
-        if (addressTarget == null)
-            Debug.LogError(string.Format(
-                "Address target {0} for ConversationController must be specified in the targets list.",
-                targetName));
-
+        nextTargetName = targetName;
+        nextSpeechClips = speechClips;
         address = true;
-        this.speechClips = speechClips;
+        addressAll = false;
     }
 
+    /// <summary>
+    /// Perform addressing behavior toward any addressee.
+    /// </summary>
+    /// <param name="speechClips"></param>
     public virtual void Address(string[] speechClips)
     {
-        Address(listenTarget.name, speechClips);
+        var addresseeList = new List<ConversationTarget>(targets.Where(t => t.targetType == ConversationTargetType.Addressee));
+        int addresseeIndex = UnityEngine.Random.Range(0, addresseeList.Count - 1);
+        nextTargetName = addresseeList[addresseeIndex].target.name;
+        nextSpeechClips = speechClips;
+        address = true;
+        addressAll = true;
     }
 
-    public virtual void AddNewParticipant(GameObject target)
+    /// <summary>
+    /// Add a new participant to the conversation and perform
+    /// acknowledging/including behaviors if necessary.
+    /// </summary>
+    /// <param name="target">Target representing the new participant</param>
+    /// <param name="targetIndex">Index specifying the location of the new target relative to the others</param>
+    public virtual void AddNewParticipant(ConversationTarget target, int targetIndex)
     {
         newTarget = target;
+        newTargetIndex = targetIndex;
         addNewTarget = true;
+    }
+
+    /// <summary>
+    /// Get index of the specified target.
+    /// </summary>
+    /// <param name="targetName">Target name</param>
+    /// <returns>Target index</returns>
+    public virtual int GetTargetIndex(string targetName)
+    {
+        for (int targetIndex = 0; targetIndex < targets.Length; ++targetIndex)
+            if (targetName == targets[targetIndex].target.name)
+                return targetIndex;
+
+        return -1;
     }
 
     public override void Start()
@@ -112,65 +269,34 @@ public class ConversationController : AnimController
         base.Start();
 
         gazeCtrl = GetComponent<GazeController>();
-        if (gazeCtrl == null)
-            Debug.LogError("ConversationController requires a GazeController component to be present on the agent.");
-        gazeAvCtrl = GetComponent<GazeAversionController>();
-        if (gazeAvCtrl == null)
-            Debug.LogError("ConversationController requires a GazeAversionController component to be present on the agent.");
         speechCtrl = GetComponent<SpeechController>();
-        if (speechCtrl == null)
-            Debug.LogError("ConversationController requires a SpeechController component to be present on the agent.");
+        listenCtrl = GetComponent<SimpleListenController>();
+        listenCtrl.Listen();
+        faceCtrl = GetComponent<FaceController>();
+        exprCtrl = GetComponent<ExpressionController>();
 
         speechCtrl.StateChange += new StateChangeEvtH(SpeechController_StateChange);
-        gazeAvCtrl.mutualGazeObject = targetDummy;
-    }
-
-    protected virtual void Update_WaitForStart()
-    {
-        if (introduce)
-            GoToState((int)ConversationState.Intro);
-    }
-
-    protected virtual void Update_Intro()
-    {
-        if (speechClips == null || curSpeechClip >= speechClips.Length)
-        {
-            // Done with introduction, wait for someone to ask a question
-            GoToState((int)ConversationState.WaitForSpeech);
-            return;
-        }
-
-        curTurnTime += DeltaTime;
-        curSpeechTime += DeltaTime;
-        if (speechPaused)
-        {
-            if (curSpeechTime >= speechPauseTime)
-            {
-                speechPaused = false;
-                curSpeechTime = 0;
-                ++curSpeechClip;
-                if (curSpeechClip < speechClips.Length)
-                    speechCtrl.Speak(speechClips[curSpeechClip]);
-            }
-        }
-
-        _UpdateGaze();
     }
 
     protected virtual void Update_WaitForSpeech()
     {
-        if (addNewTarget && newTarget != null)
+        if (listen || listenCtrl.StateId == (int)SimpleListenState.SpeechDetected)
         {
-            if (ackNewTarget)
+            GoToState((int)ConversationState.Listen);
+            return;
+        }
+        else if (addNewTarget && newTarget != null)
+        {
+            if (newTarget.targetType == ConversationTargetType.Addressee)
                 GoToState((int)ConversationState.NewParticipant);
             else
                 _AddNewTarget();
 
             return;
         }
-        else if (listen && listenTarget != null)
+        else if (address && targets.Any(t => t.target.name == nextTargetName))
         {
-            GoToState((int)ConversationState.Listen);
+            GoToState((int)ConversationState.Address);
             return;
         }
 
@@ -181,14 +307,14 @@ public class ConversationController : AnimController
     {
         if (addNewTarget && newTarget != null)
         {
-            if (ackNewTarget)
+            if (newTarget.targetType == ConversationTargetType.Addressee)
                 GoToState((int)ConversationState.NewParticipant);
             else
                 _AddNewTarget();
 
             return;
         }
-        else if (address && addressTarget != null)
+        else if (address && targets.Any(t => t.target.name == nextTargetName))
         {
             GoToState((int)ConversationState.Address);
             return;
@@ -199,26 +325,28 @@ public class ConversationController : AnimController
 
     protected virtual void Update_Address()
     {
-        if (curSpeechClip >= speechClips.Length)
+        if (curSpeechIndex >= curSpeechClips.Length)
         {
-            // Done with speech, wait of someone to ask a question
+            // Done with speech, wait of someone to take the floor
             GoToState((int)ConversationState.WaitForSpeech);
             return;
         }
 
-        curTurnTime += DeltaTime;
-        curSpeechTime += DeltaTime;
-        if (speechPaused)
+        // Update speech pause timing
+        if (curSpeechPaused)
         {
-            if (curSpeechTime >= speechPauseTime)
+            curSpeechPauseTime += DeltaTime;
+            if (curSpeechPauseTime >= speechPauseTime)
             {
-                speechPaused = false;
-                curSpeechTime = 0;
-                ++curSpeechClip;
-                if (curSpeechClip < speechClips.Length)
-                    speechCtrl.Speak(speechClips[curSpeechClip]);
+                curSpeechPaused = false;
+                curSpeechPauseTime = 0f;
             }
         }
+
+        if ((curSpeechIndex != 0 || gazeCtrl.StateId == (int)GazeState.NoGaze && !gazeCtrl.doGazeShift) // delay speech until initial gaze shift is finished
+            && !curSpeechPaused && curSpeechIndex < curSpeechClips.Length)
+            // Speak the next utterance
+            speechCtrl.Speak(curSpeechClips[curSpeechIndex]);
 
         _UpdateGaze();
     }
@@ -226,76 +354,81 @@ public class ConversationController : AnimController
     protected virtual void Update_NewParticipant()
     {
         curGazeHoldTime += DeltaTime;
-        if (curGazeHoldTime >= gazeHoldTime &&
-            (gazeCtrl.StateId == (int)GazeState.NoGaze &&
-            gazeAvCtrl.StateId == (int)GazeAversionState.MutualGaze ||
-            !gazeCtrl.enabled))
+        if (curGazeHoldTime >= gazeHoldTime && gazeCtrl.StateId == (int)GazeState.NoGaze)
         {
             // Done acknowledging the new participant
             _GazeAtNextTarget(false);
-            if (newTargetDuringWaitForSpeech)
+            if (stateOnNewTarget == ConversationState.WaitForSpeech)
                 GoToState((int)ConversationState.WaitForSpeech);
-            else // if(newTargetDuringListen)
+            else // if(stateOnNewTarget == ConversationState.Listen)
                 GoToState((int)ConversationState.Listen);
         }
     }
 
-    protected virtual void Transition_WaitForStartIntro()
-    {
-        introduce = false;
-        _InitTurn();
-        _InitGaze();
-        _GazeAtNextTarget(true);
-    }
-
-    protected virtual void Transition_IntroWaitForSpeech()
-    {
-        speechClips = new string[0];
-    }
-
     protected virtual void Transition_WaitForSpeechListen()
     {
-        listen = false;
+        curTurnTargetIndex = GetTargetIndex(nextTargetName);
         _GazeAtNextTarget(true);
+        listen = false;
+    }
+
+    protected virtual void Transition_WaitForSpeechAddress()
+    {
+        listenCtrl.StopListening();
+        curTurnTargetIndex = GetTargetIndex(nextTargetName);
+        curAddressAll = addressAll;
+        curSpeechClips = nextSpeechClips;
+        curSpeechIndex = 0;
+        curSpeechPaused = false;
+        curSpeechPauseTime = 0f;
+        _GazeAtNextTarget(true);
+        address = false;
+        addressAll = false;
     }
 
     protected virtual void Transition_WaitForSpeechNewParticipant()
     {
-        newTargetDuringWaitForSpeech = true;
+        stateOnNewTarget = ConversationState.WaitForSpeech;
         _AddNewTarget();
-        _GazeAtNextTarget(false);
-        gazeHoldTime = 0.75f + (float)gazeHoldDist.NextDouble() / 2f;
+        _GazeAtNextTarget(false, true);
+        addNewTarget = false;
     }
 
     protected virtual void Transition_ListenAddress()
     {
-        address = false;
-        _InitTurn();
+        listenCtrl.StopListening();
+        curTurnTargetIndex = GetTargetIndex(nextTargetName);
+        curAddressAll = addressAll;
+        curSpeechClips = nextSpeechClips;
+        curSpeechIndex = 0;
+        curSpeechPaused = false;
+        curSpeechPauseTime = 0f;
         _GazeAtNextTarget(true);
+        address = false;
+        addressAll = false;
     }
 
     protected virtual void Transition_ListenNewParticipant()
     {
-        newTargetDuringListen = true;
+        stateOnNewTarget = ConversationState.Listen;
         _AddNewTarget();
-        _GazeAtNextTarget(false);
-        gazeHoldTime = 0.75f + (float)gazeHoldDist.NextDouble();
+        _GazeAtNextTarget(false, true);
+        addNewTarget = false;
     }
 
     protected virtual void Transition_AddressWaitForSpeech()
     {
-        speechClips = new string[0];
+        listenCtrl.Listen();
+        nextSpeechClips = new string[0];
         _GazeAtNextTarget(true);
     }
 
     protected virtual void Transition_NewParticipantWaitForSpeech()
     {
-        newTargetDuringWaitForSpeech = false;
     }
 
     protected virtual void Transition_NewParticipantListen()
     {
-        newTargetDuringListen = false;
     }
 
     protected virtual void SpeechController_StateChange(AnimController sender,
@@ -304,208 +437,282 @@ public class ConversationController : AnimController
         if (srcState == (int)SpeechState.Speaking &&
             trgState == (int)SpeechState.NoSpeech)
         {
-            speechPaused = true;
-            curSpeechTime = 0;
+            ++curSpeechIndex;
+            if (curSpeechIndex < curSpeechClips.Length)
+            {
+                // Insert a pause before starting next speech clip
+                curSpeechPaused = true;
+                curSpeechPauseTime = 0f;
+            }
         }
-    }
-
-    protected virtual void _InitTurn()
-    {
-        curTurnTime = 0;
-        turnTime = 0;
-        if (speechClips != null)
-        {
-            foreach (AudioClip clip in speechCtrl.speechClips)
-                foreach (string conv_clip in speechClips)
-                    if (clip.name == conv_clip)
-                        turnTime += clip.length;
-
-            turnTime += (1f + (speechClips.Length - 1) * speechPauseTime);
-        }
-        curSpeechClip = -1;
-        curSpeechTime = 0;
-        speechPaused = true;
-        if (StateId == (int)ConversationState.Listen)
-            speechCtrl.speechType = SpeechType.Answer;
-        else
-            speechCtrl.speechType = SpeechType.Other;
-    }
-
-    protected virtual void _InitGaze()
-    {
-        curGazeHoldTime = 0;
-        gazeHoldTime = 0;
     }
 
     protected virtual void _UpdateGaze()
     {
         curGazeHoldTime += DeltaTime;
-        if (curGazeHoldTime >= gazeHoldTime &&
-            (gazeCtrl.StateId == (int)GazeState.NoGaze &&
-            gazeAvCtrl.StateId == (int)GazeAversionState.MutualGaze ||
-            !gazeCtrl.enabled))
-        {
+        if (curGazeHoldTime >= gazeHoldTime && gazeCtrl.StateId == (int)GazeState.NoGaze)
             _GazeAtNextTarget(false);
-        }
     }
 
-    protected virtual void _GazeAtNextTarget(bool turnChange)
+    protected virtual void _GazeAtNextTarget(bool turnChange, bool newParticipantAdded = false)
     {
-        // Choose next target
-        GameObject next_target = gazeCtrl.gazeTarget;
-        if (turnChange)
+        // Initialize gaze timings
+        curGazeHoldTime = 0f;
+        gazeHoldTime = 0.25f;
+
+        // Set default alignment parameters
+        gazeCtrl.head.align = 0.8f;
+        gazeCtrl.torso.align = 0f;
+        gazeCtrl.pelvisAlign = 0.5f;
+        gazeCtrl.bodyAlign = 0f;
+
+        // Get lists of addressees and bystanders
+        var addresseeList = new List<ConversationTarget>(targets.Where(t => t.targetType == ConversationTargetType.Addressee));
+        var bystanderList = new List<ConversationTarget>(targets.Where(t => t.targetType == ConversationTargetType.Bystander));
+
+        // Determine gaze target
+        var prevGazeTarget = curGazeTarget;
+        bool holdCurGaze = false;
+        if (newParticipantAdded)
         {
-            if (StateId == (int)ConversationState.WaitForStart)
-            {
-                next_target = (prefTarget == null) ?
-                    targets[UnityEngine.Random.Range(0, targets.Length)] :
-                        prefTarget;
-                gazeCtrl.torso.align = (prefTarget == null) ?
-                    0 : prefTorsoAlign;
-                
+            // Gaze at the new participant
 
-                Debug.Log(string.Format("Gazing at pref. target {0} with alignment {1}",
-                    next_target, gazeCtrl.torso.align));
-            }
-            else if (StateId == (int)ConversationState.WaitForSpeech)
+            if (newTarget.targetType == ConversationTargetType.Addressee && reorientBody)
             {
-                next_target = listenTarget;
-                gazeCtrl.torso.align = defaultTorsoAlign;
-                
+                // New participant is an addressee, set body alignment so they are included in the conversational formation
+                if (addresseeList.Count() >= 2)
+                {
+                    // TODO: implement sophisticated reconfiguration of the conversational formation
+                    // TODO: make it robust to formations where targets lie along the long arc
+                    Vector3 srcDir = GeometryUtil.ProjectVectorOntoPlane(gazeCtrl.torso.Direction, Vector3.up);
+                    Vector3 trgDir = GeometryUtil.ProjectVectorOntoPlane(
+                        gazeCtrl.torso.GetTargetDirection(newTarget.target.transform.position), Vector3.up);
+                    Vector3 leftDir = GeometryUtil.ProjectVectorOntoPlane(
+                        gazeCtrl.torso.GetTargetDirection(targets[0].target.transform.position), Vector3.up);
+                    Vector3 rightDir = GeometryUtil.ProjectVectorOntoPlane(
+                        gazeCtrl.torso.GetTargetDirection(targets[targets.Length - 1].target.transform.position), Vector3.up);
+                    Vector3 trgDirAlign = Vector3.Slerp(leftDir, rightDir, 0.5f);
+                    gazeCtrl.torso.align = Vector3.Angle(srcDir, trgDir) > 0f ?
+                        Mathf.Clamp01(Vector3.Angle(srcDir, trgDirAlign) / Vector3.Angle(srcDir, trgDir)) : 0f;
+                    gazeCtrl.bodyAlign = 1f;
 
-                Debug.Log(string.Format("Gazing at listen target {0} with alignment {1}",
-                    next_target, gazeCtrl.torso.align));
-            }
-            else if (StateId == (int)ConversationState.Listen)
-            {
-                next_target = addressTarget;
-                gazeCtrl.torso.align = defaultTorsoAlign;
-                
-                Debug.Log(string.Format("Gazing at address target {0} with alignment {1}",
-                    next_target, gazeCtrl.torso.align));
-            }
-            else if (StateId == (int)ConversationState.Address)
-            {
-                next_target = (prefTarget == null) ?
-                    targets[UnityEngine.Random.Range(0, targets.Length)] :
-                        prefTarget;
-                gazeCtrl.torso.align = (prefTarget == null) ?
-                    0 : prefTorsoAlign;
+                    // Hold gaze a bit longer due to body movement
+                    gazeHoldTime = 0.75f;
+                }
+                else
+                {
+                    // First addressee, face them fully
+                    gazeCtrl.torso.align = 1f;
+                    gazeCtrl.bodyAlign = 1f;
 
-                Debug.Log(string.Format("Gazing at pref./rand. target {0} with alignment {1}",
-                    next_target, gazeCtrl.torso.align));
+                    // Hold gaze a bit longer due to body movement
+                    gazeHoldTime = 0.75f;
+                }
+
+                prevGazeTarget = null; // this gaze shift must get executed, since it shifts the body
             }
+            
+            // Set the next gaze target
+            curTarget = newTarget;
+            curGazeTarget = newTarget.target;
         }
-        else if (targets.Length > 1)
+        else if (turnChange)
         {
-            if (StateId == (int)ConversationState.WaitForSpeech &&
-                newTargetDuringWaitForSpeech ||
-                StateId == (int)ConversationState.Listen &&
-                newTargetDuringListen)
+            // We are at a boundary between turns, gaze at the target of the new conversational action
+            if (StateId == (int)ConversationState.Address)
             {
-                next_target = targets[targets.Length - 1]; // b/c newly added target is always appended to the end
-                if (prefTarget == null)
-                    gazeCtrl.torso.align = 0.5f;
-                else
-                    gazeCtrl.torso.align = 0f;
-
-                Debug.Log(string.Format("Gazing at new target {0} with alignment {1}",
-                    next_target, gazeCtrl.torso.align));
-            }
-            else if (StateId == (int)ConversationState.NewParticipant)
-            {
-                if (newTargetDuringListen)
-                    next_target = listenTarget;
-                else
-                    while (next_target == gazeCtrl.gazeTarget)
-                        next_target = targets[UnityEngine.Random.Range(0, targets.Length)];
-                gazeCtrl.torso.align = 0f;
-
-                Debug.Log(string.Format("Gazing back at target {0} with alignment {1}",
-                    next_target, gazeCtrl.torso.align));
-            }
-            else if (StateId == (int)ConversationState.Intro ||
-                (StateId == (int)ConversationState.WaitForSpeech ||
-                StateId == (int)ConversationState.Address))
-            {
-                // Choose next target
-                List<GameObject> target_list = new List<GameObject>(targets);
-                if (addressAll || addressTarget == null)
+                // Just finished our speaking turn, gaze at an addressee
+                if (curAddressAll && !addresseeList.Any(a => a.target == curGazeTarget))
                 {
-                    // Treat all candidate targets equally
-                    next_target = target_list[UnityEngine.Random.Range(0, target_list.Count)];
+                    // Gaze at any addressee
+                    curTarget = addresseeList[UnityEngine.Random.Range(0, addresseeList.Count - 1)];
+                    curGazeTarget = curTarget.target;
+
                 }
-                else
+                else if (!curAddressAll)
                 {
-                    // Treat one target as addressee and others as bystanders
-                    target_list.Remove(addressTarget);
-                    if (UnityEngine.Random.Range(1, 21) <= 5)
-                        next_target = target_list[UnityEngine.Random.Range(0, target_list.Count)];
-
-                    else
-                        next_target = addressTarget;
+                    // Gaze back at the addressee
+                    curTarget = targets[curTurnTargetIndex];
+                    curGazeTarget = curTarget.target;
                 }
-
-                gazeCtrl.torso.align = 0;
-
-                Debug.Log(string.Format("Gazing at target {0} with alignment {1}",
-                    next_target, gazeCtrl.torso.align));
             }
-            else
+            else if (listen)
             {
-                return;
+                // Participant just started speaking, gaze at them
+                curTarget = targets[curTurnTargetIndex];
+                curGazeTarget = curTarget.target;
+            }
+            else if (address)
+            {
+                // Just starting to speak, gaze at the addressee
+                curTarget = targets[curTurnTargetIndex];
+                curGazeTarget = curTarget.target;
             }
         }
         else
         {
-            return;
+            // Switch to next target within the same turn
+            if (StateId == (int)ConversationState.Address && !addressAll)
+            {
+                // Addressing the same participant, keep gazing at them
+                holdCurGaze = true;
+            }
+            else
+            {
+                // Pick a gaze target using the probability distribution for the current conversational party
+                do
+                {
+                    float p = UnityEngine.Random.Range(0f, 1f);
+                    if (addresseeList.Count >= 2) // 2A
+                    {
+                        if (p >= 0f && p < pE2A)
+                        {
+                            if (curTarget == null)
+                                curTarget = targets[UnityEngine.Random.Range(0, targets.Length - 1)];
+                            curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
+                        }
+                        else
+                        {
+                            curTarget = targets[UnityEngine.Random.Range(0, targets.Length - 1)];
+                            float pF = pAF2A / (pAF2A + pAB2A);
+                            curGazeTarget = UnityEngine.Random.Range(0f, 1f) < pF ? curTarget.target : curTarget.bodyTarget;
+                        }
+                    }
+                    else if (addresseeList.Count == 1 && bystanderList.Count >= 1) // 1A+B
+                    {
+                        if (p >= 0f && p < pAF1AB)
+                        {
+                            curTarget = addresseeList[0];
+                            curGazeTarget = curTarget.target;
+                        }
+                        else if (p >= pAF1AB && p < pAF1AB + pAB1AB)
+                        {
+                            curTarget = addresseeList[0];
+                            curGazeTarget = curTarget.bodyTarget;
+                        }
+                        else if (p >= pAF1AB + pAB1AB && p < pAF1AB + pAB1AB + pBF1AB)
+                        {
+                            curTarget = bystanderList[UnityEngine.Random.Range(0, bystanderList.Count - 1)];
+                            curGazeTarget = curTarget.target;
+                        }
+                        else if (p >= pAF1AB + pAB1AB + pBF1AB && p < pAF1AB + pAB1AB + pBF1AB + pBB1AB)
+                        {
+                            curTarget = bystanderList[UnityEngine.Random.Range(0, bystanderList.Count - 1)];
+                            curGazeTarget = curTarget.bodyTarget;
+                        }
+                        else
+                        {
+                            if (curTarget == null)
+                                curTarget = addresseeList[0];
+                            curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
+                        }
+                    }
+                    else if (addresseeList.Count == 1) // 1A
+                    {
+                        curTarget = addresseeList[0];
+                        if (p >= 0f && p < pAF1A)
+                            curGazeTarget = curTarget.target;
+                        else if (p >= pAF1A && p < pAF1A + pAB1A)
+                            curGazeTarget = curTarget.bodyTarget;
+                        else
+                            curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
+                    }
+                    else
+                    {
+                        curTarget = null;
+                        curGazeTarget = null;
+                        break;
+                    }
+                } while (prevGazeTarget == curGazeTarget);
+            }
         }
 
-        if (next_target != gazeCtrl.gazeTarget)
+        if (!holdCurGaze && curGazeTarget != null && curGazeTarget != prevGazeTarget)
+            // Initiate gaze shift
+            gazeCtrl.GazeAt(curTarget.GenerateGazeTargetPosition(gazeCtrl.EyeCenter, curGazeTarget));
+        
+        // How long to hold gaze?
+        MathNet.Numerics.Distributions.GammaDistribution curDist = null;
+        if (addresseeList.Count >= 2) // 2A
         {
-            // Initiate gaze shift towards the new target
-            targetDummy.transform.position = next_target.transform.position;
-            gazeCtrl.GazeAt(next_target);
+            if (curTarget.targetType == ConversationTargetType.Addressee)
+            {
+                if (curGazeTarget == curTarget.target)
+                    curDist = dAF2A;
+                else if (curGazeTarget == curTarget.bodyTarget)
+                    curDist = dAB2A;
+                else // environment target
+                    curDist = dE2A;
+            }
+            else // bystander
+            {
+                if (curGazeTarget == curTarget.target)
+                    curDist = dBF1AB;
+                else if (curGazeTarget == curTarget.bodyTarget)
+                    curDist = dBB1AB;
+                else // environment target
+                    curDist = dE1AB;
+            }
         }
-
-        // How long should gaze be held?
-        curGazeHoldTime = 0;
-        gazeHoldTime = 1.5f + (float)gazeHoldDist.NextDouble();
-        // 1s is approx. duration of a gaze shift
+        else if (addresseeList.Count == 1 && bystanderList.Count >= 1) // 1A+B
+        {
+            if (curTarget.targetType == ConversationTargetType.Addressee)
+            {
+                if (curGazeTarget == curTarget.target)
+                    curDist = dAF1AB;
+                else if (curGazeTarget == curTarget.bodyTarget)
+                    curDist = dAB1AB;
+                else // environment target
+                    curDist = dE1AB;
+            }
+            else // bystander
+            {
+                if (curGazeTarget == curTarget.target)
+                    curDist = dBF1AB;
+                else if (curGazeTarget == curTarget.bodyTarget)
+                    curDist = dBB1AB;
+                else // environment target
+                    curDist = dE1AB;
+            }
+        }
+        else // 1A
+        {
+            if (curGazeTarget == curTarget.target)
+                curDist = dAF1A;
+            else if (curGazeTarget == curTarget.bodyTarget)
+                curDist = dAB1A;
+            else // environment target
+                curDist = dE1A;
+        }
+        gazeHoldTime += (float)curDist.NextDouble();
     }
 
     protected virtual void _AddNewTarget()
     {
-        GameObject[] targets_ext = new GameObject[targets.Length + 1];
-        targets.CopyTo(targets_ext, 0);
-        targets_ext[targets_ext.Length - 1] = newTarget;
-        targets = targets_ext;
-
-        newTarget = null;
-        addNewTarget = false;
+        var targetList = new List<ConversationTarget>(targets);
+        newTargetIndex = newTargetIndex < 0 ? 0 : newTargetIndex;
+        if (newTargetIndex < targets.Length)
+            targetList.Insert(newTargetIndex, newTarget);
+        else
+            targetList.Add(newTarget);
+        targets = targetList.ToArray();
     }
 
     public override void _CreateStates()
     {
         // Initialize states
         _InitStateDefs<ConversationState>();
-        _InitStateTransDefs((int)ConversationState.WaitForStart, 1);
-        _InitStateTransDefs((int)ConversationState.Intro, 1);
-        _InitStateTransDefs((int)ConversationState.WaitForSpeech, 2);
+        _InitStateTransDefs((int)ConversationState.WaitForSpeech, 3);
         _InitStateTransDefs((int)ConversationState.Listen, 2);
         _InitStateTransDefs((int)ConversationState.Address, 1);
         _InitStateTransDefs((int)ConversationState.NewParticipant, 2);
-        states[(int)ConversationState.WaitForStart].updateHandler = "Update_WaitForStart";
-        states[(int)ConversationState.WaitForStart].nextStates[0].nextState = "Intro";
-        states[(int)ConversationState.WaitForStart].nextStates[0].transitionHandler = "Transition_WaitForStartIntro";
-        states[(int)ConversationState.Intro].updateHandler = "Update_Intro";
-        states[(int)ConversationState.Intro].nextStates[0].nextState = "WaitForSpeech";
-        states[(int)ConversationState.Intro].nextStates[0].transitionHandler = "Transition_IntroWaitForSpeech";
         states[(int)ConversationState.WaitForSpeech].updateHandler = "Update_WaitForSpeech";
         states[(int)ConversationState.WaitForSpeech].nextStates[0].nextState = "Listen";
         states[(int)ConversationState.WaitForSpeech].nextStates[0].transitionHandler = "Transition_WaitForSpeechListen";
-        states[(int)ConversationState.WaitForSpeech].nextStates[1].nextState = "NewParticipant";
-        states[(int)ConversationState.WaitForSpeech].nextStates[1].transitionHandler = "Transition_WaitForSpeechNewParticipant";
+        states[(int)ConversationState.WaitForSpeech].nextStates[1].nextState = "Address";
+        states[(int)ConversationState.WaitForSpeech].nextStates[1].transitionHandler = "Transition_WaitForSpeechAddress";
+        states[(int)ConversationState.WaitForSpeech].nextStates[2].nextState = "NewParticipant";
+        states[(int)ConversationState.WaitForSpeech].nextStates[2].transitionHandler = "Transition_WaitForSpeechNewParticipant";
         states[(int)ConversationState.Listen].updateHandler = "Update_Listen";
         states[(int)ConversationState.Listen].nextStates[0].nextState = "Address";
         states[(int)ConversationState.Listen].nextStates[0].transitionHandler = "Transition_ListenAddress";

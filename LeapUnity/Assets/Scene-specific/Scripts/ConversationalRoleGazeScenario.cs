@@ -2,61 +2,120 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 
 public class ConversationalRoleGazeScenario : Scenario
 {
-    public enum FactorGazeType
+    public enum FactorGazePattern
     {
         LowGaze,
         HighGaze,
-        BodyGaze
-    };
+    }
 
-    public enum FactorSettingType
+    public enum FactorBodyOrientation
+    {
+        Exclusive,
+        Inclusive
+    }
+
+    public enum FactorSetting
     {
         Screen2D,
         VR
-    };
+    }
+
+    public struct Condition
+    {
+        public FactorGazePattern gazePattern;
+        public FactorBodyOrientation bodyOrientation;
+        public FactorSetting setting;
+
+        public Condition(FactorGazePattern gazePattern, FactorBodyOrientation bodyOrientation, FactorSetting setting)
+        {
+            this.gazePattern = gazePattern;
+            this.bodyOrientation = bodyOrientation;
+            this.setting = setting;
+        }
+
+        public static bool operator ==(Condition c1, Condition c2)
+        {
+            return c1.gazePattern == c2.gazePattern &&
+                c1.bodyOrientation == c2.bodyOrientation &&
+                c1.setting == c2.setting;
+        }
+
+        public static bool operator !=(Condition c1, Condition c2)
+        {
+            return !(c1 == c2);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}, {2}", gazePattern.ToString(), bodyOrientation.ToString(), setting.ToString());
+        }
+    }
 
     public enum ConditionAssignmentType
     {
         Fixed,
         Randomized,
         Stratified
-    };
+    }
 
     public enum Phase
     {
-        PartIdEntry,
+        ParticipantIdEntry,
         Start,
-        ShowNextPainting,
-        PromptQuestion,
-        WaitForQuestion,
-        AnswerQuestion,
-        ToNextPerson,
-        ToNextPainting,
-        PromptNextPerson,
-        CannotUnderstand,
+        AskQuestion,
+        WaitForAnswer,
         Farewell
-    };
+    }
 
     public enum PartnerClass
     {
         Participant,
         Confederate
-    };
+    }
+
+    public enum PartnerSet
+    {
+        All,
+        LastSpeaker,
+        NotLastSpeaker
+    }
 
     [Serializable]
-    public class ConfedQuestionMapping
+    public class QuestionDef
     {
+        public string[] statementClips = new string[0];
+        public PartnerSet statementAddressee = PartnerSet.All;
         public string[] questionClips = new string[0];
+        public PartnerSet questionAddressee = PartnerSet.All;
+        public string[] commentClips = new string[0];
+        public PartnerSet commentAddressee = PartnerSet.LastSpeaker;
     }
+
+    [Serializable]
+    public class ConfedAnswerDef
+    {
+        public string[] answerClips = new string[0];
+    }
+
+    /// <summary>
+    /// Scenario ID.
+    /// </summary>
+    public int scenarioId = 0;
 
     /// <summary>
     /// Experimental condition.
     /// </summary>
-    public FactorGazeType gazeTypeCondition = FactorGazeType.LowGaze;
+    public Condition condition;
+
+    /// <summary>
+    /// Experimental conditions that a participant can be assigned to.
+    /// </summary>
+    public Condition[] activeConditions;
 
     /// <summary>
     /// How the participant will be assigned to a condition.
@@ -64,14 +123,9 @@ public class ConversationalRoleGazeScenario : Scenario
     public ConditionAssignmentType conditionAssign = ConditionAssignmentType.Stratified;
 
     /// <summary>
-    /// Duration of the experiment (in seconds).
-    /// </summary>
-    public float expDuration = 270f;
-
-    /// <summary>
     /// The starting/current experiment phase.
     /// </summary>
-    public Phase expPhase = Phase.PartIdEntry;
+    public Phase phase = Phase.ParticipantIdEntry;
 
     /// <summary>
     /// The name of the agent.
@@ -79,713 +133,487 @@ public class ConversationalRoleGazeScenario : Scenario
     public string agentName = "Jasmin";
 
     /// <summary>
-    /// Names of confederate embodiments.
+    /// Name of the confederate agent.
     /// </summary>
-    public string[] confedNames = new string[0];
+    public string confedName = "Jason";
 
     /// <summary>
-    /// Available locations for participant and confederates.
+    /// How long the confederate waits before taking the floor
+    /// when it was intending to speak.
     /// </summary>
-    public GameObject[] partLocations = new GameObject[0];
+    public float meanPauseTime = 0.4f;
 
     /// <summary>
-    /// Animations for moving the camera up to each location.
+    /// How long the confederate or agent wait before taking the floor
+    /// when confederate was not intending to speak.
     /// </summary>
-    public string[] partWalkUpAnims = new string[0];
+    public float maxPauseTime = 3f;
 
     /// <summary>
-    /// How long to wait before agent moves to next painting or
-    /// the experiment is terminated.
+    /// How long the agent or confederate will wait before taking the floor
+    /// after the participant has spoken.
     /// </summary>
-    public float maxSilenceTime = 4f;
+    public float pauseTimeAfterAnswer = 1f;
 
     /// <summary>
-    /// Keywords for questions the participant can ask.
+    /// Questions that the agent will ask.
     /// </summary>
-    public string[] questionKeywords = new string[0];
+    public QuestionDef[] questions = new QuestionDef[0];
 
     /// <summary>
-    /// Prerecorded confederate questions - a set of questions for
+    /// Prerecorded confederate answers - a set of questions for
     /// every confederate.
     /// </summary>
-    public ConfedQuestionMapping[] confedQuestionsMap = new ConfedQuestionMapping[0];
+    public ConfedAnswerDef[] confedAnswers = new ConfedAnswerDef[0];
 
     /// <summary>
-    /// Visual indicator for when speech recognition system is ready.
+    /// Visual indicator for when the speech recognition system is ready.
     /// </summary>
     public Texture2D canSpeakIcon = null;
 
-    protected ConversationController convCtrl = null;
-    protected SimpleListenController listenCtrl = null;
-    protected GazeController gazeCtrl = null;
-    protected Queue<Texture2D> imageQueue = new Queue<Texture2D>();
-    protected Queue<Texture2D> imagesSeen = new Queue<Texture2D>();
-    protected StreamWriter expLog = null;
-    protected ushort partId;
-    protected int partNumInterrupts;
-    protected int partNumQuestions;
-    protected float partInteractTime;
-    protected Dictionary<PartnerClass, string> partLocationsAssigned =
-        new Dictionary<PartnerClass, string>();
-    protected bool partAtLocation = false;
-    protected bool partApproaching = false;
-    protected float partApproachTime = 0;
-    protected PartnerClass curPart;
-    protected PartnerClass prevPart;
-    protected Texture2D curImage = null;
-    protected float expStartTime = 0;
-    protected float lastUtteranceTime = 0;
-    protected bool partSpeaking = false;
-    protected string questionAsked = "NextPainting";
-    protected int numQuestionsPainting = 0;
-    protected int numQuestionsPart = 0;
-    protected int numCannotUnderstand = 0;
-    protected HashSet<string> questionsAskedPainting = new HashSet<string>();
-    protected bool confedWillSpeak = false;
-    protected float confedSpeakTime = 0;
-    // Participant ID entry
-    protected string partIdStr = "";
-
-    /// <summary>
-    /// Hide the scene by deactivating lights and unlit objects.
-    /// </summary>
-    protected virtual void HideScene()
+    protected struct _AnswerEntry
     {
-        SetObjectActive("SpotLight", false);
-        SetObjectActive("PointLight1", false);
-        SetObjectActive("PointLight2", false);
-        SetObjectActive("Room", false);
-        // Hide characters
-        SkinnedMeshRenderer[] smr_list = agents[agentName].GetComponentsInChildren<SkinnedMeshRenderer>();
-        foreach (SkinnedMeshRenderer smr in smr_list)
-            smr.enabled = false;
-    }
+        public int questionIndex;
+        public float questionEndTime;
+        public float timeToSpeech;
+        public float speechLength;
 
-    /// <summary>
-    /// Show the scene by activating lights and unlit objects. 
-    /// </summary>
-    protected virtual void ShowScene()
-    {
-        SetObjectActive("SpotLight", true);
-        SetObjectActive("PointLight1", true);
-        SetObjectActive("PointLight2", true);
-        SetObjectActive("Room", true);
-        // Hide characters
-        SkinnedMeshRenderer[] smr_list = agents[agentName].GetComponentsInChildren<SkinnedMeshRenderer>();
-        foreach (SkinnedMeshRenderer smr in smr_list)
-            smr.enabled = true;
-    }
-
-    /// <summary>
-    /// Have an agent gaze at something.
-    /// </summary>
-    /// <param name='agentName'>
-    /// Agent name.
-    /// </param>
-    /// <param name="part">
-    /// Which participant or confederate.
-    /// </param>
-    /// <param name="headAlign">
-    /// Head alignment.
-    /// </param>
-    /// <param name="torsoAlign">
-    /// Torso alignment.
-    /// </param>
-    /// <returns>Action ID</returns>
-    public virtual int GazeAt(string agentName, PartnerClass part,
-        float headAlign, float torsoAlign)
-    {
-        GazeController gctrl = agents[agentName].GetComponent<GazeController>();
-        gctrl.useTorso = true;
-
-        return GazeAt(agentName, partLocationsAssigned[part], headAlign, torsoAlign);
-    }
-
-    /// <summary>
-    /// Scenario execution will pause until a participant speaks.
-    /// </summary>
-    /// <returns>
-    protected virtual IEnumerator WaitUntilParticipantSpeaking()
-    {
-        // Will the confederate speak on this turn?
-        confedWillSpeak = UnityEngine.Random.Range(0f, 1f) > (numQuestionsPainting % 6 + 1f) / 8f;
-        confedSpeakTime = Time.timeSinceLevelLoad + 0.2f + UnityEngine.Random.Range(0f, 1f) * (maxSilenceTime - 0.2f);
-
-        while (Time.timeSinceLevelLoad - lastUtteranceTime < maxSilenceTime)
+        public _AnswerEntry(int questionIndex, float questionEndTime, float timeToSpeech, float speechLength)
         {
-            if (listenCtrl.SpeechDetected)
-            {
-                Debug.Log("(1) Participant");
+            this.questionIndex = questionIndex;
+            this.questionEndTime = questionEndTime;
+            this.timeToSpeech = timeToSpeech;
+            this.speechLength = speechLength;
+        }
+    }
 
-                prevPart = curPart;
-                curPart = PartnerClass.Participant;
-                partSpeaking = true;
-                if (prevPart != curPart)
-                {
-                    ++partNumInterrupts;
-                    numQuestionsPart = 0;
-                }
+    protected ConversationController conversationController = null;
+    protected GazeController gazeController = null;
+    protected StreamWriter participantLog = null;
+    protected ushort participantId = 0;
+    protected string participantIdStr = "";
+    protected List<_AnswerEntry> participantAnswers;
+    protected float scenarioStartTime;
+    protected int curQuestionIndex = 0;
+    protected PartnerClass lastSpeaker = PartnerClass.Participant;
+    protected float lastQuestionEndTime = 0f;
 
-                yield break;
-            }
-            else if (confedWillSpeak && Time.timeSinceLevelLoad >= confedSpeakTime)
-            {
-                Debug.Log("(2) Confederate");
+    /// <summary>
+    /// Hide the scene by deactivating lights and characters.
+    /// </summary>
+    protected virtual void _HideScene()
+    {
+        // Hide lights
+        var lightRoot = GameObject.Find("Lights");
+        var lights = lightRoot.GetComponentsInChildren<Light>();
+        foreach (var light in lights)
+            light.enabled = false;
 
-                prevPart = curPart;
-                curPart = PartnerClass.Confederate;
-                partSpeaking = true;
+        // Hide characters
+        var meshRenderers = agents[agentName].GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach (var meshRenderer in meshRenderers)
+            meshRenderer.enabled = false;
+    }
 
-                yield break;
-            }
+    /// <summary>
+    /// Show the scene by activating lights and characters. 
+    /// </summary>
+    protected virtual void _ShowScene()
+    {
+        // Show lights
+        var lightRoot = GameObject.Find("Lights");
+        var lights = lightRoot.GetComponentsInChildren<Light>();
+        foreach (var light in lights)
+            light.enabled = true;
+        
+        // Show characters
+        var meshRenderers = agents[agentName].GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach (var meshRenderer in meshRenderers)
+            meshRenderer.enabled = true;
+    }
 
+    // Get confederate or participant name
+    protected virtual string _GetPartnerName(PartnerClass partner)
+    {
+        return partner == PartnerClass.Confederate ? confedName : "Participant";
+    }
+
+    // Participant if last speaker was confederate, confederate otherwise
+    protected virtual PartnerClass _GetNotLastSpeaker()
+    {
+        return lastSpeaker == PartnerClass.Confederate ? PartnerClass.Participant : PartnerClass.Confederate;
+    }
+
+    // Get participant walk up animation script
+    protected virtual ParticipantWalkUp _GetParticipantWalkUp()
+    {
+        return cameras["Camera"].transform.parent.GetComponent<ParticipantWalkUp>();
+    }
+
+    // Scenario execution will pause until the participant has started approaching the interaction area
+    protected virtual IEnumerator _WaitForParticipantWalkUp()
+    {
+        while (!_GetParticipantWalkUp().Arrived)
+            yield return 0;
+
+        yield break;
+    }
+
+    // Get the current question definition
+    protected virtual QuestionDef _GetCurrentQuestion()
+    {
+        return questions[curQuestionIndex];
+    }
+
+    // true if the participant is eligible to answer the current question
+    protected virtual bool _CanParticipantAnswerQuestion()
+    {
+        return _GetCurrentQuestion().questionAddressee == PartnerSet.All ||
+            _GetCurrentQuestion().questionAddressee == PartnerSet.LastSpeaker && lastSpeaker == PartnerClass.Participant ||
+            _GetCurrentQuestion().questionAddressee == PartnerSet.NotLastSpeaker && lastSpeaker != PartnerClass.Participant;
+    }
+
+    // Scenario execution will pause until the participant has finished speaking
+    // or enough time has elapsed
+    protected virtual IEnumerator _WaitUntilPartnerHasSpoken(float waitTime)
+    {
+        while (Time.timeSinceLevelLoad - lastQuestionEndTime < waitTime &&
+            !conversationController.ListenResults.Any(r => Time.timeSinceLevelLoad - r.DetectTime > pauseTimeAfterAnswer))
+        {
             yield return 0;
         }
 
-        partSpeaking = false;
         yield break;
-    }
-
-    /// <summary>
-    /// Scenario execution will pause until a participant has asked a question.
-    /// </summary>
-    protected virtual IEnumerator WaitUntilQuestionAsked()
-    {
-        while (Time.timeSinceLevelLoad - lastUtteranceTime < maxSilenceTime)
-        {
-            questionAsked = "Unintelligible";
-
-            if (curPart != PartnerClass.Participant)
-            {
-                if (numQuestionsPainting >= 6)
-                    questionAsked = "NextPainting";
-                else
-                {
-                    do
-                        questionAsked = questionKeywords[UnityEngine.Random.Range(0, 6)];
-                    while (questionsAskedPainting.Contains(questionAsked));
-                }
-            }
-            else if (listenCtrl.SpeechRecognized)
-            {
-                // Participant asked a question - which question is it?
-                string phrase = listenCtrl.RecognizedPhrase;
-                int phrase_i = 0;
-                for (; phrase_i < listenCtrl.phrases.Length;
-                    ++phrase_i)
-                    if (listenCtrl.phrases[phrase_i] == phrase)
-                        break;
-
-                questionAsked = phrase_i < questionKeywords.Length ?
-                    questionKeywords[phrase_i] : "NextPainting";
-            }
-            else if (listenCtrl.SpeechRejected)
-            {
-                // Participant said something unintelligible
-                questionAsked = "Unintelligible";
-            }
-
-            if (questionAsked != "Unintelligible")
-            {
-                ++numQuestionsPart;
-                yield break;
-            }
-
-            yield return 0;
-        }
-
-        questionAsked = "Unintelligible";
-        yield break;
-    }
-
-    /// <summary>
-    /// Scenario execution will pause until the participant has started
-    /// approaching the interaction area.
-    /// </summary>
-    protected virtual IEnumerator WaitForPartApproaching()
-    {
-        while (!partApproaching)
-            yield return 0;
-
-        yield break;
-    }
-
-    /// <summary>
-    /// Finds the index of the question.
-    /// </summary>
-    /// <returns>
-    /// The question index.
-    /// </returns>
-    /// <param name='qkw'>
-    /// Question keyword.
-    /// </param>
-    protected virtual int FindQuestionIndex(string qkw)
-    {
-        for (int qi = 0; qi < questionKeywords.Length; ++qi)
-            if (qkw == questionKeywords[qi])
-                return qi;
-
-        return 0;
     }
 
     /// <see cref="Scenario._Init()"/>
     protected override void _Init()
     {
-        // TODO: remove this
-        return;
-        //
-        // Get task settings from command line
+        // Get task settings from the command line
         string[] args = System.Environment.GetCommandLineArgs();
-        if (args.Length > 1)
-            gazeTypeCondition = (FactorGazeType)Enum.Parse(typeof(FactorGazeType), args[2]);
-
-        string logfilename = "ConversationalRoleGaze_Log.csv";
-        if (!File.Exists(logfilename))
+        if (args.Length == 3)
         {
-            expLog = new StreamWriter(logfilename, false);
-            expLog.WriteLine("partID,location,condition,images,numQuestions,interactTime,avgProximity,timeTaken");
-            expLog.Flush();
+            FactorGazePattern gazePattern = (FactorGazePattern)Enum.Parse(typeof(FactorGazePattern), args[0]);
+            FactorBodyOrientation bodyOrientation = (FactorBodyOrientation)Enum.Parse(typeof(FactorBodyOrientation), args[1]);
+            FactorSetting setting = (FactorSetting)Enum.Parse(typeof(FactorSetting), args[2]);
+            condition = new Condition(gazePattern, bodyOrientation, setting);
+        }
+
+        string participantLogPath = "ConversationalRoleGaze_Log.csv";
+        if (!File.Exists(participantLogPath))
+        {
+            participantLog = new StreamWriter(participantLogPath, false);
+            participantLog.WriteLine("participantID,scenarioID,gazePattern,bodyOrientation,setting,numSpeakTurns,meanTimeToSpeech,meanSpeakTurnLength");
+            participantLog.Flush();
         }
         else
         {
-            // Iterate through current log entries
-            StreamReader old_log = new StreamReader(logfilename);
+            // Find last condition from current log entries
+            StreamReader curParticipantLog = new StreamReader(participantLogPath);
             string entry = "";
-            int num_part = 0;
-            FactorGazeType last_cond = FactorGazeType.LowGaze;
+            Condition lastCondition = activeConditions[activeConditions.Length - 1];
             string[] values;
-            old_log.ReadLine();
-            while (!old_log.EndOfStream)
+            curParticipantLog.ReadLine();
+            while (!curParticipantLog.EndOfStream)
             {
-                entry = old_log.ReadLine();
-                ++num_part;
-
+                entry = curParticipantLog.ReadLine();
                 values = entry.Split(",".ToCharArray());
-                last_cond = (FactorGazeType)Enum.Parse(
-                    typeof(FactorGazeType), values[2]
-                    );
+                FactorGazePattern lastGazePattern = (FactorGazePattern)Enum.Parse(typeof(FactorGazePattern), values[1]);
+                FactorBodyOrientation lastBodyOrientation = (FactorBodyOrientation)Enum.Parse(typeof(FactorBodyOrientation), values[2]);
+                FactorSetting lastSetting = (FactorSetting)Enum.Parse(typeof(FactorSetting), values[3]);
+                lastCondition = new Condition(lastGazePattern, lastBodyOrientation, lastSetting);
             }
-            old_log.Close();
+            curParticipantLog.Close();
 
             // Assign participant to a condition
             if (conditionAssign == ConditionAssignmentType.Randomized)
             {
-                gazeTypeCondition = UnityEngine.Random.Range(0, 2) > 0 ?
-                    FactorGazeType.HighGaze : FactorGazeType.BodyGaze;
+                condition = activeConditions[UnityEngine.Random.Range(0, activeConditions.Length - 1)];
             }
             else if (conditionAssign == ConditionAssignmentType.Stratified)
             {
-                int cond_i = ((int)last_cond + 1) %
-                    Enum.GetValues(typeof(FactorGazeType)).Length;
-                gazeTypeCondition = (FactorGazeType)cond_i;
+                for (int conditionIndex = 0; conditionIndex < activeConditions.Length; ++conditionIndex)
+                {
+                    if (activeConditions[conditionIndex] == lastCondition)
+                    {
+                        condition = activeConditions[(conditionIndex + 1) % activeConditions.Length];
+                        break;
+                    }
+                }
             }
 
-            // Generate new participant ID
-            /*values = entry.Split(",".ToCharArray());
-            if( values != null && values[0] != "" )
-                partId = (ushort)(ushort.Parse(values[0])+1);
-            else
-                partId = 1;*/
-
-            // Open the log for writing
-            expLog = new StreamWriter(logfilename, true);
+            // Open the participant log for writing
+            participantLog = new StreamWriter(participantLogPath, true);
         }
 
-        // Initialize measurements
-        partNumInterrupts = 0;
-        partNumQuestions = 0;
-        partInteractTime = 0;
-        expStartTime = Time.timeSinceLevelLoad;
+        // Initialize state
+        phase = Phase.ParticipantIdEntry;
+        participantId = 0;
+        participantAnswers.Clear();
+        scenarioStartTime = Time.timeSinceLevelLoad;
+        curQuestionIndex = 0;
+        lastSpeaker = PartnerClass.Confederate;
+        lastQuestionEndTime = 0f;
 
-        // Decide which characters to show
-        SetObjectActive(confedNames[((int)PartnerClass.Confederate) - 1], false);
+        // Initialize the agent's conversation controller
+        conversationController = agents[agentName].GetComponent<ConversationController>();
+        conversationController.targets = new ConversationTarget[1];
+        conversationController.targets[0] = new ConversationTarget(ConversationTargetType.Addressee,
+            gazeTargets[confedName + "Face"], gazeTargets[confedName + "Body"],
+            gazeTargets[confedName + "EnvLeft"], gazeTargets[confedName + "EnvRight"],
+            gazeTargets[confedName + "EnvDown"], gazeTargets[confedName + "EnvUp"]);
 
-        // Assign locations
-        List<GameObject> avlocs = new List<GameObject>(partLocations);
-        avlocs.RemoveAt(avlocs.Count - 1);
-        foreach (int part_i in Enum.GetValues(typeof(PartnerClass)))
-        {
-            if (avlocs.Count <= 0)
-                break;
-
-            int loc_i = UnityEngine.Random.Range(0, avlocs.Count);
-            GameObject loc = avlocs[loc_i];
-            avlocs.RemoveAt(loc_i);
-            partLocationsAssigned.Add((PartnerClass)part_i, loc.name);
-        }
-        partAtLocation = false;
-
-        // Position camera
-        GameObject cam = GameObject.FindGameObjectWithTag("MainCamera");
-        cam.transform.position =
-            gazeTargets[partLocationsAssigned[PartnerClass.Participant] + "Start"].transform.position;
-        cam.transform.rotation =
-            gazeTargets[partLocationsAssigned[PartnerClass.Participant] + "Start"].transform.rotation;
-        cam.GetComponent<MouseLook>().initialX = cam.transform.localEulerAngles.y;
-
-        // Position confederates
-        foreach (int conf_i in Enum.GetValues(typeof(PartnerClass)))
-        {
-            if (conf_i == 0)
-                // Not the participant, just embodied confederates
-                continue;
-
-            GameObject conf = agents[confedNames[conf_i - 1]];
-            if (!partLocationsAssigned.ContainsKey((PartnerClass)conf_i))
-                continue;
-            GameObject loc = gazeTargets[partLocationsAssigned[(PartnerClass)conf_i]];
-            Vector3 pos = conf.transform.position;
-            pos.x = loc.transform.position.x;
-            pos.z = loc.transform.position.z;
-            conf.transform.position = pos;
-            Vector3 rot = conf.transform.eulerAngles;
-            rot.y = loc.transform.eulerAngles.y;
-            conf.transform.eulerAngles = rot;
-        }
-
-        // Initialize agent's conversation controller
-        convCtrl = agents[agentName].GetComponent<ConversationController>();
-        convCtrl.targets = new GameObject[1];
-        convCtrl.targets[0] = gazeTargets[partLocationsAssigned[PartnerClass.Confederate]];
-        convCtrl.prefTarget = gazeTypeCondition == FactorGazeType.LowGaze ?
-            gazeTargets[partLocationsAssigned[PartnerClass.Confederate]] : null;
-        convCtrl.prefTorsoAlign = (gazeTypeCondition == FactorGazeType.BodyGaze) ?
-            0f : 0.6f;
-        convCtrl.ackNewTarget = true;
-        convCtrl.addressAll = true;
-        convCtrl.prefTorsoAlign = 0f;
-        convCtrl.listenTarget = convCtrl.addressTarget = null;
-        convCtrl.defaultTorsoAlign = 0f;
-
-        // Initialize agent's gaze controller
-        gazeCtrl = agents[agentName].GetComponent<GazeController>();
-        gazeCtrl.head.align = 0.6f;
-        gazeCtrl.useTorso = true;
-
-        // Initialize agent's listen controller
-        listenCtrl = agents[agentName].GetComponent<SimpleListenController>();
-        listenCtrl.LaunchServer();
-        listenCtrl.ConnectToServer();
+        // Initialize the agent's gaze controller
+        gazeController = agents[agentName].GetComponent<GazeController>();
+        gazeController.head.align = 0.8f;
+        gazeController.useTorso = true;
+        gazeController.pelvisAlign = 1f;
+        gazeController.bodyAlign = 0f;
     }
 
     /// <see cref="Scenario._Run()"/>
     protected override IEnumerator _Run()
     {
-        Debug.Log("Experimental condition: " + gazeTypeCondition);
+        Debug.Log("Experimental condition: " + condition.ToString());
 
-        /*// Hide scene and allow the experimenter
-        // to enter the participant number
-        HideScene();
-        while (expPhase != Phase.Start)
+        // Hide scene and allow the experimenter to enter the participant ID
+        _HideScene();
+        while (phase != Phase.Start)
             yield return 0;
 
-        yield return StartCoroutine(_RunTask());*/
-
-        yield return new WaitForSeconds(2f);
-        GazeAt("Jasmin", "Ahead", 1f, 0f, 0f);
-        yield return new WaitForSeconds(2f);
-        GazeAt("Jasmin", "UpperLeft", 1f, 1f, 1f);
-        yield return new WaitForSeconds(2f);
-        GazeAt("Jasmin", "Ahead", 1f, 1f, 1f);
-        yield return new WaitForSeconds(2f);
-        GazeAt("Jasmin", "UpperLeft", 1f, 1f, 1f);
-        yield return new WaitForSeconds(2f);
+        yield return StartCoroutine(_RunTask());
 
         yield return null;
     }
 
     protected virtual IEnumerator _RunTask()
     {
-        int speech_id = -1;
-        int gaze_id = -1;
-
         // Prepare scenario
         yield return new WaitForSeconds(0.5f);
-        gaze_id = GazeAt(agentName, PartnerClass.Confederate, 1f, 0.7f);
-        curPart = PartnerClass.Confederate;
-        convCtrl.targetDummy.transform.position =
-            gazeTargets[partLocationsAssigned[curPart]].transform.position;
-        convCtrl.addressTarget = gazeTargets[partLocationsAssigned[curPart]];
-        yield return StartCoroutine(WaitUntilFinished(gaze_id));
-        convCtrl.Introduce(null);
+        var gazeTarget = GameObject.Find(confedName + "Face");
+        int gazeId = GazeAt(agentName, gazeTarget.name, 1f, 1f);
+        yield return StartCoroutine(WaitUntilFinished(gazeId));
         yield return new WaitForSeconds(0.5f);
-        ShowScene();
+        _ShowScene();
 
-        // Wait for participant to approach
-        yield return StartCoroutine(WaitForPartApproaching());
+        // Wait for the participant's approach
+        yield return StartCoroutine(_WaitForParticipantWalkUp());
         yield return new WaitForSeconds(1f);
-        expPhase = Phase.ShowNextPainting;
+        phase = Phase.AskQuestion;
 
-        while (expPhase != Phase.Farewell)
+        while (phase != Phase.Farewell)
         {
-            if (expPhase == Phase.ShowNextPainting)
+            var question = _GetCurrentQuestion();
+            bool isParticipantAddressee = question.questionAddressee == PartnerSet.All ||
+                question.questionAddressee == PartnerSet.LastSpeaker && lastSpeaker == PartnerClass.Participant ||
+                question.questionAddressee == PartnerSet.NotLastSpeaker && lastSpeaker != PartnerClass.Participant;
+
+            if (phase == Phase.AskQuestion)
             {
-                if (convCtrl.StateId != (int)ConversationState.Listen)
-                    convCtrl.Listen(partLocationsAssigned[curPart], 0.01f);
-                if (numQuestionsPainting >= questionKeywords.Length)
-                {
-                    // Indicate that a new painting is about to be shown
-                    yield return new WaitForSeconds(1f);
-                    speech_id = Speak(agentName, "ToNextPainting2");
-                    yield return StartCoroutine(WaitUntilFinished(speech_id));
-                }
-                numQuestionsPainting = 0;
-                questionsAskedPainting.Clear();
-
-                // Introduce the next painting
-                yield return new WaitForSeconds(0.5f);
-                convCtrl.Address(/*clips*/null);
+                // Make the statements preceding the question
+                if (question.statementAddressee == PartnerSet.All)
+                    conversationController.Address(question.statementClips);
+                else
+                    conversationController.Address(question.statementAddressee == PartnerSet.LastSpeaker ?
+                        _GetPartnerName(lastSpeaker) : _GetPartnerName(_GetNotLastSpeaker()),
+                        question.statementClips);
                 yield return StartCoroutine(
-                    WaitForControllerState(agentName, "ConversationController", "Address")
-                    );
+                    WaitForControllerState(agentName, "ConversationController", "Address"));
                 yield return StartCoroutine(
-                    WaitForControllerState(agentName, "ConversationController", "WaitForSpeech")
-                    );
+                    WaitForControllerState(agentName, "ConversationController", "WaitForSpeech"));
 
-                expPhase = Phase.WaitForQuestion;
+                // Ask the current question
+                if (question.questionAddressee == PartnerSet.All)
+                    conversationController.Address(question.questionClips);
+                else
+                    conversationController.Address(question.questionAddressee == PartnerSet.LastSpeaker ?
+                        _GetPartnerName(lastSpeaker) + "Face" : _GetPartnerName(_GetNotLastSpeaker()) + "Face",
+                        question.questionClips);
+                yield return StartCoroutine(
+                    WaitForControllerState(agentName, "ConversationController", "Address"));
+                yield return StartCoroutine(
+                    WaitForControllerState(agentName, "ConversationController", "WaitForSpeech"));
+
+                lastQuestionEndTime = Time.timeSinceLevelLoad;
+                phase = Phase.WaitForAnswer;
             }
 
-            if (expPhase == Phase.WaitForQuestion)
+            if (phase == Phase.WaitForAnswer)
             {
-                // Wait for question from participant/confederate
-
-                listenCtrl.Listen();
-
-                lastUtteranceTime = Time.timeSinceLevelLoad;
-                yield return StartCoroutine(WaitUntilParticipantSpeaking());
-
-                if (!partSpeaking)
+                // Wait for an addressee's answer to the question
+                if (question.questionAddressee == PartnerSet.All)
                 {
-                    // Prompt the participants to speak
-                    speech_id = Speak(agentName, "AnyoneHaveQuestions", SpeechType.Question);
-                    yield return StartCoroutine(WaitUntilFinished(speech_id));
-                    lastUtteranceTime = Time.timeSinceLevelLoad;
-                    yield return StartCoroutine(WaitUntilParticipantSpeaking());
-                }
+                    // Will the confederate speak on this turn?
+                    bool confedWillSpeak = UnityEngine.Random.Range(0, 1) != 0;
+                    float confedSpeakTime = confedWillSpeak ?
+                        UnityEngine.Random.Range(meanPauseTime - 0.1f, meanPauseTime + 0.1f) : maxPauseTime;
 
-                if (!partSpeaking)
-                {
-                    // No one is asking anything, move on to next painting
-                    // or say goodbye
-
-                    listenCtrl.StopListening();
-
-                    if (Time.timeSinceLevelLoad - expStartTime > expDuration)
-                        expPhase = Phase.Farewell;
-                    else
-                        expPhase = Phase.ToNextPainting;
+                    // Wait until participant has spoken or it's time for the confederate to speak
+                    yield return StartCoroutine(_WaitUntilPartnerHasSpoken(confedSpeakTime));
+                    bool confedMustSpeak = conversationController.ListenResults.Count <= 0;
+                    if (confedMustSpeak)
+                    {
+                        // Confederate must speak
+                        conversationController.Listen(confedName + "Face");
+                        var confedSpeechController = agents[confedName].GetComponent<SpeechController>();
+                        foreach (string confedAnswerClip in confedAnswers[curQuestionIndex].answerClips)
+                        {
+                            confedSpeechController.Speak(confedAnswerClip);
+                            yield return StartCoroutine(
+                                WaitForControllerState(confedName, "SpeechController", "Speaking"));
+                            yield return StartCoroutine(
+                                WaitForControllerState(confedName, "SpeechController", "NoSpeech"));
+                        }
+                        yield return new WaitForSeconds(pauseTimeAfterAnswer);
+                    }
+                    lastSpeaker = !confedMustSpeak ? PartnerClass.Participant : PartnerClass.Confederate;
                 }
                 else
                 {
-                    // Someone (participant or confederate) is speaking
-
-                    lastUtteranceTime = Time.timeSinceLevelLoad;
-                    convCtrl.addressAll = false;
-                    convCtrl.addressTarget = gazeTargets[partLocationsAssigned[curPart]];
-
-                    if (curPart != PartnerClass.Participant)
+                    // Wait for the (single) addressee to answer the question
+                    PartnerClass addressee = question.questionAddressee == PartnerSet.LastSpeaker ?
+                        lastSpeaker : _GetNotLastSpeaker();
+                    if (addressee == PartnerClass.Confederate)
                     {
-                        yield return StartCoroutine(WaitUntilQuestionAsked());
-                        int qi = FindQuestionIndex(questionAsked);
-                        speech_id = Speak(confedNames[((int)curPart) - 1],
-                            confedQuestionsMap[((int)curPart) - 1].questionClips[qi]);
-                        yield return new WaitForSeconds(0.2f);
-                        convCtrl.Listen(partLocationsAssigned[curPart], 1f);
-                        yield return StartCoroutine(WaitUntilFinished(speech_id));
+                        // Confederate is the addressee and must speak
+                        float confedSpeakTime = UnityEngine.Random.Range(meanPauseTime - 0.1f, meanPauseTime + 0.1f);
+                        yield return new WaitForSeconds(confedSpeakTime);
+                        conversationController.Listen(confedName + "Face");
+                        var confedSpeechController = agents[confedName].GetComponent<SpeechController>();
+                        foreach (string confedAnswerClip in confedAnswers[curQuestionIndex].answerClips)
+                        {
+                            confedSpeechController.Speak(confedAnswerClip);
+                            yield return StartCoroutine(
+                                WaitForControllerState(confedName, "SpeechController", "Speaking"));
+                            yield return StartCoroutine(
+                                WaitForControllerState(confedName, "SpeechController", "NoSpeech"));
+                        }
+                        lastSpeaker = PartnerClass.Confederate;
+                        yield return new WaitForSeconds(pauseTimeAfterAnswer);
                     }
                     else
                     {
-                        convCtrl.Listen(partLocationsAssigned[curPart], 1f);
-                        yield return StartCoroutine(WaitUntilQuestionAsked());
+                        // Wait for the participant to speak
+                        yield return StartCoroutine(_WaitUntilPartnerHasSpoken(maxPauseTime));
+                        lastSpeaker = PartnerClass.Participant;
                     }
-                    partSpeaking = false;
-
-                    if (questionAsked == "Unintelligible")
-                    {
-                        if (numCannotUnderstand < 1)
-                            expPhase = Phase.CannotUnderstand;
-                        else
-                            expPhase = Phase.ToNextPainting;
-                    }
-                    else
-                        expPhase = Phase.AnswerQuestion;
-
-                    listenCtrl.StopListening();
                 }
-            }
 
-            if (expPhase == Phase.AnswerQuestion)
-            {
-                numCannotUnderstand = 0;
-
-                // Respond/react to participant/confederate utterance
-                if (questionAsked == "NextPainting")
+                // If the participant had the opportunity to speak, log information about their answer
+                if (isParticipantAddressee)
                 {
-                    if (imageQueue.Count > 0)
-                        // Participant has asked to see the next painting
-                        expPhase = Phase.ShowNextPainting;
+                    if (conversationController.ListenResults.Count > 0)
+                    {
+                        // Participant did speak
+                        float speechStartTime = conversationController.ListenResults[0].DetectTime;
+                        float speechEndTime = conversationController
+                            .ListenResults[conversationController.ListenResults.Count - 1].RecognizeTime;
+                        participantAnswers.Add(new _AnswerEntry(curQuestionIndex, lastQuestionEndTime,
+                            speechStartTime - lastQuestionEndTime, speechEndTime - speechStartTime));
+                    }
                     else
-                        // There are no more paintings
-                        // TODO: should say something along those lines before quitting
-                        expPhase = Phase.Farewell;
+                    {
+                        // Participant did not speak
+                        participantAnswers.Add(new _AnswerEntry(curQuestionIndex, lastQuestionEndTime, -1f, 0f));
+                    }
                 }
-                else
+
+                if (question.commentClips.Length > 0)
                 {
-                    // Answer the question posed by participant/confederate
-
-                    yield return new WaitForSeconds(0.3f);
-
-                    // What question did they ask?
-                    int qi = FindQuestionIndex(questionAsked);
-                    if (curPart == PartnerClass.Participant)
-                        ++partNumQuestions;
-                    ++numQuestionsPainting;
-                    questionsAskedPainting.Add(questionAsked);
-
-                    // Have the agent answer the question
-                    convCtrl.Address(/*clips*/null);
+                    // Agent will now utter comments on the partner's answer
+                    if (question.commentAddressee == PartnerSet.All)
+                        conversationController.Address(question.commentClips);
+                    else
+                        conversationController.Address(question.commentAddressee == PartnerSet.LastSpeaker ?
+                            _GetPartnerName(lastSpeaker) + "Face" : _GetPartnerName(_GetNotLastSpeaker()) + "Face",
+                            question.commentClips);
                     yield return StartCoroutine(
-                        WaitForControllerState(agentName, "ConversationController", "WaitForSpeech")
-                        );
-                    convCtrl.addressAll = true;
-
-                    if (Time.timeSinceLevelLoad - expStartTime > expDuration)
-                        expPhase = Phase.Farewell;
-                    else if (numQuestionsPainting >= questionKeywords.Length)
-                        expPhase = Phase.ShowNextPainting;
-                    else
-                        expPhase = Phase.WaitForQuestion;
+                        WaitForControllerState(agentName, "ConversationController", "Address"));
+                    yield return StartCoroutine(
+                        WaitForControllerState(agentName, "ConversationController", "WaitForSpeech"));
                 }
-            }
-            else if (expPhase == Phase.ToNextPainting)
-            {
-                // No more questions, so move on to another painting
 
-                numCannotUnderstand = 0;
-
-                convCtrl.Listen(partLocationsAssigned[curPart], 0.01f);
-                yield return StartCoroutine(
-                    WaitForControllerState(agentName, "ConversationController", "Listen")
-                    );
-                string[] clips = { "ToNextPainting1" };
-                convCtrl.Address(clips);
-                convCtrl.addressAll = true;
-                yield return StartCoroutine(
-                    WaitForControllerState(agentName, "ConversationController", "Address")
-                    );
-                yield return StartCoroutine(
-                    WaitForControllerState(agentName, "ConversationController", "WaitForSpeech")
-                    );
-
-                expPhase = Phase.ShowNextPainting;
-            }
-            else if (expPhase == Phase.CannotUnderstand)
-            {
-                yield return new WaitForSeconds(0.3f);
-
-                ++numCannotUnderstand;
-                string[] clips = { "RepeatQuestion" };
-                convCtrl.Address(clips);
-                convCtrl.addressAll = false;
-                yield return StartCoroutine(
-                    WaitForControllerState(agentName, "ConversationController", "WaitForSpeech")
-                    );
-                convCtrl.addressAll = true;
-
-                expPhase = Phase.WaitForQuestion;
+                // Move on to the next question
+                ++curQuestionIndex;
+                if (curQuestionIndex >= questions.Length)
+                    phase = Phase.Farewell;
             }
         }
 
-        // Say goodbye to participants
-        convCtrl.addressAll = true;
+        // We are done!
         yield return new WaitForSeconds(1f);
-        speech_id = Speak(agentName, "Farewell", SpeechType.Question);
-        yield return StartCoroutine(WaitUntilFinished(speech_id));
-        yield return new WaitForSeconds(0.5f);
     }
 
     /// <see cref="Scenario._Finish()"/>
     protected override void _Finish()
     {
-        if (expPhase != Phase.Farewell)
+        if (phase != Phase.Farewell)
             return;
 
-        // Which images did the participants see?
-        string imgstr = "\"";
-        foreach (Texture2D img in imagesSeen)
-            imgstr += (img.name + ",");
-        imgstr += "\"";
+        // Write participant answer data
+        var answerLog = new StreamWriter(string.Format("ConversationalRoleGaze_{0}.csv", participantId));
+        answerLog.WriteLine("participantID,scenarioID,gazePattern,bodyOrientation,setting,questionIndex,questionEndTime,timeToSpeech,speechLength");
+        foreach (var answerEntry in participantAnswers)
+        {
+            answerLog.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}", participantId, scenarioId,
+                condition.gazePattern.ToString(), condition.bodyOrientation.ToString(), condition.setting.ToString(),
+                answerEntry.questionIndex, answerEntry.questionEndTime, answerEntry.timeToSpeech, answerEntry.speechLength));
+        }
+        answerLog.Close();
 
-        // Write log entry
-        expLog.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}",
-            partId, partLocationsAssigned[PartnerClass.Participant],
-            gazeTypeCondition.ToString(), imgstr, partNumQuestions, partInteractTime,
-            0, Time.timeSinceLevelLoad - expStartTime));
-        expLog.Close();
+        // Aggregate measures
+        int numSpeakTurnsWhenAddressee = 0, numSpeakTurnsAll = 0;
+        float meanTimeToSpeech = 0f, meanSpeakTurnLength = 0f;
+        foreach (var answerEntry in participantAnswers)
+        {
+            if (questions[answerEntry.questionIndex].questionAddressee == PartnerSet.All &&
+                answerEntry.timeToSpeech >= 0f)
+                ++numSpeakTurnsWhenAddressee;
 
-        // Take a screenshot
-        if (!Directory.Exists("./Screenshots"))
-            Directory.CreateDirectory("./Screenshots");
-        string filename = string.Format("./Screenshots/scr-{0}-{1}.png", partId, gazeTypeCondition);
-        Application.CaptureScreenshot(filename);
+            if (answerEntry.timeToSpeech >= 0f)
+            {
+                ++numSpeakTurnsAll;
+                meanTimeToSpeech += answerEntry.timeToSpeech;
+                meanSpeakTurnLength += answerEntry.speechLength;
+            }
+        }
+        meanTimeToSpeech /= numSpeakTurnsAll;
+        meanSpeakTurnLength /= numSpeakTurnsAll;
+
+        // Write results into participant log
+        participantLog.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", participantId, scenarioId,
+            condition.gazePattern.ToString(), condition.bodyOrientation.ToString(), condition.setting.ToString(),
+            numSpeakTurnsWhenAddressee, meanTimeToSpeech, meanSpeakTurnLength));
+        participantLog.Close();
     }
 
     protected virtual void Update()
     {
-        // TODO: remove this
-        return;
-        //
+        // Process movement controls
         GameObject cam = GameObject.FindGameObjectWithTag("MainCamera");
         if ((Input.GetKeyDown(KeyCode.UpArrow) ||
             Input.GetKeyDown(KeyCode.Space) ||
             Input.GetKeyDown(KeyCode.Mouse0) ||
-            Input.GetKeyDown(KeyCode.Mouse1)) && !partAtLocation &&
-            expPhase == Phase.Start)
-            partApproaching = true;
-
-        if (partApproaching)
+            Input.GetKeyDown(KeyCode.Mouse1)) &&
+            phase == Phase.Start)
         {
-            partApproachTime += Time.deltaTime;
-
-            int loc_i = 0;
-            for (; loc_i < partLocations.Length; ++loc_i)
-                if (partLocations[loc_i].name ==
-                    partLocationsAssigned[PartnerClass.Participant])
-                    break;
-            string anim = partWalkUpAnims[loc_i];
-            if (partApproachTime >= 0.5f && !cam.GetComponent<Animation>()[anim].enabled)
-            {
-                cam.GetComponent<Animation>()[anim].enabled = true;
-                cam.GetComponent<Animation>()[anim].blendMode = AnimationBlendMode.Blend;
-                cam.GetComponent<Animation>()[anim].time = 0;
-                cam.GetComponent<Animation>()[anim].weight = 1f;
-                cam.GetComponent<Animation>()[anim].speed = 0.7f;
-
-                partApproachTime = 0;
-            }
-
-
-            if (partApproachTime >= 1f)
-            {
-                convCtrl.AddNewParticipant(
-                    gazeTargets[partLocationsAssigned[PartnerClass.Participant]]
-                    );
-                partAtLocation = true;
-                partApproaching = false;
-            }
+            _GetParticipantWalkUp().walkUp = true;
         }
 
-        // Aggregate measurements
-        if (curPart == PartnerClass.Participant &&
-            expPhase == Phase.AnswerQuestion)
-            partInteractTime += Time.deltaTime;
+        // Has the participant joined the interaction?
+        if (_GetParticipantWalkUp().walkUp && _GetParticipantWalkUp().WalkUpTime >= 1f)
+        {
+            conversationController.reorientBody = condition.bodyOrientation == FactorBodyOrientation.Inclusive;
+            conversationController.AddNewParticipant(new ConversationTarget(
+                condition.gazePattern == FactorGazePattern.LowGaze ? ConversationTargetType.Bystander : ConversationTargetType.Addressee,
+                gazeTargets["ParticipantFace"], gazeTargets["ParticipantBody"],
+                gazeTargets["ParticipantEnvRight"], gazeTargets["ParticipantEnvLeft"],
+                gazeTargets["ParticipantEnvDown"], gazeTargets["ParticipantEnvLeft"]), 0);
+        }
     }
 
     protected virtual void OnGUI()
     {
-        // TODO: remove this
-        return;
-        //
         GUI.skin.box.normal.textColor = new Color(1, 1, 1, 1);
         GUI.skin.box.wordWrap = true;
         GUI.skin.box.alignment = TextAnchor.UpperLeft;
@@ -793,36 +621,34 @@ public class ConversationalRoleGazeScenario : Scenario
         GUI.skin.button.fontSize = 20;
         GUI.skin.textField.fontSize = 20;
 
-        if (expPhase == Phase.PartIdEntry)
+        if (phase == Phase.ParticipantIdEntry)
         {
             GUI.Box(new Rect(Screen.width / 2 - 150, Screen.height / 2 - 75, 300, 150),
                 "Enter participant number:");
-            partIdStr = GUI.TextField(new Rect(Screen.width / 2 - 130, Screen.height / 2 - 30, 260, 40),
-                partIdStr);
-            if (GUI.Button(new Rect(Screen.width / 2 - 30, Screen.height / 2 + 20, 60, 40),
-                "OK"))
+            participantIdStr = GUI.TextField(new Rect(Screen.width / 2 - 130, Screen.height / 2 - 30, 260, 40),
+                participantIdStr);
+            if (GUI.Button(new Rect(Screen.width / 2 - 30, Screen.height / 2 + 20, 60, 40), "OK"))
             {
-                expPhase = Phase.Start;
-                partId = ushort.Parse(partIdStr);
+                phase = Phase.Start;
+                participantId = ushort.Parse(participantIdStr);
             }
         }
-        else if (expPhase == Phase.Start && !partApproaching)
+        else if (phase == Phase.Start)
         {
             GUI.Box(new Rect(Screen.width / 2 - 288, 60, 576, 480),
-                "Welcome to the virtual art gallery. Our virtual guide will show you " +
-                "a series of classic paintings from various time periods. If you have questions " +
-                "about the paintings, you can ask the guide and she will do her best to answer them.\n\n" +
-                "The guide uses a speech recognition system to detect and understand your questions. " +
+                "Welcome to the virtual conversation simulator. In this simulator, a virtual agent will " +
+                "ask you and another person questions about your experiences and interests. " +
+                "You are welcome to talk as much or as little as you like!\n\n" +
+                "The virtual agent uses a speech recognition system to detect your responses. " +
                 "When the speech recognition system is ready, the following icon will be shown on " +
                 "the screen:\n\n\n\n\n\n\n" +
-                "When this icon is shown, it means you can ask a question and the system " +
-                "should understand it.\n\n" +
-                "The guide is already engaged in interaction with a group " +
-                "of participants. To approach the guide and join the interaction, press the LEFT MOUSE BUTTON.");
+                "When this icon is shown, it means you can speak and the system should understand you.\n\n" +
+                "The agent and the other person are already are about to engage in conversation. " +
+                "Press the LEFT MOUSE BUTTON to approach and join them.");
             GUI.DrawTexture(new Rect((Screen.width - 100) / 2, 262, 50, 100),
                 canSpeakIcon, ScaleMode.StretchToFill, true, 0);
         }
-        else if (expPhase == Phase.WaitForQuestion)
+        else if (phase == Phase.WaitForAnswer && conversationController.StateId == (int)ConversationState.Listen)
         {
             float hpos = (Screen.width - 50) / 2;
             float vpos = Screen.height - 120;
