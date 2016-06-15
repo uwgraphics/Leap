@@ -199,7 +199,15 @@ public abstract class AnimController : MonoBehaviour
     }
 
     /// <summary>
-    /// Initialize this controller. 
+    /// Initialize this controller on awake.
+    /// </summary>
+    public virtual void Awake()
+    {
+        Debug.Log(string.Format("Awaking {0} on agent {1}", this.Name, gameObject.name));
+    }
+
+    /// <summary>
+    /// Initialize this controller on start.
     /// </summary>
     public virtual void Start()
     {

@@ -179,7 +179,7 @@ public class SimpleListenController : AnimController
 
     protected virtual void Update_NotListening()
     {
-        if (listen)
+        if (listen && speechStream != null)
             GoToState((int)SimpleListenState.Listening);
     }
 

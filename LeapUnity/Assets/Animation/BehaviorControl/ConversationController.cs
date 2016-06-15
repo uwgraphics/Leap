@@ -59,6 +59,7 @@ public class ConversationTarget
     /// </summary>
     public void Init()
     {
+        _distributions = new Dictionary<GameObject, MathNet.Numerics.Distributions.ContinuousDistribution>();
         _distributions[target] = new MathNet.Numerics.Distributions.NormalDistribution(0f, thetaRange / 2f);
         if (bodyTarget != null)
             _distributions[bodyTarget] = new MathNet.Numerics.Distributions.NormalDistribution(0f, thetaRangeBody / 2f);
@@ -134,7 +135,7 @@ public class ConversationTarget
         if (envTargets.Count <= 0)
             return target;
 
-        return envTargets[UnityEngine.Random.Range(0, envTargets.Count - 1)];
+        return envTargets[UnityEngine.Random.Range(0, envTargets.Count)];
     }
 }
 
@@ -155,6 +156,7 @@ public class ConversationController : AnimController
     public bool addNewTarget = false;
     public int newTargetIndex = -1;
     public bool reorientBody = true;
+    public float bodyOrientationBias = 0f;
 
     //  Conversational behavior state:
     protected int curTurnTargetIndex = -1;
@@ -208,6 +210,8 @@ public class ConversationController : AnimController
     {
         nextTargetName = targetName;
         listen = true;
+
+        Debug.Log(string.Format("Listening to target {0} in the conversation controller on {1}", targetName, gameObject.name));
     }
 
     /// <summary>
@@ -221,6 +225,8 @@ public class ConversationController : AnimController
         nextSpeechClips = speechClips;
         address = true;
         addressAll = false;
+
+        Debug.Log(string.Format("Addressing target {0} in the conversation controller on {1}", targetName, gameObject.name));
     }
 
     /// <summary>
@@ -230,24 +236,28 @@ public class ConversationController : AnimController
     public virtual void Address(string[] speechClips)
     {
         var addresseeList = new List<ConversationTarget>(targets.Where(t => t.targetType == ConversationTargetType.Addressee));
-        int addresseeIndex = UnityEngine.Random.Range(0, addresseeList.Count - 1);
+        int addresseeIndex = UnityEngine.Random.Range(0, addresseeList.Count);
         nextTargetName = addresseeList[addresseeIndex].target.name;
         nextSpeechClips = speechClips;
         address = true;
         addressAll = true;
+
+        Debug.Log(string.Format("Addressing all targets in the conversation controller on {0}", gameObject.name));
     }
 
     /// <summary>
-    /// Add a new participant to the conversation and perform
+    /// Add a new target to the conversation and perform
     /// acknowledging/including behaviors if necessary.
     /// </summary>
     /// <param name="target">Target representing the new participant</param>
     /// <param name="targetIndex">Index specifying the location of the new target relative to the others</param>
-    public virtual void AddNewParticipant(ConversationTarget target, int targetIndex)
+    public virtual void AddNewTarget(ConversationTarget target, int targetIndex)
     {
         newTarget = target;
         newTargetIndex = targetIndex;
         addNewTarget = true;
+
+        Debug.Log(string.Format("Adding new target {0} to the conversation controller on {1}", target.target.name, gameObject.name));
     }
 
     /// <summary>
@@ -268,6 +278,7 @@ public class ConversationController : AnimController
     {
         base.Start();
 
+        // Get other behavior controllers
         gazeCtrl = GetComponent<GazeController>();
         speechCtrl = GetComponent<SpeechController>();
         listenCtrl = GetComponent<SimpleListenController>();
@@ -275,7 +286,12 @@ public class ConversationController : AnimController
         faceCtrl = GetComponent<FaceController>();
         exprCtrl = GetComponent<ExpressionController>();
 
+        // Register for speech events
         speechCtrl.StateChange += new StateChangeEvtH(SpeechController_StateChange);
+
+        // Initialize conversational behavior targets
+        foreach (var target in targets)
+            target.Init();
     }
 
     protected virtual void Update_WaitForSpeech()
@@ -287,11 +303,7 @@ public class ConversationController : AnimController
         }
         else if (addNewTarget && newTarget != null)
         {
-            if (newTarget.targetType == ConversationTargetType.Addressee)
-                GoToState((int)ConversationState.NewParticipant);
-            else
-                _AddNewTarget();
-
+            GoToState((int)ConversationState.NewParticipant);
             return;
         }
         else if (address && targets.Any(t => t.target.name == nextTargetName))
@@ -307,11 +319,7 @@ public class ConversationController : AnimController
     {
         if (addNewTarget && newTarget != null)
         {
-            if (newTarget.targetType == ConversationTargetType.Addressee)
-                GoToState((int)ConversationState.NewParticipant);
-            else
-                _AddNewTarget();
-
+            GoToState((int)ConversationState.NewParticipant);
             return;
         }
         else if (address && targets.Any(t => t.target.name == nextTargetName))
@@ -342,11 +350,13 @@ public class ConversationController : AnimController
                 curSpeechPauseTime = 0f;
             }
         }
-
-        if ((curSpeechIndex != 0 || gazeCtrl.StateId == (int)GazeState.NoGaze && !gazeCtrl.doGazeShift) // delay speech until initial gaze shift is finished
-            && !curSpeechPaused && curSpeechIndex < curSpeechClips.Length)
+        
+        if (!curSpeechPaused && speechCtrl.StateId == (int)SpeechState.NoSpeech &&
+            gazeCtrl.StateId == (int)GazeState.NoGaze && !gazeCtrl.doGazeShift)
+        {
             // Speak the next utterance
             speechCtrl.Speak(curSpeechClips[curSpeechIndex]);
+        }
 
         _UpdateGaze();
     }
@@ -454,17 +464,18 @@ public class ConversationController : AnimController
             _GazeAtNextTarget(false);
     }
 
-    protected virtual void _GazeAtNextTarget(bool turnChange, bool newParticipantAdded = false)
+    protected virtual void _GazeAtNextTarget(bool turnChange, bool newTargetAdded = false)
     {
         // Initialize gaze timings
         curGazeHoldTime = 0f;
         gazeHoldTime = 0.25f;
 
         // Set default alignment parameters
-        gazeCtrl.head.align = 0.8f;
+        gazeCtrl.head.align = 1f;
         gazeCtrl.torso.align = 0f;
         gazeCtrl.pelvisAlign = 0.5f;
         gazeCtrl.bodyAlign = 0f;
+        gazeCtrl.useTorso = false;
 
         // Get lists of addressees and bystanders
         var addresseeList = new List<ConversationTarget>(targets.Where(t => t.targetType == ConversationTargetType.Addressee));
@@ -473,7 +484,7 @@ public class ConversationController : AnimController
         // Determine gaze target
         var prevGazeTarget = curGazeTarget;
         bool holdCurGaze = false;
-        if (newParticipantAdded)
+        if (newTargetAdded)
         {
             // Gaze at the new participant
 
@@ -491,7 +502,7 @@ public class ConversationController : AnimController
                         gazeCtrl.torso.GetTargetDirection(targets[0].target.transform.position), Vector3.up);
                     Vector3 rightDir = GeometryUtil.ProjectVectorOntoPlane(
                         gazeCtrl.torso.GetTargetDirection(targets[targets.Length - 1].target.transform.position), Vector3.up);
-                    Vector3 trgDirAlign = Vector3.Slerp(leftDir, rightDir, 0.5f);
+                    Vector3 trgDirAlign = Vector3.Slerp(leftDir, rightDir, Mathf.Clamp01(0.5f + bodyOrientationBias));
                     gazeCtrl.torso.align = Vector3.Angle(srcDir, trgDir) > 0f ?
                         Mathf.Clamp01(Vector3.Angle(srcDir, trgDirAlign) / Vector3.Angle(srcDir, trgDir)) : 0f;
                     gazeCtrl.bodyAlign = 1f;
@@ -509,6 +520,7 @@ public class ConversationController : AnimController
                     gazeHoldTime = 0.75f;
                 }
 
+                gazeCtrl.useTorso = true;
                 prevGazeTarget = null; // this gaze shift must get executed, since it shifts the body
             }
             
@@ -525,7 +537,7 @@ public class ConversationController : AnimController
                 if (curAddressAll && !addresseeList.Any(a => a.target == curGazeTarget))
                 {
                     // Gaze at any addressee
-                    curTarget = addresseeList[UnityEngine.Random.Range(0, addresseeList.Count - 1)];
+                    curTarget = addresseeList[UnityEngine.Random.Range(0, addresseeList.Count)];
                     curGazeTarget = curTarget.target;
 
                 }
@@ -552,7 +564,7 @@ public class ConversationController : AnimController
         else
         {
             // Switch to next target within the same turn
-            if (StateId == (int)ConversationState.Address && !addressAll)
+            if (StateId == (int)ConversationState.Address && !curAddressAll)
             {
                 // Addressing the same participant, keep gazing at them
                 holdCurGaze = true;
@@ -560,76 +572,85 @@ public class ConversationController : AnimController
             else
             {
                 // Pick a gaze target using the probability distribution for the current conversational party
-                do
+                float p = UnityEngine.Random.Range(0f, 1f);
+                if (addresseeList.Count >= 2) // 2A
                 {
-                    float p = UnityEngine.Random.Range(0f, 1f);
-                    if (addresseeList.Count >= 2) // 2A
+                    if (p >= 0f && p < pE2A)
                     {
-                        if (p >= 0f && p < pE2A)
-                        {
-                            if (curTarget == null)
-                                curTarget = targets[UnityEngine.Random.Range(0, targets.Length - 1)];
-                            curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
-                        }
-                        else
-                        {
-                            curTarget = targets[UnityEngine.Random.Range(0, targets.Length - 1)];
-                            float pF = pAF2A / (pAF2A + pAB2A);
-                            curGazeTarget = UnityEngine.Random.Range(0f, 1f) < pF ? curTarget.target : curTarget.bodyTarget;
-                        }
-                    }
-                    else if (addresseeList.Count == 1 && bystanderList.Count >= 1) // 1A+B
-                    {
-                        if (p >= 0f && p < pAF1AB)
-                        {
-                            curTarget = addresseeList[0];
-                            curGazeTarget = curTarget.target;
-                        }
-                        else if (p >= pAF1AB && p < pAF1AB + pAB1AB)
-                        {
-                            curTarget = addresseeList[0];
-                            curGazeTarget = curTarget.bodyTarget;
-                        }
-                        else if (p >= pAF1AB + pAB1AB && p < pAF1AB + pAB1AB + pBF1AB)
-                        {
-                            curTarget = bystanderList[UnityEngine.Random.Range(0, bystanderList.Count - 1)];
-                            curGazeTarget = curTarget.target;
-                        }
-                        else if (p >= pAF1AB + pAB1AB + pBF1AB && p < pAF1AB + pAB1AB + pBF1AB + pBB1AB)
-                        {
-                            curTarget = bystanderList[UnityEngine.Random.Range(0, bystanderList.Count - 1)];
-                            curGazeTarget = curTarget.bodyTarget;
-                        }
-                        else
-                        {
-                            if (curTarget == null)
-                                curTarget = addresseeList[0];
-                            curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
-                        }
-                    }
-                    else if (addresseeList.Count == 1) // 1A
-                    {
-                        curTarget = addresseeList[0];
-                        if (p >= 0f && p < pAF1A)
-                            curGazeTarget = curTarget.target;
-                        else if (p >= pAF1A && p < pAF1A + pAB1A)
-                            curGazeTarget = curTarget.bodyTarget;
-                        else
-                            curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
+                        if (curTarget == null)
+                            curTarget = targets[UnityEngine.Random.Range(0, targets.Length)];
+                        curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
                     }
                     else
                     {
-                        curTarget = null;
-                        curGazeTarget = null;
-                        break;
+                        curTarget = targets[UnityEngine.Random.Range(0, targets.Length)];
+                        float pF = pAF2A / (pAF2A + pAB2A);
+                        curGazeTarget = UnityEngine.Random.Range(0f, 1f) < pF ? curTarget.target : curTarget.bodyTarget;
                     }
-                } while (prevGazeTarget == curGazeTarget);
+                }
+                else if (addresseeList.Count == 1 && bystanderList.Count >= 1) // 1A+B
+                {
+                    if (p >= 0f && p < pAF1AB)
+                    {
+                        curTarget = addresseeList[0];
+                        curGazeTarget = curTarget.target;
+                    }
+                    else if (p >= pAF1AB && p < pAF1AB + pAB1AB)
+                    {
+                        curTarget = addresseeList[0];
+                        curGazeTarget = curTarget.bodyTarget;
+                    }
+                    else if (p >= pAF1AB + pAB1AB && p < pAF1AB + pAB1AB + pBF1AB)
+                    {
+                        curTarget = bystanderList[UnityEngine.Random.Range(0, bystanderList.Count)];
+                        curGazeTarget = curTarget.target;
+                    }
+                    else if (p >= pAF1AB + pAB1AB + pBF1AB && p < pAF1AB + pAB1AB + pBF1AB + pBB1AB)
+                    {
+                        curTarget = bystanderList[UnityEngine.Random.Range(0, bystanderList.Count)];
+                        curGazeTarget = curTarget.bodyTarget;
+                    }
+                    else
+                    {
+                        if (curTarget == null)
+                            curTarget = addresseeList[0];
+                        curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
+                    }
+                }
+                else if (addresseeList.Count == 1) // 1A
+                {
+                    curTarget = addresseeList[0];
+                    if (p >= 0f && p < pAF1A)
+                        curGazeTarget = curTarget.target;
+                    else if (p >= pAF1A && p < pAF1A + pAB1A)
+                        curGazeTarget = curTarget.bodyTarget;
+                    else
+                        curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
+                }
+                else
+                {
+                    curTarget = null;
+                    curGazeTarget = null;
+                }
             }
         }
 
         if (!holdCurGaze && curGazeTarget != null && curGazeTarget != prevGazeTarget)
+        {
             // Initiate gaze shift
-            gazeCtrl.GazeAt(curTarget.GenerateGazeTargetPosition(gazeCtrl.EyeCenter, curGazeTarget));
+            bool isFace = targets.Any(t => t.target == curGazeTarget);
+            gazeCtrl.head.align = isFace ? 1f : 0.6f;
+            //gazeCtrl.GazeAt(curTarget.GenerateGazeTargetPosition(gazeCtrl.EyeCenter, curGazeTarget));
+            gazeCtrl.GazeAt(curGazeTarget);
+
+            Debug.Log(string.Format("Initiating conversational gaze at target {0}; turnChange = {1}, newTargetAdded = {2}",
+                curGazeTarget.name, turnChange, addNewTarget));
+        }
+        else
+        {
+            Debug.Log(string.Format("Holding conversational gaze at target {0}; turnChange = {1}, newTargetAdded = {2}",
+                curGazeTarget != null ? curGazeTarget.name : "null", turnChange, addNewTarget));
+        }
         
         // How long to hold gaze?
         MathNet.Numerics.Distributions.GammaDistribution curDist = null;

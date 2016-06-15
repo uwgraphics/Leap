@@ -149,6 +149,11 @@ public class GazeController : AnimController
     public float bodyAlign = 0f;
 
     /// <summary>
+    /// If true, gaze directions will be adjusted for ongoing root motion.
+    /// </summary>
+    public bool adjustForRootMotion = true;
+
+    /// <summary>
     /// Predictability of the gaze target (0-1). 
     /// </summary>
     public float predictability = 1f;
@@ -758,6 +763,16 @@ public class GazeController : AnimController
     // Update gaze fixation source directions of all body parts to account for root movement
     protected virtual void _UpdateFixSourceDirections()
     {
+        if (!adjustForRootMotion)
+        {
+            torso._FixSourceDirection = torso._FixSourceDirectionOriginal;
+            head._FixSourceDirection = head._FixSourceDirectionOriginal;
+            lEye._FixSourceDirection = lEye._FixSourceDirectionOriginal;
+            rEye._FixSourceDirection = rEye._FixSourceDirectionOriginal;
+
+            return;
+        }
+
         Quaternion fixRootRot1 = Root.rotation;
         Quaternion dq = Quaternion.Inverse(_fixRootRot) * fixRootRot1;
         dq.eulerAngles = new Vector3(0f, dq.eulerAngles.y, 0f);
@@ -785,6 +800,16 @@ public class GazeController : AnimController
     // Update gaze shift source directions of all body parts to account for root movement
     protected virtual void _UpdateSourceDirections()
     {
+        if (!adjustForRootMotion)
+        {
+            torso._SourceDirection = torso._SourceDirectionOriginal;
+            head._SourceDirection = head._SourceDirectionOriginal;
+            lEye._SourceDirection = lEye._SourceDirectionOriginal;
+            rEye._SourceDirection = rEye._SourceDirectionOriginal;
+
+            return;
+        }
+
         Quaternion rootRot1 = Root.rotation;
         Quaternion dq = Quaternion.Inverse(_rootRot) * rootRot1;
         dq.eulerAngles = new Vector3(0f, dq.eulerAngles.y, 0f);

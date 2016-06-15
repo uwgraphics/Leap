@@ -34,6 +34,7 @@ public class ParticipantWalkUp : MonoBehaviour
         _animationComponent.wrapMode = WrapMode.ClampForever;
         _animationComponent["ParticipantWalkUp"].enabled = true;
         _animationComponent["ParticipantWalkUp"].weight = 1f;
+        _animationComponent["ParticipantWalkUp"].speed = 0.5f;
     }
 
     public void Update()

@@ -864,6 +864,12 @@ public class GazeBodyPart
         if (_latency <= 0f)
             return;
 
+        if (!GazeController.adjustForRootMotion)
+        {
+            _srcDir = _fixTrgDirAlign;
+            _srcDir0 = _srcDir;
+        }
+
         Quaternion rootRot1 = _gazeController.Root.rotation;
         Quaternion dq = Quaternion.Inverse(rootRot1) * _gazeController._RootRotation;
         dq.eulerAngles = new Vector3(0f, dq.eulerAngles.y, 0f);
