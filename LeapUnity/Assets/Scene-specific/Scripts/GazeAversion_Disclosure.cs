@@ -197,12 +197,10 @@ public class GazeAversion_Disclosure : Scenario
 	IEnumerator agentSmileAndEyebrow(double smileTime) {
 		int curexpr = ChangeExpression(agentName,"ExpressionSmileOpen",0.5f,0.1f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this[agentName].GetComponent<ExpressionController>().FixExpression();
 		ChangeExpression(agentName,"ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds((float)smileTime / 2.0f);
 		curexpr = ChangeExpression(agentName,"ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this[agentName].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return new WaitForSeconds((float)smileTime / 2.0f);
 		curexpr = ChangeExpression(agentName,"ExpressionSmileOpen",0f,0.5f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );

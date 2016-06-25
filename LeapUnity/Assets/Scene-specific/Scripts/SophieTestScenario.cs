@@ -17,7 +17,6 @@ public class SophieTestScenario : StoryScenario
 		
 		curexpr = ChangeExpression(agentName,"ExpressionSmileClosed",1f,0f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		exprCtrl.FixExpression();
 		
 		//phMosaic.gameObject.SetActiveRecursively(false);
 		//Time.timeScale = 0.2f;

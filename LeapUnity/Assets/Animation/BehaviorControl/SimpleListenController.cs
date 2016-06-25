@@ -74,6 +74,7 @@ public struct ListenResult
 /// </summary>
 public class SimpleListenController : AnimController
 {
+    public bool startProcess = true;
     public string speechHostName = "localhost";
     public int speechPortNum = 1408;
     public string[] phrases = new string[0];
@@ -104,6 +105,9 @@ public class SimpleListenController : AnimController
     /// </summary>
     public virtual void StartServer()
     {
+        if (!startProcess)
+            return;
+
         speechProc = new Process();
         speechProc.StartInfo.FileName = File.Exists("SpeechServer.exe") ? "SpeechServer.exe" :
             "..\\Tools\\SpeechServer\\bin\\Release\\SpeechServer.exe";

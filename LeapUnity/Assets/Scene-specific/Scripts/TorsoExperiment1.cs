@@ -164,7 +164,6 @@ public class TorsoExperiment1 : Scenario
 		ExpressionController exprCtrl = agents["Jasmin"].GetComponent<ExpressionController>();
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileClosed",0.5f,0f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		exprCtrl.FixExpression();
 		// Initialize gaze
 		yield return new WaitForSeconds(0.1f);
 		curgaze = GazeAtCamera("Jasmin",1f,1f);

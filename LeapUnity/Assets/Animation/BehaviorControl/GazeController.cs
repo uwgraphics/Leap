@@ -1108,7 +1108,7 @@ public class GazeController : AnimController
     // Compute the eye's distance to rotate adjusted for projected target movement
     protected virtual float _ComputeEyeDistRotForMovingTarget(GazeBodyPart eye)
     {
-        float adjDistRotOMR = Vector3.Angle(eye._SourceDirection, eye._TargetDirectionAlign);
+        /*float adjDistRotOMR = Vector3.Angle(eye._SourceDirection, eye._TargetDirectionAlign);
 
         if (_curMovingTargetPosOff != Vector3.zero)
         {
@@ -1117,7 +1117,14 @@ public class GazeController : AnimController
             adjDistRotOMR = Vector3.Angle(eye._SourceDirection, adjTrgDirOMR);
         }
 
-        return adjDistRotOMR;
+        return adjDistRotOMR;*/
+
+        // TODO: hack to address problems with eye max. velocities
+        float distRot = _curMovingTargetPosOff == Vector3.zero ?
+            Vector3.Angle(eye._SourceDirection, eye._TargetDirection) :
+            Vector3.Angle(eye._SourceDirection, eye.GetTargetDirection(CurrentGazeTargetPosition + _curMovingTargetPosOff));
+        float OMR = 2f * Mathf.Min(eye.inOMR, eye.outOMR);
+        return distRot < OMR ? distRot : OMR;
     }
 
     // Stop any ongoing head movements

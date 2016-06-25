@@ -13,13 +13,11 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>5.1.1f1</UnityVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -240,9 +238,7 @@
     <Compile Include="Assets\UMA\Example\Scripts\UMATextRecipe.cs" />
     <Compile Include="Assets\UMA\Example\Shaders\BRDFLookupTexture.cs" />
     <Compile Include="Assets\Utils\CSVDataFile.cs" />
-    <Compile Include="Assets\Utils\CollectionUtil.cs" />
     <Compile Include="Assets\Utils\ConfigFile.cs" />
-    <Compile Include="Assets\Utils\FileUtil.cs" />
     <Compile Include="Assets\Utils\Math\BezierCurve.cs" />
     <Compile Include="Assets\Utils\Math\CatmullRomSpline.cs" />
     <Compile Include="Assets\Utils\Math\GeometryUtil.cs" />
@@ -254,11 +250,14 @@
     <Compile Include="Assets\Utils\Math\TCBSpline.cs" />
     <Compile Include="Assets\Utils\ModelUtil.cs" />
     <Compile Include="Assets\Utils\PerlinMotionGenerator.cs" />
-    <Compile Include="Assets\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Assets\Utils\SignalProcessing\Filter.cs" />
     <Compile Include="Assets\Utils\StatUtil.cs" />
     <Compile Include="Assets\Utils\StateMachine.cs" />
-    <Compile Include="Assets\Utils\StringUtil.cs" />
+    <Compile Include="Assets\Utils\System\CollectionUtil.cs" />
+    <Compile Include="Assets\Utils\System\EnvironmentUtil.cs" />
+    <Compile Include="Assets\Utils\System\FileUtil.cs" />
+    <Compile Include="Assets\Utils\System\ReadOnlyDictionary.cs" />
+    <Compile Include="Assets\Utils\System\StringUtil.cs" />
     <Compile Include="Assets\Utils\Vision\CameraModel.cs" />
     <Compile Include="Assets\Utils\Vision\VideoCameraModel.cs" />
   </ItemGroup>

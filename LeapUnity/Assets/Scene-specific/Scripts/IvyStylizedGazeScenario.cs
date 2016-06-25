@@ -15,8 +15,6 @@ public class IvyStylizedGazeScenario : StylizedGazeScenario
 		
 		// The agent should smile the whole time?
 		this[agentName].GetComponent<ExpressionController>().magnitude = 0.2f;
-		this[agentName].GetComponent<ExpressionController>().InstaChangeExpression("ExpressionSmileOpen");
-		this[agentName].GetComponent<ExpressionController>().FixExpression();
 		
 		// Intro
 		yield return new WaitForSeconds(2f);

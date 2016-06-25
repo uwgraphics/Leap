@@ -23,10 +23,8 @@ public class JasminGazeAversion : Scenario
 		// Initialize gaze
 		curexpr = ChangeExpression("Jasmin","ModifierEyeSquintRight",0.3f,0.2f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		curexpr = ChangeExpression("Jasmin","ModifierEyeSquintLeft",0.26f,0.2f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		
 		yield return new WaitForSeconds(0.6f);
 		curgaze = GazeAtCamera("Jasmin",0.8f,0f);
@@ -49,7 +47,6 @@ public class JasminGazeAversion : Scenario
 		curspeak = Speak("Jasmin", "jasmin_1", SpeechType.Other, false);
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.1f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
@@ -90,7 +87,6 @@ public class JasminGazeAversion : Scenario
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0f,0.5f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
@@ -102,13 +98,11 @@ public class JasminGazeAversion : Scenario
 			curspeak = Speak("Jasmin", listenCtrl.response, SpeechType.Answer, true);
 			curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.2f);
 			yield return StartCoroutine( WaitUntilFinished(curexpr) );
-			this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 			yield return new WaitForSeconds(3f);
 			ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 			yield return new WaitForSeconds(0.5f);
 			curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 			yield return StartCoroutine( WaitUntilFinished(curexpr) );
-			this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 			yield return StartCoroutine( WaitUntilFinished(curspeak) );
 			curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0f,0.5f);
 			yield return StartCoroutine( WaitUntilFinished(curexpr) );
@@ -118,13 +112,11 @@ public class JasminGazeAversion : Scenario
 		curspeak = Speak("Jasmin", "jasmin_transition", SpeechType.Other, false);
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.2f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		yield return new WaitForSeconds(3f);
 		ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0f,0.5f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
@@ -134,12 +126,10 @@ public class JasminGazeAversion : Scenario
 		curspeak = Speak("Jasmin", "jasmin_disc1", SpeechType.Question, false);
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.1f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0f,0.5f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
@@ -150,13 +140,11 @@ public class JasminGazeAversion : Scenario
 		curspeak = Speak("Jasmin", "jasmin_disc2", SpeechType.Question, true);
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.2f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		yield return new WaitForSeconds(3f);
 		ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0f,0.5f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
@@ -167,13 +155,11 @@ public class JasminGazeAversion : Scenario
 		curspeak = Speak("Jasmin", "jasmin_disc3", SpeechType.Question, true);
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.2f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		yield return new WaitForSeconds(3f);
 		ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0f,0.5f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
@@ -184,13 +170,11 @@ public class JasminGazeAversion : Scenario
 		curspeak = Speak("Jasmin", "jasmin_disc4", SpeechType.Question, true);
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.2f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		yield return new WaitForSeconds(3f);
 		ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0f,0.5f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
@@ -201,13 +185,11 @@ public class JasminGazeAversion : Scenario
 		curspeak = Speak("Jasmin", "jasmin_disc5", SpeechType.Question, true);
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.2f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		yield return new WaitForSeconds(0.5f);
 		ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0f,0.5f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
@@ -219,12 +201,10 @@ public class JasminGazeAversion : Scenario
 		curspeak = Speak("Jasmin", "jasmin_end1", SpeechType.Other, false);
 		curexpr = ChangeExpression("Jasmin","ExpressionSmileOpen",0.5f,0.1f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().FixExpression();
 		ChangeExpression("Jasmin","ModifierBrowUp",0.6f,0.3f);
 		yield return new WaitForSeconds(0.5f);
 		curexpr = ChangeExpression("Jasmin","ModifierBrowUp",0f,0.3f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
-		this["Jasmin"].GetComponent<ExpressionController>().UnfixExpression("ExpressionSmileOpen");
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );
 		curspeak = Speak("Jasmin", "jasmin_end2", SpeechType.Other, false);
 		yield return StartCoroutine( WaitUntilFinished(curspeak) );

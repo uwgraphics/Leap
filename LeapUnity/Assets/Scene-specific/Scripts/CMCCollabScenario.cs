@@ -188,7 +188,6 @@ public class CMCCollabScenario : Scenario
 			{
 				// Decrease smile intensity a bit
 				expressionCtrl.magnitude = 0.2f;
-				expressionCtrl.maxMagnitude = 0.2f;
 				expressionCtrl.changeExpression = true;
 			}
 			
@@ -435,7 +434,6 @@ public class CMCCollabScenario : Scenario
 			{
 				// Bring smile intensity up to max
 				expressionCtrl.magnitude = 0.5f;
-				expressionCtrl.maxMagnitude = 0.5f;
 				expressionCtrl.changeExpression = true;
 			}
 			
@@ -711,14 +709,12 @@ public class CMCCollabScenario : Scenario
 			{
 				// Enable avatar smiling
 				expressionCtrl.magnitude = 0.5f;
-				expressionCtrl.maxMagnitude = 0.5f;
 				expressionCtrl.ChangeExpression("ExpressionJoy");
 			}
 			else
 			{
 				// Avatar should have a neutral expression
 				expressionCtrl.magnitude = 0;
-				expressionCtrl.maxMagnitude = 0;
 				expressionCtrl.ChangeExpression("ExpressionJoy");
 			}
 		}

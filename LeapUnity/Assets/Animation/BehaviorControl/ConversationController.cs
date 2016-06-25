@@ -170,6 +170,8 @@ public class ConversationController : AnimController
     protected bool curSpeechPaused = false;
     protected float curSpeechPauseTime = 0f;
     protected ConversationState stateOnNewTarget = ConversationState.WaitForSpeech;
+    protected bool doSmileExpr = false;
+    protected bool doNeutralExpr = false;
 
     // Probability distributions for gaze target selection and gaze hold times:
     protected float pAF1A = 0.26f, pAB1A = 0.48f, pE1A = 0.26f,
@@ -286,8 +288,9 @@ public class ConversationController : AnimController
         faceCtrl = GetComponent<FaceController>();
         exprCtrl = GetComponent<ExpressionController>();
 
-        // Register for speech events
+        // Register for speech and listen events
         speechCtrl.StateChange += new StateChangeEvtH(SpeechController_StateChange);
+        listenCtrl.StateChange += new StateChangeEvtH(ListenController_StateChange);
 
         // Initialize conversational behavior targets
         foreach (var target in targets)
@@ -296,7 +299,7 @@ public class ConversationController : AnimController
 
     protected virtual void Update_WaitForSpeech()
     {
-        if (listen || listenCtrl.StateId == (int)SimpleListenState.SpeechDetected)
+        if (listen)
         {
             GoToState((int)ConversationState.Listen);
             return;
@@ -394,6 +397,7 @@ public class ConversationController : AnimController
         _GazeAtNextTarget(true);
         address = false;
         addressAll = false;
+        doNeutralExpr = true;
     }
 
     protected virtual void Transition_WaitForSpeechNewParticipant()
@@ -402,6 +406,7 @@ public class ConversationController : AnimController
         _AddNewTarget();
         _GazeAtNextTarget(false, true);
         addNewTarget = false;
+        doSmileExpr = true;
     }
 
     protected virtual void Transition_ListenAddress()
@@ -416,6 +421,7 @@ public class ConversationController : AnimController
         _GazeAtNextTarget(true);
         address = false;
         addressAll = false;
+        doNeutralExpr = true;
     }
 
     protected virtual void Transition_ListenNewParticipant()
@@ -431,10 +437,12 @@ public class ConversationController : AnimController
         listenCtrl.Listen();
         nextSpeechClips = new string[0];
         _GazeAtNextTarget(true);
+        doSmileExpr = true;
     }
 
     protected virtual void Transition_NewParticipantWaitForSpeech()
     {
+        doSmileExpr = true;
     }
 
     protected virtual void Transition_NewParticipantListen()
@@ -457,11 +465,47 @@ public class ConversationController : AnimController
         }
     }
 
+    protected virtual void ListenController_StateChange(AnimController sender,
+        int srcState, int trgState)
+    {
+        if (srcState == (int)SimpleListenState.SpeechDetected &&
+            trgState == (int)SimpleListenState.Listening)
+        {
+            //  Speech recognized, nod at the speaker
+            /*var curTurnTarget = targets[curTurnTargetIndex];
+            if (curTurnTarget.target == curGazeTarget && faceCtrl != null && UnityEngine.Random.Range(0f, 1f) > 0f)
+            {
+                faceCtrl.Nod(1, FaceGestureSpeed.Normal, UnityEngine.Random.Range(5f, 15f), 0f);
+            }*/
+        }
+    }
+
     protected virtual void _UpdateGaze()
     {
         curGazeHoldTime += DeltaTime;
-        if (curGazeHoldTime >= gazeHoldTime && gazeCtrl.StateId == (int)GazeState.NoGaze)
-            _GazeAtNextTarget(false);
+        if (gazeCtrl.StateId == (int)GazeState.NoGaze)
+        {
+            if (curGazeHoldTime >= gazeHoldTime)
+                _GazeAtNextTarget(false);
+
+            if (exprCtrl != null && !gazeCtrl.doGazeShift)
+            {
+                if (doSmileExpr)
+                {
+                    exprCtrl.magnitude = 1f;
+                    exprCtrl.ChangeExpression("ExpressionSmileClosed");
+                    exprCtrl.changeTime = 1f;
+                    doSmileExpr = false;
+                }
+                else if (doNeutralExpr)
+                {
+                    exprCtrl.magnitude = 0f;
+                    exprCtrl.ChangeExpression("ExpressionSmileClosed");
+                    exprCtrl.changeTime = 1f;
+                    doNeutralExpr = false;
+                }
+            }
+        }
     }
 
     protected virtual void _GazeAtNextTarget(bool turnChange, bool newTargetAdded = false)
@@ -569,6 +613,11 @@ public class ConversationController : AnimController
                 // Addressing the same participant, keep gazing at them
                 holdCurGaze = true;
             }
+            else if (faceCtrl != null && (faceCtrl.doGesture || faceCtrl.StateId == (int)FaceState.Gesturing))
+            {
+                // Head gesture in progress, do not shift gaze
+                holdCurGaze = true;
+            }
             else
             {
                 // Pick a gaze target using the probability distribution for the current conversational party
@@ -639,7 +688,7 @@ public class ConversationController : AnimController
         {
             // Initiate gaze shift
             bool isFace = targets.Any(t => t.target == curGazeTarget);
-            gazeCtrl.head.align = isFace ? 1f : 0.6f;
+            gazeCtrl.head.align = isFace ? 1f : 0f;
             //gazeCtrl.GazeAt(curTarget.GenerateGazeTargetPosition(gazeCtrl.EyeCenter, curGazeTarget));
             gazeCtrl.GazeAt(curGazeTarget);
 

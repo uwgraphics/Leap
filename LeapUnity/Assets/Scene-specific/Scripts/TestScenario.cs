@@ -354,7 +354,6 @@ public class TestScenario : Scenario
         // Smile!
         curexpr = ChangeExpression(agentName, "ExpressionSmileClosed", 0.5f, 0f);
         yield return StartCoroutine(WaitUntilFinished(curexpr));
-        exprCtrl.FixExpression();
 
         // Initialize gaze
         yield return new WaitForSeconds(0.1f * Time.timeScale);

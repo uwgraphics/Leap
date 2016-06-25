@@ -38,7 +38,6 @@ public class JasminStylizedGazeScenario : StylizedGazeScenario
 		yield return new WaitForSeconds(0.6f);
 		ChangeExpression(agentName,"ExpressionSmileOpen",0.3f,0.6f);
 		yield return new WaitForSeconds(0.7f);
-		this[agentName].GetComponent<ExpressionController>().FixExpression();
 		curspeak = Speak(agentName,"dubrovnik1_01");
 		yield return new WaitForSeconds(0.2f);
 		ChangeExpression(agentName,"ModifierBrowUp",0.5f,0.2f);

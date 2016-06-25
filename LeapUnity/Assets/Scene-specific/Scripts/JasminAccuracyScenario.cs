@@ -50,7 +50,6 @@ public class JasminAccuracyScenario : TestScenario
 			_SwitchUnlitTexture(customTarget);
 				
 		// Smile
-		exprCtrl.UnfixExpression("ExpressionSmileClosed");
 		yield return new WaitForSeconds(0f);
 		curexpr = ChangeExpression(agentName,"ExpressionSmileOpen",0.8f,0.4f);
 		yield return StartCoroutine( WaitUntilFinished(curexpr) );
