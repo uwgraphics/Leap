@@ -175,6 +175,11 @@ public class ConversationalRoleGazeScenario : Scenario
     /// </summary>
     public GameObject canSpeakIcon = null;
 
+    /// <summary>
+    /// Camera height adjustment in VR.
+    /// </summary>
+    public float cameraHeightAdjustVR = -0.3f;
+
     protected struct _AnswerEntry
     {
         public int questionIndex;
@@ -768,6 +773,16 @@ public class ConversationalRoleGazeScenario : Scenario
             canSpeakIcon.active = true;
             if (condition.setting == FactorSetting.VR)
                 canSpeakIcon.transform.localPosition = new Vector3(0f, -0.151f, 0.374f);
+        }
+    }
+
+    protected virtual void LateUpdate()
+    {
+        if (condition.setting == FactorSetting.VR)
+        {
+            // Adjust camera height
+            var cameraTransf = cameras["Camera"].transform.parent;
+            cameraTransf.localPosition = new Vector3(cameraTransf.localPosition.x, cameraTransf.localPosition.y + cameraHeightAdjustVR, cameraTransf.localPosition.z);
         }
     }
 
