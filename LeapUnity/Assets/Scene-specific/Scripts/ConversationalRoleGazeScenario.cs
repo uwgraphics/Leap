@@ -180,6 +180,11 @@ public class ConversationalRoleGazeScenario : Scenario
     /// </summary>
     public float cameraHeightAdjustVR = -0.3f;
 
+    /// <summary>
+    /// Point in space for calibrating OVR positional tracking.
+    /// </summary>
+    public GameObject calibPointVR = null;
+
     protected struct _AnswerEntry
     {
         public int questionIndex;
@@ -209,6 +214,7 @@ public class ConversationalRoleGazeScenario : Scenario
     protected int curQuestionIndex = 0;
     protected PartnerClass lastSpeaker = PartnerClass.Participant;
     protected float lastQuestionEndTime = 0f;
+    protected bool forceNext = false;
     // Scenario-specific definitions:
     protected string agentName;
     protected string confedName;
@@ -345,7 +351,7 @@ public class ConversationalRoleGazeScenario : Scenario
             conversationController.ListenResults.Count == 1 &&
             Time.timeSinceLevelLoad - conversationController.ListenResults[0].RecognizeTime <= pauseTimeAfterAnswer ||
             conversationController.ListenResults.Count > 1 &&
-            conversationController.ListenResults.Any(r => Time.timeSinceLevelLoad - r.RecognizeTime <= 2f * pauseTimeAfterAnswer);
+            conversationController.ListenResults.Any(r => Time.timeSinceLevelLoad - r.RecognizeTime <= 1.5f * pauseTimeAfterAnswer);
         // TODO: this simple heuristic gives the person more time to answer if they are giving a long answer
     }
 
@@ -353,22 +359,47 @@ public class ConversationalRoleGazeScenario : Scenario
     // or enough time has elapsed
     protected virtual IEnumerator _WaitForParticipantSpeechStart(float waitTime)
     {
-        while (!_HasParticipantSpoken() && Time.timeSinceLevelLoad - lastQuestionEndTime < waitTime)
+        forceNext = false;
+
+        while (!_HasParticipantSpoken() && Time.timeSinceLevelLoad - lastQuestionEndTime < waitTime && !forceNext)
         {
             yield return 0;
         }
 
+        forceNext = false;
+        yield break;
+    }
+
+    // Scenario execution will pause until the confederate has finished speaking
+    // or the participant has interrupted them
+    protected virtual IEnumerator _WaitForParticipantSpeechInterrupt()
+    {
+        forceNext = false;
+
+        var confedSpeechController = agents[confedName].GetComponent<SpeechController>();
+        while (!_HasParticipantSpoken() &&
+            (confedSpeechController.StateId == (int)SpeechState.PrepareSpeech || confedSpeechController.StateId == (int)SpeechState.Speaking)
+            && !forceNext)
+        {
+            yield return 0;
+        }
+
+        forceNext = false;
         yield break;
     }
 
     // Scenario execution will pause until the participant has finished speaking
     protected virtual IEnumerator _WaitForParticipantSpeechEnd()
     {
-        while (_HasParticipantSpoken() && _IsParticipantSpeaking())
+        forceNext = false;
+
+        while (_HasParticipantSpoken() && _IsParticipantSpeaking()
+            && !forceNext)
         {
             yield return 0;
         }
 
+        forceNext = false;
         yield break;
     }
 
@@ -458,6 +489,7 @@ public class ConversationalRoleGazeScenario : Scenario
 
         // Initialize state
         phase = Phase.Start;
+        Debug.Log("Starting phase: " + phase.ToString());
         addParticipant = false;
         participantAnswers.Clear();
         scenarioStartTime = Time.timeSinceLevelLoad;
@@ -493,8 +525,9 @@ public class ConversationalRoleGazeScenario : Scenario
         // Initialize camera
         cameras["Camera"].GetComponent<MouseLook>().enabled = condition.setting == FactorSetting.Screen2D;
         if (condition.setting == FactorSetting.Screen2D)
-            cameras["Camera"].GetComponent<Camera>().fieldOfView = 45f;
-        
+            cameras["Camera"].GetComponent<Camera>().fieldOfView = 50f;
+        calibPointVR.active = condition.setting == FactorSetting.VR;
+
         // Display settings
         Cursor.visible = false;
     }
@@ -535,6 +568,7 @@ public class ConversationalRoleGazeScenario : Scenario
         yield return StartCoroutine(_WaitUntilParticipantArrived());
         yield return new WaitForSeconds(1f);
         phase = Phase.AskQuestion;
+        Debug.Log("Starting phase: " + phase.ToString());
 
         while (phase != Phase.Farewell)
         {
@@ -571,6 +605,7 @@ public class ConversationalRoleGazeScenario : Scenario
 
                 lastQuestionEndTime = Time.timeSinceLevelLoad;
                 phase = Phase.WaitForAnswer;
+                Debug.Log("Starting phase: " + phase.ToString());
             }
 
             if (phase == Phase.WaitForAnswer)
@@ -592,15 +627,29 @@ public class ConversationalRoleGazeScenario : Scenario
                         var confedSpeechController = agents[confedName].GetComponent<SpeechController>();
                         foreach (string confedAnswerClip in confedAnswers[curQuestionIndex].answerClips)
                         {
+                            // Have the confederate speak and listen to them
                             confedSpeechController.Speak(confedAnswerClip);
                             _PlayConfedLipSync(confedSpeechController.speechClip);
                             yield return StartCoroutine(
-                                WaitForControllerState(confedName, "SpeechController", "Speaking"));
-                            yield return StartCoroutine(
-                                WaitForControllerState(confedName, "SpeechController", "NoSpeech"));
-                            _StopConfedLipSync();
+                                WaitForControllerState(confedName, "SpeechController", "PrepareSpeech"));
+                            yield return StartCoroutine(_WaitForParticipantSpeechInterrupt());
+                            if (_HasParticipantSpoken())
+                            {
+                                // Participant has interrupted the confederate
+                                confedSpeechController.StopSpeech();
+                                _StopConfedLipSync();
+                                // Listen to the participant instead
+                                conversationController.Listen("ParticipantFace");
+                                yield return StartCoroutine(_WaitForParticipantSpeechEnd());
+                                lastSpeaker = PartnerClass.Participant;
+                            }
+                            else
+                            {
+                                // Confederate has finished speaking
+                                _StopConfedLipSync();
+                                lastSpeaker = PartnerClass.Confederate;
+                            }
                         }
-                        lastSpeaker = PartnerClass.Confederate;
                         yield return new WaitForSeconds(pauseTimeAfterAnswer);
                     }
                     else
@@ -628,7 +677,7 @@ public class ConversationalRoleGazeScenario : Scenario
                             confedSpeechController.Speak(confedAnswerClip);
                             _PlayConfedLipSync(confedSpeechController.speechClip);
                             yield return StartCoroutine(
-                                WaitForControllerState(confedName, "SpeechController", "Speaking"));
+                                WaitForControllerState(confedName, "SpeechController", "PrepareSpeech"));
                             yield return StartCoroutine(
                                 WaitForControllerState(confedName, "SpeechController", "NoSpeech"));
                             _StopConfedLipSync();
@@ -683,9 +732,15 @@ public class ConversationalRoleGazeScenario : Scenario
                 // Move on to the next question
                 ++curQuestionIndex;
                 if (curQuestionIndex >= questions.Length)
+                {
                     phase = Phase.Farewell;
+                    Debug.Log("Starting phase: " + phase.ToString());
+                }
                 else
+                {
                     phase = Phase.AskQuestion;
+                    Debug.Log("Starting phase: " + phase.ToString());
+                }
             }
         }
 
@@ -700,7 +755,7 @@ public class ConversationalRoleGazeScenario : Scenario
             return;
 
         // Write participant answer data
-        var answerLog = new StreamWriter(string.Format("ConversationalRoleGaze_{0}.csv", participantId));
+        var answerLog = new StreamWriter(string.Format("ConversationalRoleGaze_{0}-{1}.csv", participantId, condition.scenarioIndex));
         answerLog.WriteLine("participantID,scenarioID,gazePattern,bodyOrientation,setting,questionIndex,questionEndTime,timeToSpeech,speechLength");
         foreach (var answerEntry in participantAnswers)
         {
@@ -738,13 +793,31 @@ public class ConversationalRoleGazeScenario : Scenario
 
     protected virtual void Update()
     {
+        if (condition.setting == FactorSetting.VR)
+            // Update Oculus input
+            OVRInput.Update();
+
+        // Forcibly advance the interaction
+        if (Input.GetKeyDown(KeyCode.F12))
+        {
+            Debug.LogWarning("Forcing next step...");
+            forceNext = true;
+        }
+        else
+            forceNext = false;
+
         // Process movement controls
         GameObject cam = GameObject.FindGameObjectWithTag("MainCamera");
-        if (phase == Phase.Start && (Input.GetKeyDown(KeyCode.UpArrow) ||
-            Input.GetKeyDown(KeyCode.Space) ||
-            Input.GetKeyDown(KeyCode.Mouse0) ||
-            Input.GetKeyDown(KeyCode.Mouse1)))
+        if (phase == Phase.Start &&
+            (condition.setting == FactorSetting.Screen2D &&
+            (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Mouse0)) ||
+            condition.setting == FactorSetting.VR &&
+            OVRInput.GetDown(OVRInput.Button.One)))
+        {
+            Debug.Log("Participant is approaching...");
             _GetParticipantWalkUp().walkUp = true;
+            calibPointVR.active = false;
+        }
 
         // Has the participant joined the interaction?
         if (_GetParticipantWalkUp().walkUp && _GetParticipantWalkUp().WalkUpTime >= 1f)
@@ -770,15 +843,16 @@ public class ConversationalRoleGazeScenario : Scenario
             (conversationController.StateId == (int)ConversationState.WaitForSpeech ||
             _HasParticipantSpoken() && conversationController.StateId == (int)ConversationState.Listen))
         {
-            canSpeakIcon.active = true;
+            canSpeakIcon.active = false;
+            /*canSpeakIcon.active = true;
             if (condition.setting == FactorSetting.VR)
-                canSpeakIcon.transform.localPosition = new Vector3(0f, -0.151f, 0.374f);
+                canSpeakIcon.transform.localPosition = new Vector3(0f, -0.151f, 0.374f);*/
         }
     }
 
     protected virtual void LateUpdate()
     {
-        if (condition.setting == FactorSetting.VR)
+        if (condition.setting == FactorSetting.Screen2D)
         {
             // Adjust camera height
             var cameraTransf = cameras["Camera"].transform.parent;

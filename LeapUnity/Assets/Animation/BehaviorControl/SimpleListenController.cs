@@ -210,7 +210,7 @@ public class SimpleListenController : AnimController
 
             GoToState((int)SimpleListenState.Listening);
         }
-        else if (cmd.StartsWith("speechRejected"))
+        else if (cmd.StartsWith("speechRejected") || cmd == "")
         {
             results.Add(new ListenResult(speechDetectTime, Time.timeSinceLevelLoad, ""));
             UnityEngine.Debug.Log("SpeechServer: speech rejected");

@@ -157,6 +157,7 @@ public class ConversationController : AnimController
     public int newTargetIndex = -1;
     public bool reorientBody = true;
     public float bodyOrientationBias = 0f;
+    public float gazeDelayTime = 0f;
 
     //  Conversational behavior state:
     protected int curTurnTargetIndex = -1;
@@ -299,7 +300,7 @@ public class ConversationController : AnimController
 
     protected virtual void Update_WaitForSpeech()
     {
-        if (listen)
+        if (listen && targets.Any(t => t.target.name == nextTargetName))
         {
             GoToState((int)ConversationState.Listen);
             return;
@@ -329,6 +330,13 @@ public class ConversationController : AnimController
         {
             GoToState((int)ConversationState.Address);
             return;
+        }
+        else if (listen && targets.Any(t => t.target.name == nextTargetName))
+        {
+            // Switch to listening to somebody else
+            curTurnTargetIndex = GetTargetIndex(nextTargetName);
+            _GazeAtNextTarget(true);
+            listen = false;
         }
 
         _UpdateGaze();
@@ -618,6 +626,19 @@ public class ConversationController : AnimController
                 // Head gesture in progress, do not shift gaze
                 holdCurGaze = true;
             }
+            else if (StateId == (int)ConversationState.WaitForSpeech && !curAddressAll ||
+                StateId == (int)ConversationState.Listen)
+            {
+                // Listening to a participant or waiting for them to say something, keep gazing at them
+                curTarget = curTurnTargetIndex > 0 ? targets[curTurnTargetIndex] : targets[0];
+                float p = UnityEngine.Random.Range(0f, 1f);
+                if (p >= 0f && p < pAF1A)
+                    curGazeTarget = curTarget.target;
+                else if (p >= pAF1A && p < pAF1A + pAB1A)
+                    curGazeTarget = curTarget.bodyTarget;
+                else
+                    curGazeTarget = curTarget.SelectRandomEnvironmentTarget();
+            }
             else
             {
                 // Pick a gaze target using the probability distribution for the current conversational party
@@ -754,7 +775,7 @@ public class ConversationController : AnimController
             else // environment target
                 curDist = dE1A;
         }
-        gazeHoldTime += (float)curDist.NextDouble();
+        gazeHoldTime += Mathf.Clamp(((float)curDist.NextDouble() + gazeDelayTime), 0f, float.MaxValue);
     }
 
     protected virtual void _AddNewTarget()
