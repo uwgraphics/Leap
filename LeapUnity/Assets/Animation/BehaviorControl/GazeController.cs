@@ -504,7 +504,44 @@ public class GazeController : AnimController
         Vector3 pos = (new Vector3(bodyPos.x, height, bodyPos.z)) + height * bodyDir;
         AheadHelperTarget.transform.position = pos;
 
+        // Gaze at the straight-ahead point
         GazeAt(AheadHelperTarget);
+    }
+
+    /// <summary>
+    /// Trigger a gaze aversion by the specified amount.
+    /// </summary>
+    /// <param name="yaw">Gaze aversion yaw</param>
+    /// <param name="pitch">Gaze aversion pitch</param>
+    public virtual void GazeAway(float yaw, float pitch)
+    {
+        Debug.Log(string.Format("Avert gaze by ({0}, {1})", yaw, pitch));
+
+        // Save current eye pose
+        float curLEyeYaw = lEye.Yaw;
+        float curLEyePitch = lEye.Pitch;
+        float curREyeYaw = rEye.Yaw;
+        float curREyePitch = rEye.Pitch;
+
+        // Compute new gaze target position
+        lEye.Yaw = yaw;
+        lEye.Pitch = pitch;
+        rEye.Yaw = yaw;
+        rEye.Pitch = pitch;
+        lEye.ClampOMR();
+        rEye.ClampOMR();
+        float height = ModelController.GetInitWorldPosition(head.Top).y;
+        Vector3 trgDir = 0.5f * (lEye.Direction + rEye.Direction);
+        Vector3 trgPos = EyeCenter + height * trgDir;
+
+        // Restore current eye pose
+        lEye.Yaw = curLEyeYaw;
+        lEye.Pitch = curLEyePitch;
+        rEye.Yaw = curREyeYaw;
+        rEye.Pitch = curREyePitch;
+
+        // Gaze at the aversion target point
+        GazeAt(trgPos, Vector3.zero);
     }
 
     /// <summary>

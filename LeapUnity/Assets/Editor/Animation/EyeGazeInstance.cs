@@ -261,6 +261,11 @@ public class EyeGazeInstance : AnimationControllerInstance
             GazeController.GazeAt(Target, movingTargetPosOff);
         else
             GazeController.GazeAt(AheadTargetPosition, movingTargetPosOff);
+
+        // Reset an active gaze aversion
+        var eyesAliveController = Model.GetComponent<EyesAliveController>();
+        if (eyesAliveController != null)
+            eyesAliveController.resetGazeAversion = true;
     }
 
     // Finish the current gaze instance

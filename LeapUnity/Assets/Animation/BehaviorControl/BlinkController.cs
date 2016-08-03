@@ -243,9 +243,7 @@ public class BlinkController : AnimController
         _ResetEyelids();
         _DroopEyelids();
 
-        if (gazeCtrl.StateId == (int)GazeState.NoGaze ||
-            gazeEvokedBlinks && gazeShiftStarted ||
-           explBlink)
+        if (gazeCtrl.StateId == (int)GazeState.NoGaze || gazeEvokedBlinks && gazeShiftStarted || explBlink)
             GoToState((int)BlinkState.WaitForStart);
     }
 
@@ -323,7 +321,6 @@ public class BlinkController : AnimController
             hrotd = UnityEngine.Vector3.Angle(gazeCtrl.head._SourceDirection, gazeCtrl.head._TargetDirection);
 
         // Compute blink probability
-        //float pb = 0.4f*hrotd/30f - 0.067f;
         float pb = 0.4f * (blinkRate / 0.3f) * hrotd / 30f - 0.067f;
 
         if (!explBlink && gazeEvokedBlinks && uniDist.NextDouble() < pb)

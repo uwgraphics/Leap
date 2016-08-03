@@ -1287,7 +1287,7 @@ public class LEAPMenu
         EyeGazeEditTestSceneManager.LoadExampleScene("MakeSandwich-HandEdits");
     }
 
-    [MenuItem("LEAP/Capture Video/[None]", true)]
+    [MenuItem("LEAP/Capture Video", true)]
     private static bool ValidateCaptureVideo()
     {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
@@ -1299,82 +1299,11 @@ public class LEAPMenu
         return true;
     }
 
-    [MenuItem("LEAP/Capture Video/[None]", false)]
+    [MenuItem("LEAP/Capture Video", false)]
     private static void CaptureVideo()
     {
-        EyeGazeEditTestSceneManager.CaptureVideo();
-    }
-
-    [MenuItem("LEAP/Capture Video/Original", true)]
-    private static bool ValidateCaptureVideoOriginal()
-    {
         var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null || wnd.Timeline.ActiveBakedTimeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Capture Video/Original", false)]
-    private static void CaptureVideoOriginal()
-    {
-        EyeGazeEditTestSceneManager.CaptureVideo("Original");
-    }
-
-    [MenuItem("LEAP/Capture Video/Inferred", true)]
-    private static bool ValidateCaptureVideoInferred()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null || wnd.Timeline.ActiveBakedTimeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Capture Video/Inferred", false)]
-    private static void CaptureVideoInferred()
-    {
-        EyeGazeEditTestSceneManager.CaptureVideo("Inferred");
-    }
-
-    [MenuItem("LEAP/Capture Video/Ground-truth", true)]
-    private static bool ValidateCaptureVideoGroundTruth()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null || wnd.Timeline.ActiveBakedTimeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Capture Video/Ground-truth", false)]
-    private static void CaptureVideoGroundTruth()
-    {
-        EyeGazeEditTestSceneManager.CaptureVideo("GroundTruth");
-    }
-
-    [MenuItem("LEAP/Capture Video/Edits", true)]
-    private static bool ValidateCaptureVideoEdits()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        if (wnd.Timeline == null || wnd.Timeline.ActiveBakedTimeline == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    [MenuItem("LEAP/Capture Video/Edits", false)]
-    private static void CaptureVideoEdits()
-    {
-        EyeGazeEditTestSceneManager.CaptureVideo("Edits");
+        wnd.Timeline.CaptureVideo();
     }
 
     /// <summary>
@@ -1723,19 +1652,6 @@ public class LEAPMenu
         }
 
         return lmcPath;
-    }
-
-    [MenuItem("LEAP/Custom Scripts/Export Gaze Videos", true)]
-    private static bool ValidateCaptureVideoExportAll()
-    {
-        var wnd = EditorWindow.GetWindow<AnimationEditorWindow>();
-        return true;
-    }
-
-    [MenuItem("LEAP/Custom Scripts/Export Gaze Videos", false)]
-    private static void CaptureVideoExportAll()
-    {
-        EyeGazeEditTestSceneManager.ExportAllVideos();
     }
 
     [MenuItem("LEAP/Custom Scripts/Run Script 1", true)]

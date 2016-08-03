@@ -3,6 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 /// <summary>
 /// Animation timeline for playing back, layering, and adapting
@@ -936,7 +937,24 @@ public class AnimationTimeline
         set;
     }
 
+    /// <summary>
+    /// true if animation frames are being captured during playback, false otherwise.
+    /// </summary>
+    public bool FrameCaptureEnabled
+    {
+        get { return _frameCaptureEnabled; }
+        
+        set
+        {
+            bool frameCaptureActivated = !_frameCaptureEnabled && value;
+            _frameCaptureEnabled = value;
+            if (frameCaptureActivated)
+                _InitFrameCapture();
+        }
+    }
+
     private AnimationManager _manager = null;
+    private bool _frameCaptureEnabled = false;
 
     // Animation layers and instances:
     private List<LayerContainer> _layerContainers;
@@ -973,6 +991,7 @@ public class AnimationTimeline
         CurrentFrame = 0;
         TimeLength = 0f;
         OriginalTimeLength = 0f;
+        FrameCaptureEnabled = false;
     }
 
     /// <summary>
@@ -1602,6 +1621,10 @@ public class AnimationTimeline
         {
             ApplyAnimation();
         }
+
+        if (FrameCaptureEnabled && ActiveBakedTimeline != null && Playing)
+            // Capture video
+            _CaptureCurrentFrame();
     }
 
     /// <summary>
@@ -1762,6 +1785,69 @@ public class AnimationTimeline
     }
 
     /// <summary>
+    /// Capture a video of the current animation on the timeline.
+    /// </summary>
+    public void CaptureVideo()
+    {
+        Active = true;
+        var videoCapture = GameObject.FindObjectOfType<VideoCapture>() as VideoCapture;
+        if (videoCapture == null)
+            throw new Exception("VideoCapture component not found in the scene");
+        if (ActiveBakedTimeline == null)
+            throw new Exception("No baked animation on the timeline or baked animation inactive");
+        var envController = OwningManager.Environment.GetComponent<EnvironmentController>();
+
+        // Create screenshot texture
+        var rtScreen = new RenderTexture(Screen.width, Screen.height, 24);
+        rtScreen.antiAliasing = 4;
+        var texScreen = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+
+        // Advance through the animation and capture a sceenshot at each frame
+        int startFrame = Mathf.Clamp(LEAPCore.videoCaptureStartFrame, 0, FrameLength - 1);
+        int endFrame = LEAPCore.videoCaptureEndFrame < 0 ? FrameLength - 1 :
+            Mathf.Clamp(LEAPCore.videoCaptureEndFrame, startFrame, FrameLength - 1);
+        videoCapture.Start();
+        var camObjs = GameObject.FindGameObjectsWithTag("MainCamera");
+        for (int frameIndex = startFrame; frameIndex <= endFrame; ++frameIndex)
+        {
+            GoToFrame(frameIndex);
+            Advance(0f);
+
+            // Render active cameras
+            foreach (var camObj in camObjs)
+            {
+                var camera = camObj.camera;
+                if (camera.enabled)
+                {
+                    camera.targetTexture = rtScreen;
+                    camera.Render();
+                }
+            }
+
+            // Get screenshot
+            RenderTexture.active = rtScreen;
+            texScreen.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
+            RenderTexture.active = null;
+
+            // Reset camera render targets
+            foreach (var camObj in camObjs)
+            {
+                var camera = camObj.camera;
+                if (camera.enabled)
+                    camera.targetTexture = null;
+            }
+
+            // Save screenshot to file
+            var data = texScreen.EncodeToPNG();
+            string path = string.Format(videoCapture.outputDirectory + "frame{0:D5}.png", frameIndex + 1 - startFrame);
+            File.WriteAllBytes(path, data);
+        }
+
+        // Save captured frames to a video file
+        videoCapture.GenerateVideo();
+    }
+
+    /// <summary>
     /// Initialize the animation timeline
     /// </summary>
     public void _Init()
@@ -1897,6 +1983,40 @@ public class AnimationTimeline
                 controllerContainer.ControllerStates[CurrentFrame] = controllerContainer.Controller.GetRuntimeState();
             }
         }
+    }
+
+    // Initialize animation frame capture
+    private void _InitFrameCapture()
+    {
+        var videoCapture = GameObject.FindObjectOfType<VideoCapture>() as VideoCapture;
+        if (videoCapture == null)
+            throw new Exception("VideoCapture component not found in the scene");
+
+        videoCapture.Start();
+    }
+
+    // Capture current frame of animation
+    private void _CaptureCurrentFrame()
+    {
+        Active = true;
+        var videoCapture = GameObject.FindObjectOfType<VideoCapture>() as VideoCapture;
+        if (videoCapture == null)
+            throw new Exception("VideoCapture component not found in the scene");
+        if (ActiveBakedTimeline == null)
+            throw new Exception("No baked animation on the timeline or baked animation inactive");
+
+        // Are we within the capture frame range?
+        int startFrame = Mathf.Clamp(LEAPCore.videoCaptureStartFrame, 0, FrameLength - 1);
+        int endFrame = LEAPCore.videoCaptureEndFrame < 0 ? FrameLength - 1 :
+            Mathf.Clamp(LEAPCore.videoCaptureEndFrame, startFrame, FrameLength - 1);
+        if (CurrentFrame < startFrame || CurrentFrame > endFrame)
+            return;
+
+        // Capture the current frame
+        int frameIndex = CurrentFrame - startFrame;
+        videoCapture.CaptureScreenshot(frameIndex);
+        if (CurrentFrame >= endFrame)
+            videoCapture.GenerateVideo();
     }
 
     // Initialize animation controllers on all models

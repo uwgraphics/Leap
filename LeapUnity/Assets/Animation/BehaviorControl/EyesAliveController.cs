@@ -18,17 +18,15 @@ public class EyesAliveController : AnimController
     public float maxEyeOffset = 5f;
     public float eyeOffsetMultiplier = 1f;
     public float gazeRateMultiplier = 1f;
+    public bool resetGazeAversion = false;
 
-    protected bool cancelGazeShift = false;
-    protected float gazeTime = 0;
-    protected float gazeLength = 0;
-    protected UnityEngine.Quaternion[] srcEyeRot;
-    protected UnityEngine.Quaternion[] trgEyeRot;
+    protected float gazeTime = 0f;
+    protected float gazeLength = 0f;
+    protected GameObject prevGazeTarget;
 
     protected GazeController gazeCtrl = null;
     protected BlinkController blinkCtrl = null;
     protected GazeAversionController gazeAversionCtrl = null;
-    protected bool holdGaze;
 
     protected MersenneTwisterRandomSource randNumGen = null; //random number generator for seeding the distributions below
     protected NormalDistribution normDist1 = null; //Length (seconds) of gaze shift
@@ -57,10 +55,6 @@ public class EyesAliveController : AnimController
         uniDist2 = new ContinuousUniformDistribution(randNumGen);
         uniDist2.SetDistributionParameters(0f, 100f);
 
-        // Create arrays for eye rotations
-        srcEyeRot = new UnityEngine.Quaternion[2];
-        trgEyeRot = new UnityEngine.Quaternion[2];
-
         gazeLength = (float)normDist1.NextDouble();
         if (gazeLength > 2f)
             gazeLength = 2f;
@@ -69,21 +63,16 @@ public class EyesAliveController : AnimController
         gazeTime = 0f;
     }
 
-    public void CancelEyesAlive()
-    {
-        cancelGazeShift = true;
-    }
-
     protected virtual void LateUpdate_NoGaze()
     {
         gazeTime += DeltaTime;
 
-        if (gazeTime > gazeLength) //Time to trigger a gaze shift
+        if (gazeTime > gazeLength) // Time to trigger a gaze shift
         {
             if (gazeAversionCtrl != null)
             {
-                //Check if we have a gaze aversion controller operating
-                //Gaze aversion controller and the base gaze controller have precedence in initiating gaze shifts
+                // Check if we have a gaze aversion controller operating
+                // Gaze aversion controller and the base gaze controller have precedence in initiating gaze shifts
                 if (gazeCtrl.StateId == (int)GazeState.NoGaze && ((gazeAversionCtrl.StateId == (int)GazeAversionState.MutualGaze && gazeAversionCtrl.condition != GazeAversionCondition.BadModel) ||
                                                                   (gazeAversionCtrl.StateId == (int)GazeAversionState.GazeAway && gazeAversionCtrl.condition == GazeAversionCondition.BadModel)))
                 {
@@ -117,10 +106,10 @@ public class EyesAliveController : AnimController
         if (gazeAversionCtrl != null && ((gazeAversionCtrl.StateId == (int)GazeAversionState.GazeAway && gazeAversionCtrl.condition != GazeAversionCondition.BadModel) ||
                                          (gazeAversionCtrl.StateId == (int)GazeAversionState.MutualGaze && gazeAversionCtrl.condition == GazeAversionCondition.BadModel)))
         {
-            cancelGazeShift = true;
+            resetGazeAversion = true;
         }
 
-        if (gazeTime > gazeLength || cancelGazeShift)
+        if (gazeTime > gazeLength || resetGazeAversion)
         {
             // Time to initate the gaze shift back	
             GoToState((int)EyesAliveState.NoGaze);
@@ -179,60 +168,12 @@ public class EyesAliveController : AnimController
             yaw = A / Mathf.Sqrt(2f);
         }
 
-        // Compute source and target rotations
-        srcEyeRot[0] = gazeCtrl.lEye.Top.localRotation;
-        srcEyeRot[1] = gazeCtrl.rEye.Top.localRotation;
-
-        // Compute target rotation
-        gazeCtrl.lEye.Pitch += pitch;
-        gazeCtrl.lEye.Yaw += yaw;
-        gazeCtrl.rEye.Pitch += pitch;
-        gazeCtrl.rEye.Yaw += yaw;
-        if (gazeCtrl.lEye.CheckOMR())
-            gazeCtrl.lEye.ClampOMR();
-        if (gazeCtrl.rEye.CheckOMR())
-            gazeCtrl.rEye.ClampOMR();
-        trgEyeRot[0] = gazeCtrl.lEye.Top.localRotation;
-        trgEyeRot[1] = gazeCtrl.rEye.Top.localRotation;
-        gazeCtrl.lEye.Top.localRotation = srcEyeRot[0];
-        gazeCtrl.rEye.Top.localRotation = srcEyeRot[1];
-
-        // Compute time when gaze shift back to initial position should begin
-        gazeLength = (float)normDist1.NextDouble();
-        if (gazeLength > 2f)
-            gazeLength = 2f;
-        if (gazeLength < 0.2f)
-            gazeLength = 0.2f;
-        gazeTime = 0f;
-
-        //Compute the point in space where the eyes should be shifting to, given the target rotations.
-        bool parallelEyes = false;
-        Vector3 targetPos = new Vector3();
-        Vector3 p1 = new Vector3();
-        Vector3 p2 = new Vector3();
-        var eye1 = gazeCtrl.lEye.Top;
-        var eye2 = gazeCtrl.rEye.Top;
-        var eye1Dir = gazeCtrl.lEye.Direction;
-        var eye2Dir = gazeCtrl.rEye.Direction;
-        UnityEngine.Quaternion savedRot1 = eye1.localRotation;
-        UnityEngine.Quaternion savedRot2 = eye2.localRotation;
-        eye1.localRotation = trgEyeRot[0];
-        eye2.localRotation = trgEyeRot[1];
-        parallelEyes = GeometryUtil.ClosestPointsOn2Lines(
-            eye1.position, eye1Dir,
-            eye2.position, eye2Dir, out p1, out p2);
-        if (parallelEyes)
-        {
-            p1 = eye1.position + 10f * eye1Dir;
-            p2 = eye2.position + 10f * eye2Dir;
-        }
-        targetPos = 0.5f * (p1 + p2);
-        eye1.localRotation = savedRot1;
-        eye2.localRotation = savedRot2;
-
-        //Execute the gaze shift, with no head alignment
+        // Initiate gaze aversion
+        prevGazeTarget = gazeCtrl.FixGazeTarget;
         gazeCtrl.head.align = 0f;
-        gazeCtrl.GazeAt(targetPos);
+        if (gazeCtrl.torso != null)
+            gazeCtrl.torso.align = 0f;
+        gazeCtrl.GazeAway(yaw, pitch);
     }
 
     protected virtual void Transition_GazeAwayNoGaze()
@@ -240,49 +181,24 @@ public class EyesAliveController : AnimController
         // Compute time when next gaze shift should begin
         gazeLength = (float)normDist2.NextDouble();
 
+        // Compute gaze fixation length
         if (gazeRateMultiplier > 0f)
-        {
             gazeLength /= gazeRateMultiplier;
-        }
-
         if (gazeLength > 8f)
             gazeLength = 8f;
         if (gazeLength < 2f)
             gazeLength = 2f;
         gazeTime = 0f;
 
-        if (gazeCtrl.StateId == (int)GazeState.NoGaze && !cancelGazeShift)
+        if (gazeCtrl.StateId == (int)GazeState.NoGaze && !resetGazeAversion)
         {
-            //Compute the point in space where the eyes should be shifting back to, given the source rotations.
-            bool parallelEyes = false;
-            Vector3 targetPos = new Vector3();
-            Vector3 p1 = new Vector3();
-            Vector3 p2 = new Vector3();
-            var eye1 = gazeCtrl.lEye.Top;
-            var eye2 = gazeCtrl.rEye.Top;
-            var eye1Dir = gazeCtrl.lEye.Direction;
-            var eye2Dir = gazeCtrl.rEye.Direction;
-            UnityEngine.Quaternion savedRot1 = eye1.localRotation;
-            UnityEngine.Quaternion savedRot2 = eye2.localRotation;
-            eye1.localRotation = srcEyeRot[0];
-            eye2.localRotation = srcEyeRot[1];
-            parallelEyes = GeometryUtil.ClosestPointsOn2Lines(
-                eye1.position, eye1Dir,
-                eye2.position, eye2Dir,
-                out p1, out p2);
-            if (parallelEyes)
-            {
-                p1 = eye1.position + 10f * eye1Dir;
-                p2 = eye2.position + 10f * eye2Dir;
-            }
-            targetPos = 0.5f * (p1 + p2);
-            eye1.localRotation = savedRot1;
-            eye2.localRotation = savedRot2;
-
-            //Execute the gaze shift
-            gazeCtrl.GazeAt(targetPos);
+            // Initiate gaze aversion
+            gazeCtrl.head.align = 0f;
+            if (gazeCtrl.torso != null)
+                gazeCtrl.torso.align = 0f;
+            gazeCtrl.GazeAt(prevGazeTarget);
         }
-        cancelGazeShift = false;
+        resetGazeAversion = false;
     }
 
     public override void _CreateStates()

@@ -294,13 +294,17 @@ public class AnimationEditorWindow : EditorWindow
 
         // Enable/disable display of baked animation data
         bool wasShowingBakedTimeline = _showBakedTimeline;
-        _showBakedTimeline = GUI.Toggle(new Rect(this.position.width - 160, 10, 100, 20), _showBakedTimeline, "Baked");
+        _showBakedTimeline = GUI.Toggle(new Rect(this.position.width - 180, 10, 100, 20), _showBakedTimeline, "Baked");
         Timeline.ActiveBakedTimelineIndex = _showBakedTimeline ? Timeline.BakedTimelineContainers.Count - 1 : -1;
         if (wasShowingBakedTimeline && !_showBakedTimeline)
         {
             // Stopped showing baked animation data, show original animation instead (but disable gaze)
             Timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
         }
+
+        // Enable/disable frame capture
+        Timeline.FrameCaptureEnabled = GUI.Toggle(new Rect(this.position.width - 180, 30, 180, 20),
+            Timeline.FrameCaptureEnabled, "Capture Frames");
 
         // Update the playback slider
         float sliderPosition = Timeline.FrameLength > 0 ? Timeline.CurrentTime / Timeline.TimeLength : 0f;

@@ -220,7 +220,7 @@ public class AnimationClipInstance : AnimationInstance
         root.position = rootPosition;
 
         // TODO: remove this
-        if (Name == "MakeSandwichDemo")
+        /*if (Name == "MakeSandwichDemo")
         {
             // Filter elbows
             var lElbow = ModelUtil.FindBoneWithTag(root, "LElbowBone");
@@ -275,17 +275,17 @@ public class AnimationClipInstance : AnimationInstance
             rShoulder.localRotation = Quaternion.Slerp(prevRShoulderRot, rShoulder.localRotation, rw);
             prevLShoulderRot = lShoulder.localRotation;
             prevRShoulderRot = rShoulder.localRotation;
-        }
+        }*/
         //
     }
 
     // TODO: remove this
-    private Quaternion prevLElbowRot;
+    /*private Quaternion prevLElbowRot;
     private Quaternion prevRElbowRot;
     private Quaternion prevLShoulderRot;
     private Quaternion prevRShoulderRot;
     private Quaternion prevLClavicleRot;
-    private Quaternion prevRClavicleRot;
+    private Quaternion prevRClavicleRot;*/
     //
 
     /// <summary>

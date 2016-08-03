@@ -22,6 +22,10 @@ public static class EyeGazeEditTestSceneManager
         // Reload Leap configuration
         LEAPCore.LoadConfiguration();
 
+        // Configure video capture
+        var videoCapture = GameObject.FindGameObjectWithTag("EyeGazeEditor").GetComponent<VideoCapture>();
+        videoCapture.outputFilename = sceneName;
+
         // Deactivate all characters and props
         testScenes.modelNorman.SetActive(false);
         testScenes.modelNormanette.SetActive(false);
@@ -60,6 +64,7 @@ public static class EyeGazeEditTestSceneManager
         timeline.AddLayer(AnimationLayerMode.Override, 15, LEAPCore.cameraAnimationLayerName);
         timeline.GetLayer(LEAPCore.cameraAnimationLayerName).isIKEndEffectorConstr = false;
         timeline.AddLayer(AnimationLayerMode.Override, 20, LEAPCore.eyeGazeAnimationLayerName);
+        timeline.AddLayer(AnimationLayerMode.Override, 18, LEAPCore.secondaryAnimationLayerName);
 
         if (sceneName == "TestExpressiveGaze")
         {
@@ -79,6 +84,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WindowWashing")
         {
@@ -115,17 +126,26 @@ public static class EyeGazeEditTestSceneManager
 
             // Add timewarps to the animations
             AnimationTimingEditor.LoadTimewarps(timeline, bodyAnimationNormanInstanceId);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "PassSoda")
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.modelRoman.SetActive(true);
-            testScenes.modelNormanette.SetActive(false);
+            //testScenes.modelNormanette.SetActive(false);
+            testScenes.modelNormanette.SetActive(true);
+            testScenes.modelNormanette.transform.position = new Vector3(-4.97f, 0f, 2.24f);
+            testScenes.modelNormanette.transform.localScale = new Vector3(0.96f, 0.91f, 0.96f);
             testScenes.modelPassSodaEnv.SetActive(true);
 
             // Add character models to the timeline
             timeline.OwningManager.AddModel(testScenes.modelNorman);
-            //timeline.OwningManager.AddModel(testScenes.modelNormanette);
+            timeline.OwningManager.AddModel(testScenes.modelNormanette);
             timeline.OwningManager.AddModel(testScenes.modelRoman);
 
             // Set environment in the timeline
@@ -138,6 +158,8 @@ public static class EyeGazeEditTestSceneManager
             var bodyAnimationRoman = new AnimationClipInstance("PassSodaB", testScenes.modelRoman);
             int bodyAnimationRomanInstanceId = timeline.AddAnimation(LEAPCore.baseAnimationLayerName,
                 bodyAnimationRoman, 0, LEAPCore.helperAnimationLayerName);
+            var bodyAnimationNormanette = new AnimationClipInstance("PassSodaC", testScenes.modelNormanette);
+            timeline.AddAnimation(LEAPCore.baseAnimationLayerName, bodyAnimationNormanette, 0);
 
             // Create environment animations
             var envController = testScenes.modelPassSodaEnv.GetComponent<EnvironmentController>();
@@ -149,13 +171,23 @@ public static class EyeGazeEditTestSceneManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelRoman, bodyAnimationRoman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelRoman, bodyAnimationRoman.FrameLength), 1);
         }
         else if (sceneName == "PassSoda-Edits")
         {
             testScenes.modelNorman.SetActive(true);
             testScenes.modelRoman.SetActive(true);
             testScenes.modelNormanette.SetActive(true);
-            testScenes.modelNormanette.transform.position = new Vector3(-4.97f, 0f, 1.24f);
+            testScenes.modelNormanette.transform.position = new Vector3(-4.97f, 0f, 2.24f);
             testScenes.modelNormanette.transform.localScale = new Vector3(0.96f, 0.91f, 0.96f);
             testScenes.modelPassSodaEnv.SetActive(true);
 
@@ -187,6 +219,16 @@ public static class EyeGazeEditTestSceneManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelRoman, bodyAnimationRoman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelRoman, bodyAnimationRoman.FrameLength), 1);
         }
         else if (sceneName == "Walking90deg")
         {
@@ -214,6 +256,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "HandShake")
         {
@@ -247,6 +295,16 @@ public static class EyeGazeEditTestSceneManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelRoman, bodyAnimationRoman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelRoman, bodyAnimationRoman.FrameLength), 1);
         }
         else if (sceneName == "HandShake-Edits")
         {
@@ -280,6 +338,16 @@ public static class EyeGazeEditTestSceneManager
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationRomanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelRoman, bodyAnimationRoman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelRoman, bodyAnimationRoman.FrameLength), 1);
         }
         else if (sceneName == "BookShelf")
         {
@@ -312,6 +380,12 @@ public static class EyeGazeEditTestSceneManager
             timeline.AddEnvironmentAnimation(LEAPCore.environmentAnimationLayerName,
                 new AnimationClipInstance("BookShelfBook3", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Book3"),
                     false, false, false));
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "StealDiamond")
         {
@@ -347,6 +421,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WaitForBus")
         {
@@ -373,6 +453,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "EyeTrackMocapTest1-1")
         {
@@ -434,6 +520,12 @@ public static class EyeGazeEditTestSceneManager
                 new AnimationClipInstance(
                     "StackBoxes4", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "pCube4"),
                     false, false, false));
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNorman, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WindowWashingNew")
         {
@@ -471,6 +563,12 @@ public static class EyeGazeEditTestSceneManager
             // Extract eye tracking fixation frames
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 970, 2045);
             ComputeIntercoderReliabilityInstances(sceneName, 91, 1165);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WindowWashingNew-Edits")
         {
@@ -513,6 +611,12 @@ public static class EyeGazeEditTestSceneManager
                 new AnimationClipInstance(
                     "WindowWashingNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WalkConesNew")
         {
@@ -547,6 +651,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName);
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "BookShelfNew")
         {
@@ -600,6 +710,12 @@ public static class EyeGazeEditTestSceneManager
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 749, 2618);
             ComputeIntercoderReliabilityTargets(sceneName);
             ComputeIntercoderReliabilityInstances(sceneName, 163, 2032);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "BookShelfNew-Edits")
         {
@@ -648,6 +764,12 @@ public static class EyeGazeEditTestSceneManager
                 new AnimationClipInstance(
                     "BookShelfNewMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "StealDiamondNew")
         {
@@ -693,6 +815,12 @@ public static class EyeGazeEditTestSceneManager
             // Prepare eye gaze inference evaluations
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 1066, 1359);
             ComputeIntercoderReliabilityTargets(sceneName);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "StealDiamondNew-Edits")
         {
@@ -732,6 +860,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WaitForBusNew")
         {
@@ -780,6 +914,12 @@ public static class EyeGazeEditTestSceneManager
             // Prepare eye gaze inference evaluations
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 590, 1782);
             ComputeIntercoderReliabilityInstances(sceneName, 131, 1323);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WaitForBusNew-Edits1")
         {
@@ -825,6 +965,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WaitForBusNew-Edits2")
         {
@@ -870,6 +1016,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "StackBoxesNew")
         {
@@ -928,6 +1080,12 @@ public static class EyeGazeEditTestSceneManager
 
             // Extract eye tracking fixation frames
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 416, 1651);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "ChatWithFriend")
         {
@@ -964,6 +1122,12 @@ public static class EyeGazeEditTestSceneManager
 
             // Extract eye tracking fixation frames
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 967, 2868);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "ChatWithFriend-Edits1")
         {
@@ -996,6 +1160,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits1");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "ChatWithFriend-Edits2")
         {
@@ -1028,6 +1198,12 @@ public static class EyeGazeEditTestSceneManager
             // Load eye gaze
             EyeGazeEditor.LoadEyeGaze(timeline, bodyAnimationNormanInstanceId, LEAPCore.eyeGazeAnimationLayerName, "#Edits2");
             EyeGazeEditor.PrintEyeGaze(timeline);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "MakeSandwich1")
         {
@@ -1088,6 +1264,12 @@ public static class EyeGazeEditTestSceneManager
             // Prepare eye gaze inference evaluations
             ExtractEyeTrackFixationFrames("MakeSandwich", timeline, testScenes.modelNormanNew, 819, 1834);
             ComputeIntercoderReliabilityTargets("MakeSandwich");
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "MakeSandwich2")
         {
@@ -1144,6 +1326,12 @@ public static class EyeGazeEditTestSceneManager
                 new AnimationClipInstance(
                     "MakeSandwichMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "MakeSandwich-Edits")
         {
@@ -1200,6 +1388,12 @@ public static class EyeGazeEditTestSceneManager
                 new AnimationClipInstance(
                     "MakeSandwichMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "MakeSandwichDemo")
         {
@@ -1260,6 +1454,12 @@ public static class EyeGazeEditTestSceneManager
             // Prepare eye gaze inference evaluations
             ExtractEyeTrackFixationFrames(sceneName, timeline, testScenes.modelNormanNew, 679, 2686);
             ComputeIntercoderReliabilityTargets(sceneName);
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "MakeSandwichDemo-Edits")
         {
@@ -1316,6 +1516,12 @@ public static class EyeGazeEditTestSceneManager
                 new AnimationClipInstance(
                     "MakeSandwichDemoMarkers", envController.ManipulatedObjects.FirstOrDefault(obj => obj.name == "Markers"),
                     false, false, false));
+
+            // Add ambient gaze animation
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyeBlinkInstance("EyeBlink", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
+            timeline.AddAnimation(LEAPCore.secondaryAnimationLayerName,
+                new EyesAliveInstance("EyesAlive", testScenes.modelNormanNew, bodyAnimationNorman.FrameLength), 1);
         }
         else if (sceneName == "WalkConesNew-GroundTruth")
         {
@@ -1952,256 +2158,6 @@ public static class EyeGazeEditTestSceneManager
     }
 
     /// <summary>
-    /// Export videos for all the scenarios.
-    /// </summary>
-    public static void ExportAllVideos()
-    {
-        var timeline = AnimationManager.Instance.Timeline;
-
-        // Export animations with no gaze
-        _EnableBlinks(false);
-        /*_ExportVideoOriginal("WindowWashingNew");
-        _ExportVideoOriginal("PassSoda");
-        _ExportVideoOriginal("WalkConesNew");
-        _ExportVideoOriginal("HandShake");
-        _ExportVideoOriginal("BookShelfNew", true);
-        _ExportVideoOriginal("StealDiamondNew");
-        _ExportVideoOriginal("WaitForBusNew");
-        _ExportVideoOriginal("StackBoxesNew");
-        _ExportVideoOriginal("MakeSandwich1");
-        _ExportVideoOriginal("MakeSandwichDemo");
-        _ExportVideoOriginal("ChatWithFriend");*/
-
-        // Export animations with inferred gaze
-        /*_EnableBlinks(false);
-        _ExportVideoInferred("WindowWashingNew");
-        _ExportVideoInferred("PassSoda");
-        _ExportVideoInferred("WalkConesNew");
-        _ExportVideoInferred("HandShake");
-        _ExportVideoInferred("BookShelfNew", true);
-        _ExportVideoInferred("StealDiamondNew");
-        _ExportVideoInferred("WaitForBusNew");
-        _ExportVideoInferred("StackBoxesNew");
-        _ExportVideoInferred("MakeSandwich1", false, "Inferred1");
-        _ExportVideoInferred("MakeSandwich2", false, "Inferred2");
-        _ExportVideoInferred("MakeSandwichDemo");
-        _ExportVideoInferred("ChatWithFriend");*/
-
-        // Export animations with edited gaze
-        _ExportVideoEdits("WindowWashingNew-Edits");
-        _ExportVideoEdits("PassSoda-Edits");
-        _ExportVideoEdits("HandShake-Edits", -1f, -1f, true);
-        _ExportVideoEdits("BookShelfNew-Edits", -1f, 0f, true);
-        _ExportVideoEdits("StealDiamondNew-Edits");
-        _ExportVideoEdits("WaitForBusNew-Edits1", 1f, 0f);
-        _ExportVideoEdits("MakeSandwich-Edits");
-        _ExportVideoEdits("MakeSandwichDemo-Edits", -1f, -1f, true);
-        _ExportVideoEdits("ChatWithFriend-Edits1", 0.5f, 0f, false, "Edits1");
-        _ExportVideoEdits("ChatWithFriend-Edits2", 0.5f, 0f, false, "Edits2");
-
-        // Export animations with inferred gaze, but no blinks
-        /*_EnableBlinks(false);
-        _ExportVideoInferred("PassSoda", false, "InferredNoBlinks");
-        _ExportVideoInferred("WalkConesNew", false, "InferredNoBlinks");
-        _ExportVideoInferred("HandShake", false, "InferredNoBlinks");
-        _ExportVideoInferred("StealDiamondNew", false, "InferredNoBlinks");
-        _ExportVideoInferred("StackBoxesNew", false, "InferredNoBlinks");
-        _ExportVideoInferred("MakeSandwich1", false, "Inferred1NoBlinks");
-        _ExportVideoInferred("MakeSandwich2", false, "Inferred2NoBlinks");
-        _ExportVideoInferred("ChatWithFriend", false, "InferredNoBlinks");
-
-        // Export animations with edited gaze, but no blinks
-        _ExportVideoEdits("PassSodaEdits", -1f, 0f, false, "EditsNoBlinks");
-        _ExportVideoEdits("HandShakeEdits", -1f, -1f, true, "EditsNoBlinks");
-        _ExportVideoEdits("StealDiamondNewEdits", -1f, 0f, false, "EditsNoBlinks");
-        _ExportVideoEdits("MakeSandwichEdits", -1f, 0f, false, "EditsNoBlinks");*/
-
-        // Export animations with recorded gaze
-        /*_ExportVideoOriginal("WalkConesNew-GroundTruth", false, "Recorded");
-        _ExportVideoOriginal("StealDiamondNew-GroundTruth", false, "Recorded");
-        _ExportVideoOriginal("StackBoxesNew-GroundTruth", false, "Recorded");
-        _ExportVideoOriginal("MakeSandwich-GroundTruth", false, "Recorded");
-        _ExportVideoOriginal("ChatWithFriend-GroundTruth", false, "Recorded");
-
-        // Export animations with hand-authored gaze
-        _ExportVideoOriginal("PassSoda-Eyes", false, "HandAuthored");
-        _ExportVideoOriginal("HandShake-Eyes", false, "HandAuthored");
-        _ExportVideoOriginal("WalkConesNew-Eyes", false, "HandAuthored");
-        _ExportVideoOriginal("StealDiamondNew-Eyes", false, "HandAuthored");
-        _ExportVideoOriginal("StackBoxesNew-Eyes", false, "HandAuthored");
-        _ExportVideoOriginal("MakeSandwich-Eyes", false, "HandAuthored");
-        _ExportVideoOriginal("ChatWithFriend-Eyes", false, "HandAuthored");
-
-        // Export animations with hand-edited gaze
-        _ExportVideoOriginal("PassSoda-HandEdits", false, "HandEdits");
-        _ExportVideoOriginal("HandShake-HandEdits", false, "HandEdits");
-        _ExportVideoOriginal("StealDiamondNew-HandEdits", false, "HandEdits");*/
-        //_ExportVideoOriginal("MakeSandwich-HandEdits", false, "HandEdits");
-    }
-
-    private static void _EnableBlinks(bool enable = true)
-    {
-        var testScenes = GameObject.FindGameObjectWithTag("EyeGazeEditor").GetComponent<EyeGazeEditTestSceneData>();
-        testScenes.modelNorman.GetComponent<BlinkController>().enabled = enable;
-        testScenes.modelRoman.GetComponent<BlinkController>().enabled = enable;
-        testScenes.modelNormanNew.GetComponent<BlinkController>().enabled = enable;
-    }
-
-    private static void _ExportVideoOriginal(string sceneName, bool enableIK = false,
-        string exportSuffix = "Original", int exportStartFrame = 0, int exportEndFrame = -1)
-    {
-        var timeline = AnimationManager.Instance.Timeline;
-        timeline.ActiveBakedTimelineIndex = -1;
-        LEAPCore.timelineBakeRangeStart = 0;
-        LEAPCore.timelineBakeRangeEnd = -1;
-
-        LoadExampleScene(sceneName);
-        LEAPCore.gazeHeadBlendWeightOverride = 0f;
-        LEAPCore.gazeTorsoBlendWeightOverride = 0f;
-        LEAPCore.useGazeIK = false;
-        timeline.SetIKEnabled(false);
-        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = false;
-        timeline.GoToFrame(0);
-        timeline.Active = true;
-        timeline.InitBake(LEAPCore.defaultBakedTimelineName);
-        timeline.Bake();
-        CaptureVideo(exportSuffix);
-    }
-
-    private static void _ExportVideoInferred(string sceneName, bool enableIK = false,
-        string exportSuffix = "Inferred", int exportStartFrame = 0, int exportEndFrame = -1)
-    {
-        var timeline = AnimationManager.Instance.Timeline;
-        timeline.ActiveBakedTimelineIndex = -1;
-        LEAPCore.timelineBakeRangeStart = 0;
-        LEAPCore.timelineBakeRangeEnd = -1;
-
-        LoadExampleScene(sceneName);
-        LEAPCore.gazeHeadBlendWeightOverride = 0f;
-        LEAPCore.gazeTorsoBlendWeightOverride = 0f;
-        LEAPCore.useGazeIK = false;
-        timeline.SetIKEnabled(false);
-        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = true;
-        timeline.GoToFrame(0);
-        timeline.Active = true;
-        timeline.InitBake(LEAPCore.defaultBakedTimelineName);
-        timeline.Bake();
-        CaptureVideo(exportSuffix);
-    }
-
-    private static void _ExportVideoEdits(string sceneName,
-        float headBlendWeight = -1f, float torsoBlendWeight = 0f, bool enableIK = false,
-        string exportSuffix = "Edits", int exportStartFrame = 0, int exportEndFrame = -1)
-    {
-        var timeline = AnimationManager.Instance.Timeline;
-        timeline.ActiveBakedTimelineIndex = -1;
-        LEAPCore.timelineBakeRangeStart = 0;
-        LEAPCore.timelineBakeRangeEnd = -1;
-
-        LoadExampleScene(sceneName);
-        LEAPCore.gazeHeadBlendWeightOverride = headBlendWeight;
-        LEAPCore.gazeTorsoBlendWeightOverride = torsoBlendWeight;
-        LEAPCore.useGazeIK = enableIK;
-        timeline.SetIKEnabled(enableIK);
-        timeline.GetLayer(LEAPCore.eyeGazeAnimationLayerName).Active = true;
-        timeline.GoToFrame(0);
-        timeline.Active = true;
-        timeline.InitBake(LEAPCore.defaultBakedTimelineName);
-        timeline.Bake();
-        CaptureVideo(exportSuffix);
-    }
-
-    /// <summary>
-    /// Capture video of the currently loaded scenario.
-    /// </summary>
-    public static void CaptureVideo(string suffix = "")
-    {
-        var timeline = AnimationManager.Instance.Timeline;
-        timeline.Active = true;
-        var videoCapture = GameObject.FindGameObjectWithTag("EyeGazeEditor").GetComponent<VideoCapture>();
-        if (timeline.ActiveBakedTimeline == null)
-        {
-            Debug.LogError("No baked animation on the timeline or baked animation inactive");
-            return;
-        }
-        var envController = timeline.OwningManager.Environment.GetComponent<EnvironmentController>();
-
-        // Create screenshot texture
-        var rtScreen = new RenderTexture(Screen.width, Screen.height, 24);
-        rtScreen.antiAliasing = 4;
-        var texScreen = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
-
-        // Advance through the animation and capture a sceenshot at each frame
-        int startFrame = Mathf.Clamp(LEAPCore.gazeVideoCaptureStartFrame, 0, timeline.FrameLength - 1);
-        int endFrame = LEAPCore.gazeVideoCaptureEndFrame < 0 ? timeline.FrameLength - 1 :
-            Mathf.Clamp(LEAPCore.gazeVideoCaptureEndFrame, startFrame, timeline.FrameLength - 1);
-        videoCapture.Start();
-        var camObjs = GameObject.FindGameObjectsWithTag("MainCamera");
-        for (int frameIndex = startFrame; frameIndex <= endFrame; ++frameIndex)
-        {
-            timeline.GoToFrame(frameIndex);
-            timeline.Advance(0f);
-
-            // Render active cameras
-            foreach (var camObj in camObjs)
-            {
-                var camera = camObj.camera;
-                if (camera.enabled)
-                {
-                    camera.targetTexture = rtScreen;
-                    camera.Render();
-                }
-            }
-
-            // Get screenshot
-            RenderTexture.active = rtScreen;
-            texScreen.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
-            RenderTexture.active = null;
-
-            // Reset camera render targets
-            foreach (var camObj in camObjs)
-            {
-                var camera = camObj.camera;
-                if (camera.enabled)
-                    camera.targetTexture = null;
-            }
-
-            // Save screenshot to file
-            var data = texScreen.EncodeToPNG();
-            string path = string.Format(videoCapture.videoCaptureDirectory + "frame{0:D5}.png", frameIndex + 1 - startFrame);
-            File.WriteAllBytes(path, data);
-        }
-
-        // Get current scene name
-        string sceneName = envController.gameObject.name.Substring(0, envController.gameObject.name.IndexOf("Env"));
-
-        // Generate a video file from the frame image sequence
-        string cmd = "";
-        string args = "";
-        switch (LEAPCore.gazeVideoCaptureFormat)
-        {
-            case "mp4":
-                cmd = "GenerateVideoMP4Baseline";
-                args = sceneName + suffix;
-                break;
-            case "mov":
-                cmd = "GenerateVideoMOV";
-                args = sceneName + suffix;
-                break;
-            case "wmv":
-                cmd = "GenerateVideoWMV";
-                args = sceneName + suffix + " " + Screen.width;
-                break;
-            default:
-                cmd = "GenerateVideoMP4Baseline";
-                args = sceneName + suffix;
-                break;
-        }
-        var process = System.Diagnostics.Process.Start(cmd, args);
-        process.WaitForExit();
-    }
-
-    /// <summary>
     /// Extract fixation frames from eye tracking data.
     /// </summary>
     /// <param name="sceneName">Scene name</param>
@@ -2214,8 +2170,15 @@ public static class EyeGazeEditTestSceneManager
         string outFramePath = "C:\\Local Users\\tpejsa\\OneDrive\\Gaze Editing Project\\Annotations\\GazeTargets\\"  + sceneName;
         var baseInstance = timeline.GetLayer(LEAPCore.baseAnimationLayerName).Animations.FirstOrDefault(inst =>
             inst.Animation.Model == model);
-        EyeGazeInferenceModel.ExtractEyeTrackFixationFrames(timeline, baseInstance.InstanceId, framePath, outFramePath,
-            startFrame, endFrame);
+        try
+        {
+            EyeGazeInferenceModel.ExtractEyeTrackFixationFrames(timeline, baseInstance.InstanceId, framePath, outFramePath,
+                startFrame, endFrame);
+        }
+        catch (Exception)
+        {
+            Debug.LogError("Unable to extract eye tracker fixation frames for scene " + sceneName);
+        }
     }
 
     /// <summary>

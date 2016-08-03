@@ -1,5 +1,4 @@
 Character,AnimationClip,StartFrame,FixationStartFrame,EndFrame,Target,AheadTargetPosition,HeadAlign,TorsoAlign,TurnBody
-Roman,HandShakeBGaze1,1,11,12,Norman-0,"0 0 0",0.8817671,0,True
-Roman,HandShakeBGaze2,13,11,32,Norman-1,"0 0 0",1,0.3397855,True
-Roman,HandShakeBGaze3,33,10,67,Norman-0,"0 0 0",0.3709661,0.5941192,True
+Roman,HandShakeBGaze1,1,11,32,Floor-2,"0 0 0",0.8817671,0.8,True
+Roman,HandShakeBGaze3,33,10,67,Floor-2,"0 0 0",1,1,True
 Roman,HandShakeBGaze4,68,5,73,Floor-0,"0 0 0",1,1,True
