@@ -372,6 +372,14 @@ public class GazeController : AnimController
         get { return _fixRootRot; }
     }
 
+    /// <summary>
+    /// Body alignment for the current gaze shift.
+    /// </summary>
+    public float _BodyAlign
+    {
+        get { return _curBodyAlign; }
+    }
+
     // Current gaze shift settings:
     protected Vector3 _curMovingTargetPosOff = Vector3.zero; // Rel. position offset of the current target in near future
     protected bool _curUseTorso = true;
@@ -874,7 +882,9 @@ public class GazeController : AnimController
 
         if (_turnInPlaceController.StateId == (int)TurnInPlaceState.Static)
         {
-            float bodyTurnTime = Mathf.Abs(_bodyTurnAngle) / (0.625f * torso._MaxVelocity);
+            // Each foot turn at 5 times the peak velocity of the torso, but they turn separately,
+            // so that's 2x turn time
+            float bodyTurnTime = 2f * Mathf.Abs(_bodyTurnAngle) / (3.125f * torso._MaxVelocity);
             _turnInPlaceController.Turn(_bodyTurnAngle, bodyTurnTime);
             _bodyTurnAngle = 0f;
         }
@@ -1022,7 +1032,7 @@ public class GazeController : AnimController
         head._Latency = minLatency >= 0f ? headLatency : headLatency + Mathf.Abs(minLatency);
         if (torso.Defined)
             torso._Latency = minLatency >= 0f ? torsoLatency : torsoLatency + Mathf.Abs(minLatency);
-        _bodyLatency = torsoLatency;
+        _bodyLatency = torsoLatency + 0.25f;
     }
 
     // Compute head latency from gaze shift amplitude and target predictability

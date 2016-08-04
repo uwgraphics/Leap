@@ -474,7 +474,7 @@ public class GazeBodyPart
             // Compute joint contribution
             if (isTorso && ji == ji1)
             {
-                c1 = _gazeController.pelvisAlign;
+                c1 = _gazeController.pelvisAlign + _gazeController.bodyAlign * (1f - _gazeController.pelvisAlign);
             }
             else
             {
