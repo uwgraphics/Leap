@@ -1,0 +1,40 @@
+Leap: Animation and Behavior Toolkit for Virtual Characters
+
+This software is owned by the University of Wisconsin-Madison and licensed under the BSD 3-Clause License. See the LICENSE file for more information.
+Developed by Tomislav Pejsa, Sean Andrist, and Daniel Rakita of the University of Wisconsin-Madison, Department of Computer Sciences, Graphics Group and Human-Computer Interaction Group.
+
+OVERVIEW
+
+Leap is built with Unity game engine and written mostly in C#. To use the toolkit, it is recommended you get the latest version of Unity (5.4 at the time of writing).
+
+Features:
+- Procedural gaze, speech, and head animation
+- Speech synthesis
+- Speech recognition
+- Conversational nonverbal behaviors
+- Inverse kinematics and motion retargeting
+- Easy to write linear, interactive scenarios with virtual characters
+- Wide range of character and environment assets
+- Numerous bits and pieces of functionality that might be useful to someone
+- (GazeEdit branch) Offline authoring of gaze animation for full-body motion capture
+
+TOOLKIT CONTENTS
+(by directory)
+
+Assets - various art assets used by the toolkit, mainly character models in MAX, FBX, and DAZ formats; also some obsolete model preprocessing scripts
+Docs - asset pipeline documentation, explaining how to get models and animations from DAZ, 3ds Max, and MotionBuilder into Unity; parts of it are out of date, but it should still be good for the most part
+LeapUnity - main Unity project containing all the character and environment assets, example scenes, shaders, editor extensions, third-party extensions, and of course scripts implementing all the behavior, animation, and scenario functionality
+MATLAB - Some MATLAB scripts used mostly for debugging outputs of various motion processing algorithms
+Tools - speech synthesis tool; speech recognition server; some obsolete asset tools
+
+GETTING STARTED
+
+Real documentation forthcoming. For now, the easiest way to get started is to look at one of many example scenes in LeapUnity/Assets/Scenes. Newer scenes like ConversationalRoleGaze.unity are probably your best bet. If you want to import and set up your own assets, use the functionality under the Editor menu Leap.
+
+Under LeapUnity, you can find the Leap.cfg configuration file, which can be used to change the settings of various parts of the toolkit. Sorry, no documentation yet.
+
+GAZE AUTHORING
+
+Real documentation forthcoming. For now, open the GazeEdit1.unity scene and study it.
+
+Pretty much all the functionality needed for animation authoring is in Editor mode, Leap menu and the Leap Animation Editor window. The Leap menu has the functionality for setting up new assets and triggering gaze inference. The Leap Animation Editor window has the controls for playing back the animation, editing the contents of the gaze timeline, activating various features such as IK, and baking out the animation.
