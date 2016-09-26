@@ -524,8 +524,8 @@ public class ConversationalRoleGazeScenario : Scenario
 
         // Initialize camera
         cameras["Camera"].GetComponent<MouseLook>().enabled = condition.setting == FactorSetting.Screen2D;
-        if (condition.setting == FactorSetting.Screen2D)
-            cameras["Camera"].GetComponent<Camera>().fieldOfView = 50f;
+        //if (condition.setting == FactorSetting.Screen2D)
+            //cameras["Camera"].GetComponent<Camera>().fieldOfView = 50f;
         calibPointVR.active = condition.setting == FactorSetting.VR;
 
         // Display settings
@@ -858,6 +858,10 @@ public class ConversationalRoleGazeScenario : Scenario
             var cameraTransf = cameras["Camera"].transform.parent;
             cameraTransf.localPosition = new Vector3(cameraTransf.localPosition.x, cameraTransf.localPosition.y + cameraHeightAdjustVR, cameraTransf.localPosition.z);
         }
+
+        // Update the agent's base feet pose
+        if (agents[agentName].GetComponent<Animator>().enabled)
+            agents[agentName].GetComponent<TurnInPlaceController>().InitBaseFeetPose();
     }
 
     protected virtual void OnApplicationFocus(bool focusStatus)

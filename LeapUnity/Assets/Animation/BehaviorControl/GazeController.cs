@@ -149,6 +149,11 @@ public class GazeController : AnimController
     public float bodyAlign = 0f;
 
     /// <summary>
+    /// Factor by which body turn velocity is multiplied.
+    /// </summary>
+    public float bodyTurnVelocityFactor = 1f;
+
+    /// <summary>
     /// If true, gaze directions will be adjusted for ongoing root motion.
     /// </summary>
     public bool adjustForRootMotion = true;
@@ -576,7 +581,7 @@ public class GazeController : AnimController
         _UpdateLatencyFixTargetDirections();
         // TODO: this is a bit of a hacky solution to ensure the eyes fully align with the target
         // when min. head rotation is insufficient
-        _InitHeadTargetDirection();
+        //_InitHeadTargetDirection();
         //
         _ApplySourceDirections();
         _UpdateBodyTurn();
@@ -689,7 +694,7 @@ public class GazeController : AnimController
     // Apply fixation of the current gaze target
     protected virtual void _ApplyFix()
     {
-        _UpdateFixSourceDirections();
+        //_UpdateFixSourceDirections();
         _ApplyFixSourceDirections();
 
         if (torso.Defined)
@@ -748,8 +753,8 @@ public class GazeController : AnimController
         if (torso.Defined)
             torso._InitBaseRotations();
 
-        if (_turnInPlaceController != null)
-            _turnInPlaceController.InitBaseFeetPose();
+        /*if (_turnInPlaceController != null)
+            _turnInPlaceController.InitBaseFeetPose();*/
     }
 
     // Apply current body posture (before gaze is applied)
@@ -884,7 +889,7 @@ public class GazeController : AnimController
         {
             // Each foot turn at 5 times the peak velocity of the torso, but they turn separately,
             // so that's 2x turn time
-            float bodyTurnTime = 2f * Mathf.Abs(_bodyTurnAngle) / (3.125f * torso._MaxVelocity);
+            float bodyTurnTime = bodyTurnVelocityFactor * 2f * Mathf.Abs(_bodyTurnAngle) / (3.125f * torso._MaxVelocity);
             _turnInPlaceController.Turn(_bodyTurnAngle, bodyTurnTime);
             _bodyTurnAngle = 0f;
         }
